@@ -1,0 +1,117 @@
+import 'package:flutter/material.dart';
+import '../../data/database/app_database.dart';
+import '../../presentation/theme/app_colors.dart';
+
+enum FinancialHealthStatus {
+  comfortable, // >= 30% buffer (NeoChartreuse)
+  caution,     // 0% - 30% buffer (Amber)
+  deficit,     // <= 0% buffer (Rose/Red)
+}
+
+class SafeToSpendMetrics {
+  final double totalRealBalance;
+  final double pendingBills;
+  final double safeToSpendMonthly;
+  final double safeToSpendDaily;
+  final int daysRemainingInMonth;
+  final FinancialHealthStatus healthStatus;
+
+  const SafeToSpendMetrics({
+    required this.totalRealBalance,
+    required this.pendingBills,
+    required this.safeToSpendMonthly,
+    required this.safeToSpendDaily,
+    required this.daysRemainingInMonth,
+    required this.healthStatus,
+  });
+
+  Color get statusColor {
+    switch (healthStatus) {
+      case FinancialHealthStatus.comfortable:
+        return AppColors.statusComfortable;
+      case FinancialHealthStatus.caution:
+        return AppColors.statusCaution;
+      case FinancialHealthStatus.deficit:
+        return AppColors.statusDeficit;
+    }
+  }
+
+  String get statusLabel {
+    switch (healthStatus) {
+      case FinancialHealthStatus.comfortable:
+        return 'Sangat Aman';
+      case FinancialHealthStatus.caution:
+        return 'Waspada';
+      case FinancialHealthStatus.deficit:
+        return 'Defisit Tagihan';
+    }
+  }
+}
+
+class SafeToSpendService {
+  /// Pure deterministic calculation of Safe-to-Spend metrics
+  static SafeToSpendMetrics calculate({
+    required List<WalletEntry> wallets,
+    required List<SubscriptionEntry> subscriptions,
+    DateTime? referenceDate,
+  }) {
+    final now = referenceDate ?? DateTime.now();
+
+    // 1. Calculate Total Real Balance across active non-deleted wallets
+    double totalBalance = 0.0;
+    for (final wallet in wallets) {
+      if (!wallet.isDeleted) {
+        totalBalance += wallet.balance;
+      }
+    }
+
+    // 2. Calculate Pending Bills for the current month
+    // A subscription is pending if active, not deleted, and due this month but not yet paid
+    double pendingBills = 0.0;
+    final currentMonthStart = DateTime(now.year, now.month, 1);
+
+    for (final sub in subscriptions) {
+      if (sub.isDeleted || sub.status != 'active') continue;
+
+      final lastPaid = sub.lastPaidDate;
+      final isPaidThisCycle = lastPaid != null && lastPaid.isAfter(currentMonthStart);
+
+      if (!isPaidThisCycle) {
+        pendingBills += sub.cost;
+      }
+    }
+
+    // 3. Compute Monthly Safe-to-Spend
+    final safeToSpendMonthly = totalBalance - pendingBills;
+
+    // 4. Days remaining in current month
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysRemaining = (lastDayOfMonth - now.day) + 1;
+    final divisor = daysRemaining > 0 ? daysRemaining : 1;
+
+    // 5. Compute Daily Safe-to-Spend Allowance
+    final safeToSpendDaily = safeToSpendMonthly > 0 ? (safeToSpendMonthly / divisor) : 0.0;
+
+    // 6. Evaluate Financial Health Status
+    final FinancialHealthStatus status;
+    if (totalBalance <= 0 || safeToSpendMonthly <= 0) {
+      status = FinancialHealthStatus.deficit;
+    } else {
+      final ratio = safeToSpendMonthly / totalBalance;
+      if (ratio >= 0.30) {
+        status = FinancialHealthStatus.comfortable;
+      } else {
+        status = FinancialHealthStatus.caution;
+      }
+    }
+
+    return SafeToSpendMetrics(
+      totalRealBalance: totalBalance,
+      pendingBills: pendingBills,
+      safeToSpendMonthly: safeToSpendMonthly,
+      safeToSpendDaily: safeToSpendDaily,
+      daysRemainingInMonth: daysRemaining,
+      healthStatus: status,
+    );
+  }
+}
