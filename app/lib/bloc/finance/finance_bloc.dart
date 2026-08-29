@@ -44,13 +44,28 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<MarkSubscriptionPaidEvent>(_onMarkSubscriptionPaid);
     on<UpdateWalletBalanceEvent>(_onUpdateWalletBalance);
     on<AddWalletEvent>(_onAddWallet);
+    on<SetSafeToSpendWalletsEvent>((event, emit) {
+      final metrics = SafeToSpendService.calculate(
+        wallets: state.wallets,
+        subscriptions: state.subscriptions,
+        selectedWalletIds: event.walletIds,
+      );
+      emit(state.copyWith(
+        safeToSpendWalletIds: event.walletIds,
+        clearSafeToSpendWallets: event.walletIds == null,
+        metrics: metrics,
+      ));
+    });
 
     // Internal reactive stream event handlers
     on<_WalletsUpdated>((event, emit) {
-      final metrics = SafeToSpendService.calculate(wallets: event.wallets, subscriptions: state.subscriptions);
+      final metrics = SafeToSpendService.calculate(
+        wallets: event.wallets,
+        subscriptions: state.subscriptions,
+        selectedWalletIds: state.safeToSpendWalletIds,
+      );
       emit(state.copyWith(wallets: event.wallets, metrics: metrics, status: FinanceStatus.success));
     });
-
     on<_CategoriesUpdated>((event, emit) {
       emit(state.copyWith(categories: event.categories));
     });
@@ -60,7 +75,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     });
 
     on<_SubscriptionsUpdated>((event, emit) {
-      final metrics = SafeToSpendService.calculate(wallets: state.wallets, subscriptions: event.subscriptions);
+      final metrics = SafeToSpendService.calculate(
+        wallets: state.wallets,
+        subscriptions: event.subscriptions,
+        selectedWalletIds: state.safeToSpendWalletIds,
+      );
       emit(state.copyWith(subscriptions: event.subscriptions, metrics: metrics));
     });
 

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
@@ -31,29 +32,35 @@ class BottomNavDock extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 1. LEFT POD: Home & Tagihan (Inner curve concentric with the + button)
+                  // 1. LEFT POD: Home & Tagihan (Frosted Glass Translucent Pod)
                   SizedBox(
                     width: 128,
                     height: 56,
-                    child: CustomPaint(
-                      painter: const PodBorderPainter(isLeft: true),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 6, right: 16),
-                        child: Row(
-                          children: [
-                            _buildNavItem(
-                              index: 0,
-                              icon: Icons.dashboard_outlined,
-                              activeIcon: Icons.dashboard,
-                              label: 'Home',
+                    child: ClipPath(
+                      clipper: const PodClipper(isLeft: true),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                        child: CustomPaint(
+                          painter: const PodBorderPainter(isLeft: true),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 6, right: 16),
+                            child: Row(
+                              children: [
+                                _buildNavItem(
+                                  index: 0,
+                                  icon: Icons.dashboard_outlined,
+                                  activeIcon: Icons.dashboard,
+                                  label: 'Home',
+                                ),
+                                _buildNavItem(
+                                  index: 1,
+                                  icon: Icons.receipt_long_outlined,
+                                  activeIcon: Icons.receipt_long,
+                                  label: 'Tagihan',
+                                ),
+                              ],
                             ),
-                            _buildNavItem(
-                              index: 1,
-                              icon: Icons.receipt_long_outlined,
-                              activeIcon: Icons.receipt_long,
-                              label: 'Tagihan',
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -62,29 +69,35 @@ class BottomNavDock extends StatelessWidget {
                   // 2. CENTER FLAT CIRCULAR BUTTON (Floats in the concentric cradle)
                   _CenterActionButton(onPressed: onCenterAction),
 
-                  // 3. RIGHT POD: Wallets & Settings (Inner curve concentric with the + button)
+                  // 3. RIGHT POD: Wallets & Settings (Frosted Glass Translucent Pod)
                   SizedBox(
                     width: 128,
                     height: 56,
-                    child: CustomPaint(
-                      painter: const PodBorderPainter(isLeft: false),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 6),
-                        child: Row(
-                          children: [
-                            _buildNavItem(
-                              index: 2,
-                              icon: Icons.account_balance_wallet_outlined,
-                              activeIcon: Icons.account_balance_wallet,
-                              label: 'Wallets',
+                    child: ClipPath(
+                      clipper: const PodClipper(isLeft: false),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                        child: CustomPaint(
+                          painter: const PodBorderPainter(isLeft: false),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 6),
+                            child: Row(
+                              children: [
+                                _buildNavItem(
+                                  index: 2,
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  activeIcon: Icons.account_balance_wallet,
+                                  label: 'Wallets',
+                                ),
+                                _buildNavItem(
+                                  index: 3,
+                                  icon: Icons.settings_outlined,
+                                  activeIcon: Icons.settings,
+                                  label: 'Settings',
+                                ),
+                              ],
                             ),
-                            _buildNavItem(
-                              index: 3,
-                              icon: Icons.settings_outlined,
-                              activeIcon: Icons.settings,
-                              label: 'Settings',
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -121,17 +134,29 @@ class BottomNavDock extends StatelessWidget {
   }
 }
 
-/// Custom Painter: Fills pod and strokes the 1.2px border along the concave curve
+/// Custom Clipper to constrain BackdropFilter exactly to the pod geometry
+class PodClipper extends CustomClipper<Path> {
+  final bool isLeft;
+
+  const PodClipper({required this.isLeft});
+
+  @override
+  Path getClip(Size size) => PodBorderPainter.buildPath(size, isLeft);
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+/// Custom Painter: Fills pod with translucent glass and strokes crisp 1.2px frosted border
 class PodBorderPainter extends CustomPainter {
   final bool isLeft;
 
   const PodBorderPainter({required this.isLeft});
 
-  @override
-  void paint(Canvas canvas, Size size) {
+  static Path buildPath(Size size, bool isLeft) {
     final path = Path();
     final r = size.height / 2; // 28.0
-    // Cutout radius 34.0 is concentric with the 25px-radius button, leaving a clean uniform gap!
+    // Cutout radius 34.0 is concentric with the 25px-radius button
     const cutoutRadius = 34.0;
 
     if (isLeft) {
@@ -143,7 +168,7 @@ class PodBorderPainter extends CustomPainter {
       path.arcToPoint(
         Offset(size.width, size.height),
         radius: const Radius.circular(cutoutRadius),
-        clockwise: false, // Inward curve!
+        clockwise: false,
       );
 
       path.lineTo(r, size.height);
@@ -163,20 +188,26 @@ class PodBorderPainter extends CustomPainter {
       path.arcToPoint(
         const Offset(0, 0),
         radius: const Radius.circular(cutoutRadius),
-        clockwise: false, // Inward curve!
+        clockwise: false,
       );
     }
     path.close();
+    return path;
+  }
 
-    // 1. Fill background surface
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = buildPath(size, isLeft);
+
+    // 1. Translucent frosted glass fill (~72% opacity deep obsidian)
     final fillPaint = Paint()
-      ..color = AppColors.canvasCardSurface
+      ..color = const Color(0xB813141C)
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, fillPaint);
 
-    // 2. Stroke 1.2px border along the entire path (including the concave curve)
+    // 2. Crisp translucent border (frosted rim highlight)
     final strokePaint = Paint()
-      ..color = AppColors.canvasBorder
+      ..color = const Color(0x33FFFFFF)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     canvas.drawPath(path, strokePaint);

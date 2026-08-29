@@ -107,3 +107,9 @@ class AddWalletEvent extends FinanceEvent {
     required this.iconName,
   });
 }
+
+class SetSafeToSpendWalletsEvent extends FinanceEvent {
+  final Set<String>? walletIds; // null = all wallets
+
+  const SetSafeToSpendWalletsEvent(this.walletIds);
+}

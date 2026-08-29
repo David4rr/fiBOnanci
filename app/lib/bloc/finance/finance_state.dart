@@ -10,6 +10,7 @@ class FinanceState {
   final List<TransactionEntry> transactions;
   final List<SubscriptionEntry> subscriptions;
   final SafeToSpendMetrics metrics;
+  final Set<String>? safeToSpendWalletIds; // null = all wallets
   final String? errorMessage;
 
   FinanceState({
@@ -18,12 +19,14 @@ class FinanceState {
     this.categories = const [],
     this.transactions = const [],
     this.subscriptions = const [],
+    this.safeToSpendWalletIds,
     SafeToSpendMetrics? metrics,
     this.errorMessage,
   }) : metrics = metrics ??
             SafeToSpendService.calculate(
               wallets: wallets,
               subscriptions: subscriptions,
+              selectedWalletIds: safeToSpendWalletIds,
             );
 
   FinanceState copyWith({
@@ -32,11 +35,16 @@ class FinanceState {
     List<CategoryEntry>? categories,
     List<TransactionEntry>? transactions,
     List<SubscriptionEntry>? subscriptions,
+    Set<String>? safeToSpendWalletIds,
+    bool clearSafeToSpendWallets = false,
     SafeToSpendMetrics? metrics,
     String? errorMessage,
   }) {
     final nextWallets = wallets ?? this.wallets;
     final nextSubs = subscriptions ?? this.subscriptions;
+    final nextWalletIds = clearSafeToSpendWallets
+        ? null
+        : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
 
     return FinanceState(
       status: status ?? this.status,
@@ -44,10 +52,12 @@ class FinanceState {
       categories: categories ?? this.categories,
       transactions: transactions ?? this.transactions,
       subscriptions: nextSubs,
+      safeToSpendWalletIds: nextWalletIds,
       metrics: metrics ??
           SafeToSpendService.calculate(
             wallets: nextWallets,
             subscriptions: nextSubs,
+            selectedWalletIds: nextWalletIds,
           ),
       errorMessage: errorMessage ?? this.errorMessage,
     );

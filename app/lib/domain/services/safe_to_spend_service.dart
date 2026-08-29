@@ -15,6 +15,9 @@ class SafeToSpendMetrics {
   final double safeToSpendDaily;
   final int daysRemainingInMonth;
   final FinancialHealthStatus healthStatus;
+  final Set<String> selectedWalletIds; // empty = all wallets
+  final bool isAllWallets;
+  final int selectedWalletsCount;
 
   const SafeToSpendMetrics({
     required this.totalRealBalance,
@@ -23,6 +26,9 @@ class SafeToSpendMetrics {
     required this.safeToSpendDaily,
     required this.daysRemainingInMonth,
     required this.healthStatus,
+    this.selectedWalletIds = const {},
+    this.isAllWallets = true,
+    this.selectedWalletsCount = 0,
   });
 
   Color get statusColor {
@@ -53,20 +59,33 @@ class SafeToSpendService {
   static SafeToSpendMetrics calculate({
     required List<WalletEntry> wallets,
     required List<SubscriptionEntry> subscriptions,
+    Set<String>? selectedWalletIds,
     DateTime? referenceDate,
   }) {
     final now = referenceDate ?? DateTime.now();
 
-    // 1. Calculate Total Real Balance across active non-deleted wallets
+    final activeWallets = wallets.where((w) => !w.isDeleted).toList();
+    final bool isAll = selectedWalletIds == null ||
+        selectedWalletIds.isEmpty ||
+        selectedWalletIds.length >= activeWallets.length;
+
+    final targetWalletIds = isAll
+        ? <String>{}
+        : selectedWalletIds.toSet();
+
+    // 1. Calculate Real Balance across selected or all active wallets
     double totalBalance = 0.0;
-    for (final wallet in wallets) {
-      if (!wallet.isDeleted) {
+    int count = 0;
+    for (final wallet in activeWallets) {
+      if (isAll || targetWalletIds.contains(wallet.id)) {
         totalBalance += wallet.balance;
+        count++;
       }
     }
 
     // 2. Calculate Pending Bills for the current month
-    // A subscription is pending if active, not deleted, and due this month but not yet paid
+    // A subscription is pending if active, not deleted, and due this month but not yet paid.
+    // If specific wallets are selected, only bills assigned to those wallets are deducted.
     double pendingBills = 0.0;
     final currentMonthStart = DateTime(now.year, now.month, 1);
 
@@ -77,10 +96,11 @@ class SafeToSpendService {
       final isPaidThisCycle = lastPaid != null && lastPaid.isAfter(currentMonthStart);
 
       if (!isPaidThisCycle) {
-        pendingBills += sub.cost;
+        if (isAll || targetWalletIds.contains(sub.walletId)) {
+          pendingBills += sub.cost;
+        }
       }
     }
-
     // 3. Compute Monthly Safe-to-Spend
     final safeToSpendMonthly = totalBalance - pendingBills;
 
@@ -112,6 +132,9 @@ class SafeToSpendService {
       safeToSpendDaily: safeToSpendDaily,
       daysRemainingInMonth: daysRemaining,
       healthStatus: status,
+      selectedWalletIds: targetWalletIds,
+      isAllWallets: isAll,
+      selectedWalletsCount: isAll ? activeWallets.length : count,
     );
   }
 }

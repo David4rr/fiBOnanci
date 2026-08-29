@@ -64,4 +64,27 @@ void main() {
     expect(bloc.state.transactions.any((t) => t.notes == 'Sarapan Pagi'), isTrue);
     expect(bloc.state.metrics.safeToSpendMonthly, initialSafe - 25000.0);
   });
+
+  test('SetSafeToSpendWalletsEvent updates metrics and filters spending accounts in BLoC state', () async {
+    bloc.add(const LoadFinanceData());
+    await bloc.stream.firstWhere((s) => s.status == FinanceStatus.success);
+
+    final bca = bloc.state.wallets.firstWhere((w) => w.name.contains('BCA'));
+    expect(bloc.state.metrics.isAllWallets, isTrue);
+
+    // Filter Safe-to-Spend to BCA only
+    bloc.add(SetSafeToSpendWalletsEvent({bca.id}));
+    await bloc.stream.firstWhere((s) => s.safeToSpendWalletIds != null);
+
+    expect(bloc.state.metrics.isAllWallets, isFalse);
+    expect(bloc.state.metrics.selectedWalletsCount, 1);
+    expect(bloc.state.metrics.totalRealBalance, bca.balance);
+
+    // Reset back to all wallets
+    bloc.add(const SetSafeToSpendWalletsEvent(null));
+    await bloc.stream.firstWhere((s) => s.safeToSpendWalletIds == null);
+
+    expect(bloc.state.metrics.isAllWallets, isTrue);
+    expect(bloc.state.metrics.selectedWalletsCount, 7);
+  });
 }

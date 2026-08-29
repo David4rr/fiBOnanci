@@ -75,6 +75,7 @@ class _MainShellState extends State<MainShell> {
     final screens = [
       DashboardScreen(
         db: widget.db,
+        onNavigateToWallets: () => setState(() => _currentIndex = 2),
       ),
       SubscriptionScreen(
         db: widget.db,
@@ -86,6 +87,7 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       backgroundColor: AppColors.canvasBg,
+      extendBody: true,
       body: screens[_currentIndex < screens.length ? _currentIndex : 0],
       bottomNavigationBar: BottomNavDock(
         currentIndex: _currentIndex,

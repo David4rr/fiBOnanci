@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Custom shape clipper that renders the signature Asymmetric File Folder Tab
 class FolderTabClipper extends CustomClipper<Path> {
@@ -75,6 +74,7 @@ class FolderTabCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: ClipPath(
         clipper: const FolderTabClipper(),
