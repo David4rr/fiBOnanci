@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 
@@ -62,4 +63,28 @@ class FinanceState {
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FinanceState &&
+          runtimeType == other.runtimeType &&
+          status == other.status &&
+          errorMessage == other.errorMessage &&
+          metrics == other.metrics &&
+          setEquals(safeToSpendWalletIds, other.safeToSpendWalletIds) &&
+          listEquals(wallets, other.wallets) &&
+          listEquals(categories, other.categories) &&
+          listEquals(transactions, other.transactions) &&
+          listEquals(subscriptions, other.subscriptions);
+
+  @override
+  int get hashCode => Object.hash(
+        status,
+        errorMessage,
+        metrics,
+        wallets.length,
+        transactions.length,
+        subscriptions.length,
+      );
 }

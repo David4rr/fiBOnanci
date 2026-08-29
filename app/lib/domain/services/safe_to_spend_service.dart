@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../presentation/theme/app_colors.dart';
@@ -52,6 +53,33 @@ class SafeToSpendMetrics {
         return 'Defisit Tagihan';
     }
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SafeToSpendMetrics &&
+          runtimeType == other.runtimeType &&
+          totalRealBalance == other.totalRealBalance &&
+          pendingBills == other.pendingBills &&
+          safeToSpendMonthly == other.safeToSpendMonthly &&
+          safeToSpendDaily == other.safeToSpendDaily &&
+          daysRemainingInMonth == other.daysRemainingInMonth &&
+          healthStatus == other.healthStatus &&
+          isAllWallets == other.isAllWallets &&
+          selectedWalletsCount == other.selectedWalletsCount &&
+          setEquals(selectedWalletIds, other.selectedWalletIds);
+
+  @override
+  int get hashCode => Object.hash(
+        totalRealBalance,
+        pendingBills,
+        safeToSpendMonthly,
+        safeToSpendDaily,
+        daysRemainingInMonth,
+        healthStatus,
+        isAllWallets,
+        selectedWalletsCount,
+      );
 }
 
 class SafeToSpendService {
