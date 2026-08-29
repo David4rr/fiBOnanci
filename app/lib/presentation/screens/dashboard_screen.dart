@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../domain/services/cashflow_analytics_service.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../data/database/app_database.dart';
 import '../modals/all_transactions_modal.dart';
@@ -69,48 +70,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final allTransactions = state.transactions;
             final metrics = state.metrics;
 
-            final filteredTransactions = allTransactions.where((tx) {
-              if (_searchQuery.isNotEmpty) {
-                final notes = (tx.notes ?? '').toLowerCase();
-                final type = tx.type.toLowerCase();
-                final amt = tx.amount.toString();
-                final wallet = wallets.firstWhere(
-                  (w) => w.id == tx.walletId,
-                  orElse: () => wallets.isNotEmpty
-                      ? wallets.first
-                      : WalletEntry(
-                          id: '',
-                          name: '',
-                          type: '',
-                          currency: '',
-                          balance: 0,
-                          colorHex: '#64748B',
-                          iconName: '',
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          isSynced: false,
-                          isDeleted: false,
-                        ),
-                );
-                final walletName = wallet.name.toLowerCase();
-
-                final match = notes.contains(_searchQuery) ||
-                    type.contains(_searchQuery) ||
-                    amt.contains(_searchQuery) ||
-                    walletName.contains(_searchQuery);
-                if (!match) return false;
-              }
-
-              if (_typeFilter != 'all' && tx.type != _typeFilter) {
-                return false;
-              }
-
-              if (_walletFilter != null && tx.walletId != _walletFilter) {
-                return false;
-              }
-
-              return true;
-            }).toList();
+            final filteredTransactions = CashflowAnalyticsService.filterTransactions(
+              transactions: allTransactions,
+              wallets: wallets,
+              query: _searchQuery,
+              typeFilter: _typeFilter,
+              walletFilter: _walletFilter,
+            );
 
             return CustomScrollView(
               slivers: [

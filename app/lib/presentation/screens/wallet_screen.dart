@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
+import '../../domain/services/cashflow_analytics_service.dart';
 import '../modals/add_wallet_modal.dart';
 import '../modals/edit_balance_modal.dart';
 import '../theme/app_colors.dart';
@@ -31,39 +32,6 @@ class WalletScreen extends StatefulWidget {
 class _WalletScreenState extends State<WalletScreen> {
   WalletEntry? _liftedWallet;
 
-  List<double> _computeSeries(
-    List<TransactionEntry> transactions, {
-    required String type,
-    String? walletId,
-  }) {
-    final now = DateTime.now();
-    final List<double> dailyValues = List.filled(30, 0.0);
-
-    for (final tx in transactions) {
-      if (walletId != null && tx.walletId != walletId && tx.destinationWalletId != walletId) {
-        continue;
-      }
-      if (tx.type != type) continue;
-
-      final diff = now.difference(tx.transactionDate).inDays;
-      if (diff >= 0 && diff < 30) {
-        final index = 29 - diff;
-        dailyValues[index] += tx.amount;
-      }
-    }
-    return dailyValues;
-  }
-
-  List<String> _computeDayLabels() {
-    final now = DateTime.now();
-    return List.generate(30, (i) {
-      if (i == 0 || i == 7 || i == 14 || i == 21 || i == 29) {
-        final d = now.subtract(Duration(days: 29 - i));
-        return '${d.day}/${d.month}';
-      }
-      return '';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,17 +53,6 @@ class _WalletScreenState extends State<WalletScreen> {
             totalRealBalance += w.balance;
           }
 
-          double monthlyIncome = 0.0;
-          double monthlyExpense = 0.0;
-          for (final tx in state.transactions) {
-            if (tx.transactionDate.year == now.year && tx.transactionDate.month == now.month) {
-              if (tx.type == 'income') {
-                monthlyIncome += tx.amount;
-              } else if (tx.type == 'expense') {
-                monthlyExpense += tx.amount;
-              }
-            }
-          }
 
           final activeSelected = _liftedWallet == null
               ? null
@@ -173,8 +130,8 @@ class _WalletScreenState extends State<WalletScreen> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                         child: WalletCashflowSummary(
-                          monthlyIncome: monthlyIncome,
-                          monthlyExpense: monthlyExpense,
+                          monthlyIncome: state.monthlyCashflow.income,
+                          monthlyExpense: state.monthlyCashflow.expense,
                           currencyFormatter: currencyFormatter,
                         ),
                       ),
@@ -185,9 +142,9 @@ class _WalletScreenState extends State<WalletScreen> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                         child: TrendSplineChart(
-                          incomeValues: _computeSeries(state.transactions, type: 'income'),
-                          expenseValues: _computeSeries(state.transactions, type: 'expense'),
-                          labels: _computeDayLabels(),
+                          incomeValues: CashflowAnalyticsService.compute30DaySeries(state.transactions, type: 'income'),
+                          expenseValues: CashflowAnalyticsService.compute30DaySeries(state.transactions, type: 'expense'),
+                          labels: CashflowAnalyticsService.compute30DayLabels(),
                           headline: 'Tren Arus Kas (Semua Rekening)',
                           subtitle: '30 Hari Terakhir',
                           height: 110,
@@ -262,8 +219,8 @@ class _WalletScreenState extends State<WalletScreen> {
                   transactions: state.transactions,
                   currencyFormatter: currencyFormatter,
                   db: widget.db,
-                  computeSeries: _computeSeries,
-                  computeDayLabels: _computeDayLabels,
+                  computeSeries: CashflowAnalyticsService.compute30DaySeries,
+                  computeDayLabels: CashflowAnalyticsService.compute30DayLabels,
                   onClose: () => setState(() => _liftedWallet = null),
                   onEditBalance: () {
                     final w = activeSelected;

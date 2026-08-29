@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/database/app_database.dart';
+import '../../domain/services/cashflow_analytics_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
-
 enum FinanceStatus { initial, loading, success, failure }
 
 class FinanceState {
@@ -11,6 +11,7 @@ class FinanceState {
   final List<TransactionEntry> transactions;
   final List<SubscriptionEntry> subscriptions;
   final SafeToSpendMetrics metrics;
+  final MonthlyCashflow monthlyCashflow;
   final Set<String>? safeToSpendWalletIds; // null = all wallets
   final String? errorMessage;
 
@@ -22,13 +23,16 @@ class FinanceState {
     this.subscriptions = const [],
     this.safeToSpendWalletIds,
     SafeToSpendMetrics? metrics,
+    MonthlyCashflow? monthlyCashflow,
     this.errorMessage,
-  }) : metrics = metrics ??
+  })  : metrics = metrics ??
             SafeToSpendService.calculate(
               wallets: wallets,
               subscriptions: subscriptions,
               selectedWalletIds: safeToSpendWalletIds,
-            );
+            ),
+        monthlyCashflow = monthlyCashflow ??
+            CashflowAnalyticsService.calculateMonthlyCashflow(transactions);
 
   FinanceState copyWith({
     FinanceStatus? status,
@@ -39,10 +43,12 @@ class FinanceState {
     Set<String>? safeToSpendWalletIds,
     bool clearSafeToSpendWallets = false,
     SafeToSpendMetrics? metrics,
+    MonthlyCashflow? monthlyCashflow,
     String? errorMessage,
   }) {
     final nextWallets = wallets ?? this.wallets;
     final nextSubs = subscriptions ?? this.subscriptions;
+    final nextTx = transactions ?? this.transactions;
     final nextWalletIds = clearSafeToSpendWallets
         ? null
         : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
@@ -51,7 +57,7 @@ class FinanceState {
       status: status ?? this.status,
       wallets: nextWallets,
       categories: categories ?? this.categories,
-      transactions: transactions ?? this.transactions,
+      transactions: nextTx,
       subscriptions: nextSubs,
       safeToSpendWalletIds: nextWalletIds,
       metrics: metrics ??
@@ -60,6 +66,8 @@ class FinanceState {
             subscriptions: nextSubs,
             selectedWalletIds: nextWalletIds,
           ),
+      monthlyCashflow: monthlyCashflow ??
+          CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -72,6 +80,7 @@ class FinanceState {
           status == other.status &&
           errorMessage == other.errorMessage &&
           metrics == other.metrics &&
+          monthlyCashflow == other.monthlyCashflow &&
           setEquals(safeToSpendWalletIds, other.safeToSpendWalletIds) &&
           listEquals(wallets, other.wallets) &&
           listEquals(categories, other.categories) &&
