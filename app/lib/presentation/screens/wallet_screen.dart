@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -10,10 +11,10 @@ import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../../core/formatters/rupiah_input_formatter.dart';
 import '../widgets/transaction_detail_modal.dart';
 import '../widgets/transaction_modal.dart';
 import '../widgets/trend_spline_chart.dart';
-
 // ── Wallet card color palette (cycles through wallets) ──────────────────────
 const _kWalletColors = [
   Color(0xFF7DF24E), // neoMint
@@ -463,10 +464,23 @@ class _WalletScreenState extends State<WalletScreen> {
       body: BlocBuilder<FinanceBloc, FinanceState>(
         builder: (context, state) {
           final wallets = state.wallets;
+          final now = DateTime.now();
 
           double totalRealBalance = 0;
           for (final w in wallets) {
             totalRealBalance += w.balance;
+          }
+
+          double monthlyIncome = 0.0;
+          double monthlyExpense = 0.0;
+          for (final tx in state.transactions) {
+            if (tx.transactionDate.year == now.year && tx.transactionDate.month == now.month) {
+              if (tx.type == 'income') {
+                monthlyIncome += tx.amount;
+              } else if (tx.type == 'expense') {
+                monthlyExpense += tx.amount;
+              }
+            }
           }
 
           final activeSelected = _liftedWallet == null
@@ -536,6 +550,104 @@ class _WalletScreenState extends State<WalletScreen> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+                    // ── Monthly Cash Flow Summary (Income & Expense) ──
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        child: Row(
+                          children: [
+                            // Monthly Income Card (Mint)
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.canvasCardSurface,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: AppColors.canvasBorder),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 22,
+                                          height: 22,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.neoMint.withValues(alpha: 0.15),
+                                          ),
+                                          child: const Icon(Icons.arrow_downward, color: AppColors.neoMint, size: 13),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            'MASUK (BLN INI)',
+                                            style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 9),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      currencyFormatter.format(monthlyIncome),
+                                      style: AppTypography.listAmount.copyWith(color: AppColors.neoMint, fontSize: 14),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+
+                            // Monthly Expense Card (Coral)
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.canvasCardSurface,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: AppColors.canvasBorder),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 22,
+                                          height: 22,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.neoCoral.withValues(alpha: 0.15),
+                                          ),
+                                          child: const Icon(Icons.arrow_upward, color: AppColors.neoCoral, size: 13),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            'KELUAR (BLN INI)',
+                                            style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 9),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      currencyFormatter.format(monthlyExpense),
+                                      style: AppTypography.listAmount.copyWith(color: AppColors.neoCoral, fontSize: 14),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -884,7 +996,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
   void _showEditBalanceModal(BuildContext context, WalletEntry wallet) {
-    final controller = TextEditingController(text: wallet.balance.toStringAsFixed(0));
+    final controller = TextEditingController(text: RupiahInputFormatter.format(wallet.balance));
 
     showModalBottomSheet(
       context: context,
@@ -915,11 +1027,11 @@ class _WalletScreenState extends State<WalletScreen> {
               TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
                 autofocus: false,
                 style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
                 decoration: InputDecoration(
                   prefixText: 'Rp ',
-                  prefixStyle: AppTypography.heroGreeting.copyWith(color: AppColors.neoMint),
                   filled: true,
                   fillColor: AppColors.canvasInputSearch,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -939,9 +1051,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
-                    final raw = controller.text.replaceAll(RegExp(r'[^\d]'), '');
-                    final newBal = double.tryParse(raw);
-                    if (newBal != null) {
+                    final newBal = RupiahInputFormatter.parse(controller.text);
+                    if (newBal > 0) {
                       context.read<FinanceBloc>().add(
                         UpdateWalletBalanceEvent(walletId: wallet.id, newBalance: newBal),
                       );
@@ -1010,10 +1121,10 @@ class _WalletScreenState extends State<WalletScreen> {
                   TextField(
                     controller: balanceController,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
                     style: AppTypography.listTitle,
                     decoration: InputDecoration(
                       hintText: 'Saldo Awal (Rp)',
-                      hintStyle: AppTypography.listSubtitle,
                       prefixText: 'Rp ',
                       filled: true,
                       fillColor: AppColors.canvasInputSearch,
@@ -1045,9 +1156,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       ),
                       onPressed: () {
                         final name = nameController.text.trim();
-                        final raw = balanceController.text.replaceAll(RegExp(r'[^\d]'), '');
-                        final bal = double.tryParse(raw) ?? 0.0;
-
+                        final bal = RupiahInputFormatter.parse(balanceController.text);
                         if (name.isNotEmpty) {
                           context.read<FinanceBloc>().add(
                             AddWalletEvent(

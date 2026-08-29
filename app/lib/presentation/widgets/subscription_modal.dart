@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/formatters/rupiah_input_formatter.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
@@ -122,9 +124,9 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
             TextField(
               controller: _costController,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
               style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
               decoration: InputDecoration(
-                hintText: '0',
                 hintStyle: AppTypography.heroGreeting.copyWith(color: AppColors.textSubtle),
                 prefixText: 'Rp ',
                 prefixStyle: AppTypography.heroGreeting.copyWith(color: AppColors.neoCoral),
@@ -242,8 +244,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
 
   void _saveSubscription(BuildContext context) {
     final title = _titleController.text.trim();
-    final rawCost = _costController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final cost = double.tryParse(rawCost);
+    final cost = RupiahInputFormatter.parse(_costController.text);
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan nama tagihan!')));

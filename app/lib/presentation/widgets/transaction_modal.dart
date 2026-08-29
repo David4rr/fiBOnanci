@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-
+import '../../core/formatters/rupiah_input_formatter.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
@@ -127,6 +128,7 @@ class _TransactionModalState extends State<TransactionModal> {
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
               style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
               decoration: InputDecoration(
                 hintText: '0',
@@ -344,10 +346,8 @@ class _TransactionModalState extends State<TransactionModal> {
   }
 
   void _saveTransaction(BuildContext context) {
-    final rawAmount = _amountController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final amount = double.tryParse(rawAmount);
-
-    if (amount == null || amount <= 0) {
+    final amount = RupiahInputFormatter.parse(_amountController.text);
+    if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Masukkan nominal yang valid (> 0)!')),
       );

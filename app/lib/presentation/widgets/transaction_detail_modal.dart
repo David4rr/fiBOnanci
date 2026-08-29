@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-
+import '../../core/formatters/rupiah_input_formatter.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
@@ -54,7 +55,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   void initState() {
     super.initState();
     _amountController = TextEditingController(
-      text: widget.transaction.amount.toStringAsFixed(0),
+      text: RupiahInputFormatter.format(widget.transaction.amount),
     );
     _notesController = TextEditingController(
       text: widget.transaction.notes ?? '',
@@ -154,6 +155,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
               TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
                 style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
                 decoration: InputDecoration(
                   prefixText: 'Rp ',
@@ -352,9 +354,8 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   }
 
   void _saveChanges(BuildContext context) {
-    final raw = _amountController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final newAmount = double.tryParse(raw);
-    if (newAmount == null || newAmount <= 0) return;
+    final newAmount = RupiahInputFormatter.parse(_amountController.text);
+    if (newAmount <= 0) return;
 
     if (_type == 'transfer' && _walletId == _destinationWalletId) {
       ScaffoldMessenger.of(context).showSnackBar(
