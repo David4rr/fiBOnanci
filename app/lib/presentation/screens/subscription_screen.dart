@@ -36,10 +36,11 @@ class SubscriptionScreen extends StatelessWidget {
         elevation: 0,
         title: Text('Tagihan & Langganan', style: AppTypography.sectionTitle),
       ),
-      body: BlocBuilder<FinanceBloc, FinanceState>(
-        builder: (context, state) {
-          final subscriptions = state.subscriptions;
-
+      body: SafeArea(
+        bottom: false,
+        child: BlocBuilder<FinanceBloc, FinanceState>(
+          builder: (context, state) {
+            final subscriptions = state.subscriptions;
           if (subscriptions.isEmpty) {
             return Center(
               child: Padding(
@@ -138,13 +139,14 @@ class SubscriptionScreen extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 100),
+              const SizedBox(height: 140),
             ],
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showSubscriptionDetailModal(BuildContext context, SubscriptionEntry sub) {
     final isPaidThisMonth = sub.lastPaidDate != null && sub.lastPaidDate!.month == DateTime.now().month;

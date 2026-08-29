@@ -121,9 +121,11 @@ class _MainShellState extends State<MainShell> {
         elevation: 0,
         title: Text('Pengaturan & Fitur', style: AppTypography.sectionTitle),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        children: [
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          children: [
           // Notification Simulator Feature Card
           GestureDetector(
             onTap: () => NotificationSimulatorModal.show(context, widget.db),
@@ -196,10 +198,12 @@ class _MainShellState extends State<MainShell> {
               ],
             ),
           ),
+          const SizedBox(height: 140),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDiagnosticRow(String label, String value) {
     return Row(

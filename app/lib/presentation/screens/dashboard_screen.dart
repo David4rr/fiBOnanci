@@ -53,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.canvasBg,
       body: SafeArea(
+        bottom: false,
         child: BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
             final wallets = state.wallets;
@@ -604,7 +605,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
 
                 const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
+                  child: SizedBox(height: 140),
                 ),
               ],
             );
