@@ -6,6 +6,7 @@ import '../../domain/services/safe_to_spend_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/notification_review_modal.dart';
+import 'budgeting_insights_modal.dart';
 
 Widget buildCalcRow(String label, String val, Color color, {bool isBold = false}) {
   return Padding(
@@ -98,61 +99,7 @@ class WalletsListModal {
 
 class BillsListModal {
   static void show(BuildContext context, List<SubscriptionEntry> subscriptions) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textSubtle,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text('Tagihan Rutin Bulan Ini', style: AppTypography.sectionTitle),
-              const SizedBox(height: 14),
-              if (subscriptions.isEmpty)
-                Text('Tidak ada tagihan aktif.', style: AppTypography.listSubtitle)
-              else
-                for (final sub in subscriptions)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(sub.title, style: AppTypography.listTitle),
-                            Text('Jatuh tempo tgl ${sub.dueDay}', style: AppTypography.listSubtitle),
-                          ],
-                        ),
-                        Text(
-                          'Rp ${sub.cost.toStringAsFixed(0)}',
-                          style: AppTypography.listAmount.copyWith(color: AppColors.neoCoral),
-                        ),
-                      ],
-                    ),
-                  ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
+    BudgetingInsightsModal.show(context, subscriptions: subscriptions);
   }
 }
 

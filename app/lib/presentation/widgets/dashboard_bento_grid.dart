@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../modals/dashboard_modals.dart';
+import '../modals/budgeting_insights_modal.dart';
 import '../modals/safe_to_spend_modal.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -142,7 +143,13 @@ class DashboardBentoGrid extends StatelessWidget {
                 child: FolderTabCard(
                   backgroundColor: AppColors.neoCoral,
                   height: 140,
-                  onTap: () => BillsListModal.show(context, subscriptions),
+                  onTap: () => BudgetingInsightsModal.show(
+                    context,
+                    subscriptions: subscriptions,
+                    wallets: wallets,
+                    metrics: metrics,
+                    currencyFormatter: currencyFormatter,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
