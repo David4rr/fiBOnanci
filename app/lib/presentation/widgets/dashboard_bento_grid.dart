@@ -31,7 +31,7 @@ class DashboardBentoGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
       child: Column(
         children: [
           Row(
@@ -40,7 +40,7 @@ class DashboardBentoGrid extends StatelessWidget {
               Expanded(
                 child: FolderTabCard(
                   backgroundColor: AppColors.neoChartreuse,
-                  height: 140,
+                  height: 132,
                   onTap: () => SafeToSpendModal.show(context, wallets),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +92,7 @@ class DashboardBentoGrid extends StatelessWidget {
               Expanded(
                 child: FolderTabCard(
                   backgroundColor: AppColors.neoMint,
-                  height: 140,
+                  height: 132,
                   onTap: onNavigateToWallets,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +142,7 @@ class DashboardBentoGrid extends StatelessWidget {
               Expanded(
                 child: FolderTabCard(
                   backgroundColor: AppColors.neoCoral,
-                  height: 140,
+                  height: 132,
                   onTap: () => BudgetingInsightsModal.show(
                     context,
                     subscriptions: subscriptions,
@@ -194,7 +194,7 @@ class DashboardBentoGrid extends StatelessWidget {
               Expanded(
                 child: FolderTabCard(
                   backgroundColor: AppColors.neoCyan,
-                  height: 140,
+                  height: 132,
                   onTap: () => DailyPaceModal.show(context, metrics),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

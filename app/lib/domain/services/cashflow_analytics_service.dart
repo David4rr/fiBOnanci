@@ -73,6 +73,34 @@ class CashflowAnalyticsService {
     return dailyValues;
   }
 
+  /// Computes real 7-day daily spending (Sen–Min, Monday–Sunday) for the week of referenceDate.
+  /// Returns a 7-element List<double> [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
+  static List<double> computeWeeklySpending(
+    List<TransactionEntry> transactions, {
+    DateTime? referenceDate,
+    String? walletId,
+    String? categoryId,
+  }) {
+    final ref = referenceDate ?? DateTime.now();
+    // Monday is weekday 1
+    final monday = DateTime(ref.year, ref.month, ref.day).subtract(Duration(days: ref.weekday - 1));
+    final List<double> dailySpend = List.filled(7, 0.0);
+
+    for (final tx in transactions) {
+      if (tx.type != 'expense' && tx.type != 'transfer') continue;
+      if (walletId != null && tx.walletId != walletId) continue;
+      if (categoryId != null && tx.categoryId != categoryId) continue;
+
+      final txDate = DateTime(tx.transactionDate.year, tx.transactionDate.month, tx.transactionDate.day);
+      final diff = txDate.difference(monday).inDays;
+      if (diff >= 0 && diff < 7) {
+        dailySpend[diff] += tx.amount;
+      }
+    }
+
+    return dailySpend;
+  }
+
   /// Generates 30 labels with 5 evenly spaced date interval markers.
   static List<String> compute30DayLabels({DateTime? referenceDate}) {
     final now = referenceDate ?? DateTime.now();

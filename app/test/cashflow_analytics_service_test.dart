@@ -144,5 +144,37 @@ void main() {
       expect(walletBRes.length, 1);
       expect(walletBRes.first.walletId, 'w_b');
     });
+
+    test('computeWeeklySpending aggregates real expense amounts for Mon-Sun week', () {
+      // 2026-08-29 is Saturday (weekday 6)
+      // Monday is 2026-08-24, Friday is 2026-08-28 (txExpense 50000), Saturday is 2026-08-29
+      final txSat = TransactionEntry(
+        id: 't_sat',
+        walletId: 'w_a',
+        categoryId: 'c2',
+        amount: 250000.0,
+        type: 'expense',
+        notes: 'Makan Malam Sabtu',
+        transactionDate: DateTime(2026, 8, 29),
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final weekly = CashflowAnalyticsService.computeWeeklySpending(
+        [...allTx, txSat],
+        referenceDate: now,
+      );
+
+      expect(weekly.length, 7);
+      // Friday is index 4 (weekday 5) -> 50.000
+      expect(weekly[4], 50000.0);
+      // Saturday is index 5 (weekday 6) -> 250.000
+      expect(weekly[5], 250000.0);
+      // Monday (index 0) -> 0.0
+      expect(weekly[0], 0.0);
+    });
   });
 }

@@ -56,8 +56,13 @@ void main() {
     // 3. Verify Kopi Kenangan is rendered in history
     expect(find.text('Kopi Kenangan'), findsOneWidget);
 
-    // 4. Tap the history item!
+    // 4. Tap the history item to expand it!
     await tester.tap(find.text('Kopi Kenangan'));
+    await tester.pumpAndSettle();
+
+    // Tap "Kelola" action button on expanded card to open Edit modal
+    expect(find.text('Kelola'), findsOneWidget);
+    await tester.tap(find.text('Kelola'));
     await tester.pumpAndSettle();
 
     // 5. Verify Edit modal appears cleanly without crash!

@@ -1,0 +1,766 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
+import '../../data/database/app_database.dart';
+import '../theme/app_colors.dart';
+
+/// Preset theme for the Swiss-editorial modernist cards in ref1.jpg
+enum ModernistCardTheme {
+  streamingCinematic,   // Dark Obsidian Crimson with bold curves (Netflix, Disney, HBO, YouTube)
+  audioEmerald,         // Neo Mint / Emerald with soundwave geometry (Spotify, Apple Music, Tidal)
+  utilitiesLemon,       // Acid Neon Lemon with energy sunburst (PLN, PDAM, BPJS, Pajak)
+  fiberInternet,        // Periwinkle Lavender with fiber concentric ovals (Indihome, Biznet, Telkomsel, Wifi)
+  aiCloudProductivity,  // Bone Warm Grey with 3 terracotta disks (ChatGPT, GitHub, iCloud, Google One, Notion)
+  housingLiving,        // Slate Charcoal with architectural lines (Kost, Sewa, Apartemen, Cicilan)
+  fitnessLifestyle,     // Hot Coral Terracotta with dynamic arcs (Gym, Fitness, Club)
+  recurringSmartBill,   // Oatmeal Sand with geometric waves (Default / General subscriptions)
+}
+
+/// Helper data class for card styling
+class _CardThemeConfig {
+  final Color backgroundColor;
+  final Color primaryGraphicColor;
+  final Color secondaryGraphicColor;
+  final Color textColor;
+  final Color badgeColor;
+  final String networkBadgeText;
+  final _CardBadgeType badgeType;
+
+  const _CardThemeConfig({
+    required this.backgroundColor,
+    required this.primaryGraphicColor,
+    required this.secondaryGraphicColor,
+    required this.textColor,
+    required this.badgeColor,
+    required this.networkBadgeText,
+    required this.badgeType,
+  });
+}
+
+enum _CardBadgeType { mastercard, jcb, gpay, amex, chip, diners, custom }
+
+/// Tactile Swiss-editorial ATM-style Subscription Card strictly matching ref1.jpg.
+class SubscriptionCard extends StatelessWidget {
+  final SubscriptionEntry subscription;
+  final WalletEntry? wallet;
+  final VoidCallback? onTap;
+  final int? indexOverride;
+  final bool isFocused;
+
+  const SubscriptionCard({
+    super.key,
+    required this.subscription,
+    this.wallet,
+    this.onTap,
+    this.indexOverride,
+    this.isFocused = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isPaidThisMonth = subscription.lastPaidDate != null &&
+        subscription.lastPaidDate!.year == now.year &&
+        subscription.lastPaidDate!.month == now.month;
+
+    final theme = _resolveCardTheme(subscription.title, indexOverride ?? subscription.title.hashCode);
+    final config = _getThemeConfig(theme);
+
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
+    final maskedNumber = _generateMaskedNumber(subscription, wallet);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 215.0,
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: config.backgroundColor,
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Background Geometric Modernist Painter
+            Positioned.fill(
+              child: CustomPaint(
+                painter: ModernistCardPainter(
+                  theme: theme,
+                  primaryColor: config.primaryGraphicColor,
+                  secondaryColor: config.secondaryGraphicColor,
+                ),
+              ),
+            ),
+
+            // Card Foreground Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top Row: Title / Type & Network Badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              subscription.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                color: config.textColor,
+                                letterSpacing: -0.4,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              wallet?.name.toUpperCase() ?? 'KARTU OPERASIONAL',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: config.textColor.withValues(alpha: 0.65),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _buildNetworkBadge(config),
+                    ],
+                  ),
+
+                  // Middle: High-Contrast Tactile Status Badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildStatusBadge(isPaidThisMonth, subscription.dueDay, config),
+                    ],
+                  ),
+
+                  // Bottom Row: Large Amount (Left) & Masked Number with Contactless Icon (Right)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Amount
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currencyFormatter.format(subscription.cost),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w800,
+                              color: config.textColor,
+                              letterSpacing: -0.8,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subscription.billingCycle == 'monthly' ? '/bulan' : '/tahun',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: config.textColor.withValues(alpha: 0.65),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Contactless Icon & Masked Card Number
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _buildContactlessIcon(config.textColor),
+                          const SizedBox(height: 6),
+                          Text(
+                            maskedNumber,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: config.textColor.withValues(alpha: 0.75),
+                              letterSpacing: 1.2,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(bool isPaid, int dueDay, _CardThemeConfig config) {
+    final now = DateTime.now();
+    final today = now.day;
+
+    Color badgeBg;
+    Color dotColor;
+    Color textColor;
+    String statusText;
+
+    final isDarkBg = config.backgroundColor.computeLuminance() < 0.35;
+
+    if (isPaid) {
+      if (isDarkBg) {
+        badgeBg = const Color(0xFF064E3B).withValues(alpha: 0.85);
+        dotColor = const Color(0xFF34D399);
+        textColor = const Color(0xFF34D399);
+      } else {
+        badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.9);
+        dotColor = const Color(0xFF10B981);
+        textColor = const Color(0xFF10B981);
+      }
+      statusText = 'LUNAS BULAN INI';
+    } else if (today == dueDay) {
+      badgeBg = const Color(0xFFDC2626);
+      dotColor = Colors.white;
+      textColor = Colors.white;
+      statusText = 'JATUH TEMPO HARI INI';
+    } else if (today < dueDay && (dueDay - today) <= 3) {
+      final diff = dueDay - today;
+      badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.9);
+      dotColor = const Color(0xFFF59E0B);
+      textColor = const Color(0xFFFBBF24);
+      statusText = 'JATUH TEMPO H-$diff';
+    } else {
+      if (isDarkBg) {
+        badgeBg = Colors.black.withValues(alpha: 0.35);
+        dotColor = Colors.white.withValues(alpha: 0.8);
+        textColor = Colors.white.withValues(alpha: 0.9);
+      } else {
+        badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.85);
+        dotColor = config.backgroundColor;
+        textColor = Colors.white;
+      }
+      statusText = 'JATUH TEMPO TGL $dueDay';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: badgeBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isPaid
+              ? (isDarkBg ? const Color(0xFF10B981).withValues(alpha: 0.4) : Colors.transparent)
+              : Colors.white.withValues(alpha: 0.1),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: dotColor,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            statusText,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetworkBadge(_CardThemeConfig config) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: config.textColor,
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: Text(
+        config.networkBadgeText,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w900,
+          color: config.backgroundColor,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactlessIcon(Color color) {
+    return CustomPaint(
+      size: const Size(16, 12),
+      painter: _ContactlessPainter(color: color.withValues(alpha: 0.85)),
+    );
+  }
+
+  String _generateMaskedNumber(SubscriptionEntry sub, WalletEntry? wallet) {
+    final seed = (sub.id.hashCode).abs();
+    final firstPart = (1000 + (seed % 9000)).toString();
+    final lastPart = (1000 + ((seed ~/ 10) % 9000)).toString();
+    return '$firstPart ...... $lastPart';
+  }
+
+  ModernistCardTheme _resolveCardTheme(String title, int seed) {
+    final lower = title.toLowerCase();
+
+    // 1. Streaming & Entertainment
+    if (lower.contains('netflix') ||
+        lower.contains('disney') ||
+        lower.contains('hbo') ||
+        lower.contains('vidio') ||
+        lower.contains('prime') ||
+        lower.contains('youtube') ||
+        lower.contains('cinema') ||
+        lower.contains('tv') ||
+        lower.contains('iqiyi') ||
+        lower.contains('wetv') ||
+        lower.contains('viu') ||
+        lower.contains('film')) {
+      return ModernistCardTheme.streamingCinematic;
+    }
+
+    // 2. Audio & Music Streaming
+    if (lower.contains('spotify') ||
+        lower.contains('apple music') ||
+        lower.contains('joox') ||
+        lower.contains('tidal') ||
+        lower.contains('deezer') ||
+        lower.contains('resso') ||
+        lower.contains('soundcloud') ||
+        lower.contains('music') ||
+        lower.contains('lagu') ||
+        lower.contains('audio')) {
+      return ModernistCardTheme.audioEmerald;
+    }
+
+    // 3. Utilities / Bills (Listrik, Air, BPJS, Pajak)
+    if (lower.contains('pln') ||
+        lower.contains('listrik') ||
+        lower.contains('token') ||
+        lower.contains('pdam') ||
+        lower.contains('air') ||
+        lower.contains('bpjs') ||
+        lower.contains('pajak') ||
+        lower.contains('pbb') ||
+        lower.contains('gas') ||
+        lower.contains('utility')) {
+      return ModernistCardTheme.utilitiesLemon;
+    }
+
+    // 4. Fiber Internet & Telco
+    if (lower.contains('indihome') ||
+        lower.contains('biznet') ||
+        lower.contains('myrepublic') ||
+        lower.contains('firstmedia') ||
+        lower.contains('telkomsel') ||
+        lower.contains('indosat') ||
+        lower.contains('xl') ||
+        lower.contains('smartfren') ||
+        lower.contains('tri') ||
+        lower.contains('wifi') ||
+        lower.contains('internet') ||
+        lower.contains('pulsa') ||
+        lower.contains('kuota') ||
+        lower.contains('fiber')) {
+      return ModernistCardTheme.fiberInternet;
+    }
+
+    // 5. Productivity, AI & Cloud
+    if (lower.contains('chatgpt') ||
+        lower.contains('openai') ||
+        lower.contains('claude') ||
+        lower.contains('github') ||
+        lower.contains('icloud') ||
+        lower.contains('google') ||
+        lower.contains('drive') ||
+        lower.contains('dropbox') ||
+        lower.contains('notion') ||
+        lower.contains('figma') ||
+        lower.contains('adobe') ||
+        lower.contains('canva') ||
+        lower.contains('office') ||
+        lower.contains('microsoft') ||
+        lower.contains('cursor') ||
+        lower.contains('cloud') ||
+        lower.contains('apple')) {
+      return ModernistCardTheme.aiCloudProductivity;
+    }
+
+    // 6. Housing, Kost, Rent & Living
+    if (lower.contains('kost') ||
+        lower.contains('kos') ||
+        lower.contains('kontrakan') ||
+        lower.contains('sewa') ||
+        lower.contains('apartemen') ||
+        lower.contains('ipl') ||
+        lower.contains('kpr') ||
+        lower.contains('cicilan') ||
+        lower.contains('leasing') ||
+        lower.contains('rumah')) {
+      return ModernistCardTheme.housingLiving;
+    }
+
+    // 7. Fitness & Lifestyle
+    if (lower.contains('gym') ||
+        lower.contains('fitness') ||
+        lower.contains('celebrity') ||
+        lower.contains('gold') ||
+        lower.contains('f45') ||
+        lower.contains('club') ||
+        lower.contains('member') ||
+        lower.contains('sehat')) {
+      return ModernistCardTheme.fitnessLifestyle;
+    }
+
+    // Dynamic rotation based on hash seed
+    final themes = ModernistCardTheme.values;
+    return themes[seed.abs() % themes.length];
+  }
+
+  _CardThemeConfig _getThemeConfig(ModernistCardTheme theme) {
+    switch (theme) {
+      case ModernistCardTheme.streamingCinematic:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF1E1418), // Cinematic dark obsidian crimson
+          primaryGraphicColor: Color(0xFFE50914), // Netflix red arc
+          secondaryGraphicColor: Color(0xFFFF5252),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFE50914),
+          networkBadgeText: 'STREAMING',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.audioEmerald:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF7CB88D), // Emerald sage
+          primaryGraphicColor: Color(0xFF183820),
+          secondaryGraphicColor: Color(0xFF67A578),
+          textColor: Color(0xFF0F2615),
+          badgeColor: Color(0xFF0F2615),
+          networkBadgeText: 'AUDIO',
+          badgeType: _CardBadgeType.jcb,
+        );
+      case ModernistCardTheme.utilitiesLemon:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFF3F76E), // Acid neon lemon
+          primaryGraphicColor: Color(0xFFE2E658),
+          secondaryGraphicColor: Color(0xFF20221A),
+          textColor: Color(0xFF1A1C16),
+          badgeColor: Color(0xFF1A1C16),
+          networkBadgeText: 'UTILITY',
+          badgeType: _CardBadgeType.chip,
+        );
+      case ModernistCardTheme.fiberInternet:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF9EACF0), // Periwinkle fiber
+          primaryGraphicColor: Color(0xFF1E2856),
+          secondaryGraphicColor: Color(0xFF8697E6),
+          textColor: Color(0xFF151C3E),
+          badgeColor: Color(0xFF151C3E),
+          networkBadgeText: 'INTERNET',
+          badgeType: _CardBadgeType.diners,
+        );
+      case ModernistCardTheme.aiCloudProductivity:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFE5E3DC), // Bone warm grey
+          primaryGraphicColor: Color(0xFFE84E38), // Terracotta
+          secondaryGraphicColor: Color(0xFFE84E38),
+          textColor: Color(0xFF181A1E),
+          badgeColor: Color(0xFF181A1E),
+          networkBadgeText: 'PRO CLOUD',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.housingLiving:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF56626A), // Slate charcoal
+          primaryGraphicColor: Color(0xFF455057),
+          secondaryGraphicColor: Color(0xFF75838B),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'HOUSING',
+          badgeType: _CardBadgeType.amex,
+        );
+      case ModernistCardTheme.fitnessLifestyle:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFFF5252), // Hot coral
+          primaryGraphicColor: Color(0xFFE03838),
+          secondaryGraphicColor: Color(0xFFFF7A7A),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'FITNESS',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.recurringSmartBill:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFE0D8C6), // Oatmeal sand
+          primaryGraphicColor: Color(0xFFC7BC9E),
+          secondaryGraphicColor: Color(0xFF4A4438),
+          textColor: Color(0xFF2C2720),
+          badgeColor: Color(0xFF2C2720),
+          networkBadgeText: 'RECURRING',
+          badgeType: _CardBadgeType.gpay,
+        );
+    }
+  }
+}
+
+/// Custom painter for the abstract modernist graphics in ref1.jpg
+class ModernistCardPainter extends CustomPainter {
+  final ModernistCardTheme theme;
+  final Color primaryColor;
+  final Color secondaryColor;
+
+  ModernistCardPainter({
+    required this.theme,
+    required this.primaryColor,
+    required this.secondaryColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    switch (theme) {
+      case ModernistCardTheme.aiCloudProductivity:
+      case ModernistCardTheme.fitnessLifestyle:
+        _paintTerracottaDisks(canvas, size);
+        break;
+      case ModernistCardTheme.audioEmerald:
+        _paintSageHatching(canvas, size);
+        break;
+      case ModernistCardTheme.fiberInternet:
+        _paintPeriwinkleOvals(canvas, size);
+        break;
+      case ModernistCardTheme.utilitiesLemon:
+        _paintNeonSunburst(canvas, size);
+        break;
+      case ModernistCardTheme.recurringSmartBill:
+        _paintOatmealWaves(canvas, size);
+        break;
+      case ModernistCardTheme.streamingCinematic:
+      case ModernistCardTheme.housingLiving:
+        _paintGeometricCurves(canvas, size);
+        break;
+    }
+  }
+
+  /// 3 iconic red semicircles/disks from ref1.jpg (Mastercard CreditCard)
+  void _paintTerracottaDisks(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = primaryColor
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final centerY = size.height * 0.52;
+    final radius = size.height * 0.38;
+
+    // Semicircle 1 (Left, facing right)
+    final path1 = Path();
+    final center1 = Offset(size.width * 0.28, centerY);
+    path1.arcTo(
+      Rect.fromCircle(center: center1, radius: radius),
+      math.pi / 2,
+      math.pi,
+      false,
+    );
+    path1.close();
+    canvas.drawPath(path1, paint);
+
+    // Semicircle 2 (Middle, facing right)
+    final path2 = Path();
+    final center2 = Offset(size.width * 0.50, centerY);
+    path2.arcTo(
+      Rect.fromCircle(center: center2, radius: radius),
+      math.pi / 2,
+      math.pi,
+      false,
+    );
+    path2.close();
+    canvas.drawPath(path2, paint);
+
+    // Full Circle 3 (Right)
+    final center3 = Offset(size.width * 0.74, centerY);
+    canvas.drawCircle(center3, radius, paint);
+  }
+
+  /// Diagonal hatching pattern from ref1.jpg (Sage DebitCard)
+  void _paintSageHatching(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.65)
+      ..strokeWidth = 2.4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+
+    const lineCount = 9;
+    final startX = size.width * 0.52;
+    final startY = size.height * 0.16;
+    const length = 46.0;
+
+    for (int i = 0; i < lineCount; i++) {
+      final y = startY + i * 4.2;
+      canvas.drawLine(
+        Offset(startX, y),
+        Offset(startX + length, y),
+        paint,
+      );
+    }
+  }
+
+  /// Concentric modernist oval rings from ref1.jpg (Periwinkle BonusCard)
+  void _paintPeriwinkleOvals(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..isAntiAlias = true;
+
+    final center = Offset(size.width * 0.78, size.height * 0.32);
+    canvas.drawOval(Rect.fromCenter(center: center, width: 34, height: 26), paint);
+    canvas.drawOval(Rect.fromCenter(center: center, width: 18, height: 14), paint);
+  }
+
+  /// Sunburst / radial glow for Acid Lemon card
+  void _paintNeonSunburst(Canvas canvas, Size size) {
+    final sunPaint = Paint()
+      ..color = const Color(0xFFFF9E00).withValues(alpha: 0.75)
+      ..style = PaintingStyle.fill;
+
+    final center = Offset(size.width * 0.54, size.height * 0.22);
+    canvas.drawCircle(center, 12, sunPaint);
+
+    final rayPaint = Paint()
+      ..color = const Color(0xFFFF9E00).withValues(alpha: 0.45)
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < 8; i++) {
+      final angle = (i * math.pi / 4);
+      final p1 = center + Offset(math.cos(angle) * 15, math.sin(angle) * 15);
+      final p2 = center + Offset(math.cos(angle) * 22, math.sin(angle) * 22);
+      canvas.drawLine(p1, p2, rayPaint);
+    }
+  }
+
+  /// Waves for Oatmeal card
+  void _paintOatmealWaves(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final path = Path();
+    path.moveTo(size.width * 0.4, size.height * 0.5);
+    path.quadraticBezierTo(size.width * 0.6, size.height * 0.3, size.width * 0.85, size.height * 0.55);
+    canvas.drawPath(path, paint);
+  }
+
+  /// Abstract curves for Slate/Coral/Violet
+  void _paintGeometricCurves(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(size.width * 0.45, 0);
+    path.quadraticBezierTo(size.width * 0.6, size.height * 0.6, size.width, size.height * 0.4);
+    path.lineTo(size.width, 0);
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant ModernistCardPainter oldDelegate) {
+    return oldDelegate.theme != theme || oldDelegate.primaryColor != primaryColor;
+  }
+}
+
+/// Contactless payment wave painter (•)))
+class _ContactlessPainter extends CustomPainter {
+  final Color color;
+
+  _ContactlessPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+
+    final fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final base = Offset(2, size.height / 2);
+
+    // Dot
+    canvas.drawCircle(base, 1.4, fillPaint);
+
+    // Wave 1
+    canvas.drawArc(
+      Rect.fromCircle(center: base, radius: 4.5),
+      -math.pi / 4,
+      math.pi / 2,
+      false,
+      paint,
+    );
+
+    // Wave 2
+    canvas.drawArc(
+      Rect.fromCircle(center: base, radius: 8.5),
+      -math.pi / 4,
+      math.pi / 2,
+      false,
+      paint,
+    );
+
+    // Wave 3
+    canvas.drawArc(
+      Rect.fromCircle(center: base, radius: 12.5),
+      -math.pi / 4,
+      math.pi / 2,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ContactlessPainter oldDelegate) => oldDelegate.color != color;
+}

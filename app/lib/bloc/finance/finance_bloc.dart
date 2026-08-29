@@ -41,6 +41,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<UpdateTransactionEvent>(_onUpdateTransaction);
     on<DeleteTransactionEvent>(_onDeleteTransaction);
     on<AddSubscriptionEvent>(_onAddSubscription);
+    on<UpdateSubscriptionEvent>(_onUpdateSubscription);
+    on<DeleteSubscriptionEvent>(_onDeleteSubscription);
     on<MarkSubscriptionPaidEvent>(_onMarkSubscriptionPaid);
     on<UpdateWalletBalanceEvent>(_onUpdateWalletBalance);
     on<AddWalletEvent>(_onAddWallet);
@@ -182,6 +184,32 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah langganan: $e'));
+    }
+  }
+
+  Future<void> _onUpdateSubscription(UpdateSubscriptionEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.updateSubscription(
+        subscriptionId: event.subscriptionId,
+        title: event.title,
+        cost: event.cost,
+        dueDay: event.dueDay,
+        walletId: event.walletId,
+        categoryId: event.categoryId,
+        autoDeduct: event.autoDeduct,
+        billingCycle: event.billingCycle,
+        status: event.status,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal update langganan: $e'));
+    }
+  }
+
+  Future<void> _onDeleteSubscription(DeleteSubscriptionEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.deleteSubscription(event.subscriptionId);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal hapus langganan: $e'));
     }
   }
 

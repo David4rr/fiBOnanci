@@ -78,290 +78,241 @@ class _DashboardScreenState extends State<DashboardScreen> {
               walletFilter: _walletFilter,
             );
 
-            return CustomScrollView(
-              slivers: [
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 // Top Header (Greeting, Inbox & Avatar)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Hello David', style: AppTypography.heroGreeting),
-                              const SizedBox(height: 4),
-                              Text('Selamat datang kembali!', style: AppTypography.listSubtitle),
-                            ],
-                          ),
-                        ),
-                        Row(
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => PendingInboxModal.show(context, db: widget.db),
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF1E212D),
-                                  border: Border.all(color: AppColors.canvasBorder, width: 1.5),
-                                ),
-                                child: const Center(
-                                  child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 22),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => ProfileModal.show(context, walletCount: wallets.length, txCount: allTransactions.length),
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF1E212D),
-                                  border: Border.all(color: AppColors.canvasBorder, width: 1.5),
-                                ),
-                                child: const Center(
-                                  child: Icon(Icons.person, color: AppColors.textWhite, size: 24),
-                                ),
-                              ),
-                            ),
+                            Text('Hello David', style: AppTypography.heroGreeting),
+                            const SizedBox(height: 2),
+                            Text('Selamat datang kembali!', style: AppTypography.listSubtitle),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Search Bar
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Container(
-                      height: 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.canvasInputSearch,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: _searchQuery.isNotEmpty
-                              ? AppColors.neoChartreuse.withValues(alpha: 0.5)
-                              : AppColors.canvasBorder,
-                          width: 1,
-                        ),
                       ),
-                      child: Row(
+                      Row(
                         children: [
-                          const Icon(Icons.search, color: AppColors.textMuted, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(color: AppColors.textWhite, fontSize: 14),
-                              onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                              decoration: const InputDecoration(
-                                hintText: 'Cari transaksi, rekening, merchant...',
-                                hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => PendingInboxModal.show(context, db: widget.db),
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF1E212D),
+                                border: Border.all(color: AppColors.canvasBorder, width: 1.5),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
                               ),
                             ),
                           ),
-                          if (_searchQuery.isNotEmpty)
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(4),
-                                child: Icon(Icons.close, color: AppColors.textMuted, size: 18),
-                              ),
-                            ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              TransactionFilterModal.show(
-                                context: context,
-                                wallets: wallets,
-                                initialType: _typeFilter,
-                                initialWalletId: _walletFilter,
-                                onApply: (type, walletId) {
-                                  setState(() {
-                                    _typeFilter = type;
-                                    _walletFilter = walletId;
-                                  });
-                                },
-                              );
-                            },
+                            onTap: () => ProfileModal.show(context, walletCount: wallets.length, txCount: allTransactions.length),
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: (_typeFilter != 'all' || _walletFilter != null)
-                                    ? AppColors.neoChartreuse.withValues(alpha: 0.2)
-                                    : Colors.transparent,
+                                color: const Color(0xFF1E212D),
+                                border: Border.all(color: AppColors.canvasBorder, width: 1.5),
                               ),
-                              child: Icon(
-                                Icons.tune,
-                                color: (_typeFilter != 'all' || _walletFilter != null)
-                                    ? AppColors.neoChartreuse
-                                    : AppColors.textWhite,
-                                size: 18,
+                              child: const Center(
+                                child: Icon(Icons.person, color: AppColors.textWhite, size: 22),
                               ),
                             ),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  child: Container(
+                    height: 46,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.canvasInputSearch,
+                      borderRadius: BorderRadius.circular(23),
+                      border: Border.all(
+                        color: _searchQuery.isNotEmpty
+                            ? AppColors.neoChartreuse.withValues(alpha: 0.5)
+                            : AppColors.canvasBorder,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: AppColors.textMuted, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(color: AppColors.textWhite, fontSize: 13.5),
+                            onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                            decoration: const InputDecoration(
+                              hintText: 'Cari transaksi, rekening, merchant...',
+                              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        if (_searchQuery.isNotEmpty)
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(Icons.close, color: AppColors.textMuted, size: 16),
+                            ),
+                          ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            TransactionFilterModal.show(
+                              context: context,
+                              wallets: wallets,
+                              initialType: _typeFilter,
+                              initialWalletId: _walletFilter,
+                              onApply: (type, walletId) {
+                                setState(() {
+                                  _typeFilter = type;
+                                  _walletFilter = walletId;
+                                });
+                              },
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: (_typeFilter != 'all' || _walletFilter != null)
+                                  ? AppColors.neoChartreuse.withValues(alpha: 0.2)
+                                  : Colors.transparent,
+                            ),
+                            child: Icon(
+                              Icons.tune,
+                              color: (_typeFilter != 'all' || _walletFilter != null)
+                                  ? AppColors.neoChartreuse
+                                  : AppColors.textWhite,
+                              size: 17,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
 
                 // Active Filter Chips
                 if (_typeFilter != 'all' || _walletFilter != null)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                      child: Row(
-                        children: [
-                          if (_typeFilter != 'all')
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Chip(
-                                backgroundColor: AppColors.canvasInputSearch,
-                                side: const BorderSide(color: AppColors.neoChartreuse),
-                                label: Text(
-                                  'Tipe: ${_typeFilter.toUpperCase()}',
-                                  style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
-                                ),
-                                onDeleted: () => setState(() => _typeFilter = 'all'),
-                                deleteIconColor: AppColors.neoChartreuse,
-                              ),
-                            ),
-                          if (_walletFilter != null)
-                            Chip(
-                              backgroundColor: AppColors.canvasInputSearch,
-                              side: const BorderSide(color: AppColors.neoMint),
-                              label: Text(
-                                'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
-                                style: AppTypography.badgeLabel.copyWith(color: AppColors.neoMint),
-                              ),
-                              onDeleted: () => setState(() => _walletFilter = null),
-                              deleteIconColor: AppColors.neoMint,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                // Notification Permission Banner
-                SliverToBoxAdapter(
-                  child: FutureBuilder<bool>(
-                    future: NotificationBridge.isPermissionGranted(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data == false) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => NotificationBridge.openPermissionSettings(),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.3)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.notifications_active_outlined, color: AppColors.neoChartreuse, size: 20),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      'Akses notifikasi belum aktif. Ketuk untuk mengizinkan pencatatan otomatis dari m-banking!',
-                                      style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite, fontSize: 12),
-                                    ),
-                                  ),
-                                  const Icon(Icons.chevron_right, color: AppColors.neoChartreuse, size: 18),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-
-                // 2x2 Bento Folder Grid
-                SliverToBoxAdapter(
-                  child: DashboardBentoGrid(
-                    metrics: metrics,
-                    wallets: wallets,
-                    subscriptions: subscriptions,
-                    currencyFormatter: currencyFormatter,
-                    onNavigateToWallets: _onNavigateToWallets,
-                  ),
-                ),
-
-                // Riwayat Transaksi Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Text(
-                            _searchQuery.isNotEmpty
-                                ? 'Hasil Pencarian (${filteredTransactions.length})'
-                                : 'Riwayat Transaksi',
-                            style: AppTypography.sectionTitle,
-                            overflow: TextOverflow.ellipsis,
+                        if (_typeFilter != 'all')
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Chip(
+                              backgroundColor: AppColors.canvasInputSearch,
+                              side: const BorderSide(color: AppColors.neoChartreuse),
+                              label: Text(
+                                'Tipe: ${_typeFilter.toUpperCase()}',
+                                style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
+                              ),
+                              onDeleted: () => setState(() => _typeFilter = 'all'),
+                              deleteIconColor: AppColors.neoChartreuse,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => AllTransactionsModal.show(
-                            context,
-                            allTransactions: allTransactions,
-                            wallets: wallets,
-                            db: widget.db,
+                        if (_walletFilter != null)
+                          Chip(
+                            backgroundColor: AppColors.canvasInputSearch,
+                            side: const BorderSide(color: AppColors.neoMint),
+                            label: Text(
+                              'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
+                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoMint),
+                            ),
+                            onDeleted: () => setState(() => _walletFilter = null),
+                            deleteIconColor: AppColors.neoMint,
                           ),
-                          child: Text(
-                            'Lihat Semua',
-                            style: AppTypography.listSubtitle.copyWith(color: AppColors.neoChartreuse),
-                          ),
-                        ),
                       ],
                     ),
                   ),
+
+                // 2x2 Bento Folder Grid
+                DashboardBentoGrid(
+                  metrics: metrics,
+                  wallets: wallets,
+                  subscriptions: subscriptions,
+                  currencyFormatter: currencyFormatter,
+                  onNavigateToWallets: _onNavigateToWallets,
                 ),
 
-                // Overlapping Deck of Transactions
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: filteredTransactions.isEmpty
-                        ? Container(
-                            padding: const EdgeInsets.all(28),
-                            decoration: BoxDecoration(
-                              color: AppColors.canvasCardSurface,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.canvasBorder),
-                            ),
-                            child: Center(
+                // Riwayat Transaksi Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Hasil Pencarian (${filteredTransactions.length})'
+                              : 'Riwayat Transaksi',
+                          style: AppTypography.sectionTitle,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => AllTransactionsModal.show(
+                          context,
+                          allTransactions: allTransactions,
+                          wallets: wallets,
+                          db: widget.db,
+                        ),
+                        child: Text(
+                          'Lihat Semua',
+                          style: AppTypography.listSubtitle.copyWith(color: AppColors.neoChartreuse),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Overlapping Deck of Transactions (Isolated Scroll Section with Docking!)
+                Expanded(
+                  child: filteredTransactions.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: AppColors.canvasCardSurface,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: AppColors.canvasBorder),
+                              ),
                               child: Text(
                                 _searchQuery.isNotEmpty
                                     ? 'Tidak ada transaksi yang cocok dengan "$_searchQuery"'
@@ -370,49 +321,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 style: AppTypography.listSubtitle,
                               ),
                             ),
-                          )
-                        : OverlappingDeckList(
-                            children: [
-                              for (final tx in filteredTransactions) ...[
-                                Builder(builder: (context) {
-                                  final txWallet = wallets.firstWhere(
-                                    (w) => w.id == tx.walletId,
-                                    orElse: () => wallets.isNotEmpty ? wallets.first : WalletEntry(
-                                      id: '',
-                                      name: 'Rekening',
-                                      type: 'bank',
-                                      currency: 'IDR',
-                                      balance: 0,
-                                      colorHex: '#64748B',
-                                      iconName: 'wallet',
-                                      createdAt: DateTime.now(),
-                                      updatedAt: DateTime.now(),
-                                      isSynced: false,
-                                      isDeleted: false,
-                                    ),
-                                  );
-
-                                  return OverlappingDeckItem(
-                                    title: tx.notes ?? (tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan'),
-                                    category: tx.type == 'transfer'
-                                        ? 'TRANSFER'
-                                        : (tx.type == 'expense' ? 'PENGELUARAN' : 'PEMASUKAN'),
-                                    amount: tx.amount,
-                                    isExpense: tx.type == 'expense' || tx.type == 'transfer',
-                                    categoryColor: tx.type == 'expense' ? AppColors.neoCoral : AppColors.neoMint,
-                                    iconData: tx.type == 'expense' ? Icons.arrow_outward : Icons.arrow_downward,
-                                    subtitle: '${txWallet.name} • ${DateFormat('dd MMM, HH:mm').format(tx.transactionDate)}',
-                                    onTap: () => TransactionDetailModal.show(context, db: widget.db, transaction: tx),
-                                  );
-                                }),
-                              ],
-                            ],
                           ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 140),
+                        )
+                      : StackedCardDeckScrollList(
+                          transactions: filteredTransactions,
+                          allTransactions: allTransactions,
+                          wallets: wallets,
+                          db: widget.db,
+                        ),
                 ),
               ],
             );
