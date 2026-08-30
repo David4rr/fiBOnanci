@@ -17,7 +17,8 @@ class AddPocketModal {
 
     String selectedType = 'savings';
     String? selectedWalletId;
-
+    String? nameError;
+    String? initialError;
     final List<Map<String, dynamic>> pocketTypes = [
       {'id': 'savings', 'label': 'Simpanan', 'icon': Icons.savings_outlined, 'color': '#A855F7'},
       {'id': 'retirement', 'label': 'Masa Tua', 'icon': Icons.elderly_outlined, 'color': '#D4F442'},
@@ -83,9 +84,15 @@ class AddPocketModal {
                         TextField(
                           controller: nameController,
                           style: AppTypography.listTitle,
+                          onChanged: (_) {
+                            if (nameError != null) {
+                              setModalState(() => nameError = null);
+                            }
+                          },
                           decoration: InputDecoration(
                             hintText: 'Nama Kantong (cth: Tabungan Pensiun, Liburan)',
                             hintStyle: AppTypography.listSubtitle,
+                            errorText: nameError,
                             filled: true,
                             fillColor: AppColors.canvasInputSearch,
                             border: OutlineInputBorder(
@@ -174,6 +181,11 @@ class AddPocketModal {
                         TextField(
                           controller: initialController,
                           keyboardType: TextInputType.number,
+                          onChanged: (_) {
+                            if (initialError != null) {
+                              setModalState(() => initialError = null);
+                            }
+                          },
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                             RupiahInputFormatter(),
@@ -184,6 +196,7 @@ class AddPocketModal {
                             labelStyle: AppTypography.listSubtitle,
                             hintText: 'Rp 0',
                             hintStyle: AppTypography.listSubtitle,
+                            errorText: initialError,
                             filled: true,
                             fillColor: AppColors.canvasInputSearch,
                             border: OutlineInputBorder(
@@ -242,10 +255,28 @@ class AddPocketModal {
                             ),
                             onPressed: () {
                               final name = nameController.text.trim();
-                              if (name.isEmpty) return;
+                              if (name.isEmpty) {
+                                setModalState(() {
+                                  nameError = 'Nama kantong wajib diisi';
+                                });
+                                return;
+                              }
 
                               final target = RupiahInputFormatter.parse(targetController.text);
                               final initial = RupiahInputFormatter.parse(initialController.text);
+
+                              if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
+                                final wallet = activeWallets.firstWhere(
+                                  (w) => w.id == selectedWalletId,
+                                  orElse: () => activeWallets.first,
+                                );
+                                if (initial > wallet.balance) {
+                                  setModalState(() {
+                                    initialError = 'Saldo tidak cukup (Maks Rp ${wallet.balance.toStringAsFixed(0)})';
+                                  });
+                                  return;
+                                }
+                              }
 
                               // 1. Dispatch create pocket event
                               context.read<FinanceBloc>().add(
@@ -261,8 +292,11 @@ class AddPocketModal {
                               );
 
                               // 2. If initial amount > 0 and wallet selected, also deduct from wallet
-                              if (initial > 0 && selectedWalletId != null) {
-                                final wallet = activeWallets.firstWhere((w) => w.id == selectedWalletId);
+                              if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
+                                final wallet = activeWallets.firstWhere(
+                                  (w) => w.id == selectedWalletId,
+                                  orElse: () => activeWallets.first,
+                                );
                                 context.read<FinanceBloc>().add(
                                   UpdateWalletBalanceEvent(
                                     walletId: selectedWalletId!,
@@ -272,6 +306,25 @@ class AddPocketModal {
                               }
 
                               Navigator.of(ctx).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.canvasCardSurface,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 20),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          'Kantong "$name" berhasil dibuat!',
+                                          style: AppTypography.listTitle.copyWith(fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
                             },
                             child: Text(
                               'Buat Kantong Sekarang',

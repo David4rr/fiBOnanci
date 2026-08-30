@@ -21,13 +21,28 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
       await m.createAll();
       await _seedInitialData();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.createTable(pockets);
+      }
+    },
+    beforeOpen: (details) async {
+      // Ensure pockets table exists even if migration was skipped
+      final existing = await customSelect(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='pockets'",
+      ).get();
+      if (existing.isEmpty) {
+        final m = createMigrator();
+        await m.createTable(pockets);
+      }
     },
   );
 
