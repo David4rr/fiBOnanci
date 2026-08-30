@@ -27,6 +27,11 @@ class _SubscriptionsUpdated extends FinanceEvent {
   const _SubscriptionsUpdated(this.subscriptions);
 }
 
+class _PocketsUpdated extends FinanceEvent {
+  final List<PocketEntry> pockets;
+  const _PocketsUpdated(this.pockets);
+}
+
 class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository repository;
 
@@ -34,6 +39,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   StreamSubscription? _categoriesSubscription;
   StreamSubscription? _transactionsSubscription;
   StreamSubscription? _subscriptionsSubscription;
+  StreamSubscription? _pocketsSubscription;
+
 
   FinanceBloc({required this.repository}) : super(FinanceState()) {
     on<LoadFinanceData>(_onLoadFinanceData);
@@ -46,6 +53,10 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<MarkSubscriptionPaidEvent>(_onMarkSubscriptionPaid);
     on<UpdateWalletBalanceEvent>(_onUpdateWalletBalance);
     on<AddWalletEvent>(_onAddWallet);
+    on<AddPocketEvent>(_onAddPocket);
+    on<UpdatePocketEvent>(_onUpdatePocket);
+    on<DeletePocketEvent>(_onDeletePocket);
+    on<TransferPocketFundsEvent>(_onTransferPocketFunds);
     on<SetSafeToSpendWalletsEvent>((event, emit) {
       final metrics = SafeToSpendService.calculate(
         wallets: state.wallets,
@@ -66,12 +77,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         subscriptions: state.subscriptions,
         selectedWalletIds: state.safeToSpendWalletIds,
       );
-      emit(state.copyWith(wallets: event.wallets, metrics: metrics, status: FinanceStatus.success));
+      emit(state.copyWith(wallets: event.wallets, metrics: metrics));
     });
     on<_CategoriesUpdated>((event, emit) {
       emit(state.copyWith(categories: event.categories));
     });
-
     on<_TransactionsUpdated>((event, emit) {
       emit(state.copyWith(transactions: event.transactions));
     });
@@ -84,7 +94,9 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       );
       emit(state.copyWith(subscriptions: event.subscriptions, metrics: metrics));
     });
-
+    on<_PocketsUpdated>((event, emit) {
+      emit(state.copyWith(pockets: event.pockets));
+    });
     _initStreamListeners();
   }
 
@@ -104,6 +116,9 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     _subscriptionsSubscription = repository.watchActiveSubscriptions().listen((subscriptions) {
       add(_SubscriptionsUpdated(subscriptions));
     });
+    _pocketsSubscription = repository.watchPockets().listen((pockets) {
+      add(_PocketsUpdated(pockets));
+    });
   }
 
   Future<void> _onLoadFinanceData(LoadFinanceData event, Emitter<FinanceState> emit) async {
@@ -113,8 +128,13 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final categories = await repository.getCategories();
       final subscriptions = await repository.getSubscriptions();
       final transactions = await repository.getTransactions(limit: 50);
+      final pockets = await repository.getPockets();
 
-      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions);
+      final metrics = SafeToSpendService.calculate(
+        wallets: wallets,
+        subscriptions: subscriptions,
+        selectedWalletIds: state.safeToSpendWalletIds,
+      );
 
       emit(state.copyWith(
         status: FinanceStatus.success,
@@ -122,6 +142,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         categories: categories,
         subscriptions: subscriptions,
         transactions: transactions,
+        pockets: pockets,
         metrics: metrics,
       ));
     } catch (e) {
@@ -243,12 +264,71 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     }
   }
 
+  Future<void> _onAddPocket(AddPocketEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.addPocket(
+        name: event.name,
+        type: event.type,
+        targetAmount: event.targetAmount,
+        initialAmount: event.initialAmount,
+        colorHex: event.colorHex,
+        iconName: event.iconName,
+        targetDate: event.targetDate,
+        linkedWalletId: event.linkedWalletId,
+        notes: event.notes,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menambah kantong: $e'));
+    }
+  }
+
+  Future<void> _onUpdatePocket(UpdatePocketEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.updatePocket(
+        pocketId: event.pocketId,
+        name: event.name,
+        type: event.type,
+        targetAmount: event.targetAmount,
+        colorHex: event.colorHex,
+        iconName: event.iconName,
+        targetDate: event.targetDate,
+        linkedWalletId: event.linkedWalletId,
+        notes: event.notes,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memperbarui kantong: $e'));
+    }
+  }
+
+  Future<void> _onDeletePocket(DeletePocketEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.deletePocket(event.pocketId);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menghapus kantong: $e'));
+    }
+  }
+
+  Future<void> _onTransferPocketFunds(TransferPocketFundsEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.transferPocketFunds(
+        pocketId: event.pocketId,
+        walletId: event.walletId,
+        amount: event.amount,
+        isDepositToPocket: event.isDepositToPocket,
+        notes: event.notes,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memindahkan dana kantong: $e'));
+    }
+  }
+
   @override
   Future<void> close() {
     _walletsSubscription?.cancel();
     _categoriesSubscription?.cancel();
     _transactionsSubscription?.cancel();
     _subscriptionsSubscription?.cancel();
+    _pocketsSubscription?.cancel();
     return super.close();
   }
 }

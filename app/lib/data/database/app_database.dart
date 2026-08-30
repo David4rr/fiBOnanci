@@ -15,6 +15,7 @@ part 'app_database.g.dart';
   Transactions,
   Subscriptions,
   NotificationRules,
+  Pockets,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
@@ -277,6 +278,83 @@ class AppDatabase extends _$AppDatabase {
           ..where((tbl) => tbl.isDeleted.equals(false) & tbl.status.equals('active'))
           ..orderBy([(t) => OrderingTerm.asc(t.dueDay)]))
         .watch();
+  }
+
+  Stream<List<PocketEntry>> watchActivePockets() {
+    return (select(pockets)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .watch();
+  }
+
+  Future<List<PocketEntry>> getActivePockets() {
+    return (select(pockets)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .get();
+  }
+
+  Future<void> createPocket(PocketsCompanion pocket) {
+    return into(pockets).insert(pocket);
+  }
+
+  Future<void> updatePocket(PocketsCompanion pocket) {
+    return (update(pockets)..where((t) => t.id.equals(pocket.id.value))).write(pocket);
+  }
+
+  Future<void> deletePocket(String pocketId) {
+    return (update(pockets)..where((t) => t.id.equals(pocketId))).write(
+      PocketsCompanion(
+        isDeleted: const Value(true),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
+  Future<void> transferPocketFunds({
+    required String pocketId,
+    required String walletId,
+    required double amount,
+    required bool isDepositToPocket,
+    String? notes,
+  }) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      final pocket = await (select(pockets)..where((t) => t.id.equals(pocketId))).getSingle();
+      final wallet = await (select(wallets)..where((t) => t.id.equals(walletId))).getSingle();
+
+      if (isDepositToPocket) {
+        await (update(wallets)..where((t) => t.id.equals(walletId))).write(
+          WalletsCompanion(
+            balance: Value(wallet.balance - amount),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
+        );
+        await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
+          PocketsCompanion(
+            currentAmount: Value(pocket.currentAmount + amount),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
+        );
+      } else {
+        await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
+          PocketsCompanion(
+            currentAmount: Value(pocket.currentAmount - amount),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
+        );
+        await (update(wallets)..where((t) => t.id.equals(walletId))).write(
+          WalletsCompanion(
+            balance: Value(wallet.balance + amount),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
+        );
+      }
+    });
   }
 
   // ===========================================================================

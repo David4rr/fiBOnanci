@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
+import '../../domain/services/financial_health_service.dart';
 enum FinanceStatus { initial, loading, success, failure }
 
 class FinanceState {
@@ -10,8 +11,10 @@ class FinanceState {
   final List<CategoryEntry> categories;
   final List<TransactionEntry> transactions;
   final List<SubscriptionEntry> subscriptions;
+  final List<PocketEntry> pockets;
   final SafeToSpendMetrics metrics;
   final MonthlyCashflow monthlyCashflow;
+  final FinancialHealthReport healthReport;
   final Set<String>? safeToSpendWalletIds; // null = all wallets
   final String? errorMessage;
 
@@ -21,9 +24,11 @@ class FinanceState {
     this.categories = const [],
     this.transactions = const [],
     this.subscriptions = const [],
+    this.pockets = const [],
     this.safeToSpendWalletIds,
     SafeToSpendMetrics? metrics,
     MonthlyCashflow? monthlyCashflow,
+    FinancialHealthReport? healthReport,
     this.errorMessage,
   })  : metrics = metrics ??
             SafeToSpendService.calculate(
@@ -32,7 +37,21 @@ class FinanceState {
               selectedWalletIds: safeToSpendWalletIds,
             ),
         monthlyCashflow = monthlyCashflow ??
-            CashflowAnalyticsService.calculateMonthlyCashflow(transactions);
+            CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
+        healthReport = healthReport ??
+            FinancialHealthService.evaluate(
+              wallets: wallets,
+              pockets: pockets,
+              subscriptions: subscriptions,
+              monthlyCashflow: monthlyCashflow ??
+                  CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
+              safeToSpend: metrics ??
+                  SafeToSpendService.calculate(
+                    wallets: wallets,
+                    subscriptions: subscriptions,
+                    selectedWalletIds: safeToSpendWalletIds,
+                  ),
+            );
 
   FinanceState copyWith({
     FinanceStatus? status,
@@ -40,15 +59,18 @@ class FinanceState {
     List<CategoryEntry>? categories,
     List<TransactionEntry>? transactions,
     List<SubscriptionEntry>? subscriptions,
+    List<PocketEntry>? pockets,
     Set<String>? safeToSpendWalletIds,
     bool clearSafeToSpendWallets = false,
     SafeToSpendMetrics? metrics,
     MonthlyCashflow? monthlyCashflow,
+    FinancialHealthReport? healthReport,
     String? errorMessage,
   }) {
     final nextWallets = wallets ?? this.wallets;
     final nextSubs = subscriptions ?? this.subscriptions;
     final nextTx = transactions ?? this.transactions;
+    final nextPockets = pockets ?? this.pockets;
     final nextWalletIds = clearSafeToSpendWallets
         ? null
         : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
@@ -59,6 +81,7 @@ class FinanceState {
       categories: categories ?? this.categories,
       transactions: nextTx,
       subscriptions: nextSubs,
+      pockets: nextPockets,
       safeToSpendWalletIds: nextWalletIds,
       metrics: metrics ??
           SafeToSpendService.calculate(
@@ -69,6 +92,20 @@ class FinanceState {
       monthlyCashflow: monthlyCashflow ??
           CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
       errorMessage: errorMessage ?? this.errorMessage,
+      healthReport: healthReport ??
+          FinancialHealthService.evaluate(
+            wallets: nextWallets,
+            pockets: nextPockets,
+            subscriptions: nextSubs,
+            monthlyCashflow: monthlyCashflow ??
+                CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
+            safeToSpend: metrics ??
+                SafeToSpendService.calculate(
+                  wallets: nextWallets,
+                  subscriptions: nextSubs,
+                  selectedWalletIds: nextWalletIds,
+                ),
+          ),
     );
   }
 
@@ -85,7 +122,9 @@ class FinanceState {
           listEquals(wallets, other.wallets) &&
           listEquals(categories, other.categories) &&
           listEquals(transactions, other.transactions) &&
-          listEquals(subscriptions, other.subscriptions);
+          listEquals(subscriptions, other.subscriptions) &&
+          listEquals(pockets, other.pockets) &&
+          healthReport.overallScore == other.healthReport.overallScore;
 
   @override
   int get hashCode => Object.hash(
@@ -95,5 +134,7 @@ class FinanceState {
         wallets.length,
         transactions.length,
         subscriptions.length,
+        pockets.length,
+        healthReport.overallScore,
       );
 }

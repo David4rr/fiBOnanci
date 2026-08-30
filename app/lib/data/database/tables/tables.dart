@@ -66,3 +66,16 @@ class NotificationRules extends Table with SyncableTable {
   BoolColumn get autoConfirm => boolean().withDefault(const Constant(false))();
   TextColumn get defaultCategoryId => text().nullable().references(Categories, #id)();
 }
+
+@DataClassName('PocketEntry')
+class Pockets extends Table with SyncableTable {
+  TextColumn get name => text().withLength(min: 1, max: 64)();
+  TextColumn get type => text().withDefault(const Constant('savings'))(); // emergency, retirement, savings, goal, other
+  RealColumn get targetAmount => real().nullable()();
+  RealColumn get currentAmount => real().withDefault(const Constant(0.0))();
+  TextColumn get colorHex => text().withLength(min: 7, max: 7).withDefault(const Constant('#D4F442'))();
+  TextColumn get iconName => text().withDefault(const Constant('savings'))();
+  DateTimeColumn get targetDate => dateTime().nullable()();
+  TextColumn get linkedWalletId => text().nullable().references(Wallets, #id)();
+  TextColumn get notes => text().nullable()();
+}

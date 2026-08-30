@@ -1,4 +1,9 @@
 import '../widgets/bottom_nav_dock.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../bloc/finance/finance_bloc.dart';
+import '../../bloc/finance/finance_state.dart';
+import '../modals/financial_health_modal.dart';
 import '../widgets/notification_review_modal.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import 'package:flutter/material.dart';
@@ -123,6 +128,95 @@ class _MainShellState extends State<MainShell> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
+          // Financial Health Check Hero Card
+          BlocBuilder<FinanceBloc, FinanceState>(
+            builder: (context, state) {
+              final report = state.healthReport;
+              final tierColor = report.tierColor;
+
+              return GestureDetector(
+                onTap: () => FinancialHealthModal.show(context),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: tierColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: tierColor.withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: tierColor.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: tierColor, width: 2),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${report.overallScore}',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'AUDIT KESEHATAN FINANSIAL',
+                                  style: AppTypography.badgeLabel.copyWith(color: tierColor),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: tierColor.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    report.tierLabel.toUpperCase(),
+                                    style: TextStyle(
+                                      color: tierColor,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              report.tierHeadline,
+                              style: AppTypography.listTitle.copyWith(fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Dana Darurat: ${report.emergencyRunway.displayValue} • Tagihan: ${report.fixedCommitment.displayValue}',
+                              style: AppTypography.listSubtitle.copyWith(fontSize: 11.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: tierColor),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
           // Notification Simulator Feature Card
           GestureDetector(
             onTap: () => NotificationSimulatorModal.show(context),

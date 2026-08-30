@@ -72,6 +72,43 @@ abstract class FinanceRepository {
     required String colorHex,
     required String iconName,
   });
+
+  Stream<List<PocketEntry>> watchPockets();
+  Future<List<PocketEntry>> getPockets();
+
+  Future<void> addPocket({
+    required String name,
+    required String type,
+    double? targetAmount,
+    double initialAmount = 0.0,
+    required String colorHex,
+    required String iconName,
+    DateTime? targetDate,
+    String? linkedWalletId,
+    String? notes,
+  });
+
+  Future<void> updatePocket({
+    required String pocketId,
+    required String name,
+    required String type,
+    double? targetAmount,
+    required String colorHex,
+    required String iconName,
+    DateTime? targetDate,
+    String? linkedWalletId,
+    String? notes,
+  });
+
+  Future<void> deletePocket(String pocketId);
+
+  Future<void> transferPocketFunds({
+    required String pocketId,
+    required String walletId,
+    required double amount,
+    required bool isDepositToPocket,
+    String? notes,
+  });
 }
 
 class DriftFinanceRepository implements FinanceRepository {
@@ -271,4 +308,89 @@ class DriftFinanceRepository implements FinanceRepository {
       ),
     );
   }
+
+  @override
+  Stream<List<PocketEntry>> watchPockets() => db.watchActivePockets();
+
+  @override
+  Future<List<PocketEntry>> getPockets() => db.getActivePockets();
+
+  @override
+  Future<void> addPocket({
+    required String name,
+    required String type,
+    double? targetAmount,
+    double initialAmount = 0.0,
+    required String colorHex,
+    required String iconName,
+    DateTime? targetDate,
+    String? linkedWalletId,
+    String? notes,
+  }) {
+    final now = DateTime.now().toUtc();
+    return db.createPocket(
+      PocketsCompanion(
+        id: drift.Value(_uuid.v4()),
+        name: drift.Value(name),
+        type: drift.Value(type),
+        targetAmount: drift.Value(targetAmount),
+        currentAmount: drift.Value(initialAmount),
+        colorHex: drift.Value(colorHex),
+        iconName: drift.Value(iconName),
+        targetDate: drift.Value(targetDate),
+        linkedWalletId: drift.Value(linkedWalletId),
+        notes: drift.Value(notes),
+        createdAt: drift.Value(now),
+        updatedAt: drift.Value(now),
+      ),
+    );
+  }
+
+  @override
+  Future<void> updatePocket({
+    required String pocketId,
+    required String name,
+    required String type,
+    double? targetAmount,
+    required String colorHex,
+    required String iconName,
+    DateTime? targetDate,
+    String? linkedWalletId,
+    String? notes,
+  }) {
+    final now = DateTime.now().toUtc();
+    return db.updatePocket(
+      PocketsCompanion(
+        id: drift.Value(pocketId),
+        name: drift.Value(name),
+        type: drift.Value(type),
+        targetAmount: drift.Value(targetAmount),
+        colorHex: drift.Value(colorHex),
+        iconName: drift.Value(iconName),
+        targetDate: drift.Value(targetDate),
+        linkedWalletId: drift.Value(linkedWalletId),
+        notes: drift.Value(notes),
+        updatedAt: drift.Value(now),
+        isSynced: const drift.Value(false),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deletePocket(String pocketId) => db.deletePocket(pocketId);
+
+  @override
+  Future<void> transferPocketFunds({
+    required String pocketId,
+    required String walletId,
+    required double amount,
+    required bool isDepositToPocket,
+    String? notes,
+  }) => db.transferPocketFunds(
+    pocketId: pocketId,
+    walletId: walletId,
+    amount: amount,
+    isDepositToPocket: isDepositToPocket,
+    notes: notes,
+  );
 }
