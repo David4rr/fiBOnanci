@@ -443,259 +443,83 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
 
     final double displayAmount = totalPendingBills > 0 ? totalPendingBills : totalAllBills;
     final formattedAmount = currencyFormatter.format(displayAmount);
-    final screenHeight = MediaQuery.of(context).size.height;
 
-    return Container(
-      height: screenHeight,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.canvasBg,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: AppColors.canvasBg,
+      extendBody: true,
+      body: SafeArea(
+        bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Title & Close Chevron (placed cleanly below status bar, 20px padding)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Wawasan\nAnggaran &\nPengeluaran',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textWhite,
-                        height: 1.06,
-                        letterSpacing: -0.8,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.topRight,
-                      child: const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 36,
-                        color: AppColors.textWhite,
-                      ),
-                    ),
-                  ),
-                ],
+            // Pinned Header
+            _buildHeader(context),
+
+            if (_isGridView) ...[
+              // Central Geometric Motif (Consistent size across Grid & Carousel)
+              _buildGeometricMotif(height: 180),
+              const SizedBox(height: 4),
+
+              // Total Pending Bills Section (Pinned)
+              _buildTotalPendingSection(
+                totalPendingBills,
+                formattedAmount,
+                currentSubs,
+                pendingSubs,
               ),
-            ),
 
-            // Scrollable Content Area
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Central Geometric Motif (Monumental 200dp Height, Touching Neo-Green Circles)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: SizedBox(
-                        height: 200,
-                        child: ClipRect(
-                          child: CustomPaint(
-                            painter: const _ThreeCirclesGeometricPainter(
-                              color: AppColors.neoChartreuse,
-                              gap: 0.0,
-                            ),
-                            size: const Size(double.infinity, 200),
-                          ),
-                        ),
+              const SizedBox(height: 10),
+
+              // Grid View: ONLY the item list scrolls! Extends FULL to the bottom behind the dock!
+              if (currentSubs.isEmpty)
+                Expanded(child: Center(child: _buildEmptyState()))
+              else if (filteredSubs.isEmpty)
+                Expanded(child: Center(child: _buildNoFilterMatches()))
+              else
+                Expanded(
+                  child: _buildGridView(filteredSubs, currencyFormatter, now),
+                ),
+            ] else ...[
+              // Carousel View: entire page scrolls in editorial style
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 96),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildGeometricMotif(height: 180),
+                      const SizedBox(height: 4),
+                      _buildTotalPendingSection(
+                        totalPendingBills,
+                        formattedAmount,
+                        currentSubs,
+                        pendingSubs,
                       ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    // Total Pending Bills Section (Real Data)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            totalPendingBills > 0
-                                ? 'Total Tagihan Bulan Ini'
-                                : (currentSubs.isNotEmpty
-                                    ? 'Total Tagihan (Semua Lunas)'
-                                    : 'Total Tagihan Rutin'),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textMuted,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            formattedAmount,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 38,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textWhite,
-                              letterSpacing: -1.2,
-                              fontFeatures: const [FontFeature.tabularFigures()],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            currentSubs.isEmpty
-                                ? 'Belum ada tagihan terdaftar'
-                                : (pendingSubs.isEmpty
-                                    ? 'Semua ${currentSubs.length} tagihan bulan ini sudah lunas ✓'
-                                    : '${pendingSubs.length} belum dibayar dari ${currentSubs.length} tagihan aktif'),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: pendingSubs.isEmpty && currentSubs.isNotEmpty
-                                  ? AppColors.neoChartreuse
-                                  : AppColors.textSubtle,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Spending Cards List / Grid (Real Data - Tall Swiss-Editorial Cards)
-                    if (currentSubs.isEmpty)
-                      _buildEmptyState()
-                    else if (filteredSubs.isEmpty)
-                      _buildNoFilterMatches()
-                    else if (_isGridView)
-                      _buildGridView(filteredSubs, currencyFormatter, now)
-                    else
-                      _buildCarouselView(filteredSubs, currencyFormatter, now),
-
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 14),
+                      if (currentSubs.isEmpty)
+                        _buildEmptyState()
+                      else if (filteredSubs.isEmpty)
+                        _buildNoFilterMatches()
+                      else
+                        _buildCarouselView(filteredSubs, currencyFormatter, now),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            // Bottom Unified Dock: Filter Tune, Unified < Filter Pill >, View Mode Toggle
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Filter / Tune Settings Button
-                  _buildCircleButton(
-                    icon: Icons.tune_rounded,
-                    hasActiveDot: _filterStatus != _BillFilterStatus.all ||
-                        _sortOrder != _BillSortOrder.dueDate,
-                    onTap: () => _showFilterModal(
-                      context,
-                      currentSubs.length,
-                      pendingSubs.length,
-                      paidSubs.length,
-                    ),
-                  ),
-
-                  // Unified Integrated Filter Controller (< Label >)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => _cycleFilter(forward: true),
-                    child: Container(
-                      height: 46,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: AppColors.canvasCardSurface,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: _filterStatus != _BillFilterStatus.all
-                              ? AppColors.neoChartreuse.withValues(alpha: 0.6)
-                              : AppColors.canvasBorder,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => _cycleFilter(forward: false),
-                            child: const Padding(
-                              padding: EdgeInsets.only(right: 6),
-                              child: Icon(
-                                Icons.chevron_left_rounded,
-                                size: 20,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ),
-                          if (_filterStatus == _BillFilterStatus.pending) ...[
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.neoChartreuse,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Text(
-                            _getFilterPillText(
-                              filteredSubs.length,
-                              currentSubs.length,
-                              pendingSubs.length,
-                            ),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: _filterStatus == _BillFilterStatus.pending
-                                  ? AppColors.neoChartreuse
-                                  : AppColors.textWhite,
-                            ),
-                          ),
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => _cycleFilter(forward: true),
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 6),
-                              child: Icon(
-                                Icons.chevron_right_rounded,
-                                size: 20,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Carousel / Grid Toggle Button
-                  _buildCircleButton(
-                    icon: _isGridView
-                        ? Icons.view_carousel_rounded
-                        : Icons.grid_view_rounded,
-                    onTap: () {
-                      setState(() {
-                        _isGridView = !_isGridView;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
+            ],
           ],
         ),
       ),
+      // Bottom Unified Dock: Floating in Scaffold.bottomNavigationBar with exact same alignment as BottomNavDock!
+      bottomNavigationBar: _buildControlsRow(
+        currentSubs.length,
+        pendingSubs.length,
+        paidSubs.length,
+        filteredSubs.length,
+      ),
     );
   }
-
   void _cycleFilter({bool forward = true}) {
     setState(() {
       final statuses = _BillFilterStatus.values;
@@ -718,6 +542,248 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
         return '$filteredCount Sudah Lunas';
     }
   }
+
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              'Wawasan\nAnggaran &\nPengeluaran',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textWhite,
+                height: 1.06,
+                letterSpacing: -0.8,
+              ),
+            ),
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.canvasCardSurface,
+                border: Border.all(color: AppColors.canvasBorder),
+              ),
+              child: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 28,
+                color: AppColors.textWhite,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(
+    int filteredCount,
+    int totalCount,
+    int pendingCount,
+  ) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _cycleFilter(forward: true),
+      child: Container(
+        height: 46,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: AppColors.canvasCardSurface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _filterStatus != _BillFilterStatus.all
+                ? AppColors.neoChartreuse.withValues(alpha: 0.6)
+                : AppColors.canvasBorder,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _cycleFilter(forward: false),
+              child: const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.chevron_left_rounded,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+            if (_filterStatus == _BillFilterStatus.pending) ...[
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.neoChartreuse,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              _getFilterPillText(
+                filteredCount,
+                totalCount,
+                pendingCount,
+              ),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: _filterStatus == _BillFilterStatus.pending
+                    ? AppColors.neoChartreuse
+                    : AppColors.textWhite,
+              ),
+            ),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _cycleFilter(forward: true),
+              child: const Padding(
+                padding: EdgeInsets.only(left: 6),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeometricMotif({double height = 180}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: SizedBox(
+        width: double.infinity,
+        height: height,
+        child: ClipRect(
+          child: CustomPaint(
+            painter: const _ThreeCirclesGeometricPainter(
+              color: AppColors.neoChartreuse,
+              gap: 0.0,
+            ),
+            size: Size(double.infinity, height),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTotalPendingSection(
+    double totalPendingBills,
+    String formattedAmount,
+    List<SubscriptionEntry> currentSubs,
+    List<SubscriptionEntry> pendingSubs,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            totalPendingBills > 0
+                ? 'Total Tagihan Bulan Ini'
+                : (currentSubs.isNotEmpty
+                    ? 'Total Tagihan (Semua Lunas)'
+                    : 'Total Tagihan Rutin'),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textMuted,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            formattedAmount,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: totalPendingBills > 0
+                  ? AppColors.textWhite
+                  : AppColors.neoChartreuse,
+              letterSpacing: -1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            currentSubs.isEmpty
+                ? 'Belum ada tagihan terdaftar'
+                : (pendingSubs.isNotEmpty
+                    ? '${pendingSubs.length} belum dibayar dari ${currentSubs.length} tagihan aktif'
+                    : 'Semua tagihan bulan ini telah lunas'),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSubtle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlsRow(
+    int totalCount,
+    int pendingCount,
+    int paidCount,
+    int filteredCount,
+  ) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Filter / Tune Settings Button
+            _buildCircleButton(
+              icon: Icons.tune_rounded,
+              hasActiveDot: _filterStatus != _BillFilterStatus.all ||
+                  _sortOrder != _BillSortOrder.dueDate,
+              onTap: () => _showFilterModal(
+                context,
+                totalCount,
+                pendingCount,
+                paidCount,
+              ),
+            ),
+
+            // Unified Integrated Filter Controller (< Label >)
+            _buildFilterPill(filteredCount, totalCount, pendingCount),
+
+            // Carousel / Grid Toggle Button
+            _buildCircleButton(
+              icon: _isGridView
+                  ? Icons.view_carousel_rounded
+                  : Icons.grid_view_rounded,
+              onTap: () {
+                setState(() {
+                  _isGridView = !_isGridView;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+}
 
   Widget _buildEmptyState() {
     return Padding(
@@ -841,23 +907,20 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
     NumberFormat formatter,
     DateTime now,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: items.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: 0.68,
-        ),
-        itemBuilder: (context, index) {
-          final sub = items[index];
-          return _buildSubscriptionCard(sub, formatter, now);
-        },
+    return GridView.builder(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 0.68,
       ),
+      itemBuilder: (context, index) {
+        final sub = items[index];
+        return _buildSubscriptionCard(sub, formatter, now);
+      },
     );
   }
 

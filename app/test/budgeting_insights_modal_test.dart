@@ -77,6 +77,9 @@ void main() {
     expect(find.text('Total Tagihan Bulan Ini'), findsOneWidget);
     expect(find.text('Rp 186.000'), findsOneWidget);
     expect(find.text('1 belum dibayar dari 2 tagihan aktif'), findsOneWidget);
+    // Verify Total Tagihan is left-aligned with 20px padding in carousel mode
+    expect(tester.getTopLeft(find.text('Total Tagihan Bulan Ini')).dx, equals(20.0));
+    expect(tester.getTopLeft(find.text('Rp 186.000')).dx, equals(20.0));
 
     // 4. Real subscription cards (Netflix & Spotify)
     expect(find.text('Netflix Premium'), findsOneWidget);
@@ -98,11 +101,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(GridView), findsOneWidget);
 
+    // Verify grid mode: isolated scrolling physics and bottom controls dock retained
+    final gridWidget = tester.widget<GridView>(find.byType(GridView));
+    expect(gridWidget.physics, isA<BouncingScrollPhysics>());
+    expect(find.text('2 Tagihan Aktif'), findsOneWidget);
+    expect(find.byIcon(Icons.view_carousel_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+
     // 8. Toggle back to carousel view
     await tester.tap(find.byIcon(Icons.view_carousel_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(ListView), findsWidgets);
-
+    expect(find.text('2 Tagihan Aktif'), findsOneWidget);
     // 9. Quick filter pill toggles to "Belum Lunas"
     await tester.tap(find.text('2 Tagihan Aktif'));
     await tester.pumpAndSettle();
@@ -173,5 +183,89 @@ void main() {
 
     await db.close();
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('Grid mode has isolated list scrolling, pinned header and motif, and dock remains at bottom', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    // Create 6 subscriptions so the grid has plenty of content to scroll
+    final manySubs = List.generate(
+      6,
+      (i) => SubscriptionEntry(
+        id: 'sub-$i',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isSynced: false,
+        isDeleted: false,
+        walletId: 'w-1',
+        categoryId: 'c-1',
+        title: 'Service #$i',
+        cost: 50000.0 * (i + 1),
+        billingCycle: 'monthly',
+        dueDay: 5 + i,
+        autoDeduct: true,
+        status: 'active',
+        lastPaidDate: null,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BudgetingInsightsModal(
+            subscriptions: manySubs,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // In Carousel Mode:
+    // SingleChildScrollView is present for the page body
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    // Bottom dock is present with grid toggle button
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
+
+    // Toggle to Grid Mode
+    await tester.tap(find.byIcon(Icons.grid_view_rounded));
+    await tester.pumpAndSettle();
+
+    // In Grid Mode:
+    // 1. SingleChildScrollView is GONE (only the GridView itself scrolls!)
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(find.byType(GridView), findsOneWidget);
+
+    // 2. Bottom dock remains at the bottom of the screen with carousel toggle, tune, and filter pill
+    expect(find.byIcon(Icons.view_carousel_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+    final dockButtonPosition = tester.getBottomLeft(find.byIcon(Icons.view_carousel_rounded));
+    expect(dockButtonPosition.dy, greaterThan(800)); // Pinned near bottom of 900dp viewport
+    // 3. Header and Total Pending Bills are pinned at the top
+    final headerTopBefore = tester.getTopLeft(find.text('Wawasan\nAnggaran &\nPengeluaran'));
+    final totalBillsTopBefore = tester.getTopLeft(find.text('Total Tagihan Bulan Ini'));
+
+    // 4. Scroll the GridView upwards by dragging on the grid
+    await tester.drag(find.byType(GridView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+
+    // 5. Header and Total Pending Bills did NOT scroll (they remain pinned at exact same position!)
+    final headerTopAfter = tester.getTopLeft(find.text('Wawasan\nAnggaran &\nPengeluaran'));
+    final totalBillsTopAfter = tester.getTopLeft(find.text('Total Tagihan Bulan Ini'));
+    expect(headerTopAfter, equals(headerTopBefore));
+    expect(totalBillsTopAfter, equals(totalBillsTopBefore));
+
+    // 6. Toggle back to carousel mode
+    await tester.tap(find.byIcon(Icons.view_carousel_rounded));
+    await tester.pumpAndSettle();
+
+    // 7. Carousel mode restored: SingleChildScrollView and bottom dock back
+    expect(find.byType(GridView), findsNothing);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
   });
 }
