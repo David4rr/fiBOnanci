@@ -79,3 +79,17 @@ class Pockets extends Table with SyncableTable {
   TextColumn get linkedWalletId => text().nullable().references(Wallets, #id)();
   TextColumn get notes => text().nullable()();
 }
+
+@DataClassName('ProfileEntry')
+class Profiles extends Table with SyncableTable {
+  TextColumn get username => text().withLength(min: 1, max: 64).withDefault(const Constant('David'))();
+  TextColumn get fullName => text().withLength(min: 1, max: 128).withDefault(const Constant('David Arrozaqi'))();
+  TextColumn get email => text().nullable()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get avatarPath => text().nullable()();
+  TextColumn get occupation => text().nullable()();
+  TextColumn get bio => text().nullable()();
+  TextColumn get currency => text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
+  RealColumn get monthlyIncomeTarget => real().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}

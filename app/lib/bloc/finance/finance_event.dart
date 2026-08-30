@@ -128,6 +128,7 @@ class AddWalletEvent extends FinanceEvent {
   final double initialBalance;
   final String colorHex;
   final String iconName;
+  final String? boundPackageName;
 
   const AddWalletEvent({
     required this.name,
@@ -135,7 +136,26 @@ class AddWalletEvent extends FinanceEvent {
     required this.initialBalance,
     required this.colorHex,
     required this.iconName,
+    this.boundPackageName,
   });
+}
+
+class BindWalletToPackageEvent extends FinanceEvent {
+  final String walletId;
+  final String packageName;
+  final bool isEnabled;
+
+  const BindWalletToPackageEvent({
+    required this.walletId,
+    required this.packageName,
+    this.isEnabled = true,
+  });
+}
+
+class UnbindPackageEvent extends FinanceEvent {
+  final String packageName;
+
+  const UnbindPackageEvent(this.packageName);
 }
 
 class SetSafeToSpendWalletsEvent extends FinanceEvent {
@@ -212,4 +232,68 @@ class TransferPocketFundsEvent extends FinanceEvent {
     required this.isDepositToPocket,
     this.notes,
   });
+}
+
+class AddProfileEvent extends FinanceEvent {
+  final String username;
+  final String fullName;
+  final String? email;
+  final String? phone;
+  final String? avatarPath;
+  final String? occupation;
+  final String? bio;
+  final String currency;
+  final double? monthlyIncomeTarget;
+  final bool setActive;
+
+  const AddProfileEvent({
+    required this.username,
+    required this.fullName,
+    this.email,
+    this.phone,
+    this.avatarPath,
+    this.occupation,
+    this.bio,
+    this.currency = 'IDR',
+    this.monthlyIncomeTarget,
+    this.setActive = false,
+  });
+}
+
+class UpdateProfileEvent extends FinanceEvent {
+  final String profileId;
+  final String username;
+  final String fullName;
+  final String? email;
+  final String? phone;
+  final String? avatarPath;
+  final String? occupation;
+  final String? bio;
+  final String currency;
+  final double? monthlyIncomeTarget;
+
+  const UpdateProfileEvent({
+    required this.profileId,
+    required this.username,
+    required this.fullName,
+    this.email,
+    this.phone,
+    this.avatarPath,
+    this.occupation,
+    this.bio,
+    this.currency = 'IDR',
+    this.monthlyIncomeTarget,
+  });
+}
+
+class DeleteProfileEvent extends FinanceEvent {
+  final String profileId;
+
+  const DeleteProfileEvent(this.profileId);
+}
+
+class SetActiveProfileEvent extends FinanceEvent {
+  final String profileId;
+
+  const SetActiveProfileEvent(this.profileId);
 }

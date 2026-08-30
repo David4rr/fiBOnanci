@@ -16,6 +16,8 @@ import '../widgets/transaction_modal.dart';
 import 'dashboard_screen.dart';
 import 'subscription_screen.dart';
 import 'wallet_screen.dart';
+import '../modals/profile_modal.dart';
+import '../widgets/profile_avatar.dart';
 
 class MainShell extends StatefulWidget {
   final AppDatabase db;
@@ -267,6 +269,84 @@ class _MainShellState extends State<MainShell> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
+          // Profile Hero Card (Tap to View/Edit Full Profile)
+          BlocBuilder<FinanceBloc, FinanceState>(
+            builder: (context, state) {
+              final profile = state.profile;
+              return GestureDetector(
+                onTap: () => ProfileModal.show(
+                  context,
+                  walletCount: state.wallets.length,
+                  txCount: state.transactions.length,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.canvasCardSurface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.canvasBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      ProfileAvatar(
+                        avatarPath: profile.avatarPath,
+                        name: profile.username,
+                        size: 52,
+                        iconSize: 26,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    profile.fullName,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppColors.textWhite,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.neoMint.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    'AKTIF',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppColors.neoMint,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '@${profile.username} • ${profile.occupation ?? "Akun Lokal Offline"}',
+                              style: AppTypography.listSubtitle.copyWith(fontSize: 11.5),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textMuted),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
           // Financial Health Check Hero Card
           BlocBuilder<FinanceBloc, FinanceState>(
             builder: (context, state) {

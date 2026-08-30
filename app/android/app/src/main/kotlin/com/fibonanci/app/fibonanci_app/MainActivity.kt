@@ -34,6 +34,26 @@ class MainActivity : FlutterActivity() {
                     val pending = FibonanciNotificationListener.getAndClearPending(applicationContext)
                     result.success(pending)
                 }
+                "updateAllowedPackages" -> {
+                    val packages = call.argument<List<String>>("packages") ?: emptyList()
+                    FibonanciNotificationListener.setDynamicWhitelist(applicationContext, packages)
+                    result.success(true)
+                }
+                "getInstalledBankApps" -> {
+                    try {
+                        val pm = packageManager
+                        val installed = pm.getInstalledApplications(0)
+                        val bankApps = mutableListOf<Map<String, String>>()
+                        for (app in installed) {
+                            val pkg = app.packageName
+                            val label = pm.getApplicationLabel(app).toString()
+                            bankApps.add(mapOf("packageName" to pkg, "appName" to label))
+                        }
+                        result.success(bankApps)
+                    } catch (_: Exception) {
+                        result.success(emptyList<Map<String, String>>())
+                    }
+                }
                 else -> result.notImplemented()
             }
         }

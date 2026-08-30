@@ -16,12 +16,13 @@ part 'app_database.g.dart';
   Subscriptions,
   NotificationRules,
   Pockets,
+  Profiles,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -33,15 +34,35 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(pockets);
       }
+      if (from < 3) {
+        await m.createTable(profiles);
+        await _seedDefaultProfile();
+      }
     },
     beforeOpen: (details) async {
       // Ensure pockets table exists even if migration was skipped
-      final existing = await customSelect(
+      final existingPockets = await customSelect(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='pockets'",
       ).get();
-      if (existing.isEmpty) {
+      if (existingPockets.isEmpty) {
         final m = createMigrator();
         await m.createTable(pockets);
+      }
+      // Ensure profiles table exists
+      final existingProfiles = await customSelect(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='profiles'",
+      ).get();
+      if (existingProfiles.isEmpty) {
+        final m = createMigrator();
+        await m.createTable(profiles);
+        await _seedDefaultProfile();
+      } else {
+        final count = await customSelect(
+          "SELECT COUNT(*) as c FROM profiles WHERE is_deleted = 0",
+        ).getSingle();
+        if ((count.data['c'] as int? ?? 0) == 0) {
+          await _seedDefaultProfile();
+        }
       }
     },
   );
@@ -267,6 +288,92 @@ class AppDatabase extends _$AppDatabase {
     for (final wallet in defaultWallets) {
       await into(wallets).insert(wallet);
     }
+    final defaultRules = [
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.bca'),
+        walletId: defaultWallets[0].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.bca.mybca'),
+        walletId: defaultWallets[0].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.bcadigital.blu'),
+        walletId: defaultWallets[1].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.seabank.id'),
+        walletId: defaultWallets[2].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.bankmandiri.livin'),
+        walletId: defaultWallets[3].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.bankjago.app'),
+        walletId: defaultWallets[4].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('ovo.id'),
+        walletId: defaultWallets[5].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+      NotificationRulesCompanion(
+        id: Value(uuid.v4()),
+        packageName: const Value('com.shopee.id'),
+        walletId: defaultWallets[6].id,
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    ];
+    for (final rule in defaultRules) {
+      await into(notificationRules).insert(rule);
+    }
+    await _seedDefaultProfile();
+  }
+
+  Future<void> _seedDefaultProfile() async {
+    final now = DateTime.now().toUtc();
+    await into(profiles).insert(
+      ProfilesCompanion(
+        id: const Value('default_profile_1'),
+        username: const Value('David'),
+        fullName: const Value('David Arrozaqi'),
+        email: const Value('david@fibonanci.app'),
+        phone: const Value('+62 812-3456-7890'),
+        avatarPath: const Value('preset:avatar_1'),
+        occupation: const Value('Software Engineer'),
+        bio: const Value('Living lean, building offline financial freedom.'),
+        currency: const Value('IDR'),
+        monthlyIncomeTarget: const Value(15000000.0),
+        isActive: const Value(true),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+        isDeleted: const Value(false),
+      ),
+      mode: InsertMode.insertOrIgnore,
+    );
   }
 
   // ===========================================================================
@@ -324,6 +431,87 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(DateTime.now().toUtc()),
       ),
     );
+  }
+
+  Stream<List<ProfileEntry>> watchProfiles() {
+    return (select(profiles)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .watch();
+  }
+
+  Future<List<ProfileEntry>> getProfiles() {
+    return (select(profiles)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .get();
+  }
+
+  Future<ProfileEntry?> getActiveProfile() {
+    return (select(profiles)
+          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<void> createProfile(ProfilesCompanion profile) {
+    return into(profiles).insert(profile);
+  }
+
+  Future<void> updateProfile(ProfilesCompanion profile) {
+    return (update(profiles)..where((t) => t.id.equals(profile.id.value))).write(profile);
+  }
+
+  Future<void> deleteProfile(String profileId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      await (update(profiles)..where((t) => t.id.equals(profileId))).write(
+        ProfilesCompanion(
+          isDeleted: const Value(true),
+          isActive: const Value(false),
+          updatedAt: Value(now),
+        ),
+      );
+      // Ensure at least one active profile if any remaining non-deleted profile
+      final remaining = await (select(profiles)
+            ..where((t) => t.isDeleted.equals(false))
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          .get();
+      if (remaining.isNotEmpty) {
+        final hasActive = remaining.any((p) => p.isActive);
+        if (!hasActive) {
+          await (update(profiles)..where((t) => t.id.equals(remaining.first.id))).write(
+            ProfilesCompanion(
+              isActive: const Value(true),
+              updatedAt: Value(now),
+            ),
+          );
+        }
+      } else {
+        // Reseed default if all deleted
+        await _seedDefaultProfile();
+      }
+    });
+  }
+
+  Future<void> setActiveProfile(String profileId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      // Deactivate all
+      await (update(profiles)..where((t) => t.isDeleted.equals(false))).write(
+        ProfilesCompanion(
+          isActive: const Value(false),
+          updatedAt: Value(now),
+        ),
+      );
+      // Activate target
+      await (update(profiles)..where((t) => t.id.equals(profileId))).write(
+        ProfilesCompanion(
+          isActive: const Value(true),
+          updatedAt: Value(now),
+        ),
+      );
+    });
   }
 
   Future<void> transferPocketFunds({
@@ -626,5 +814,97 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
     });
+  }
+
+  // ===========================================================================
+  // NOTIFICATION RULES & DYNAMIC APP BINDINGS
+  // ===========================================================================
+
+  Stream<List<NotificationRuleEntry>> watchNotificationRules() {
+    return (select(notificationRules)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .watch();
+  }
+
+  Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName) {
+    return (select(notificationRules)
+          ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<List<NotificationRuleEntry>> getNotificationRulesForWallet(String walletId) {
+    return (select(notificationRules)
+          ..where((tbl) => tbl.walletId.equals(walletId) & tbl.isDeleted.equals(false)))
+        .get();
+  }
+
+  Future<List<String>> getActiveNotificationPackages() async {
+    final rules = await (select(notificationRules)
+          ..where((tbl) => tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false)))
+        .get();
+    return rules.map((r) => r.packageName).toSet().toList();
+  }
+
+  Future<void> upsertNotificationRule({
+    required String walletId,
+    required String packageName,
+    bool isEnabled = true,
+  }) async {
+    final now = DateTime.now().toUtc();
+    final existing = await (select(notificationRules)
+          ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isDeleted.equals(false))
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (update(notificationRules)..where((t) => t.id.equals(existing.id))).write(
+        NotificationRulesCompanion(
+          walletId: Value(walletId),
+          isEnabled: Value(isEnabled),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
+    } else {
+      const uuid = Uuid();
+      await into(notificationRules).insert(
+        NotificationRulesCompanion(
+          id: Value(uuid.v4()),
+          packageName: Value(packageName),
+          walletId: Value(walletId),
+          isEnabled: Value(isEnabled),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+          isDeleted: const Value(false),
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteNotificationRulesForWallet(String walletId) {
+    final now = DateTime.now().toUtc();
+    return (update(notificationRules)..where((t) => t.walletId.equals(walletId))).write(
+      NotificationRulesCompanion(
+        isDeleted: const Value(true),
+        isEnabled: const Value(false),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ),
+    );
+  }
+
+  Future<void> unbindPackage(String packageName) {
+    final now = DateTime.now().toUtc();
+    return (update(notificationRules)..where((t) => t.packageName.equals(packageName))).write(
+      NotificationRulesCompanion(
+        isDeleted: const Value(true),
+        isEnabled: const Value(false),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ),
+    );
   }
 }

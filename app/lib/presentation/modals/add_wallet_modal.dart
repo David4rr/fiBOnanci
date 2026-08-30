@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
+import '../../core/notification_parser/bank_presets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -11,8 +12,10 @@ class AddWalletModal {
   static void show(BuildContext context) {
     final nameController = TextEditingController();
     final balanceController = TextEditingController();
+    final customPackageController = TextEditingController();
     String type = 'bank';
-
+    String? selectedPackage;
+    bool isCustomPackage = false;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -103,6 +106,88 @@ class AddWalletModal {
                       ),
                     ],
                   ),
+                  if (type != 'cash') ...[
+                    const SizedBox(height: 14),
+                    Text('Hubungkan Notifikasi Aplikasi (Opsional)', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.canvasInputSearch,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String?>(
+                          value: isCustomPackage ? '__custom__' : selectedPackage,
+                          isExpanded: true,
+                          dropdownColor: AppColors.canvasCardSurface,
+                          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textMuted),
+                          style: AppTypography.listTitle,
+                          hint: Text('Tidak Terhubung (Input Manual)', style: AppTypography.listSubtitle),
+                          items: [
+                            DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text('Tidak Terhubung (Input Manual)', style: AppTypography.listSubtitle),
+                            ),
+                            ...kPopularBankAppPresets.map((p) => DropdownMenuItem<String?>(
+                              value: p.packageName,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.notifications_active_outlined, size: 18, color: AppColors.neoChartreuse),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${p.name} (${p.packageName})',
+                                      style: AppTypography.listTitle,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                            const DropdownMenuItem<String?>(
+                              value: '__custom__',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_note, size: 18, color: AppColors.neoCyan),
+                                  SizedBox(width: 8),
+                                  Text('Input Package Name Lainnya...', style: TextStyle(color: AppColors.neoCyan)),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onChanged: (val) {
+                            setModalState(() {
+                              if (val == '__custom__') {
+                                isCustomPackage = true;
+                                selectedPackage = null;
+                              } else {
+                                isCustomPackage = false;
+                                selectedPackage = val;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    if (isCustomPackage) ...[
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: customPackageController,
+                        style: AppTypography.listTitle,
+                        decoration: InputDecoration(
+                          hintText: 'Package Name (contoh: id.krom.bank)',
+                          hintStyle: AppTypography.listSubtitle,
+                          filled: true,
+                          fillColor: AppColors.canvasInputSearch,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -124,6 +209,9 @@ class AddWalletModal {
                       onPressed: () {
                         final name = nameController.text.trim();
                         final bal = RupiahInputFormatter.parse(balanceController.text);
+                        final boundPkg = isCustomPackage
+                            ? customPackageController.text.trim()
+                            : selectedPackage;
                         if (name.isNotEmpty) {
                           context.read<FinanceBloc>().add(
                             AddWalletEvent(
@@ -132,6 +220,7 @@ class AddWalletModal {
                               initialBalance: bal,
                               colorHex: '#10B981',
                               iconName: 'wallet',
+                              boundPackageName: boundPkg?.isNotEmpty == true ? boundPkg : null,
                             ),
                           );
                           Navigator.pop(modalContext);

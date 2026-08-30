@@ -71,7 +71,18 @@ abstract class FinanceRepository {
     required double initialBalance,
     required String colorHex,
     required String iconName,
+    String? boundPackageName,
   });
+
+  Stream<List<NotificationRuleEntry>> watchNotificationRules();
+  Future<List<NotificationRuleEntry>> getNotificationRules();
+  Future<List<NotificationRuleEntry>> getNotificationRulesForWallet(String walletId);
+  Future<void> bindWalletToPackage({
+    required String walletId,
+    required String packageName,
+    bool isEnabled = true,
+  });
+  Future<void> unbindPackage(String packageName);
 
   Stream<List<PocketEntry>> watchPockets();
   Future<List<PocketEntry>> getPockets();
@@ -109,6 +120,39 @@ abstract class FinanceRepository {
     required bool isDepositToPocket,
     String? notes,
   });
+
+  Stream<List<ProfileEntry>> watchProfiles();
+  Future<List<ProfileEntry>> getProfiles();
+  Future<ProfileEntry?> getActiveProfile();
+
+  Future<void> addProfile({
+    required String username,
+    required String fullName,
+    String? email,
+    String? phone,
+    String? avatarPath,
+    String? occupation,
+    String? bio,
+    String currency = 'IDR',
+    double? monthlyIncomeTarget,
+    bool setActive = false,
+  });
+
+  Future<void> updateProfile({
+    required String profileId,
+    required String username,
+    required String fullName,
+    String? email,
+    String? phone,
+    String? avatarPath,
+    String? occupation,
+    String? bio,
+    String currency = 'IDR',
+    double? monthlyIncomeTarget,
+  });
+
+  Future<void> deleteProfile(String profileId);
+  Future<void> setActiveProfile(String profileId);
 }
 
 class DriftFinanceRepository implements FinanceRepository {
@@ -293,11 +337,13 @@ class DriftFinanceRepository implements FinanceRepository {
     required double initialBalance,
     required String colorHex,
     required String iconName,
-  }) {
+    String? boundPackageName,
+  }) async {
     final now = DateTime.now().toUtc();
-    return db.into(db.wallets).insert(
+    final walletId = _uuid.v4();
+    await db.into(db.wallets).insert(
       WalletsCompanion(
-        id: drift.Value(_uuid.v4()),
+        id: drift.Value(walletId),
         name: drift.Value(name),
         type: drift.Value(type),
         balance: drift.Value(initialBalance),
@@ -307,7 +353,39 @@ class DriftFinanceRepository implements FinanceRepository {
         updatedAt: drift.Value(now),
       ),
     );
+    if (boundPackageName != null && boundPackageName.trim().isNotEmpty) {
+      await db.upsertNotificationRule(
+        walletId: walletId,
+        packageName: boundPackageName.trim(),
+      );
+    }
   }
+
+  @override
+  Stream<List<NotificationRuleEntry>> watchNotificationRules() => db.watchNotificationRules();
+
+  @override
+  Future<List<NotificationRuleEntry>> getNotificationRules() =>
+      (db.select(db.notificationRules)..where((t) => t.isDeleted.equals(false))).get();
+
+  @override
+  Future<List<NotificationRuleEntry>> getNotificationRulesForWallet(String walletId) =>
+      db.getNotificationRulesForWallet(walletId);
+
+  @override
+  Future<void> bindWalletToPackage({
+    required String walletId,
+    required String packageName,
+    bool isEnabled = true,
+  }) =>
+      db.upsertNotificationRule(
+        walletId: walletId,
+        packageName: packageName,
+        isEnabled: isEnabled,
+      );
+
+  @override
+  Future<void> unbindPackage(String packageName) => db.unbindPackage(packageName);
 
   @override
   Stream<List<PocketEntry>> watchPockets() => db.watchActivePockets();
@@ -420,4 +498,99 @@ class DriftFinanceRepository implements FinanceRepository {
     isDepositToPocket: isDepositToPocket,
     notes: notes,
   );
+
+  @override
+  Stream<List<ProfileEntry>> watchProfiles() => db.watchProfiles();
+
+  @override
+  Future<List<ProfileEntry>> getProfiles() => db.getProfiles();
+
+  @override
+  Future<ProfileEntry?> getActiveProfile() => db.getActiveProfile();
+
+  @override
+  Future<void> addProfile({
+    required String username,
+    required String fullName,
+    String? email,
+    String? phone,
+    String? avatarPath,
+    String? occupation,
+    String? bio,
+    String currency = 'IDR',
+    double? monthlyIncomeTarget,
+    bool setActive = false,
+  }) async {
+    final now = DateTime.now().toUtc();
+    final profileId = _uuid.v4();
+    if (setActive) {
+      final activeList = await db.getProfiles();
+      for (final p in activeList) {
+        if (p.isActive) {
+          await db.updateProfile(ProfilesCompanion(
+            id: drift.Value(p.id),
+            isActive: const drift.Value(false),
+            updatedAt: drift.Value(now),
+          ));
+        }
+      }
+    }
+    await db.createProfile(
+      ProfilesCompanion(
+        id: drift.Value(profileId),
+        username: drift.Value(username),
+        fullName: drift.Value(fullName),
+        email: drift.Value(email),
+        phone: drift.Value(phone),
+        avatarPath: drift.Value(avatarPath ?? 'preset:avatar_1'),
+        occupation: drift.Value(occupation),
+        bio: drift.Value(bio),
+        currency: drift.Value(currency),
+        monthlyIncomeTarget: drift.Value(monthlyIncomeTarget),
+        isActive: drift.Value(setActive),
+        createdAt: drift.Value(now),
+        updatedAt: drift.Value(now),
+        isSynced: const drift.Value(false),
+        isDeleted: const drift.Value(false),
+      ),
+    );
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String profileId,
+    required String username,
+    required String fullName,
+    String? email,
+    String? phone,
+    String? avatarPath,
+    String? occupation,
+    String? bio,
+    String currency = 'IDR',
+    double? monthlyIncomeTarget,
+  }) {
+    final now = DateTime.now().toUtc();
+    return db.updateProfile(
+      ProfilesCompanion(
+        id: drift.Value(profileId),
+        username: drift.Value(username),
+        fullName: drift.Value(fullName),
+        email: drift.Value(email),
+        phone: drift.Value(phone),
+        avatarPath: drift.Value(avatarPath),
+        occupation: drift.Value(occupation),
+        bio: drift.Value(bio),
+        currency: drift.Value(currency),
+        monthlyIncomeTarget: drift.Value(monthlyIncomeTarget),
+        updatedAt: drift.Value(now),
+        isSynced: const drift.Value(false),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteProfile(String profileId) => db.deleteProfile(profileId);
+
+  @override
+  Future<void> setActiveProfile(String profileId) => db.setActiveProfile(profileId);
 }

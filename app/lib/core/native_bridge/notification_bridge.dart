@@ -42,15 +42,38 @@ class NotificationBridge {
     } catch (_) {}
     return [];
   }
+
+  /// Sync active package whitelist from Drift database to Android SharedPreferences
+  static Future<void> syncAllowedPackages(AppDatabase db) async {
+    try {
+      final activePackages = await db.getActiveNotificationPackages();
+      await _methodChannel.invokeMethod('updateAllowedPackages', {
+        'packages': activePackages,
+      });
+    } catch (_) {}
+  }
+
+  /// Query installed banking apps from Android OS
+  static Future<List<Map<String, String>>> getInstalledBankApps() async {
+    try {
+      final List<dynamic>? apps = await _methodChannel.invokeMethod('getInstalledBankApps');
+      if (apps != null) {
+        return apps.whereType<Map>().map((m) => Map<String, String>.from(m)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
   /// Start background/live listener and process pending buffered notifications
   void startListening(
     AppDatabase db, {
     Function(String message)? onAutoLogged,
     NotificationReviewPrompt? onReviewPrompt,
   }) async {
+    // 0. Synchronize active package whitelist to Android background listener
+    await syncAllowedPackages(db);
+
     // 1. Process any pending notifications buffered while app was inactive
     await _processPendingNotifications(db, onAutoLogged: onAutoLogged, onReviewPrompt: onReviewPrompt);
-
     // 2. Listen to real-time live notifications while app is in foreground
     _liveSubscription?.cancel();
     try {
@@ -114,56 +137,68 @@ class NotificationBridge {
     final wallets = await db.select(db.wallets).get();
     if (wallets.isEmpty) return;
 
-    WalletEntry targetWallet = wallets.first;
-    final lowText = '$title $text'.toLowerCase();
+    WalletEntry? targetWallet;
 
-    if (pkg.contains('seabank') ||
-        pkg.contains('bke') ||
-        pkg.contains('digitalbank') ||
-        pkg.contains('sea.bank') ||
-        lowText.contains('seabank')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('seabank'), orElse: () => wallets.first);
-    } else if (pkg.contains('bcadigital') || pkg.contains('blu') || lowText.contains('blu')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('blu'), orElse: () => wallets.first);
-    } else if (pkg.contains('bca') || lowText.contains('bca')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('bca utama'), orElse: () => wallets.first);
-    } else if (pkg.contains('mandiri') || lowText.contains('mandiri') || lowText.contains('livin')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('mandiri'), orElse: () => wallets.first);
-    } else if (pkg.contains('jago') || lowText.contains('jago')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('jago'), orElse: () => wallets.first);
-    } else if (pkg.contains('ovo') || lowText.contains('ovo')) {
-      targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('ovo'), orElse: () => wallets.first);
-    } else if (pkg.contains('shopee') || lowText.contains('shopee')) {
-      final shopeeWallets = wallets.where((w) => w.name.toLowerCase().contains('shopee')).toList();
-      if (shopeeWallets.isNotEmpty) {
-        targetWallet = shopeeWallets.first;
+    // 1. Priority: Match against dynamic NotificationRules from SQLite
+    final rule = await db.getNotificationRuleForPackage(pkg);
+    if (rule != null) {
+      targetWallet = wallets.where((w) => w.id == rule.walletId).firstOrNull;
+    }
+
+    // 2. Secondary fallback: Heuristic keyword matching on package & notification text
+    if (targetWallet == null) {
+      final lowText = '$title $text'.toLowerCase();
+
+      if (pkg.contains('seabank') ||
+          pkg.contains('bke') ||
+          pkg.contains('digitalbank') ||
+          pkg.contains('sea.bank') ||
+          lowText.contains('seabank')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('seabank'), orElse: () => wallets.first);
+      } else if (pkg.contains('bcadigital') || pkg.contains('blu') || lowText.contains('blu')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('blu'), orElse: () => wallets.first);
+      } else if (pkg.contains('bca') || lowText.contains('bca')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('bca utama'), orElse: () => wallets.first);
+      } else if (pkg.contains('mandiri') || lowText.contains('mandiri') || lowText.contains('livin')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('mandiri'), orElse: () => wallets.first);
+      } else if (pkg.contains('jago') || lowText.contains('jago')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('jago'), orElse: () => wallets.first);
+      } else if (pkg.contains('ovo') || lowText.contains('ovo')) {
+        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('ovo'), orElse: () => wallets.first);
+      } else if (pkg.contains('shopee') || lowText.contains('shopee')) {
+        final shopeeWallets = wallets.where((w) => w.name.toLowerCase().contains('shopee')).toList();
+        if (shopeeWallets.isNotEmpty) {
+          targetWallet = shopeeWallets.first;
+        } else {
+          // Auto-create ShopeePay wallet on-the-fly if not in database
+          final newId = const Uuid().v4();
+          final now = DateTime.now().toUtc();
+          await db.into(db.wallets).insert(
+            WalletsCompanion(
+              id: drift.Value(newId),
+              name: const drift.Value('ShopeePay'),
+              type: const drift.Value('ewallet'),
+              balance: const drift.Value(0.0),
+              colorHex: const drift.Value('#EE4D2D'),
+              iconName: const drift.Value('shopping_bag'),
+              createdAt: drift.Value(now),
+              updatedAt: drift.Value(now),
+            ),
+          );
+          targetWallet = await (db.select(db.wallets)..where((t) => t.id.equals(newId))).getSingle();
+        }
       } else {
-        // Auto-create ShopeePay wallet on-the-fly if not in database
-        final newId = const Uuid().v4();
-        final now = DateTime.now().toUtc();
-        await db.into(db.wallets).insert(
-          WalletsCompanion(
-            id: drift.Value(newId),
-            name: const drift.Value('ShopeePay'),
-            type: const drift.Value('ewallet'),
-            balance: const drift.Value(0.0),
-            colorHex: const drift.Value('#EE4D2D'),
-            iconName: const drift.Value('shopping_bag'),
-            createdAt: drift.Value(now),
-            updatedAt: drift.Value(now),
-          ),
-        );
-        targetWallet = await (db.select(db.wallets)..where((t) => t.id.equals(newId))).getSingle();
-      }
-    } else {
-      // Fallback: check if notification text names a wallet
-      for (final w in wallets) {
-        if (lowText.contains(w.name.toLowerCase())) {
-          targetWallet = w;
-          break;
+        // Fallback: check if notification text names a wallet
+        for (final w in wallets) {
+          if (lowText.contains(w.name.toLowerCase())) {
+            targetWallet = w;
+            break;
+          }
         }
       }
     }
+
+    targetWallet ??= wallets.first;
 
     // Resolve default category
     final categories = await db.select(db.categories).get();

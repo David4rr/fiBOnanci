@@ -14,6 +14,7 @@ class FibonanciNotificationListener : NotificationListenerService() {
     companion object {
         private const val PREFS_NAME = "fibonanci_notification_prefs"
         private const val KEY_PENDING = "pending_notifications"
+        private const val KEY_DYNAMIC_WHITELIST = "dynamic_whitelist"
 
         // Whitelist of supported Indonesian banking and e-wallet package names
         val WHITELIST = setOf(
@@ -30,10 +31,33 @@ class FibonanciNotificationListener : NotificationListenerService() {
             "id.dana",
             "com.shopee.id",
             "id.co.bri.brimo",
-            "id.co.bni.wondr"
+            "id.co.bni.wondr",
+            "id.krom.bank"
         )
 
         var liveNotificationListener: ((Map<String, Any>) -> Unit)? = null
+        fun setDynamicWhitelist(context: Context, packages: List<String>) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val jsonArray = JSONArray(packages)
+            prefs.edit().putString(KEY_DYNAMIC_WHITELIST, jsonArray.toString()).apply()
+        }
+
+        fun getDynamicWhitelist(context: Context): Set<String> {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val jsonString = prefs.getString(KEY_DYNAMIC_WHITELIST, "[]") ?: "[]"
+            val result = mutableSetOf<String>()
+            try {
+                val jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    val p = jsonArray.optString(i)
+                    if (p.isNotEmpty()) {
+                        result.add(p)
+                    }
+                }
+            } catch (_: Exception) {}
+            return result
+        }
+
 
         fun getAndClearPending(context: Context): List<Map<String, Any>> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -63,7 +87,9 @@ class FibonanciNotificationListener : NotificationListenerService() {
 
         val pkg = sbn.packageName ?: return
 
+        val dynamicWhitelist = getDynamicWhitelist(applicationContext)
         val isAllowed = WHITELIST.contains(pkg) ||
+                dynamicWhitelist.contains(pkg) ||
                 pkg.contains("seabank") ||
                 pkg.contains("bke") ||
                 pkg.contains("digitalbank") ||
@@ -74,8 +100,8 @@ class FibonanciNotificationListener : NotificationListenerService() {
                 pkg.contains("ovo") ||
                 pkg.contains("gojek") ||
                 pkg.contains("dana") ||
-                pkg.contains("shopee")
-
+                pkg.contains("shopee") ||
+                pkg.contains("krom")
         if (!isAllowed) return
 
         val extras = sbn.notification.extras ?: return

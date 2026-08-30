@@ -9,8 +9,8 @@ import '../modals/all_transactions_modal.dart';
 import '../modals/dashboard_modals.dart';
 import '../modals/pending_inbox_modal.dart';
 import '../modals/transaction_filter_modal.dart';
-import '../modals/financial_health_modal.dart';
-import '../../domain/services/financial_health_service.dart';
+import '../modals/profile_modal.dart';
+import '../widgets/profile_avatar.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/dashboard_bento_grid.dart';
@@ -75,14 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               typeFilter: _typeFilter,
               walletFilter: _walletFilter,
             );
-            final healthReport = state.healthReport;
-            final Color healthColor = switch (healthReport.tier) {
-              HealthTier.excellent => AppColors.neoMint,
-              HealthTier.good => AppColors.neoChartreuse,
-              HealthTier.caution => const Color(0xFFFBBF24),
-              HealthTier.deficit => const Color(0xFFEF4444),
-            };
-
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -96,47 +88,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Hello David', style: AppTypography.heroGreeting),
+                            Text('Hello ${state.profile.username}', style: AppTypography.heroGreeting),
                             const SizedBox(height: 2),
-                            Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: [
-                                Text('Selamat datang kembali!', style: AppTypography.listSubtitle),
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => FinancialHealthModal.show(context),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: healthColor.withValues(alpha: 0.14),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: healthColor.withValues(alpha: 0.4)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 5,
-                                          height: 5,
-                                          decoration: BoxDecoration(shape: BoxShape.circle, color: healthColor),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${healthReport.overallScore}/100 ${healthReport.tierLabel.toUpperCase()}',
-                                          style: TextStyle(
-                                            color: healthColor,
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            Text('Selamat datang kembali!', style: AppTypography.listSubtitle),
                           ],
                         ),
                       ),
@@ -161,36 +115,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 10),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: () => ProfileModal.show(context, walletCount: wallets.length, txCount: allTransactions.length),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF1E212D),
-                                    border: Border.all(color: healthColor.withValues(alpha: 0.6), width: 1.5),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.person, color: AppColors.textWhite, size: 22),
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: healthColor,
-                                      border: Border.all(color: AppColors.canvasBg, width: 1.5),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            onTap: () => ProfileModal.show(
+                              context,
+                              walletCount: wallets.length,
+                              txCount: allTransactions.length,
+                            ),
+                            child: ProfileAvatar(
+                              avatarPath: state.profile.avatarPath,
+                              name: state.profile.username,
+                              size: 42,
                             ),
                           ),
                         ],

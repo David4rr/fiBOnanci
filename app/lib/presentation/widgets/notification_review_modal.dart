@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notification_parser/parsed_notification.dart';
+import '../../data/repositories/finance_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 class NotificationReviewModal extends StatefulWidget {
@@ -49,7 +51,7 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
   String? _selectedWalletId;
   String? _selectedCategoryId;
   bool _isSaving = false;
-
+  bool _rememberBinding = false;
   @override
   void initState() {
     super.initState();
@@ -60,8 +62,16 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
       text: widget.parsed.counterparty,
     );
     _type = widget.parsed.type;
+    final repo = context.read<FinanceBloc>().repository;
+    repo.getNotificationRules().then((rules) {
+      final match = rules.where((r) => r.packageName == widget.rawPackage && r.isEnabled).firstOrNull;
+      if (match != null && mounted) {
+        setState(() {
+          _selectedWalletId = match.walletId;
+        });
+      }
+    });
   }
-
   @override
   void dispose() {
     _amountController.dispose();
@@ -282,6 +292,24 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                       ),
                     ),
+                    const SizedBox(height: 14),
+                    CheckboxListTile(
+                      value: _rememberBinding,
+                      onChanged: (val) => setState(() => _rememberBinding = val ?? false),
+                      title: Text(
+                        'Ingat rekening ini untuk aplikasi ${widget.rawPackage}',
+                        style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite),
+                      ),
+                      subtitle: Text(
+                        'Notifikasi berikutnya akan otomatis diarahkan ke rekening ini.',
+                        style: AppTypography.listSubtitle.copyWith(color: AppColors.textMuted),
+                      ),
+                      activeColor: AppColors.neoChartreuse,
+                      checkColor: AppColors.textDarkPrimary,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
                     const SizedBox(height: 24),
 
                     // Actions Row (Abaikan vs Konfirmasi)
@@ -374,9 +402,21 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
 
     setState(() => _isSaving = true);
     final now = DateTime.now();
+    final bloc = context.read<FinanceBloc>();
+    final repo = bloc.repository;
 
     try {
-      context.read<FinanceBloc>().add(
+      if (_rememberBinding && _selectedWalletId != null) {
+        await repo.bindWalletToPackage(
+          walletId: _selectedWalletId!,
+          packageName: widget.rawPackage,
+        );
+        if (repo is DriftFinanceRepository) {
+          await NotificationBridge.syncAllowedPackages(repo.db);
+        }
+      }
+
+      bloc.add(
         AddTransactionEvent(
           walletId: _selectedWalletId!,
           categoryId: _selectedCategoryId!,

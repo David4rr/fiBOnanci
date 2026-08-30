@@ -32,6 +32,11 @@ class _PocketsUpdated extends FinanceEvent {
   const _PocketsUpdated(this.pockets);
 }
 
+class _ProfilesUpdated extends FinanceEvent {
+  final List<ProfileEntry> profiles;
+  const _ProfilesUpdated(this.profiles);
+}
+
 class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository repository;
 
@@ -40,6 +45,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   StreamSubscription? _transactionsSubscription;
   StreamSubscription? _subscriptionsSubscription;
   StreamSubscription? _pocketsSubscription;
+  StreamSubscription? _profilesSubscription;
 
 
   FinanceBloc({required this.repository}) : super(FinanceState()) {
@@ -53,10 +59,16 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<MarkSubscriptionPaidEvent>(_onMarkSubscriptionPaid);
     on<UpdateWalletBalanceEvent>(_onUpdateWalletBalance);
     on<AddWalletEvent>(_onAddWallet);
+    on<BindWalletToPackageEvent>(_onBindWalletToPackage);
+    on<UnbindPackageEvent>(_onUnbindPackage);
     on<AddPocketEvent>(_onAddPocket);
     on<UpdatePocketEvent>(_onUpdatePocket);
     on<DeletePocketEvent>(_onDeletePocket);
     on<TransferPocketFundsEvent>(_onTransferPocketFunds);
+    on<AddProfileEvent>(_onAddProfile);
+    on<UpdateProfileEvent>(_onUpdateProfile);
+    on<DeleteProfileEvent>(_onDeleteProfile);
+    on<SetActiveProfileEvent>(_onSetActiveProfile);
     on<SetSafeToSpendWalletsEvent>((event, emit) {
       final metrics = SafeToSpendService.calculate(
         wallets: state.wallets,
@@ -97,6 +109,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<_PocketsUpdated>((event, emit) {
       emit(state.copyWith(pockets: event.pockets));
     });
+    on<_ProfilesUpdated>((event, emit) {
+      final active = event.profiles.where((p) => p.isActive).firstOrNull ??
+          event.profiles.firstOrNull;
+      emit(state.copyWith(
+        profiles: event.profiles,
+        activeProfile: active,
+      ));
+    });
     _initStreamListeners();
   }
 
@@ -119,6 +139,9 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     _pocketsSubscription = repository.watchPockets().listen((pockets) {
       add(_PocketsUpdated(pockets));
     });
+    _profilesSubscription = repository.watchProfiles().listen((profiles) {
+      add(_ProfilesUpdated(profiles));
+    });
   }
 
   Future<void> _onLoadFinanceData(LoadFinanceData event, Emitter<FinanceState> emit) async {
@@ -129,6 +152,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final subscriptions = await repository.getSubscriptions();
       final transactions = await repository.getTransactions(limit: 50);
       final pockets = await repository.getPockets();
+      final profiles = await repository.getProfiles();
+      final activeProfile = profiles.where((p) => p.isActive).firstOrNull ?? profiles.firstOrNull;
 
       final metrics = SafeToSpendService.calculate(
         wallets: wallets,
@@ -143,6 +168,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         subscriptions: subscriptions,
         transactions: transactions,
         pockets: pockets,
+        profiles: profiles,
+        activeProfile: activeProfile,
         metrics: metrics,
       ));
     } catch (e) {
@@ -258,9 +285,30 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         initialBalance: event.initialBalance,
         colorHex: event.colorHex,
         iconName: event.iconName,
+        boundPackageName: event.boundPackageName,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah rekening: $e'));
+    }
+  }
+
+  Future<void> _onBindWalletToPackage(BindWalletToPackageEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.bindWalletToPackage(
+        walletId: event.walletId,
+        packageName: event.packageName,
+        isEnabled: event.isEnabled,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menghubungkan aplikasi: $e'));
+    }
+  }
+
+  Future<void> _onUnbindPackage(UnbindPackageEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.unbindPackage(event.packageName);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memutuskan aplikasi: $e'));
     }
   }
 
@@ -322,6 +370,60 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     }
   }
 
+  Future<void> _onAddProfile(AddProfileEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.addProfile(
+        username: event.username,
+        fullName: event.fullName,
+        email: event.email,
+        phone: event.phone,
+        avatarPath: event.avatarPath,
+        occupation: event.occupation,
+        bio: event.bio,
+        currency: event.currency,
+        monthlyIncomeTarget: event.monthlyIncomeTarget,
+        setActive: event.setActive,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menambah profil: $e'));
+    }
+  }
+
+  Future<void> _onUpdateProfile(UpdateProfileEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.updateProfile(
+        profileId: event.profileId,
+        username: event.username,
+        fullName: event.fullName,
+        email: event.email,
+        phone: event.phone,
+        avatarPath: event.avatarPath,
+        occupation: event.occupation,
+        bio: event.bio,
+        currency: event.currency,
+        monthlyIncomeTarget: event.monthlyIncomeTarget,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memperbarui profil: $e'));
+    }
+  }
+
+  Future<void> _onDeleteProfile(DeleteProfileEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.deleteProfile(event.profileId);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menghapus profil: $e'));
+    }
+  }
+
+  Future<void> _onSetActiveProfile(SetActiveProfileEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.setActiveProfile(event.profileId);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal mengganti profil aktif: $e'));
+    }
+  }
+
   @override
   Future<void> close() {
     _walletsSubscription?.cancel();
@@ -329,6 +431,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     _transactionsSubscription?.cancel();
     _subscriptionsSubscription?.cancel();
     _pocketsSubscription?.cancel();
+    _profilesSubscription?.cancel();
     return super.close();
   }
 }
