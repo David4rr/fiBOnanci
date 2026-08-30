@@ -183,7 +183,7 @@ class PocketDetailModal {
                               ),
                             ),
                             onPressed: () {
-                              _showTransferDialog(
+                              showTransferDialog(
                                 context,
                                 pocket: latestPocket,
                                 isDeposit: true,
@@ -212,7 +212,7 @@ class PocketDetailModal {
                             ),
                             onPressed: latestCurrent > 0
                                 ? () {
-                                    _showTransferDialog(
+                                    showTransferDialog(
                                       context,
                                       pocket: latestPocket,
                                       isDeposit: false,
@@ -252,7 +252,7 @@ class PocketDetailModal {
     );
   }
 
-  static void _showTransferDialog(
+  static void showTransferDialog(
     BuildContext context, {
     required PocketEntry pocket,
     required bool isDeposit,

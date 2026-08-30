@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../modals/add_pocket_modal.dart';
 import '../modals/pocket_detail_modal.dart';
-import '../widgets/folder_tab_card.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
@@ -397,194 +396,259 @@ class _WalletScreenState extends State<WalletScreen> {
                       ] else ...[
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
-                              childAspectRatio: 0.98,
-                            ),
+                          sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
-                                if (index < pockets.length) {
-                                  final pocket = pockets[index];
-                                  final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
-                                  final isDark = ThemeData.estimateBrightnessForColor(pColor) == Brightness.dark;
-                                  final Color primaryText = isDark ? AppColors.textWhite : AppColors.textDarkPrimary;
-                                  final Color secondaryText = isDark ? AppColors.textMuted : AppColors.textDarkSecondary;
-                                  final Color iconBg = isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.cardIconBadgeBg;
-                                  final Color pillBg = isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0x1A000000);
-                                  final target = pocket.targetAmount;
-                                  final current = pocket.currentAmount;
-                                  final double progress = (target != null && target > 0)
-                                      ? (current / target).clamp(0.0, 1.0)
-                                      : 1.0;
+                                final pocket = pockets[index];
+                                final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
+                                final target = pocket.targetAmount;
+                                final current = pocket.currentAmount;
+                                final double progress = (target != null && target > 0)
+                                    ? (current / target).clamp(0.0, 1.0)
+                                    : 1.0;
 
-                                  return FolderTabCard(
-                                    backgroundColor: pColor,
-                                    height: null,
-                                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
                                     onTap: () => PocketDetailModal.show(context, pocket: pocket),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // Top Row: Circular Icon Badge & Category/Progress Pill
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Container(
-                                              width: 32,
-                                              height: 32,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: iconBg,
-                                              ),
-                                              child: Center(
-                                                child: Icon(
-                                                  _getPocketIcon(pocket.type),
-                                                  color: primaryText,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                              decoration: BoxDecoration(
-                                                color: pillBg,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                target != null && target > 0
-                                                    ? '${(progress * 100).toInt()}%'
-                                                    : _getPocketTypeLabel(pocket.type).toUpperCase(),
-                                                style: TextStyle(
-                                                  color: primaryText,
-                                                  fontSize: 9.5,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                    child: Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.canvasCardSurface,
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(
+                                          color: pColor.withValues(alpha: 0.35),
+                                          width: 1.5,
                                         ),
-                                        // Bottom: Name, Amount & Target Progress Bar
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              pocket.name,
-                                              style: TextStyle(
-                                                color: primaryText,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 13,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.28),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Top Row: Category Icon + Name & Subtitle + Percentage Pill
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 44,
+                                                height: 44,
+                                                decoration: BoxDecoration(
+                                                  color: pColor.withValues(alpha: 0.16),
+                                                  borderRadius: BorderRadius.circular(14),
+                                                  border: Border.all(color: pColor.withValues(alpha: 0.35)),
+                                                ),
+                                                child: Icon(_getPocketIcon(pocket.type), color: pColor, size: 22),
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              alignment: Alignment.centerLeft,
-                                              child: Text(
-                                                currencyFormatter.format(current),
-                                                style: GoogleFonts.plusJakartaSans(
-                                                  fontSize: 16.5,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: primaryText,
-                                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                              const SizedBox(width: 14),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      pocket.name,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: AppColors.textWhite,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 3),
+                                                    Wrap(
+                                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                                      spacing: 8,
+                                                      runSpacing: 4,
+                                                      children: [
+                                                        Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                                          decoration: BoxDecoration(
+                                                            color: pColor.withValues(alpha: 0.15),
+                                                            borderRadius: BorderRadius.circular(6),
+                                                          ),
+                                                          child: Text(
+                                                            _getPocketTypeLabel(pocket.type).toUpperCase(),
+                                                            style: TextStyle(
+                                                              color: pColor,
+                                                              fontSize: 9.5,
+                                                              fontWeight: FontWeight.w800,
+                                                              letterSpacing: 0.4,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (target != null && target > 0)
+                                                          Text(
+                                                            'Tgt: ${currencyFormatter.format(target)}',
+                                                            style: AppTypography.listSubtitle.copyWith(fontSize: 11.5),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            if (target != null && target > 0) ...[
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(3),
-                                                child: Container(
-                                                  height: 4,
-                                                  color: isDark
-                                                      ? Colors.white.withValues(alpha: 0.15)
-                                                      : Colors.black.withValues(alpha: 0.14),
-                                                  child: FractionallySizedBox(
-                                                    alignment: Alignment.centerLeft,
-                                                    widthFactor: progress,
+                                              if (target != null && target > 0)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                    color: pColor.withValues(alpha: 0.18),
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    border: Border.all(color: pColor.withValues(alpha: 0.35)),
+                                                  ),
+                                                  child: Text(
+                                                    '${(progress * 100).toInt()}%',
+                                                    style: TextStyle(
+                                                      color: pColor,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                )
+                                              else
+                                                const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 22),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 18),
+
+                                          // Balance & Direct Action Buttons (User-Friendly & Professional!)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'DANA TERKUMPUL',
+                                                      style: AppTypography.badgeLabel.copyWith(
+                                                        color: AppColors.textMuted,
+                                                        fontSize: 10,
+                                                        letterSpacing: 0.8,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      alignment: Alignment.centerLeft,
+                                                      child: Text(
+                                                        currencyFormatter.format(current),
+                                                        style: GoogleFonts.plusJakartaSans(
+                                                          fontSize: 22,
+                                                          fontWeight: FontWeight.w800,
+                                                          color: AppColors.textWhite,
+                                                          letterSpacing: -0.5,
+                                                          fontFeatures: const [FontFeature.tabularFigures()],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              // Direct Transfer Quick Actions
+                                              Row(
+                                                children: [
+                                                  GestureDetector(
+                                                    behavior: HitTestBehavior.opaque,
+                                                    onTap: () => PocketDetailModal.showTransferDialog(
+                                                      context,
+                                                      pocket: pocket,
+                                                      isDeposit: true,
+                                                    ),
                                                     child: Container(
-                                                      color: isDark
-                                                          ? AppColors.neoMint
-                                                          : Colors.black.withValues(alpha: 0.75),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: pColor,
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(Icons.add, color: AppColors.canvasBg, size: 15),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            'Isi',
+                                                            style: GoogleFonts.plusJakartaSans(
+                                                              color: AppColors.canvasBg,
+                                                              fontWeight: FontWeight.w800,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  GestureDetector(
+                                                    behavior: HitTestBehavior.opaque,
+                                                    onTap: () => PocketDetailModal.showTransferDialog(
+                                                      context,
+                                                      pocket: pocket,
+                                                      isDeposit: false,
+                                                    ),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.canvasInputSearch,
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        border: Border.all(color: AppColors.canvasBorder),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(Icons.remove, color: AppColors.textWhite, size: 15),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            'Tarik',
+                                                            style: GoogleFonts.plusJakartaSans(
+                                                              color: AppColors.textWhite,
+                                                              fontWeight: FontWeight.w700,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+
+                                          // Smooth Progress Bar
+                                          if (target != null && target > 0) ...[
+                                            const SizedBox(height: 14),
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(6),
+                                              child: Container(
+                                                height: 6,
+                                                color: Colors.white.withValues(alpha: 0.08),
+                                                child: FractionallySizedBox(
+                                                  alignment: Alignment.centerLeft,
+                                                  widthFactor: progress,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: pColor,
+                                                      borderRadius: BorderRadius.circular(6),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                'Target: ${currencyFormatter.format(target)}',
-                                                style: TextStyle(
-                                                  color: secondaryText,
-                                                  fontSize: 9.5,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ] else ...[
-                                              Text(
-                                                _getPocketTypeLabel(pocket.type),
-                                                style: TextStyle(
-                                                  color: secondaryText,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
+                                            ),
                                           ],
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  );
-                                }
-
-                                // "+ Tambah Kantong" in matching FolderTabCard shape
-                                return FolderTabCard(
-                                  backgroundColor: AppColors.canvasCardSurface,
-                                  height: null,
-                                  padding: const EdgeInsets.all(14),
-                                  onTap: () => AddPocketModal.show(context),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: AppColors.neoChartreuse.withValues(alpha: 0.15),
-                                          border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.4)),
-                                        ),
-                                        child: const Center(
-                                          child: Icon(Icons.add_rounded, color: AppColors.neoChartreuse, size: 20),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Tambah Kantong',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          color: AppColors.textWhite,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Alokasi Baru',
-                                        style: AppTypography.listSubtitle.copyWith(fontSize: 10),
-                                      ),
-                                    ],
                                   ),
                                 );
                               },
-                              childCount: pockets.length + 1,
+                              childCount: pockets.length,
                             ),
                           ),
                         ),
