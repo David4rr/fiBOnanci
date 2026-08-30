@@ -17,9 +17,7 @@ import '../widgets/wallet_cashflow_summary.dart';
 import '../widgets/wallet_detail_overlay.dart';
 
 class WalletScreen extends StatefulWidget {
-  final AppDatabase db;
-
-  const WalletScreen({super.key, required this.db});
+  const WalletScreen({super.key});
 
   static void showAddWalletModal(BuildContext context) {
     AddWalletModal.show(context);
@@ -46,7 +44,6 @@ class _WalletScreenState extends State<WalletScreen> {
       body: BlocBuilder<FinanceBloc, FinanceState>(
         builder: (context, state) {
           final wallets = state.wallets;
-          final now = DateTime.now();
 
           double totalRealBalance = 0;
           for (final w in wallets) {
@@ -104,7 +101,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                     const SizedBox(height: 6),
                                     Text(
                                       currencyFormatter.format(totalRealBalance),
-                                      style: AppTypography.heroGreeting.copyWith(color: AppColors.neoMint, fontSize: 24),
+                                      style: AppTypography.heroGreeting.copyWith(color: AppColors.neoChartreuse, fontSize: 24),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
@@ -115,9 +112,9 @@ class _WalletScreenState extends State<WalletScreen> {
                                 height: 52,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.neoMint.withValues(alpha: 0.15),
+                                  color: AppColors.neoChartreuse.withValues(alpha: 0.15),
                                 ),
-                                child: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.neoMint, size: 26),
+                                child: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.neoChartreuse, size: 26),
                               ),
                             ],
                           ),
@@ -218,7 +215,6 @@ class _WalletScreenState extends State<WalletScreen> {
                   allWallets: wallets,
                   transactions: state.transactions,
                   currencyFormatter: currencyFormatter,
-                  db: widget.db,
                   computeSeries: CashflowAnalyticsService.compute30DaySeries,
                   computeDayLabels: CashflowAnalyticsService.compute30DayLabels,
                   onClose: () => setState(() => _liftedWallet = null),
@@ -229,7 +225,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   },
                   onAddTransaction: () {
                     setState(() => _liftedWallet = null);
-                    TransactionModal.show(context, widget.db);
+                    TransactionModal.show(context);
                   },
                 ),
             ],

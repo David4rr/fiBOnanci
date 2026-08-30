@@ -114,7 +114,7 @@ class SafeToSpendModal {
                           return FilterChip(
                             label: Text(w.name),
                             selected: isSelected,
-                            selectedColor: AppColors.neoMint,
+                            selectedColor: AppColors.neoChartreuse,
                             backgroundColor: AppColors.canvasInputSearch,
                             labelStyle: TextStyle(
                               color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
@@ -159,7 +159,7 @@ class SafeToSpendModal {
                         _buildCalcRow(
                           isAll ? 'Total Saldo Riil' : 'Saldo Rekening Terpilih',
                           '+Rp ${metrics.totalRealBalance.toStringAsFixed(0)}',
-                          AppColors.neoMint,
+                          AppColors.neoChartreuse,
                         ),
                         const Divider(color: AppColors.canvasBorder),
                         _buildCalcRow(

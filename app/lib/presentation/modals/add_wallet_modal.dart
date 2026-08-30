@@ -109,7 +109,7 @@ class AddWalletModal {
                     height: 52,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.neoMint,
+                        backgroundColor: AppColors.neoChartreuse,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -158,10 +158,10 @@ class AddWalletModal {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.neoMint : AppColors.canvasInputSearch,
+          color: isSelected ? AppColors.neoChartreuse : AppColors.canvasInputSearch,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.neoMint : AppColors.canvasBorder,
+            color: isSelected ? AppColors.neoChartreuse : AppColors.canvasBorder,
           ),
         ),
         child: Text(

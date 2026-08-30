@@ -74,7 +74,7 @@ class CashflowAnalyticsService {
   }
 
   /// Computes real 7-day daily spending (Sen–Min, Monday–Sunday) for the week of referenceDate.
-  /// Returns a 7-element List<double> [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
+  /// Returns a 7-element `List<double>` [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
   static List<double> computeWeeklySpending(
     List<TransactionEntry> transactions, {
     DateTime? referenceDate,

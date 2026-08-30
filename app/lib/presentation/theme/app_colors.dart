@@ -13,7 +13,7 @@ class AppColors {
   // ===========================================================================
   // VIBRANT NEO-PASTEL PALETTE (Card & Folder Accents)
   // ===========================================================================
-  static const Color neoChartreuse = Color(0xFFD4F442); // Safe-to-Spend
+  static const Color neoChartreuse = Color(0xFFD4F442); // Safe-to-Spend & Rekening/Dompet Accent
   static const Color neoMint = Color(0xFF7DF24E);       // Total Real Balance
   static const Color neoCoral = Color(0xFFFF7052);      // Pending Monthly Bills
   static const Color neoCyan = Color(0xFF26D9D9);       // Daily Budget Allowance

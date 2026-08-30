@@ -6,7 +6,6 @@ import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/overlapping_deck.dart';
-import '../widgets/transaction_detail_modal.dart';
 
 /// Full-screen Swiss-editorial "Expenses / Riwayat Transaksi" modal matching the reference design.
 ///
@@ -18,20 +17,17 @@ import '../widgets/transaction_detail_modal.dart';
 class AllTransactionsModal extends StatefulWidget {
   final List<TransactionEntry> allTransactions;
   final List<WalletEntry> wallets;
-  final AppDatabase db;
 
   const AllTransactionsModal({
     super.key,
     required this.allTransactions,
     required this.wallets,
-    required this.db,
   });
 
   static void show(
     BuildContext context, {
     required List<TransactionEntry> allTransactions,
     required List<WalletEntry> wallets,
-    required AppDatabase db,
   }) {
     showModalBottomSheet(
       context: context,
@@ -41,7 +37,6 @@ class AllTransactionsModal extends StatefulWidget {
       builder: (ctx) => AllTransactionsModal(
         allTransactions: allTransactions,
         wallets: wallets,
-        db: db,
       ),
     );
   }
@@ -244,7 +239,6 @@ class _AllTransactionsModalState extends State<AllTransactionsModal> {
                       transactions: filtered,
                       allTransactions: widget.allTransactions,
                       wallets: widget.wallets,
-                      db: widget.db,
                       expandedTxId: _expandedTxId,
                       onToggleExpand: (id) => setState(() => _expandedTxId = id),
                       bottomPadding: 30.0,

@@ -10,11 +10,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class TransactionModal extends StatefulWidget {
-  final AppDatabase db;
+  const TransactionModal({super.key});
 
-  const TransactionModal({super.key, required this.db});
-
-  static Future<void> show(BuildContext context, AppDatabase db) {
+  static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -23,7 +21,7 @@ class TransactionModal extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => TransactionModal(db: db),
+      builder: (_) => const TransactionModal(),
     );
   }
 

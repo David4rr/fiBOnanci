@@ -1,4 +1,3 @@
-import 'package:fibonanci_app/presentation/widgets/overlapping_deck.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
@@ -52,7 +51,6 @@ void main() {
     await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
     await tester.pumpAndSettle();
 
-    print('OverlappingDeckItem count: ${find.byType(OverlappingDeckItem).evaluate().length}');
     // 3. Verify Kopi Kenangan is rendered in history
     expect(find.text('Kopi Kenangan'), findsOneWidget);
 

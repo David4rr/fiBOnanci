@@ -1,9 +1,3 @@
-import 'package:fibonanci_app/presentation/screens/main_shell.dart';
-import 'package:fibonanci_app/presentation/screens/dashboard_screen.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fibonanci_app/bloc/finance/finance_bloc.dart';
-import 'package:fibonanci_app/bloc/finance/finance_state.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:flutter/material.dart';

@@ -9,6 +9,8 @@ import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../theme/brand_asset_resolver.dart';
+import '../widgets/three_circles_geometric_motif.dart';
 
 /// Real-world filter status for subscriptions.
 enum _BillFilterStatus {
@@ -75,78 +77,9 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
   _BillFilterStatus _filterStatus = _BillFilterStatus.all;
   _BillSortOrder _sortOrder = _BillSortOrder.dueDate;
 
-  IconData _getSubscriptionIcon(String title) {
-    final lower = title.toLowerCase();
-    if (lower.contains('netflix') ||
-        lower.contains('disney') ||
-        lower.contains('prime') ||
-        lower.contains('tv') ||
-        lower.contains('hbo') ||
-        lower.contains('youtube')) {
-      return Icons.tv_rounded;
-    }
-    if (lower.contains('spotify') ||
-        lower.contains('apple music') ||
-        lower.contains('music') ||
-        lower.contains('lagu')) {
-      return Icons.music_note_rounded;
-    }
-    if (lower.contains('wifi') ||
-        lower.contains('internet') ||
-        lower.contains('indihome') ||
-        lower.contains('biznet') ||
-        lower.contains('first media') ||
-        lower.contains('myrepublic')) {
-      return Icons.wifi_rounded;
-    }
-    if (lower.contains('pln') ||
-        lower.contains('listrik') ||
-        lower.contains('token')) {
-      return Icons.bolt_rounded;
-    }
-    if (lower.contains('pdam') || lower.contains('air')) {
-      return Icons.water_drop_rounded;
-    }
-    if (lower.contains('kost') ||
-        lower.contains('kos') ||
-        lower.contains('sewa') ||
-        lower.contains('kontrakan') ||
-        lower.contains('apartemen')) {
-      return Icons.home_work_rounded;
-    }
-    if (lower.contains('icloud') ||
-        lower.contains('google one') ||
-        lower.contains('storage') ||
-        lower.contains('drive')) {
-      return Icons.cloud_outlined;
-    }
-    if (lower.contains('gym') || lower.contains('fitness')) {
-      return Icons.fitness_center_rounded;
-    }
-    if (lower.contains('bpjs') || lower.contains('asuransi')) {
-      return Icons.health_and_safety_outlined;
-    }
-    return Icons.receipt_long_rounded;
-  }
+  IconData _getSubscriptionIcon(String title) => BrandAssetResolver.resolveIcon(title);
 
-  Color _getSubscriptionColor(String title) {
-    final lower = title.toLowerCase();
-    if (lower.contains('spotify') || lower.contains('music')) {
-      return AppColors.neoMint;
-    }
-    if (lower.contains('wifi') ||
-        lower.contains('internet') ||
-        lower.contains('cloud')) {
-      return AppColors.neoCyan;
-    }
-    if (lower.contains('pln') || lower.contains('listrik')) {
-      return const Color(0xFFFFD166);
-    }
-    if (lower.contains('kost') || lower.contains('sewa')) {
-      return AppColors.neoChartreuse;
-    }
-    return AppColors.neoCoral;
-  }
+  Color _getSubscriptionColor(String title) => BrandAssetResolver.resolveColor(title);
 
   List<SubscriptionEntry> _filterAndSortSubscriptions(
     List<SubscriptionEntry> source,
@@ -665,22 +598,7 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
   }
 
   Widget _buildGeometricMotif({double height = 180}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: SizedBox(
-        width: double.infinity,
-        height: height,
-        child: ClipRect(
-          child: CustomPaint(
-            painter: const _ThreeCirclesGeometricPainter(
-              color: AppColors.neoChartreuse,
-              gap: 0.0,
-            ),
-            size: Size(double.infinity, height),
-          ),
-        ),
-      ),
-    );
+    return ThreeCirclesGeometricMotif(height: height);
   }
 
   Widget _buildTotalPendingSection(
@@ -1090,53 +1008,5 @@ class _BudgetingInsightsModalState extends State<BudgetingInsightsModal> {
         ),
       ),
     );
-  }
-}
-
-/// Custom painter for the 3 Neo-Green Geometric Shapes.
-///
-/// Draws 3 identical large circles of diameter = size.height (190dp).
-/// - Center circle: (size.width / 2, centerY)
-/// - Left circle: (size.width / 2 - (2*radius + gap), centerY)
-/// - Right circle: (size.width / 2 + (2*radius + gap), centerY)
-///
-/// Clipped at container boundaries to create dramatic Swiss-editorial
-/// hourglass curves and negative space.
-class _ThreeCirclesGeometricPainter extends CustomPainter {
-  final Color color;
-  final double gap;
-
-  const _ThreeCirclesGeometricPainter({
-    required this.color,
-    this.gap = 0.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    final paint = Paint()
-      ..color = color
-      ..isAntiAlias = true
-      ..style = PaintingStyle.fill;
-
-    final centerY = size.height / 2;
-    final centerX = size.width / 2;
-    final radius = size.height / 2;
-    final offsetDist = 2 * radius + gap;
-
-    // Center full circle
-    canvas.drawCircle(Offset(centerX, centerY), radius, paint);
-
-    // Left circle touching center circle
-    canvas.drawCircle(Offset(centerX - offsetDist, centerY), radius, paint);
-
-    // Right circle touching center circle
-    canvas.drawCircle(Offset(centerX + offsetDist, centerY), radius, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ThreeCirclesGeometricPainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.gap != gap;
   }
 }

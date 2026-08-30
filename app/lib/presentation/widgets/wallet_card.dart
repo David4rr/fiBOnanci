@@ -4,10 +4,10 @@ import '../../data/database/app_database.dart';
 import '../theme/app_typography.dart';
 
 const kWalletColors = [
-  Color(0xFF7DF24E), // neoMint
+  Color(0xFFD4F442), // neoChartreuse
   Color(0xFFFF7052), // neoCoral
   Color(0xFF26D9D9), // neoCyan
-  Color(0xFFD4F442), // neoChartreuse
+  Color(0xFF7DF24E), // neoMint
   Color(0xFFA855F7), // neoPurple
   Color(0xFFF59E0B), // amber
   Color(0xFF60A5FA), // blue

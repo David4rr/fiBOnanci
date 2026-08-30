@@ -33,7 +33,6 @@ class _MainShellState extends State<MainShell> {
       onReviewPrompt: (parsed, pkg) {
         return NotificationReviewModal.show(
           context,
-          db: widget.db,
           parsed: parsed,
           rawPackage: pkg,
         );
@@ -74,14 +73,12 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final screens = [
       DashboardScreen(
-        db: widget.db,
         onNavigateToWallets: () => setState(() => _currentIndex = 2),
       ),
       SubscriptionScreen(
-        db: widget.db,
-        onAddSubscription: () => AddSubscriptionModal.show(context, widget.db),
+        onAddSubscription: () => AddSubscriptionModal.show(context),
       ),
-      WalletScreen(db: widget.db),
+      const WalletScreen(),
       _buildSettingsScreen(context),
     ];
 
@@ -100,16 +97,16 @@ class _MainShellState extends State<MainShell> {
   void _onCenterAction() {
     switch (_currentIndex) {
       case 0:
-        TransactionModal.show(context, widget.db);
+        TransactionModal.show(context);
         break;
       case 1:
-        AddSubscriptionModal.show(context, widget.db);
+        AddSubscriptionModal.show(context);
         break;
       case 2:
         WalletScreen.showAddWalletModal(context);
         break;
       case 3:
-        NotificationSimulatorModal.show(context, widget.db);
+        NotificationSimulatorModal.show(context);
         break;
     }
   }
@@ -128,13 +125,13 @@ class _MainShellState extends State<MainShell> {
           children: [
           // Notification Simulator Feature Card
           GestureDetector(
-            onTap: () => NotificationSimulatorModal.show(context, widget.db),
+            onTap: () => NotificationSimulatorModal.show(context),
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppColors.neoChartreuse.withOpacity(0.08),
+                color: AppColors.neoChartreuse.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.neoChartreuse.withOpacity(0.35)),
+                border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.35)),
               ),
               child: Row(
                 children: [

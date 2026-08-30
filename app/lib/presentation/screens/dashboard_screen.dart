@@ -5,25 +5,21 @@ import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
-import '../../core/native_bridge/notification_bridge.dart';
-import '../../data/database/app_database.dart';
 import '../modals/all_transactions_modal.dart';
 import '../modals/dashboard_modals.dart';
+import '../modals/pending_inbox_modal.dart';
 import '../modals/transaction_filter_modal.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/dashboard_bento_grid.dart';
 import '../widgets/overlapping_deck.dart';
-import '../widgets/transaction_detail_modal.dart';
 import 'wallet_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final AppDatabase db;
   final VoidCallback? onNavigateToWallets;
 
   const DashboardScreen({
     super.key,
-    required this.db,
     this.onNavigateToWallets,
   });
 
@@ -47,7 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (widget.onNavigateToWallets != null) {
       widget.onNavigateToWallets!();
     } else {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => WalletScreen(db: widget.db)));
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
     }
   }
 
@@ -101,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: () => PendingInboxModal.show(context, db: widget.db),
+                            onTap: () => PendingInboxModal.show(context),
                             child: Container(
                               width: 42,
                               height: 42,
@@ -246,13 +242,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (_walletFilter != null)
                           Chip(
                             backgroundColor: AppColors.canvasInputSearch,
-                            side: const BorderSide(color: AppColors.neoMint),
+                            side: const BorderSide(color: AppColors.neoChartreuse),
                             label: Text(
                               'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
-                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoMint),
+                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
                             ),
                             onDeleted: () => setState(() => _walletFilter = null),
-                            deleteIconColor: AppColors.neoMint,
+                            deleteIconColor: AppColors.neoChartreuse,
                           ),
                       ],
                     ),
@@ -289,7 +285,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context,
                           allTransactions: allTransactions,
                           wallets: wallets,
-                          db: widget.db,
                         ),
                         child: Text(
                           'Lihat Semua',
@@ -327,7 +322,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           transactions: filteredTransactions,
                           allTransactions: allTransactions,
                           wallets: wallets,
-                          db: widget.db,
                         ),
                 ),
               ],

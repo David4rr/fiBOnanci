@@ -10,18 +10,15 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class TransactionDetailModal extends StatefulWidget {
-  final AppDatabase db;
   final TransactionEntry transaction;
 
   const TransactionDetailModal({
     super.key,
-    required this.db,
     required this.transaction,
   });
 
   static Future<void> show(
     BuildContext context, {
-    required AppDatabase db,
     required TransactionEntry transaction,
   }) {
     return showModalBottomSheet(
@@ -33,7 +30,6 @@ class TransactionDetailModal extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) => TransactionDetailModal(
-        db: db,
         transaction: transaction,
       ),
     );
@@ -315,7 +311,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
       decoration: BoxDecoration(
         color: AppColors.canvasInputSearch,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.neoChartreuse.withOpacity(0.6), width: 1.5),
+        border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.6), width: 1.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(

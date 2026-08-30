@@ -14,7 +14,6 @@ class WalletDetailOverlay extends StatelessWidget {
   final List<WalletEntry> allWallets;
   final List<TransactionEntry> transactions;
   final NumberFormat currencyFormatter;
-  final AppDatabase db;
   final List<double> Function(List<TransactionEntry>, {String? walletId, required String type}) computeSeries;
   final List<String> Function() computeDayLabels;
   final VoidCallback onClose;
@@ -27,7 +26,6 @@ class WalletDetailOverlay extends StatelessWidget {
     required this.allWallets,
     required this.transactions,
     required this.currencyFormatter,
-    required this.db,
     required this.computeSeries,
     required this.computeDayLabels,
     required this.onClose,
@@ -126,7 +124,7 @@ class WalletDetailOverlay extends StatelessWidget {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.neoMint,
+                                      backgroundColor: AppColors.neoChartreuse,
                                       foregroundColor: AppColors.textDarkPrimary,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                       padding: const EdgeInsets.symmetric(vertical: 11),
@@ -214,7 +212,7 @@ class WalletDetailOverlay extends StatelessWidget {
                               for (final tx in walletTx.take(5)) ...[
                                 GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () => TransactionDetailModal.show(context, db: db, transaction: tx),
+                                  onTap: () => TransactionDetailModal.show(context, transaction: tx),
                                   child: Container(
                                     margin: const EdgeInsets.only(bottom: 6),
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

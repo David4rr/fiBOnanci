@@ -1,21 +1,16 @@
 import 'notification_review_modal.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../core/notification_parser/notification_parser.dart';
 import '../../core/notification_parser/parsed_notification.dart';
-import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class NotificationSimulatorModal extends StatefulWidget {
-  final AppDatabase db;
+  const NotificationSimulatorModal({super.key});
 
-  const NotificationSimulatorModal({super.key, required this.db});
-
-  static Future<void> show(BuildContext context, AppDatabase db) {
+  static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -23,7 +18,7 @@ class NotificationSimulatorModal extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => NotificationSimulatorModal(db: db),
+      builder: (_) => const NotificationSimulatorModal(),
     );
   }
 
@@ -168,10 +163,10 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _parsedResult != null ? AppColors.neoMint.withOpacity(0.08) : AppColors.canvasInputSearch,
+                color: _parsedResult != null ? AppColors.neoMint.withValues(alpha: 0.08) : AppColors.canvasInputSearch,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _parsedResult != null ? AppColors.neoMint.withOpacity(0.4) : AppColors.canvasBorder,
+                  color: _parsedResult != null ? AppColors.neoMint.withValues(alpha: 0.4) : AppColors.canvasBorder,
                 ),
               ),
               child: _parsedResult != null
@@ -236,7 +231,6 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
                     : () async {
                         final confirmed = await NotificationReviewModal.show(
                           context,
-                          db: widget.db,
                           parsed: _parsedResult!,
                           rawPackage: _selectedPackage,
                         );
@@ -261,64 +255,4 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
     );
   }
 
-  Future<void> _commitParsedNotification(BuildContext context) async {
-    final parsed = _parsedResult;
-    if (parsed == null) return;
-
-    final wallets = await widget.db.select(widget.db.wallets).get();
-
-    // Map package to target user wallet
-    WalletEntry targetWallet = wallets.first;
-    if (_selectedPackage.contains('bca') && !_selectedPackage.contains('blu')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('BCA Utama'), orElse: () => wallets.first);
-    } else if (_selectedPackage.contains('blu')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('blu'), orElse: () => wallets.first);
-    } else if (_selectedPackage.contains('seabank')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('SeaBank'), orElse: () => wallets.first);
-    } else if (_selectedPackage.contains('mandiri')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('Mandiri'), orElse: () => wallets.first);
-    } else if (_selectedPackage.contains('jago')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('Jago'), orElse: () => wallets.first);
-    } else if (_selectedPackage.contains('ovo')) {
-      targetWallet = wallets.firstWhere((w) => w.name.contains('OVO'), orElse: () => wallets.first);
-    }
-
-    final categories = await widget.db.select(widget.db.categories).get();
-    final foodCategory = categories.firstWhere(
-      (c) => c.name.contains('Makanan') || c.name.contains('Belanja'),
-      orElse: () => categories.first,
-    );
-
-    final now = DateTime.now().toUtc();
-    const uuid = Uuid();
-
-    await widget.db.logTransactionWithBalanceMutation(
-      tx: TransactionsCompanion(
-        id: drift.Value(uuid.v4()),
-        walletId: drift.Value(targetWallet.id),
-        categoryId: drift.Value(foodCategory.id),
-        amount: drift.Value(parsed.amount),
-        type: drift.Value(parsed.type),
-        notes: drift.Value(parsed.counterparty),
-        source: const drift.Value('notification_auto'),
-        externalRef: drift.Value(parsed.externalRef),
-        transactionDate: drift.Value(now),
-        createdAt: drift.Value(now),
-        updatedAt: drift.Value(now),
-      ),
-    );
-
-    if (context.mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AppColors.neoMint,
-          content: Text(
-            'Notifikasi berhasil dicatat ke ${targetWallet.name}!',
-            style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
-          ),
-        ),
-      );
-    }
-  }
 }

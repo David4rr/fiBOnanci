@@ -60,7 +60,7 @@ void main() {
         BlocProvider<FinanceBloc>.value(
           value: bloc,
           child: MaterialApp(
-            home: SubscriptionScreen(db: db),
+            home: const SubscriptionScreen(),
           ),
         ),
       );
@@ -82,7 +82,7 @@ void main() {
         BlocProvider<FinanceBloc>.value(
           value: bloc,
           child: MaterialApp(
-            home: SubscriptionScreen(db: db),
+            home: const SubscriptionScreen(),
           ),
         ),
       );
@@ -116,7 +116,7 @@ void main() {
         BlocProvider<FinanceBloc>.value(
           value: bloc,
           child: MaterialApp(
-            home: SubscriptionScreen(db: db),
+            home: const SubscriptionScreen(),
           ),
         ),
       );
@@ -153,7 +153,7 @@ void main() {
         BlocProvider<FinanceBloc>.value(
           value: bloc,
           child: MaterialApp(
-            home: SubscriptionScreen(db: db),
+            home: const SubscriptionScreen(),
           ),
         ),
       );

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,16 +9,15 @@ import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import '../widgets/subscription_card.dart';
+import '../widgets/subscription_stacked_deck.dart';
+import '../modals/subscription_filter_modal.dart';
 import '../widgets/subscription_modal.dart';
 
 class SubscriptionScreen extends StatefulWidget {
-  final AppDatabase db;
   final VoidCallback? onAddSubscription;
 
   const SubscriptionScreen({
     super.key,
-    required this.db,
     this.onAddSubscription,
   });
 
@@ -52,19 +50,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             final subscriptions = state.subscriptions;
             final wallets = state.wallets;
 
-            int paidCount = 0;
-            int unpaidCount = 0;
-
-            for (final sub in subscriptions) {
-              final isPaid = sub.lastPaidDate != null &&
-                  sub.lastPaidDate!.year == now.year &&
-                  sub.lastPaidDate!.month == now.month;
-              if (isPaid) {
-                paidCount++;
-              } else {
-                unpaidCount++;
-              }
-            }
 
             // Filter logic
             final filtered = subscriptions.where((sub) {
@@ -143,7 +128,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             ),
                             const SizedBox(height: 24),
                             GestureDetector(
-                              onTap: () => AddSubscriptionModal.show(context, widget.db),
+                              onTap: () => AddSubscriptionModal.show(context),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                                 decoration: BoxDecoration(
@@ -274,13 +259,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         if (_walletFilter != null)
                           Chip(
                             backgroundColor: AppColors.canvasInputSearch,
-                            side: const BorderSide(color: AppColors.neoMint),
+                            side: const BorderSide(color: AppColors.neoChartreuse),
                             label: Text(
                               'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
-                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoMint),
+                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
                             ),
                             onDeleted: () => setState(() => _walletFilter = null),
-                            deleteIconColor: AppColors.neoMint,
+                            deleteIconColor: AppColors.neoChartreuse,
                           ),
                       ],
                     ),
@@ -303,7 +288,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       : SubscriptionStackedDeck(
                           subscriptions: filtered,
                           wallets: wallets,
-                          db: widget.db,
                           onTapCard: (sub, wallet) => _showSubscriptionDetailModal(context, sub, wallet),
                         ),
                 ),
@@ -509,7 +493,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                         onPressed: () {
                           Navigator.pop(modalCtx);
-                          AddSubscriptionModal.show(context, widget.db, subscription: sub);
+                          AddSubscriptionModal.show(context, subscription: sub);
                         },
                       ),
                     ),
@@ -635,347 +619,3 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 }
 
-/// Interactive Speedometer / Rolodex Stacked Card Deck for Subscriptions strictly matching ref1.jpg.
-///
-/// Features:
-/// - Exact vertical centering of the active focused card.
-/// - Cards above center stack upward with upper headers peeking.
-/// - Cards below center stack downward with lower rims peeking.
-/// - 120Hz smooth scrolling / flick physics with page snapping.
-/// - Tapping a peeking card rolls it directly to center; tapping the center card opens details.
-class SubscriptionStackedDeck extends StatefulWidget {
-  final List<SubscriptionEntry> subscriptions;
-  final List<WalletEntry> wallets;
-  final AppDatabase db;
-  final void Function(SubscriptionEntry, WalletEntry) onTapCard;
-
-  const SubscriptionStackedDeck({
-    super.key,
-    required this.subscriptions,
-    required this.wallets,
-    required this.db,
-    required this.onTapCard,
-  });
-
-  @override
-  State<SubscriptionStackedDeck> createState() => _SubscriptionStackedDeckState();
-}
-
-class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with SingleTickerProviderStateMixin {
-  double _currentPage = 0.0;
-  late AnimationController _animController;
-  Animation<double>? _snapAnimation;
-
-  static const double _cardHeight = 215.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(vsync: this);
-    _animController.addListener(() {
-      if (_snapAnimation != null) {
-        setState(() {
-          _currentPage = _snapAnimation!.value;
-        });
-      }
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant SubscriptionStackedDeck oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.subscriptions.isNotEmpty && _currentPage >= widget.subscriptions.length) {
-      _snapTo((widget.subscriptions.length - 1).toDouble());
-    }
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
-  }
-
-  void _snapTo(double targetPage) {
-    final clamped = targetPage.clamp(0.0, (widget.subscriptions.length - 1).toDouble());
-    _snapAnimation = Tween<double>(begin: _currentPage, end: clamped).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
-    _animController.duration = const Duration(milliseconds: 280);
-    _animController.forward(from: 0.0);
-  }
-
-  void _onDragUpdate(DragUpdateDetails details) {
-    if (_animController.isAnimating) _animController.stop();
-    setState(() {
-      // 1 full card scroll per ~160dp drag
-      final delta = -details.primaryDelta! / 160.0;
-      _currentPage = (_currentPage + delta).clamp(-0.2, widget.subscriptions.length - 0.8);
-    });
-  }
-
-  void _onDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0.0;
-    if (velocity.abs() > 250) {
-      final target = velocity < 0 ? _currentPage.floor() + 1.0 : _currentPage.ceil() - 1.0;
-      _snapTo(target);
-    } else {
-      _snapTo(_currentPage.roundToDouble());
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final list = widget.subscriptions;
-    if (list.isEmpty) return const SizedBox.shrink();
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double viewportHeight = constraints.maxHeight;
-        final double centerY = math.max(0.0, (viewportHeight - _cardHeight) / 2.0 - 15.0);
-
-        // Sort indices by distance from current page descending so the center card is rendered LAST (on top of z-index)
-        final sortedIndices = List<int>.generate(list.length, (i) => i)
-          ..sort((a, b) {
-            final distA = (a - _currentPage).abs();
-            final distB = (b - _currentPage).abs();
-            return distB.compareTo(distA); // Furthest first, closest last
-          });
-
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onVerticalDragUpdate: _onDragUpdate,
-          onVerticalDragEnd: _onDragEnd,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Stacked Visual Layer with Speedometer Physics
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    for (final i in sortedIndices)
-                      Builder(builder: (context) {
-                        final sub = list[i];
-                        final wallet = widget.wallets.firstWhere(
-                          (w) => w.id == sub.walletId,
-                          orElse: () => widget.wallets.first,
-                        );
-
-                        final double diff = i - _currentPage;
-                        final double absDiff = diff.abs();
-
-                        // Position calculation: cards above stack upwards, cards below stack downwards
-                        double top;
-                        if (diff < 0) {
-                          top = centerY - (math.pow(absDiff, 0.78) * 60.0);
-                        } else {
-                          top = centerY + (math.pow(absDiff, 0.78) * 60.0);
-                        }
-
-                        // Slight scale falloff for subtle depth perspective
-                        final double scale = (1.0 - absDiff * 0.015).clamp(0.92, 1.0);
-
-                        return Positioned(
-                          top: top,
-                          left: 0,
-                          right: 0,
-                          height: _cardHeight,
-                          child: Transform.scale(
-                            scale: scale,
-                            alignment: Alignment.center,
-                            child: SubscriptionCard(
-                              subscription: sub,
-                              wallet: wallet,
-                              indexOverride: i,
-                              isFocused: absDiff < 0.35,
-                              onTap: () {
-                                if (absDiff < 0.35) {
-                                  widget.onTapCard(sub, wallet);
-                                } else {
-                                  _snapTo(i.toDouble());
-                                }
-                              },
-                            ),
-                          ),
-                        );
-                      }),
-                  ],
-                ),
-              ),
-
-              // Compact Speedometer Counter Badge at Bottom Center
-              if (list.length > 1)
-                Positioned(
-                  bottom: 8,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF13151D).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.canvasBorder),
-                      ),
-                      child: Text(
-                        '${(_currentPage.round().clamp(0, list.length - 1) + 1)} / ${list.length}',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Swiss-Editorial Filter Modal for Subscription Screen matching TransactionFilterModal on Dashboard.
-class SubscriptionFilterModal {
-  static void show({
-    required BuildContext context,
-    required List<WalletEntry> wallets,
-    required String initialStatus,
-    required String? initialWalletId,
-    required void Function(String status, String? walletId) onApply,
-  }) {
-    String currentStatus = initialStatus;
-    String? currentWalletId = initialWalletId;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setFilterState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.textSubtle,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text('Filter Tagihan', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'STATUS PEMBAYARAN',
-                    style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _buildFilterChoiceChip('all', 'Semua Status', currentStatus, (val) {
-                        currentStatus = val!;
-                        setFilterState(() {});
-                      }),
-                      _buildFilterChoiceChip('unpaid', 'Belum Bayar', currentStatus, (val) {
-                        currentStatus = val!;
-                        setFilterState(() {});
-                      }),
-                      _buildFilterChoiceChip('paid', 'Sudah Lunas', currentStatus, (val) {
-                        currentStatus = val!;
-                        setFilterState(() {});
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'REKENING PEMBAYARAN',
-                    style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildFilterChoiceChip(null, 'Semua Rekening', currentWalletId, (val) {
-                        currentWalletId = val;
-                        setFilterState(() {});
-                      }),
-                      for (final w in wallets)
-                        _buildFilterChoiceChip(w.id, w.name, currentWalletId, (val) {
-                          currentWalletId = val;
-                          setFilterState(() {});
-                        }),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.neoChartreuse,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        onApply(currentStatus, currentWalletId);
-                      },
-                      child: Text(
-                        'Terapkan Filter',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColors.textDarkPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  static Widget _buildFilterChoiceChip<T>(
-    T value,
-    String label,
-    T groupValue,
-    ValueChanged<T?> onSelected,
-  ) {
-    final isSelected = value == groupValue;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onSelected(value),
-      backgroundColor: AppColors.canvasInputSearch,
-      selectedColor: AppColors.neoChartreuse,
-      labelStyle: TextStyle(
-        color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
-        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-        fontSize: 12.5,
-      ),
-      side: BorderSide(
-        color: isSelected ? AppColors.neoChartreuse : AppColors.canvasBorder,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-    );
-  }
-}

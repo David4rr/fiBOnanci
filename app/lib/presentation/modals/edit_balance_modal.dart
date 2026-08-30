@@ -68,7 +68,7 @@ class EditBalanceModal {
                 decoration: InputDecoration(
                   prefixText: 'Rp ',
                   prefixStyle: AppTypography.heroGreeting.copyWith(
-                    color: AppColors.neoMint,
+                    color: AppColors.neoChartreuse,
                   ),
                   filled: true,
                   fillColor: AppColors.canvasInputSearch,
@@ -84,7 +84,7 @@ class EditBalanceModal {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.neoMint,
+                    backgroundColor: AppColors.neoChartreuse,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -108,7 +108,7 @@ class EditBalanceModal {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          backgroundColor: AppColors.neoMint,
+                          backgroundColor: AppColors.neoChartreuse,
                           content: Text(
                             'Saldo ${wallet.name} diubah menjadi Rp ${RupiahInputFormatter.format(newBal)}',
                             style: const TextStyle(

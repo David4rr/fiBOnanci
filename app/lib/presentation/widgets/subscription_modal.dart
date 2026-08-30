@@ -12,16 +12,14 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class AddSubscriptionModal extends StatefulWidget {
-  final AppDatabase db;
   final SubscriptionEntry? subscription;
 
   const AddSubscriptionModal({
     super.key,
-    required this.db,
     this.subscription,
   });
 
-  static Future<void> show(BuildContext context, AppDatabase db, {SubscriptionEntry? subscription}) {
+  static Future<void> show(BuildContext context, {SubscriptionEntry? subscription}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -29,7 +27,7 @@ class AddSubscriptionModal extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => AddSubscriptionModal(db: db, subscription: subscription),
+      builder: (_) => AddSubscriptionModal(subscription: subscription),
     );
   }
 
@@ -243,7 +241,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
                   const SizedBox(width: 8),
                   Switch(
                     value: _autoDeduct,
-                    activeColor: AppColors.neoChartreuse,
+                    activeThumbColor: AppColors.neoChartreuse,
                     onChanged: (val) => setState(() => _autoDeduct = val),
                   ),
                 ],
@@ -308,7 +306,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan nama tagihan!')));
       return;
     }
-    if (cost == null || cost <= 0) {
+    if (cost <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan nominal biaya yang valid!')));
       return;
     }

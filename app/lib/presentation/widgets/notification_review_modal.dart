@@ -1,28 +1,25 @@
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 
+import '../../bloc/finance/finance_bloc.dart';
+import '../../bloc/finance/finance_event.dart';
+import '../../bloc/finance/finance_state.dart';
 import '../../core/notification_parser/parsed_notification.dart';
-import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-
 class NotificationReviewModal extends StatefulWidget {
-  final AppDatabase db;
   final ParsedNotificationResult parsed;
   final String rawPackage;
 
   const NotificationReviewModal({
     super.key,
-    required this.db,
     required this.parsed,
     required this.rawPackage,
   });
 
   static Future<bool?> show(
     BuildContext context, {
-    required AppDatabase db,
     required ParsedNotificationResult parsed,
     required String rawPackage,
   }) {
@@ -34,7 +31,6 @@ class NotificationReviewModal extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) => NotificationReviewModal(
-        db: db,
         parsed: parsed,
         rawPackage: rawPackage,
       ),
@@ -77,15 +73,10 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return StreamBuilder<List<WalletEntry>>(
-      stream: widget.db.watchActiveWallets(),
-      builder: (context, walletSnap) {
-        return StreamBuilder<List<CategoryEntry>>(
-          stream: widget.db.watchActiveCategories(),
-          builder: (context, catSnap) {
-            final wallets = walletSnap.data ?? [];
-            final categories = catSnap.data ?? [];
-
+    return BlocBuilder<FinanceBloc, FinanceState>(
+      builder: (context, state) {
+        final wallets = state.wallets;
+        final categories = state.categories;
             // Smart Pre-selection of target wallet
             if (_selectedWalletId == null && wallets.isNotEmpty) {
               final pkg = widget.rawPackage.toLowerCase();
@@ -205,7 +196,7 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
                       decoration: BoxDecoration(
                         color: AppColors.canvasInputSearch,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.neoChartreuse.withOpacity(0.5), width: 1.5),
+                        border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.5), width: 1.5),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -338,8 +329,6 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
                 ),
               ),
             );
-          },
-        );
       },
     );
   }
@@ -384,27 +373,22 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
     if (_selectedWalletId == null || _selectedCategoryId == null) return;
 
     setState(() => _isSaving = true);
-    final now = DateTime.now().toUtc();
-    const uuid = Uuid();
+    final now = DateTime.now();
 
     try {
-      await widget.db.logTransactionWithBalanceMutation(
-        tx: TransactionsCompanion(
-          id: drift.Value(uuid.v4()),
-          walletId: drift.Value(_selectedWalletId!),
-          categoryId: drift.Value(_selectedCategoryId!),
-          amount: drift.Value(amount),
-          type: drift.Value(_type),
-          notes: drift.Value(_notesController.text.trim().isEmpty ? null : _notesController.text.trim()),
-          source: const drift.Value('notification_prompt'),
-          externalRef: drift.Value(widget.parsed.externalRef),
-          transactionDate: drift.Value(now),
-          createdAt: drift.Value(now),
-          updatedAt: drift.Value(now),
+      context.read<FinanceBloc>().add(
+        AddTransactionEvent(
+          walletId: _selectedWalletId!,
+          categoryId: _selectedCategoryId!,
+          amount: amount,
+          type: _type,
+          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          source: 'notification_prompt',
+          externalRef: widget.parsed.externalRef,
+          transactionDate: now,
         ),
       );
-
-      if (mounted) {
+      if (mounted && context.mounted) {
         Navigator.pop(context, true);
       }
     } finally {
