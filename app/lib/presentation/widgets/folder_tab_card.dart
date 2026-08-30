@@ -57,7 +57,7 @@ class FolderTabCard extends StatelessWidget {
   final Color backgroundColor;
   final Widget child;
   final double? width;
-  final double height;
+  final double? height;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
 

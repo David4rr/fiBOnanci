@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../modals/add_pocket_modal.dart';
 import '../modals/pocket_detail_modal.dart';
+import '../widgets/folder_tab_card.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
@@ -338,7 +339,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                       ),
 
-                      // Empty State or List of Pockets
+                      // Empty State or Bento Grid of Pockets
                       if (pockets.isEmpty) ...[
                         SliverToBoxAdapter(
                           child: Padding(
@@ -396,100 +397,194 @@ class _WalletScreenState extends State<WalletScreen> {
                       ] else ...[
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          sliver: SliverList(
+                          sliver: SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 14,
+                              mainAxisSpacing: 14,
+                              childAspectRatio: 0.98,
+                            ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
-                                final pocket = pockets[index];
-                                final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
-                                final target = pocket.targetAmount;
-                                final current = pocket.currentAmount;
-                                final double progress = (target != null && target > 0)
-                                    ? (current / target).clamp(0.0, 1.0)
-                                    : 1.0;
+                                if (index < pockets.length) {
+                                  final pocket = pockets[index];
+                                  final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
+                                  final isDark = ThemeData.estimateBrightnessForColor(pColor) == Brightness.dark;
+                                  final Color primaryText = isDark ? AppColors.textWhite : AppColors.textDarkPrimary;
+                                  final Color secondaryText = isDark ? AppColors.textMuted : AppColors.textDarkSecondary;
+                                  final Color iconBg = isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.cardIconBadgeBg;
+                                  final Color pillBg = isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0x1A000000);
+                                  final target = pocket.targetAmount;
+                                  final current = pocket.currentAmount;
+                                  final double progress = (target != null && target > 0)
+                                      ? (current / target).clamp(0.0, 1.0)
+                                      : 1.0;
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 14),
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
+                                  return FolderTabCard(
+                                    backgroundColor: pColor,
+                                    height: null,
+                                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                                     onTap: () => PocketDetailModal.show(context, pocket: pocket),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(18),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.canvasCardSurface,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: AppColors.canvasBorder),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                width: 40,
-                                                height: 40,
-                                                decoration: BoxDecoration(
-                                                  color: pColor.withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Icon(_getPocketIcon(pocket.type), color: pColor, size: 20),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Top Row: Circular Icon Badge & Category/Progress Pill
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              width: 32,
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: iconBg,
                                               ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(pocket.name, style: AppTypography.listTitle),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      _getPocketTypeLabel(pocket.type),
-                                                      style: TextStyle(color: pColor, fontSize: 11, fontWeight: FontWeight.w600),
-                                                    ),
-                                                  ],
+                                              child: Center(
+                                                child: Icon(
+                                                  _getPocketIcon(pocket.type),
+                                                  color: primaryText,
+                                                  size: 16,
                                                 ),
                                               ),
-                                              Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 20),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 14),
-                                          Text(
-                                            currencyFormatter.format(current),
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w800,
-                                              color: AppColors.textWhite,
-                                              fontFeatures: const [FontFeature.tabularFigures()],
                                             ),
-                                          ),
-                                          if (target != null && target > 0) ...[
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text('Target: ${currencyFormatter.format(target)}', style: AppTypography.listSubtitle),
-                                                Text(
-                                                  '${(progress * 100).toStringAsFixed(0)}%',
-                                                  style: TextStyle(color: pColor, fontSize: 12, fontWeight: FontWeight.w700),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: pillBg,
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                target != null && target > 0
+                                                    ? '${(progress * 100).toInt()}%'
+                                                    : _getPocketTypeLabel(pocket.type).toUpperCase(),
+                                                style: TextStyle(
+                                                  color: primaryText,
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.w800,
                                                 ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(6),
-                                              child: LinearProgressIndicator(
-                                                value: progress,
-                                                minHeight: 6,
-                                                backgroundColor: Colors.white.withValues(alpha: 0.08),
-                                                valueColor: AlwaysStoppedAnimation<Color>(pColor),
                                               ),
                                             ),
                                           ],
-                                        ],
-                                      ),
+                                        ),
+                                        // Bottom: Name, Amount & Target Progress Bar
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              pocket.name,
+                                              style: TextStyle(
+                                                color: primaryText,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 13,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                currencyFormatter.format(current),
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 16.5,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: primaryText,
+                                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            if (target != null && target > 0) ...[
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(3),
+                                                child: Container(
+                                                  height: 4,
+                                                  color: isDark
+                                                      ? Colors.white.withValues(alpha: 0.15)
+                                                      : Colors.black.withValues(alpha: 0.14),
+                                                  child: FractionallySizedBox(
+                                                    alignment: Alignment.centerLeft,
+                                                    widthFactor: progress,
+                                                    child: Container(
+                                                      color: isDark
+                                                          ? AppColors.neoMint
+                                                          : Colors.black.withValues(alpha: 0.75),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                'Target: ${currencyFormatter.format(target)}',
+                                                style: TextStyle(
+                                                  color: secondaryText,
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ] else ...[
+                                              Text(
+                                                _getPocketTypeLabel(pocket.type),
+                                                style: TextStyle(
+                                                  color: secondaryText,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
                                     ),
+                                  );
+                                }
+
+                                // "+ Tambah Kantong" in matching FolderTabCard shape
+                                return FolderTabCard(
+                                  backgroundColor: AppColors.canvasCardSurface,
+                                  height: null,
+                                  padding: const EdgeInsets.all(14),
+                                  onTap: () => AddPocketModal.show(context),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                                          border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.4)),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(Icons.add_rounded, color: AppColors.neoChartreuse, size: 20),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Tambah Kantong',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: AppColors.textWhite,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Alokasi Baru',
+                                        style: AppTypography.listSubtitle.copyWith(fontSize: 10),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
-                              childCount: pockets.length,
+                              childCount: pockets.length + 1,
                             ),
                           ),
                         ),
