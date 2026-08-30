@@ -10,7 +10,7 @@ import '../../core/formatters/rupiah_input_formatter.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-
+import '../widgets/pocket_transaction_tile.dart';
 class PocketDetailModal {
   static void show(BuildContext context, {required PocketEntry pocket}) {
     final currencyFormatter = NumberFormat.currency(
@@ -21,18 +21,21 @@ class PocketDetailModal {
 
     final Color pocketColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
     final double? target = pocket.targetAmount;
+    final financeBloc = context.read<FinanceBloc>();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: AppColors.canvasCardSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
-        return BlocBuilder<FinanceBloc, FinanceState>(
-          builder: (context, state) {
-            // Find latest pocket record from state if available
+        return BlocProvider.value(
+          value: financeBloc,
+          child: BlocBuilder<FinanceBloc, FinanceState>(
+            builder: (context, state) {
             final latestPocket = state.pockets.firstWhere(
               (p) => p.id == pocket.id,
               orElse: () => pocket,
@@ -42,17 +45,28 @@ class PocketDetailModal {
                 ? (latestCurrent / target).clamp(0.0, 1.0)
                 : 1.0;
 
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                24,
-                16,
-                24,
-                24 + MediaQuery.of(ctx).viewInsets.bottom,
+            final pocketTxs = state.transactions.where((tx) {
+              final n = (tx.notes ?? '').toLowerCase();
+              final nameLower = latestPocket.name.toLowerCase();
+              return n.contains(nameLower) ||
+                  (n.contains('kantong') && tx.walletId == latestPocket.linkedWalletId);
+            }).toList();
+
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.88,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  16,
+                  24,
+                  24 + MediaQuery.of(ctx).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Center(
                     child: Container(
                       width: 40,
@@ -224,7 +238,85 @@ class PocketDetailModal {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 22),
+
+                  // Riwayat Mutasi Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Riwayat Mutasi',
+                          style: AppTypography.sectionTitle.copyWith(fontSize: 15.5),
+                        ),
+                      ),
+                      if (pocketTxs.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.canvasBg,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.canvasBorder),
+                          ),
+                          child: Text(
+                            '${pocketTxs.length} mutasi',
+                            style: AppTypography.badgeLabel.copyWith(
+                              color: AppColors.textMuted,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 12),
+
+                  if (pocketTxs.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: AppColors.canvasBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.canvasBorder),
+                      ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.history_rounded,
+                              size: 28,
+                              color: AppColors.textMuted.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Belum ada riwayat mutasi',
+                              style: AppTypography.listSubtitle.copyWith(fontSize: 12.5),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Isi atau tarik dana untuk mulai mencatat',
+                              style: AppTypography.listSubtitle.copyWith(
+                                fontSize: 11,
+                                color: AppColors.textMuted.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    for (final tx in pocketTxs) ...[
+                      PocketTransactionTile(
+                        transaction: tx,
+                        wallets: state.wallets,
+                        currencyFormatter: currencyFormatter,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
+                  const SizedBox(height: 16),
 
                   // Delete Button
                   Center(
@@ -245,12 +337,14 @@ class PocketDetailModal {
                   ),
                 ],
               ),
-            );
-          },
-        );
-      },
+            ),
+          );
+        },
+      ),
     );
-  }
+  },
+);
+}
 
   static void showTransferDialog(
     BuildContext context, {
@@ -258,128 +352,226 @@ class PocketDetailModal {
     required bool isDeposit,
   }) {
     final amountController = TextEditingController();
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    final financeBloc = context.read<FinanceBloc>();
     String? selectedWalletId;
+    String? errorMessage;
 
     showDialog(
       context: context,
       builder: (dialogCtx) {
-        return BlocBuilder<FinanceBloc, FinanceState>(
-          builder: (ctx, state) {
-            final activeWallets = state.wallets;
-            if (selectedWalletId == null && activeWallets.isNotEmpty) {
-              selectedWalletId = activeWallets.first.id;
-            }
+        return BlocProvider.value(
+          value: financeBloc,
+          child: StatefulBuilder(
+            builder: (dialogCtx, setDialogState) {
+              return BlocBuilder<FinanceBloc, FinanceState>(
+                builder: (ctx, state) {
+                  final activeWallets = state.wallets.where((w) => !w.isDeleted).toList();
+                  final safeWalletId = activeWallets.any((w) => w.id == selectedWalletId)
+                      ? selectedWalletId
+                      : (activeWallets.isNotEmpty ? activeWallets.first.id : null);
+                  selectedWalletId = safeWalletId;
 
-            return AlertDialog(
-              backgroundColor: AppColors.canvasCardSurface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: Text(
-                isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening',
-                style: AppTypography.sectionTitle,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isDeposit
-                        ? 'Pilih rekening asal untuk memindahkan dana ke ${pocket.name}.'
-                        : 'Pilih rekening tujuan penarikan dari ${pocket.name}.',
-                    style: AppTypography.listSubtitle,
-                  ),
-                  const SizedBox(height: 14),
-                  if (activeWallets.isNotEmpty) ...[
-                    Text(
-                      isDeposit ? 'Rekening Sumber' : 'Rekening Tujuan',
-                      style: AppTypography.listSubtitle,
+                  return AlertDialog(
+                    backgroundColor: AppColors.canvasCardSurface,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    title: Text(
+                      isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening',
+                      style: AppTypography.sectionTitle,
                     ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: AppColors.canvasInputSearch,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedWalletId,
-                          isExpanded: true,
-                          dropdownColor: AppColors.canvasCardSurface,
-                          items: activeWallets.map((w) {
-                            return DropdownMenuItem<String>(
-                              value: w.id,
-                              child: Text(
-                                '${w.name} (Saldo: Rp ${w.balance.toStringAsFixed(0)})',
-                                style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isDeposit
+                                ? 'Pilih rekening asal untuk memindahkan dana ke ${pocket.name}.'
+                                : 'Pilih rekening tujuan penarikan dari ${pocket.name}.',
+                            style: AppTypography.listSubtitle,
+                          ),
+                          const SizedBox(height: 16),
+                          if (activeWallets.isNotEmpty) ...[
+                            Text(
+                              isDeposit ? 'Rekening Sumber' : 'Rekening Tujuan',
+                              style: AppTypography.listSubtitle,
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.canvasInputSearch,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.canvasBorder),
                               ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              selectedWalletId = val;
-                            }
-                          },
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedWalletId,
+                                  isExpanded: true,
+                                  dropdownColor: AppColors.canvasCardSurface,
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
+                                  items: activeWallets.map((w) {
+                                    return DropdownMenuItem<String>(
+                                      value: w.id,
+                                      child: Text(
+                                        '${w.name} (${currencyFormatter.format(w.balance)})',
+                                        style: AppTypography.listSubtitle.copyWith(
+                                          color: AppColors.textWhite,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(() {
+                                        selectedWalletId = val;
+                                        errorMessage = null;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ] else ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.neoCoral.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Belum ada rekening aktif untuk transaksi.',
+                                style: GoogleFonts.plusJakartaSans(color: AppColors.neoCoral, fontSize: 12),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          TextField(
+                            controller: amountController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              RupiahInputFormatter(),
+                            ],
+                            onChanged: (_) {
+                              if (errorMessage != null) {
+                                setDialogState(() => errorMessage = null);
+                              }
+                            },
+                            style: AppTypography.listTitle,
+                            decoration: InputDecoration(
+                              labelText: 'Nominal',
+                              labelStyle: AppTypography.listSubtitle,
+                              hintText: 'Rp 0',
+                              hintStyle: AppTypography.listSubtitle,
+                              filled: true,
+                              fillColor: AppColors.canvasInputSearch,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          if (errorMessage != null) ...[
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.neoCoral.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline_rounded, color: AppColors.neoCoral, size: 14),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      errorMessage!,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: AppColors.neoCoral,
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogCtx).pop(),
+                        child: Text('Batal', style: TextStyle(color: AppColors.textMuted)),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.neoMint,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: activeWallets.isEmpty
+                            ? null
+                            : () {
+                                final amount = RupiahInputFormatter.parse(amountController.text);
+                                if (amount <= 0) {
+                                  setDialogState(() {
+                                    errorMessage = 'Masukkan nominal lebih dari Rp 0';
+                                  });
+                                  return;
+                                }
+                                if (selectedWalletId == null) {
+                                  setDialogState(() {
+                                    errorMessage = 'Pilih rekening terlebih dahulu';
+                                  });
+                                  return;
+                                }
+
+                                final selectedWallet = activeWallets.firstWhere((w) => w.id == selectedWalletId);
+                                if (isDeposit && amount > selectedWallet.balance) {
+                                  setDialogState(() {
+                                    errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${currencyFormatter.format(selectedWallet.balance)})';
+                                  });
+                                  return;
+                                }
+
+                                if (!isDeposit && amount > pocket.currentAmount) {
+                                  setDialogState(() {
+                                    errorMessage = 'Saldo kantong tidak cukup (${currencyFormatter.format(pocket.currentAmount)})';
+                                  });
+                                  return;
+                                }
+
+                                financeBloc.add(
+                                  TransferPocketFundsEvent(
+                                    pocketId: pocket.id,
+                                    walletId: selectedWalletId!,
+                                    amount: amount,
+                                    isDepositToPocket: isDeposit,
+                                  ),
+                                );
+
+                                Navigator.of(dialogCtx).pop();
+                              },
+                        child: Text(
+                          'Konfirmasi',
+                          style: TextStyle(color: AppColors.canvasBg, fontWeight: FontWeight.bold),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      RupiahInputFormatter(),
                     ],
-                    style: AppTypography.listTitle,
-                    decoration: InputDecoration(
-                      labelText: 'Nominal',
-                      labelStyle: AppTypography.listSubtitle,
-                      hintText: 'Rp 0',
-                      hintStyle: AppTypography.listSubtitle,
-                      filled: true,
-                      fillColor: AppColors.canvasInputSearch,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogCtx).pop(),
-                  child: Text('Batal', style: TextStyle(color: AppColors.textMuted)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.neoMint,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    final amount = RupiahInputFormatter.parse(amountController.text);
-                    if (amount <= 0 || selectedWalletId == null) return;
-
-                    context.read<FinanceBloc>().add(
-                      TransferPocketFundsEvent(
-                        pocketId: pocket.id,
-                        walletId: selectedWalletId!,
-                        amount: amount,
-                        isDepositToPocket: isDeposit,
-                      ),
-                    );
-
-                    Navigator.of(dialogCtx).pop();
-                  },
-                  child: Text(
-                    'Konfirmasi',
-                    style: TextStyle(color: AppColors.canvasBg, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            );
-          },
+                  );
+                },
+              );
+            },
+          ),
         );
       },
     );

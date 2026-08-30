@@ -40,8 +40,8 @@ void main() {
     // Verify empty state is visible
     expect(find.text('Belum Ada Kantong Tabungan'), findsOneWidget);
 
-    // 3. Tap "Buat Kantong Sekarang" button
-    await tester.tap(find.text('Buat Kantong Sekarang'));
+    // 3. Tap "+" center action button on bottom nav bar
+    await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
 
     // Verify AddPocketModal opened

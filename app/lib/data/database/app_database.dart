@@ -369,6 +369,27 @@ class AppDatabase extends _$AppDatabase {
           ),
         );
       }
+
+      // Log transaction record for pocket cashflow trend analytics
+      await into(transactions).insert(
+        TransactionsCompanion(
+          id: Value(const Uuid().v4()),
+          walletId: Value(walletId),
+          categoryId: const Value('11111111-1111-4111-8111-111111111111'),
+          amount: Value(amount),
+          type: Value(isDepositToPocket ? 'transfer' : 'income'),
+          notes: Value(
+            notes ??
+                (isDepositToPocket
+                    ? 'Setoran ke Kantong ${pocket.name}'
+                    : 'Penarikan dari Kantong ${pocket.name}'),
+          ),
+          transactionDate: Value(now),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
     });
   }
 

@@ -326,11 +326,12 @@ class DriftFinanceRepository implements FinanceRepository {
     DateTime? targetDate,
     String? linkedWalletId,
     String? notes,
-  }) {
+  }) async {
     final now = DateTime.now().toUtc();
-    return db.createPocket(
+    final pocketId = _uuid.v4();
+    await db.createPocket(
       PocketsCompanion(
-        id: drift.Value(_uuid.v4()),
+        id: drift.Value(pocketId),
         name: drift.Value(name),
         type: drift.Value(type),
         targetAmount: drift.Value(targetAmount),
@@ -344,8 +345,34 @@ class DriftFinanceRepository implements FinanceRepository {
         updatedAt: drift.Value(now),
       ),
     );
-  }
 
+    if (initialAmount > 0) {
+      String? effectiveWalletId = linkedWalletId;
+      if (effectiveWalletId == null) {
+        final existingWallets = await (db.select(db.wallets)..where((t) => t.isDeleted.equals(false))).get();
+        if (existingWallets.isNotEmpty) {
+          effectiveWalletId = existingWallets.first.id;
+        }
+      }
+
+      if (effectiveWalletId != null) {
+        await db.into(db.transactions).insert(
+          TransactionsCompanion(
+            id: drift.Value(_uuid.v4()),
+            walletId: drift.Value(effectiveWalletId),
+            categoryId: const drift.Value('11111111-1111-4111-8111-111111111111'),
+            amount: drift.Value(initialAmount),
+            type: const drift.Value('transfer'),
+            notes: drift.Value('Setoran ke Kantong $name (Awal)'),
+            transactionDate: drift.Value(now),
+            createdAt: drift.Value(now),
+            updatedAt: drift.Value(now),
+            isSynced: const drift.Value(false),
+          ),
+        );
+      }
+    }
+  }
   @override
   Future<void> updatePocket({
     required String pocketId,

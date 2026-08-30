@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../bloc/finance/finance_state.dart';
@@ -15,6 +16,11 @@ class AddPocketModal {
     final targetController = TextEditingController();
     final initialController = TextEditingController();
 
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     String selectedType = 'savings';
     String? selectedWalletId;
     String? nameError;
@@ -36,10 +42,11 @@ class AddPocketModal {
       builder: (ctx) {
         return BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
-            final activeWallets = state.wallets;
-            if (selectedWalletId == null && activeWallets.isNotEmpty) {
-              selectedWalletId = activeWallets.first.id;
-            }
+            final activeWallets = state.wallets.where((w) => !w.isDeleted).toList();
+            final safeWalletId = activeWallets.any((w) => w.id == selectedWalletId)
+                ? selectedWalletId
+                : (activeWallets.isNotEmpty ? activeWallets.first.id : null);
+            selectedWalletId = safeWalletId;
 
             return StatefulBuilder(
               builder: (modalContext, setModalState) {
@@ -222,12 +229,14 @@ class AddPocketModal {
                                 value: selectedWalletId,
                                 isExpanded: true,
                                 dropdownColor: AppColors.canvasCardSurface,
+                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
                                 items: activeWallets.map((w) {
                                   return DropdownMenuItem<String>(
                                     value: w.id,
                                     child: Text(
-                                      '${w.name} (Saldo: Rp ${w.balance.toStringAsFixed(0)})',
+                                      '${w.name} (${currencyFormatter.format(w.balance)})',
                                       style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   );
                                 }).toList(),

@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../modals/add_pocket_modal.dart';
 import '../modals/pocket_detail_modal.dart';
+import '../widgets/bento_folder_card.dart';
+import '../widgets/pocket_stock_chart_card.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
@@ -20,10 +22,21 @@ import '../widgets/wallet_cashflow_summary.dart';
 import '../widgets/wallet_detail_overlay.dart';
 
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key});
+  final ValueChanged<int>? onSegmentChanged;
+  final int initialSegment;
+
+  const WalletScreen({
+    super.key,
+    this.onSegmentChanged,
+    this.initialSegment = 0,
+  });
 
   static void showAddWalletModal(BuildContext context) {
     AddWalletModal.show(context);
+  }
+
+  static void showAddPocketModal(BuildContext context) {
+    AddPocketModal.show(context);
   }
 
   @override
@@ -31,9 +44,14 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  int _selectedSegment = 0;
+  late int _selectedSegment;
   WalletEntry? _liftedWallet;
 
+  @override
+  void initState() {
+    super.initState();
+    _selectedSegment = widget.initialSegment;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +122,10 @@ class _WalletScreenState extends State<WalletScreen> {
                               Expanded(
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () => setState(() => _selectedSegment = 0),
+                                  onTap: () {
+                                    setState(() => _selectedSegment = 0);
+                                    widget.onSegmentChanged?.call(0);
+                                  },
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: _selectedSegment == 0 ? AppColors.neoChartreuse : Colors.transparent,
@@ -125,7 +146,10 @@ class _WalletScreenState extends State<WalletScreen> {
                               Expanded(
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () => setState(() => _selectedSegment = 1),
+                                  onTap: () {
+                                    setState(() => _selectedSegment = 1);
+                                    widget.onSegmentChanged?.call(1);
+                                  },
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: _selectedSegment == 1 ? AppColors.neoChartreuse : Colors.transparent,
@@ -274,66 +298,14 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                       ),
                     ] else ...[
-                      // Kantong Tabungan Hero Card
+                      // Kantong Tabungan Stock Trend Card (Compact single-container)
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                            decoration: BoxDecoration(
-                              color: AppColors.canvasCardSurface,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: AppColors.canvasBorder),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('TOTAL DANA TERKUMPUL', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        currencyFormatter.format(totalPocketsAmount),
-                                        style: AppTypography.heroGreeting.copyWith(color: AppColors.neoMint, fontSize: 24),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${pockets.length} kantong aktif terisolasi',
-                                        style: AppTypography.listSubtitle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => AddPocketModal.show(context),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.neoChartreuse,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.add_rounded, color: AppColors.canvasBg, size: 18),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Kantong',
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: AppColors.canvasBg,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          child: PocketStockChartCard(
+                            currentTotal: totalPocketsAmount,
+                            pocketsCount: pockets.length,
+                            transactions: state.transactions,
                           ),
                         ),
                       ),
@@ -372,21 +344,31 @@ class _WalletScreenState extends State<WalletScreen> {
                                     style: AppTypography.listSubtitle,
                                   ),
                                   const SizedBox(height: 20),
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.neoChartreuse,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.neoChartreuse.withValues(alpha: 0.10),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.25)),
                                     ),
-                                    icon: const Icon(Icons.add, color: AppColors.canvasBg, size: 18),
-                                    label: Text(
-                                      'Buat Kantong Sekarang',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: AppColors.canvasBg,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.add_circle_outline, color: AppColors.neoChartreuse, size: 16),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            'Ketuk tombol + di bawah untuk membuat',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: AppColors.neoChartreuse,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 12.0,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    onPressed: () => AddPocketModal.show(context),
                                   ),
                                 ],
                               ),
@@ -395,264 +377,100 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                       ] else ...[
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          sliver: SliverList(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                          sliver: SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 14,
+                              mainAxisSpacing: 14,
+                              mainAxisExtent: 148,
+                            ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
-                                final pocket = pockets[index];
-                                final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
-                                final target = pocket.targetAmount;
-                                final current = pocket.currentAmount;
-                                final double progress = (target != null && target > 0)
-                                    ? (current / target).clamp(0.0, 1.0)
-                                    : 1.0;
+                                if (index < pockets.length) {
+                                  final pocket = pockets[index];
+                                  final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
+                                  final target = pocket.targetAmount;
+                                  final current = pocket.currentAmount;
+                                  final double? progress = (target != null && target > 0)
+                                      ? (current / target).clamp(0.0, 1.0)
+                                      : null;
+                                  final isDark = ThemeData.estimateBrightnessForColor(pColor) == Brightness.dark;
+                                  final Color primaryText = isDark ? AppColors.textWhite : AppColors.textDarkPrimary;
+                                  final Color secondaryText = isDark
+                                      ? Colors.white.withValues(alpha: 0.95)
+                                      : AppColors.textDarkPrimary;
+                                  final Color tertiaryText = isDark
+                                      ? Colors.white.withValues(alpha: 0.70)
+                                      : AppColors.textDarkSecondary;
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => PocketDetailModal.show(context, pocket: pocket),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(20),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.canvasCardSurface,
-                                        borderRadius: BorderRadius.circular(24),
-                                        border: Border.all(
-                                          color: pColor.withValues(alpha: 0.35),
-                                          width: 1.5,
+                                  return BentoFolderCard(
+                                    backgroundColor: pColor,
+                                    height: 148,
+                                    iconData: _getPocketIcon(pocket.type),
+                                    title: currencyFormatter.format(current),
+                                    subtitleWidget: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Pocket Name - Prominent, Bold & Clearly Visible!
+                                        Text(
+                                          pocket.name,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: secondaryText,
+                                            letterSpacing: -0.2,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.28),
-                                            blurRadius: 14,
-                                            offset: const Offset(0, 6),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Top Row: Category Icon + Name & Subtitle + Percentage Pill
-                                          Row(
-                                            children: [
-                                              Container(
-                                                width: 44,
-                                                height: 44,
-                                                decoration: BoxDecoration(
-                                                  color: pColor.withValues(alpha: 0.16),
-                                                  borderRadius: BorderRadius.circular(14),
-                                                  border: Border.all(color: pColor.withValues(alpha: 0.35)),
+                                        const SizedBox(height: 3),
+                                        // Target & Percentage (No progress bar line)
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                target != null && target > 0
+                                                    ? currencyFormatter.format(target)
+                                                    : 'Tanpa target',
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: tertiaryText,
                                                 ),
-                                                child: Icon(_getPocketIcon(pocket.type), color: pColor, size: 22),
-                                              ),
-                                              const SizedBox(width: 14),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      pocket.name,
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: AppColors.textWhite,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 3),
-                                                    Wrap(
-                                                      crossAxisAlignment: WrapCrossAlignment.center,
-                                                      spacing: 8,
-                                                      runSpacing: 4,
-                                                      children: [
-                                                        Container(
-                                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                          decoration: BoxDecoration(
-                                                            color: pColor.withValues(alpha: 0.15),
-                                                            borderRadius: BorderRadius.circular(6),
-                                                          ),
-                                                          child: Text(
-                                                            _getPocketTypeLabel(pocket.type).toUpperCase(),
-                                                            style: TextStyle(
-                                                              color: pColor,
-                                                              fontSize: 9.5,
-                                                              fontWeight: FontWeight.w800,
-                                                              letterSpacing: 0.4,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        if (target != null && target > 0)
-                                                          Text(
-                                                            'Tgt: ${currencyFormatter.format(target)}',
-                                                            style: AppTypography.listSubtitle.copyWith(fontSize: 11.5),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (target != null && target > 0)
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  decoration: BoxDecoration(
-                                                    color: pColor.withValues(alpha: 0.18),
-                                                    borderRadius: BorderRadius.circular(10),
-                                                    border: Border.all(color: pColor.withValues(alpha: 0.35)),
-                                                  ),
-                                                  child: Text(
-                                                    '${(progress * 100).toInt()}%',
-                                                    style: TextStyle(
-                                                      color: pColor,
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w800,
-                                                    ),
-                                                  ),
-                                                )
-                                              else
-                                                const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 22),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 18),
-
-                                          // Balance & Direct Action Buttons (User-Friendly & Professional!)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'DANA TERKUMPUL',
-                                                      style: AppTypography.badgeLabel.copyWith(
-                                                        color: AppColors.textMuted,
-                                                        fontSize: 10,
-                                                        letterSpacing: 0.8,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    FittedBox(
-                                                      fit: BoxFit.scaleDown,
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Text(
-                                                        currencyFormatter.format(current),
-                                                        style: GoogleFonts.plusJakartaSans(
-                                                          fontSize: 22,
-                                                          fontWeight: FontWeight.w800,
-                                                          color: AppColors.textWhite,
-                                                          letterSpacing: -0.5,
-                                                          fontFeatures: const [FontFeature.tabularFigures()],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              // Direct Transfer Quick Actions
-                                              Row(
-                                                children: [
-                                                  GestureDetector(
-                                                    behavior: HitTestBehavior.opaque,
-                                                    onTap: () => PocketDetailModal.showTransferDialog(
-                                                      context,
-                                                      pocket: pocket,
-                                                      isDeposit: true,
-                                                    ),
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-                                                      decoration: BoxDecoration(
-                                                        color: pColor,
-                                                        borderRadius: BorderRadius.circular(12),
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          const Icon(Icons.add, color: AppColors.canvasBg, size: 15),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            'Isi',
-                                                            style: GoogleFonts.plusJakartaSans(
-                                                              color: AppColors.canvasBg,
-                                                              fontWeight: FontWeight.w800,
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  GestureDetector(
-                                                    behavior: HitTestBehavior.opaque,
-                                                    onTap: () => PocketDetailModal.showTransferDialog(
-                                                      context,
-                                                      pocket: pocket,
-                                                      isDeposit: false,
-                                                    ),
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-                                                      decoration: BoxDecoration(
-                                                        color: AppColors.canvasInputSearch,
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        border: Border.all(color: AppColors.canvasBorder),
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          const Icon(Icons.remove, color: AppColors.textWhite, size: 15),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            'Tarik',
-                                                            style: GoogleFonts.plusJakartaSans(
-                                                              color: AppColors.textWhite,
-                                                              fontWeight: FontWeight.w700,
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-
-                                          // Smooth Progress Bar
-                                          if (target != null && target > 0) ...[
-                                            const SizedBox(height: 14),
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(6),
-                                              child: Container(
-                                                height: 6,
-                                                color: Colors.white.withValues(alpha: 0.08),
-                                                child: FractionallySizedBox(
-                                                  alignment: Alignment.centerLeft,
-                                                  widthFactor: progress,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      color: pColor,
-                                                      borderRadius: BorderRadius.circular(6),
-                                                    ),
-                                                  ),
-                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
+                                            if (progress != null) ...[
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${(progress * 100).toInt()}%',
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: primaryText,
+                                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                                ),
+                                              ),
+                                            ],
                                           ],
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                );
+                                    onTap: () => PocketDetailModal.show(context, pocket: pocket),
+                                  );
+                                }
+                                return const SizedBox.shrink();
                               },
                               childCount: pockets.length,
                             ),
                           ),
                         ),
                       ],
+
                     ],
 
                     const SliverToBoxAdapter(child: SizedBox(height: 140)),
@@ -701,17 +519,4 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
-  String _getPocketTypeLabel(String type) {
-    switch (type) {
-      case 'retirement':
-        return 'Masa Tua';
-      case 'emergency':
-        return 'Dana Darurat';
-      case 'goal':
-        return 'Target Impian';
-      case 'savings':
-      default:
-        return 'Simpanan';
-    }
-  }
 }

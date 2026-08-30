@@ -176,5 +176,110 @@ void main() {
       // Monday (index 0) -> 0.0
       expect(weekly[0], 0.0);
     });
+
+    test('computePocketTrendSeries reflects deposit (upward) and withdrawal (downward) across filters', () {
+      final txDeposit = TransactionEntry(
+        id: 'tx_dep',
+        walletId: 'w_a',
+        categoryId: '11111111-1111-4111-8111-111111111111',
+        amount: 50000.0,
+        type: 'transfer',
+        notes: 'Setoran ke Kantong Dana Darurat',
+        transactionDate: DateTime(2026, 8, 28),
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final txWithdraw = TransactionEntry(
+        id: 'tx_with',
+        walletId: 'w_a',
+        categoryId: '11111111-1111-4111-8111-111111111111',
+        amount: 20000.0,
+        type: 'income',
+        notes: 'Penarikan dari Kantong Dana Darurat',
+        transactionDate: DateTime(2026, 8, 29),
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      // Current total is 100.000 after deposit +50k and withdrawal -20k (net +30k)
+      final trend1M = CashflowAnalyticsService.computePocketTrendSeries(
+        currentTotal: 100000.0,
+        transactions: [txDeposit, txWithdraw],
+        filter: '1M',
+        referenceDate: now,
+      );
+
+      expect(trend1M.values.length, 7);
+      expect(trend1M.currentBalance, 100000.0);
+      expect(trend1M.isUpward, isTrue); // Started at 70.000, ended at 100.000 (+30k)
+      expect(trend1M.delta, 30000.0);
+
+      // Test 1B filter
+      final trend1B = CashflowAnalyticsService.computePocketTrendSeries(
+        currentTotal: 100000.0,
+        transactions: [txDeposit, txWithdraw],
+        filter: '1B',
+        referenceDate: now,
+      );
+      expect(trend1B.values.length, 30);
+
+      // Test 1T filter
+      final trend1T = CashflowAnalyticsService.computePocketTrendSeries(
+        currentTotal: 100000.0,
+        transactions: [txDeposit, txWithdraw],
+        filter: '1T',
+        referenceDate: now,
+      );
+      expect(trend1T.values.length, 12);
+
+      // Test Semua filter
+      final trendAll = CashflowAnalyticsService.computePocketTrendSeries(
+        currentTotal: 100000.0,
+        transactions: [txDeposit, txWithdraw],
+        filter: 'Semua',
+        referenceDate: now,
+      );
+      expect(trendAll.values.length, 14);
+    });
+
+    test('computePocketTrendSeries reflects same-day deposit made today with upward trajectory', () {
+      final txToday = TransactionEntry(
+        id: 'tx_today',
+        walletId: 'w_a',
+        categoryId: '11111111-1111-4111-8111-111111111111',
+        amount: 500000.0,
+        type: 'transfer',
+        notes: 'Setoran ke Kantong Tabungan Liburan',
+        transactionDate: DateTime(2026, 8, 29, 15, 30),
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final trend1M = CashflowAnalyticsService.computePocketTrendSeries(
+        currentTotal: 500000.0,
+        transactions: [txToday],
+        filter: '1M',
+        referenceDate: DateTime(2026, 8, 29, 16, 0),
+      );
+
+      expect(trend1M.values.length, 7);
+      expect(trend1M.currentBalance, 500000.0);
+      expect(trend1M.initialBalance, 0.0);
+      expect(trend1M.delta, 500000.0);
+      expect(trend1M.percentChange, 100.0);
+      expect(trend1M.isUpward, isTrue);
+      expect(trend1M.values.last, 500000.0);
+      expect(trend1M.values[5], 0.0);
+    });
   });
 }
