@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../modals/financial_health_modal.dart';
-import '../widgets/notification_review_modal.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
@@ -38,13 +37,6 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _bridge.startListening(
       widget.db,
-      onReviewPrompt: (parsed, pkg) {
-        return NotificationReviewModal.show(
-          context,
-          parsed: parsed,
-          rawPackage: pkg,
-        );
-      },
       onAutoLogged: (msg) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

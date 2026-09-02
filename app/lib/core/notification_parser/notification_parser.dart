@@ -5,7 +5,39 @@ import 'parsed_notification.dart';
 class NotificationParser {
   // Hard-drop regex blacklist for security tokens & marketing promotions
   static final RegExp _securityAndMarketingBlacklist = RegExp(
-    r'\b(otp|kode|verifikasi|rahasia|password|token|pin|cvv|jangan berikan|promo|diskon|cashback|voucher|menangkan|klaim|hadiah)\b',
+    r'\b('
+    // Security & Auth Tokens
+    r'otp|kode\s+otp|kode\s+verifikasi|verification\s+code|passcode|rahasia|password|kata\s+sandi|token|pin|cvv|cvc|'
+    r'jangan\s+berikan|jangan\s+kasih|do\s+not\s+share|jaga\s+kerahasiaan|waspada\s+penipuan|ubah\s+pin|ganti\s+pin|reset\s+password|'
+    // Marketing, Promos, Discounts & Rewards
+    r'promo|promosi|promotion|diskon|discount|cashback|voucher|kupon|coupon|'
+    r'hadiah|reward|rewards|menangkan|klaim|claim|bonus|'
+    r'special\s+offer|penawaran|exclusive\s+deal|hot\s+deal|best\s+deal|'
+    r'flash\s+sale|mega\s+sale|cuci\s+gudang|big\s+sale|super\s+sale|gajian\s+sale|payday\s+sale|'
+    r'gebyar|undian|giveaway|lucky\s+draw|spin\s*&\s*win|games\s+berhadiah|'
+    // Referral & Invite
+    r'ajak\s+teman|undang\s+teman|referral|referal|kode\s+referral|invite\s+friend|invite\s+friends|'
+    // Loans, Credit, PayLater advertising & investment promos
+    r'ajukan\s+pinjaman|pinjaman\s+online|pinjol|dana\s+cepat|butuh\s+dana|plafon\s+s\.d|plafon\s+hingga|limit\s+hingga|limit\s+s\.d|'
+    r'limit\s+paylater|limit\s+spaylater|limit\s+gopaylater|aktifkan\s+spaylater|aktifkan\s+paylater|aktifkan\s+gopaylater|limit\s+kredit|limit\s+belanja|limit\s+pinjaman|dana\s+cicil|cicilan\s+0%|cicilan\s+ringan|'
+    r'bunga\s+mulai|bunga\s+rendah|bunga\s+ringan|bunga\s+spesial|bunga\s+hingga|bunga\s+deposito|buka\s+deposito|buka\s+tabungan|investasi\s+mulai|'
+    // Call-to-action & Advertising Pricing
+    r'mulai\s+dari|starting\s+from|start\s+from|serba\s+rp|cuma\s+rp|hanya\s+rp|cukup\s+bayar|mulai\s+rp|mulai\s+harga|'
+    r'hemat\s+hingga|hemat\s+s\.d|hemat\s+s/d|diskon\s+hingga|cashback\s+hingga|cashback\s+s\.d|'
+    r'gratis\s+ongkir|free\s+ongkir|bebas\s+ongkir|free\s+shipping|'
+    r'yuk\s+jajan|pesan\s+sekarang|order\s+sekarang|beli\s+sekarang|belanja\s+sekarang|checkout\s+sekarang|check\s+out\s+sekarang|'
+    r'buruan|jangan\s+lewatkan|don.t\s+miss|spesial\s+untukmu|khusus\s+untukmu|rekomendasi\s+untukmu|'
+    r'iklan|advertisement|sponsored|sponsor'
+    r')\b',
+    caseSensitive: false,
+  );
+
+  static final RegExp _adPricingAndConditionRegex = RegExp(
+    r'(?:'
+    r'\b(?:hingga|s\.d|s\/d|up\s+to|maksimal|max\.?|plafon|limit)\s+(?:sebesar\s+)?(?:rp\.?|idr)?\s*[0-9]'
+    r'|\b(?:min\.|min|minimal|minimum)\s+(?:belanja|transaksi|pembelian|order|orderan)?\s*(?:rp\.?|idr)?\s*[0-9]'
+    r'|\b(?:mulai\s+dari|mulai|starting\s+from|start\s+from|serba|cuma|hanya|cukup\s+bayar)\s+(?:rp\.?|idr)\b'
+    r')',
     caseSensitive: false,
   );
 
@@ -19,7 +51,8 @@ class NotificationParser {
     final combinedText = '$title $body'.trim();
 
     // Stage 1: Security & Marketing Hard-Drop
-    if (_securityAndMarketingBlacklist.hasMatch(combinedText)) {
+    if (_securityAndMarketingBlacklist.hasMatch(combinedText) ||
+        _adPricingAndConditionRegex.hasMatch(combinedText)) {
       return null;
     }
 
@@ -93,17 +126,30 @@ class NotificationParser {
     final lowText = fullText.toLowerCase();
 
     // 2. Classify Direction: Income vs Expense
-    final isIncome = lowText.contains('masuk') ||
+    final hasExpenseAction = lowText.contains('pembayaran') ||
+        lowText.contains('bayar') ||
+        lowText.contains('membayar') ||
+        lowText.contains('dibayar') ||
+        lowText.contains('debit') ||
+        lowText.contains('debited') ||
+        lowText.contains('terdebit') ||
+        lowText.contains('terpotong') ||
+        lowText.contains('tagihan') ||
+        lowText.contains('tarik tunai') ||
+        lowText.contains('transfer keluar') ||
+        lowText.contains('kirim uang');
+
+    final isIncome = (lowText.contains('masuk') ||
         lowText.contains('menerima') ||
         lowText.contains('kredit') ||
         lowText.contains('credit') ||
-        lowText.contains('diterima') ||
+        (!hasExpenseAction && (lowText.contains('diterima') || lowText.contains('received'))) ||
         lowText.contains('cr ') ||
         lowText.contains('cr.') ||
         lowText.contains('cr:') ||
         lowText.contains('setoran') ||
         lowText.contains('setor tunai') ||
-        lowText.contains('deposit') ||
+        (lowText.contains('deposit') && !lowText.contains('deposito')) ||
         lowText.contains('top up') ||
         lowText.contains('top-up') ||
         lowText.contains('topup') ||
@@ -126,9 +172,60 @@ class NotificationParser {
         lowText.contains('terima transfer') ||
         lowText.contains('incoming') ||
         lowText.contains('pemasukan') ||
-        lowText.contains('received') ||
         lowText.contains('refund') ||
-        lowText.contains('pengembalian');
+        lowText.contains('pengembalian')) &&
+        (!hasExpenseAction || lowText.contains('menerima') || lowText.contains('masuk') || lowText.contains('refund') || lowText.contains('top up') || lowText.contains('isi saldo') || lowText.contains('tambah dana') || lowText.contains('add funds'));
+
+    final isExpense = lowText.contains('keluar') ||
+        lowText.contains('bayar') ||
+        lowText.contains('membayar') ||
+        lowText.contains('pembayaran') ||
+        lowText.contains('dibayar') ||
+        lowText.contains('payment') ||
+        lowText.contains('paid') ||
+        lowText.contains('debit') ||
+        lowText.contains('debited') ||
+        lowText.contains('terdebit') ||
+        lowText.contains('terpotong') ||
+        lowText.contains('pemotongan') ||
+        lowText.contains('potong saldo') ||
+        lowText.contains('saldo terpotong') ||
+        lowText.contains('saldo berkurang') ||
+        lowText.contains('db ') ||
+        lowText.contains('db.') ||
+        lowText.contains('db:') ||
+        lowText.contains('dr ') ||
+        lowText.contains('dr.') ||
+        lowText.contains('dr:') ||
+        lowText.contains('transfer ke') ||
+        lowText.contains('transfer keluar') ||
+        lowText.contains('transfer kepada') ||
+        lowText.contains('transfer sebesar') ||
+        lowText.contains('kirim uang') ||
+        lowText.contains('kirim dana') ||
+        lowText.contains('sent to') ||
+        lowText.contains('send to') ||
+        lowText.contains('transferred to') ||
+        lowText.contains('transferred') ||
+        lowText.contains('transaksi') ||
+        lowText.contains('transaction') ||
+        lowText.contains('qris') ||
+        lowText.contains('pembelian') ||
+        lowText.contains('purchase') ||
+        lowText.contains('purchased') ||
+        lowText.contains('belanja di') ||
+        lowText.contains('tarik tunai') ||
+        lowText.contains('penarikan') ||
+        lowText.contains('withdrawal') ||
+        lowText.contains('withdrawn') ||
+        lowText.contains('tagihan') ||
+        lowText.contains('bill') ||
+        lowText.contains('autodebet') ||
+        lowText.contains('auto debit') ||
+        lowText.contains('biaya admin') ||
+        lowText.contains('admin fee') ||
+        lowText.contains('pengeluaran') ||
+        lowText.contains('outgoing');
 
     if (isIncome) {
       // Extract sender counterparty
@@ -152,7 +249,7 @@ class NotificationParser {
         type: 'income',
         counterparty: sender,
       );
-    } else {
+    } else if (isExpense) {
       final recipientRegex = RegExp(r'(?:ke|kepada|di|to)\s+([^.,\n]+?)(?:\s+(?:sebesar|senilai|pada|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
       final rMatch = recipientRegex.firstMatch(fullText);
       final recipient = rMatch != null ? rMatch.group(1)!.trim() : (title.isNotEmpty ? title.trim() : 'Pengeluaran Transaksi');
@@ -163,6 +260,8 @@ class NotificationParser {
         counterparty: recipient,
       );
     }
+
+    return null;
   }
 
   // ===========================================================================

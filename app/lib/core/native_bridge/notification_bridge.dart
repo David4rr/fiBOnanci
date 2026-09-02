@@ -40,39 +40,44 @@ class NotificationBridge {
 
   static bool _isDuplicatePending(Map<String, dynamic> item) {
     return _pendingNotifications.any((p) =>
-      p['package'] == item['package'] &&
-      p['text'] == item['text'] &&
-      p['timestamp'] == item['timestamp']
+      (item['transactionId'] != null && p['transactionId'] == item['transactionId']) ||
+      (p['package'] == item['package'] &&
+       p['text'] == item['text'] &&
+       (p['timestamp'] == item['timestamp'] || (p['title'] == item['title'] && item['title'] != null)))
     );
   }
 
-  /// Retrieve pending notifications buffered in memory / SharedPreferences
+  /// Retrieve pending notifications buffered in memory
   static Future<List<Map<String, dynamic>>> getPendingRawNotifications() async {
-    try {
-      final List<dynamic>? pending = await _methodChannel.invokeMethod('getPendingNotifications');
-      if (pending != null) {
-        for (final item in pending) {
-          if (item is Map) {
-            final map = Map<String, dynamic>.from(item);
-            if (!_isDuplicatePending(map)) {
-              _pendingNotifications.add(map);
-            }
-          }
-        }
-        pendingCountNotifier.value = _pendingNotifications.length;
-      }
-    } catch (_) {}
-    return List.unmodifiable(_pendingNotifications);
+    pendingCountNotifier.value = _pendingNotifications.length;
+    return List<Map<String, dynamic>>.from(_pendingNotifications);
   }
 
   /// Removes a processed or discarded notification from pending list
   static void removePendingNotification(Map<String, dynamic> raw) {
     _pendingNotifications.removeWhere((p) =>
-      p['package'] == raw['package'] &&
-      p['text'] == raw['text'] &&
-      p['timestamp'] == raw['timestamp']
+      (raw['transactionId'] != null && p['transactionId'] == raw['transactionId']) ||
+      (p['package'] == raw['package'] &&
+       p['text'] == raw['text'] &&
+       (p['timestamp'] == raw['timestamp'] || p['title'] == raw['title']))
     );
     pendingCountNotifier.value = _pendingNotifications.length;
+  }
+
+  /// Confirm that an auto-logged notification is correct; removes it from the inbox
+  static void confirmNotification(Map<String, dynamic> item) {
+    removePendingNotification(item);
+  }
+
+  /// Mark notification as incorrect: deletes the auto-logged transaction, reverts balance, and removes from inbox
+  static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) async {
+    final txId = item['transactionId'] as String?;
+    if (txId != null && txId.isNotEmpty) {
+      try {
+        await db.deleteTransactionWithBalanceReversal(txId);
+      } catch (_) {}
+    }
+    removePendingNotification(item);
   }
 
   /// Clears all pending notifications
@@ -102,7 +107,7 @@ class NotificationBridge {
     return [];
   }
   /// Start background/live listener and process pending buffered notifications
-  void startListening(
+  Future<void> startListening(
     AppDatabase db, {
     Function(String message)? onAutoLogged,
     NotificationReviewPrompt? onReviewPrompt,
@@ -111,14 +116,15 @@ class NotificationBridge {
     await syncAllowedPackages(db);
 
     // 1. Process any pending notifications buffered while app was inactive
-    await _processPendingNotifications(db, onAutoLogged: onAutoLogged, onReviewPrompt: onReviewPrompt);
+    await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
+
     // 2. Listen to real-time live notifications while app is in foreground
     _liveSubscription?.cancel();
     try {
       _liveSubscription = _eventChannel.receiveBroadcastStream().listen((dynamic event) {
         if (event is Map) {
           final map = Map<String, dynamic>.from(event);
-          _handleRawNotification(map, db, onAutoLogged: onAutoLogged, onReviewPrompt: onReviewPrompt);
+          handleRawNotification(map, db, onAutoLogged: onAutoLogged);
         }
       }, onError: (_) {});
     } catch (_) {}
@@ -131,7 +137,6 @@ class NotificationBridge {
   Future<void> _processPendingNotifications(
     AppDatabase db, {
     Function(String message)? onAutoLogged,
-    NotificationReviewPrompt? onReviewPrompt,
   }) async {
     try {
       final List<dynamic>? pending = await _methodChannel.invokeMethod('getPendingNotifications');
@@ -139,18 +144,18 @@ class NotificationBridge {
         for (final item in pending) {
           if (item is Map) {
             final map = Map<String, dynamic>.from(item);
-            await _handleRawNotification(map, db, onAutoLogged: onAutoLogged, onReviewPrompt: onReviewPrompt);
+            await handleRawNotification(map, db, onAutoLogged: onAutoLogged);
           }
         }
       }
     } catch (_) {}
   }
 
-  Future<void> _handleRawNotification(
+  /// Main entry point for processing and auto-logging incoming notifications
+  static Future<void> handleRawNotification(
     Map<String, dynamic> raw,
     AppDatabase db, {
     Function(String message)? onAutoLogged,
-    NotificationReviewPrompt? onReviewPrompt,
   }) async {
     final pkg = raw['package'] as String? ?? '';
     final title = raw['title'] as String? ?? '';
@@ -164,38 +169,10 @@ class NotificationBridge {
     );
 
     if (parsed == null) return;
-
-    // Check if auto-confirm rule exists in SQLite
+    // 1. Fetch configured notification rule for package
     final rule = await db.getNotificationRuleForPackage(pkg);
-    final isAutoConfirm = rule?.autoConfirm ?? false;
 
-    // If interactive review prompt is registered and not auto-confirm:
-    if (!isAutoConfirm && onReviewPrompt != null) {
-      final handled = await onReviewPrompt(parsed, pkg);
-      if (handled == true) {
-        // User confirmed and saved transaction via modal
-        removePendingNotification(raw);
-        return;
-      } else {
-        // User dismissed/closed modal without confirming: KEEP IN PENDING INBOX!
-        if (!_isDuplicatePending(raw)) {
-          _pendingNotifications.add(raw);
-          pendingCountNotifier.value = _pendingNotifications.length;
-        }
-        return; // Stop here — DO NOT auto-log to SQLite!
-      }
-    }
-
-    if (!isAutoConfirm && onReviewPrompt == null) {
-      // No UI prompt available: keep in pending inbox queue
-      if (!_isDuplicatePending(raw)) {
-        _pendingNotifications.add(raw);
-        pendingCountNotifier.value = _pendingNotifications.length;
-      }
-      return;
-    }
-
-    // Resolve matching wallet in database for auto-confirmed transactions
+    // 2. Resolve matching wallet in database for auto-logged transactions
     final wallets = await db.select(db.wallets).get();
     if (wallets.isEmpty) return;
 
@@ -277,10 +254,12 @@ class NotificationBridge {
       if (existing.isNotEmpty) return; // Prevent duplicate ingestion
     }
 
+    final txId = uuid.v4();
+
     // Commit to SQLite and atomically adjust balance
     await db.logTransactionWithBalanceMutation(
       tx: TransactionsCompanion(
-        id: drift.Value(uuid.v4()),
+        id: drift.Value(txId),
         walletId: drift.Value(targetWallet.id),
         categoryId: drift.Value(defaultCat.id),
         amount: drift.Value(parsed.amount),
@@ -312,7 +291,20 @@ class NotificationBridge {
         await db.updateWalletBalance(targetWallet.id, exactRealBal);
       }
     }
-    removePendingNotification(raw);
+    // Add to pending notifications buffer for Inbox review
+    final inboxItem = Map<String, dynamic>.from(raw);
+    inboxItem['transactionId'] = txId;
+    inboxItem['amount'] = parsed.amount;
+    inboxItem['type'] = parsed.type;
+    inboxItem['counterparty'] = parsed.counterparty;
+    inboxItem['walletName'] = targetWallet.name;
+    inboxItem['walletId'] = targetWallet.id;
+
+    if (!_isDuplicatePending(inboxItem)) {
+      _pendingNotifications.add(inboxItem);
+      pendingCountNotifier.value = _pendingNotifications.length;
+    }
+
     onAutoLogged?.call('${targetWallet.name}: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
   }
 }
