@@ -5,7 +5,6 @@ import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'budgeting_insights_modal.dart';
 
 Widget buildCalcRow(String label, String val, Color color, {bool isBold = false}) {
   return Padding(
@@ -96,11 +95,6 @@ class WalletsListModal {
   }
 }
 
-class BillsListModal {
-  static void show(BuildContext context, List<SubscriptionEntry> subscriptions) {
-    BudgetingInsightsModal.show(context, subscriptions: subscriptions);
-  }
-}
 
 class DailyPaceModal {
   static void show(BuildContext context, SafeToSpendMetrics metrics) {

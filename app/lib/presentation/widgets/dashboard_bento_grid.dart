@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../modals/dashboard_modals.dart';
-import '../modals/budgeting_insights_modal.dart';
 import '../modals/safe_to_spend_modal.dart';
 import '../theme/app_colors.dart';
 import 'bento_folder_card.dart';
@@ -17,6 +16,7 @@ class DashboardBentoGrid extends StatelessWidget {
   final List<SubscriptionEntry> subscriptions;
   final NumberFormat currencyFormatter;
   final VoidCallback onNavigateToWallets;
+  final VoidCallback onNavigateToSubscriptions;
 
   const DashboardBentoGrid({
     super.key,
@@ -25,6 +25,7 @@ class DashboardBentoGrid extends StatelessWidget {
     required this.subscriptions,
     required this.currencyFormatter,
     required this.onNavigateToWallets,
+    required this.onNavigateToSubscriptions,
   });
 
   @override
@@ -67,7 +68,7 @@ class DashboardBentoGrid extends StatelessWidget {
 
           Row(
             children: [
-              // Card 3: Pending Bills (TAP -> Opens Upcoming Bills List)
+              // Card 3: Pending Bills (TAP -> Navigates to Billing & Subscriptions Tab)
               Expanded(
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoCoral,
@@ -75,13 +76,7 @@ class DashboardBentoGrid extends StatelessWidget {
                   title: currencyFormatter.format(metrics.pendingBills),
                   subtitle: '${subscriptions.length} Tagihan Bln Ini',
                   trailingIcon: const Icon(Icons.chevron_right, color: AppColors.textDarkSecondary, size: 14),
-                  onTap: () => BudgetingInsightsModal.show(
-                    context,
-                    subscriptions: subscriptions,
-                    wallets: wallets,
-                    metrics: metrics,
-                    currencyFormatter: currencyFormatter,
-                  ),
+                  onTap: onNavigateToSubscriptions,
                 ),
               ),
               const SizedBox(width: 14),

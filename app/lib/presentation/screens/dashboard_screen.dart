@@ -15,16 +15,19 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/dashboard_bento_grid.dart';
 import '../widgets/overlapping_deck.dart';
+import '../widgets/subscription_modal.dart';
+import 'subscription_screen.dart';
 import 'wallet_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onNavigateToWallets;
+  final VoidCallback? onNavigateToSubscriptions;
 
   const DashboardScreen({
     super.key,
     this.onNavigateToWallets,
+    this.onNavigateToSubscriptions,
   });
-
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -46,6 +49,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       widget.onNavigateToWallets!();
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
+    }
+  }
+
+  void _onNavigateToSubscriptions() {
+    if (widget.onNavigateToSubscriptions != null) {
+      widget.onNavigateToSubscriptions!();
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SubscriptionScreen(
+            onAddSubscription: () => AddSubscriptionModal.show(context),
+          ),
+        ),
+      );
     }
   }
 
@@ -259,6 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   subscriptions: subscriptions,
                   currencyFormatter: currencyFormatter,
                   onNavigateToWallets: _onNavigateToWallets,
+                  onNavigateToSubscriptions: _onNavigateToSubscriptions,
                 ),
 
                 // Riwayat Transaksi Header

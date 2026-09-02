@@ -82,6 +82,7 @@ class _MainShellState extends State<MainShell> {
     final screens = [
       DashboardScreen(
         onNavigateToWallets: () => setState(() => _currentIndex = 2),
+        onNavigateToSubscriptions: () => setState(() => _currentIndex = 1),
       ),
       SubscriptionScreen(
         onAddSubscription: () => AddSubscriptionModal.show(context),
