@@ -123,7 +123,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('Full UI wallet deletion flow via EditBalanceModal and WalletDetailOverlay', (tester) async {
+    testWidgets('Full UI wallet deletion flow via EditBalanceModal and WalletDetailScreen', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
