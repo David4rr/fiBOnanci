@@ -106,6 +106,37 @@ void main() {
       expect(bSeries.reduce((a, b) => a + b), 0.0);
     });
 
+    test('compute30DaySeries accurately captures same-day add funds income at index 29', () {
+      final nowTime = DateTime(2026, 8, 29, 14, 30, 0);
+      final addFundsTx = TransactionEntry(
+        id: 'tx_add_funds',
+        walletId: 'w_a',
+        categoryId: 'cat_income',
+        amount: 350000.0,
+        type: 'income',
+        destinationWalletId: null,
+        notes: 'Add Funds Top Up',
+        transactionDate: DateTime(2026, 8, 29, 14, 35, 0), // Logged slightly after reference now
+        source: 'notification_prompt',
+        externalRef: 'ref_123',
+        createdAt: DateTime(2026, 8, 29, 14, 35, 0),
+        updatedAt: DateTime(2026, 8, 29, 14, 35, 0),
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final series = CashflowAnalyticsService.compute30DaySeries(
+        [addFundsTx],
+        type: 'income',
+        walletId: 'w_a',
+        referenceDate: nowTime,
+      );
+
+      expect(series.length, 30);
+      expect(series[29], 350000.0);
+      expect(series.reduce((a, b) => a + b), 350000.0);
+    });
+
     test('compute30DayLabels generates exactly 30 points with non-empty interval markers', () {
       final labels = CashflowAnalyticsService.compute30DayLabels(referenceDate: now);
       expect(labels.length, 30);
@@ -177,6 +208,47 @@ void main() {
       expect(weekly[0], 0.0);
     });
 
+    test('computeWeeklySpending aggregates two 35.000 income deposits to 70.000 for income cards', () {
+      final dep1 = TransactionEntry(
+        id: 'dep_1',
+        walletId: 'w_a',
+        categoryId: 'cat_income',
+        amount: 35000.0,
+        type: 'income',
+        notes: 'Deposit Bank 1',
+        transactionDate: DateTime(2026, 8, 28, 10, 0),
+        source: 'notification',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+      final dep2 = TransactionEntry(
+        id: 'dep_2',
+        walletId: 'w_a',
+        categoryId: 'cat_income',
+        amount: 35000.0,
+        type: 'income',
+        notes: 'Deposit Bank 2',
+        transactionDate: DateTime(2026, 8, 28, 14, 0),
+        source: 'notification',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final weeklyIncome = CashflowAnalyticsService.computeWeeklySpending(
+        [dep1, dep2],
+        referenceDate: now,
+        categoryId: 'cat_income',
+        type: 'income',
+      );
+
+      // Friday (index 4) should have the sum of both deposits: 35000 + 35000 = 70000
+      expect(weeklyIncome[4], 70000.0);
+      expect(weeklyIncome.reduce((a, b) => a + b), 70000.0);
+    });
     test('computePocketTrendSeries reflects deposit (upward) and withdrawal (downward) across filters', () {
       final txDeposit = TransactionEntry(
         id: 'tx_dep',

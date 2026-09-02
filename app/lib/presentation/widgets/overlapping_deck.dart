@@ -145,13 +145,13 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                     final cardColor = getExpenseCategoryColor(tx.type, tx.notes, tx.type, i);
                     final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
 
-                    // Compute real 7-day spending for the week of this transaction, scoped to its category
+                    // Compute real 7-day spending/income for the week of this transaction, scoped to its category & type
                     final weeklySpending = CashflowAnalyticsService.computeWeeklySpending(
                       sourceTransactions,
                       referenceDate: tx.transactionDate,
                       categoryId: tx.categoryId,
+                      type: tx.type,
                     );
-
                     // Natural unconstrained Y
                     final double naturalTop = _getNaturalTop(i, currentExpandedId, list);
                     final double screenY = naturalTop - _scrollOffset;

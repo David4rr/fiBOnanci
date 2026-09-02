@@ -57,7 +57,8 @@ class CashflowAnalyticsService {
     double expense = 0.0;
 
     for (final tx in transactions) {
-      if (tx.transactionDate.year == now.year && tx.transactionDate.month == now.month) {
+      final localTx = tx.transactionDate.toLocal();
+      if (localTx.year == now.year && localTx.month == now.month) {
         if (tx.type == 'income') {
           income += tx.amount;
         } else if (tx.type == 'expense') {
@@ -77,6 +78,7 @@ class CashflowAnalyticsService {
     DateTime? referenceDate,
   }) {
     final now = referenceDate ?? DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final List<double> dailyValues = List.filled(30, 0.0);
 
     for (final tx in transactions) {
@@ -85,35 +87,48 @@ class CashflowAnalyticsService {
       }
       if (tx.type != type) continue;
 
-      final diff = now.difference(tx.transactionDate).inDays;
+      final localTx = tx.transactionDate.toLocal();
+      final txDay = DateTime(localTx.year, localTx.month, localTx.day);
+      final diff = today.difference(txDay).inDays;
+
       if (diff >= 0 && diff < 30) {
         final index = 29 - diff;
         dailyValues[index] += tx.amount;
+      } else if (diff < 0 && diff >= -1) {
+        // Transaction logged today with slight clock skew
+        dailyValues[29] += tx.amount;
       }
     }
 
     return dailyValues;
   }
 
-  /// Computes real 7-day daily spending (Sen–Min, Monday–Sunday) for the week of referenceDate.
+  /// Computes real 7-day daily spending/income (Sen–Min, Monday–Sunday) for the week of referenceDate.
   /// Returns a 7-element `List<double>` [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
   static List<double> computeWeeklySpending(
     List<TransactionEntry> transactions, {
     DateTime? referenceDate,
     String? walletId,
     String? categoryId,
+    String? type,
   }) {
     final ref = referenceDate ?? DateTime.now();
+    final today = DateTime(ref.year, ref.month, ref.day);
     // Monday is weekday 1
-    final monday = DateTime(ref.year, ref.month, ref.day).subtract(Duration(days: ref.weekday - 1));
+    final monday = today.subtract(Duration(days: ref.weekday - 1));
     final List<double> dailySpend = List.filled(7, 0.0);
 
     for (final tx in transactions) {
-      if (tx.type != 'expense' && tx.type != 'transfer') continue;
-      if (walletId != null && tx.walletId != walletId) continue;
+      if (type != null) {
+        if (tx.type != type) continue;
+      } else {
+        if (tx.type != 'expense' && tx.type != 'transfer') continue;
+      }
+      if (walletId != null && tx.walletId != walletId && tx.destinationWalletId != walletId) continue;
       if (categoryId != null && tx.categoryId != categoryId) continue;
 
-      final txDate = DateTime(tx.transactionDate.year, tx.transactionDate.month, tx.transactionDate.day);
+      final localTx = tx.transactionDate.toLocal();
+      final txDate = DateTime(localTx.year, localTx.month, localTx.day);
       final diff = txDate.difference(monday).inDays;
       if (diff >= 0 && diff < 7) {
         dailySpend[diff] += tx.amount;

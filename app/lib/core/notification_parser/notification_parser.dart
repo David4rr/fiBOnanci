@@ -78,13 +78,13 @@ class NotificationParser {
 
     // 1. Extract monetary amount (Rp or IDR format)
     final amountRegex = RegExp(
-      r'(?:Rp\.?|IDR)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|(?:sebesar|senilai)\s+(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)',
+      r'(?:Rp\.?|IDR)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|(?:sebesar|senilai|amount|nominal)\s+(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|([0-9]{1,3}(?:[.,][0-9]{3})+)',
       caseSensitive: false,
     );
     final amtMatch = amountRegex.firstMatch(fullText);
     if (amtMatch == null) return null;
 
-    final rawAmountStr = amtMatch.group(1) ?? amtMatch.group(2);
+    final rawAmountStr = amtMatch.group(1) ?? amtMatch.group(2) ?? amtMatch.group(3);
     if (rawAmountStr == null) return null;
 
     final amount = _parseIdr(rawAmountStr);
@@ -96,19 +96,56 @@ class NotificationParser {
     final isIncome = lowText.contains('masuk') ||
         lowText.contains('menerima') ||
         lowText.contains('kredit') ||
+        lowText.contains('credit') ||
         lowText.contains('diterima') ||
         lowText.contains('cr ') ||
+        lowText.contains('cr.') ||
+        lowText.contains('cr:') ||
         lowText.contains('setoran') ||
-        lowText.contains('top up berhasil') ||
-        lowText.contains('isi saldo berhasil') ||
+        lowText.contains('setor tunai') ||
+        lowText.contains('deposit') ||
+        lowText.contains('top up') ||
+        lowText.contains('top-up') ||
+        lowText.contains('topup') ||
+        lowText.contains('isi saldo') ||
+        lowText.contains('pengisian saldo') ||
+        lowText.contains('tambah saldo') ||
+        lowText.contains('tambah dana') ||
+        lowText.contains('penambahan saldo') ||
+        lowText.contains('saldo bertambah') ||
+        lowText.contains('add funds') ||
+        lowText.contains('add fund') ||
+        lowText.contains('added funds') ||
+        lowText.contains('funds added') ||
+        lowText.contains('fund added') ||
+        lowText.contains('added to') ||
+        lowText.contains('ditambahkan ke') ||
+        lowText.contains('ditambahkan') ||
+        lowText.contains('terima uang') ||
+        lowText.contains('terima dana') ||
+        lowText.contains('terima transfer') ||
+        lowText.contains('incoming') ||
+        lowText.contains('pemasukan') ||
+        lowText.contains('received') ||
         lowText.contains('refund') ||
         lowText.contains('pengembalian');
 
     if (isIncome) {
       // Extract sender counterparty
-      final senderRegex = RegExp(r'(?:dari|pengirim)\s+([^.,\n]+?)(?:\s+(?:pada|sebesar|senilai|ke|berhasil|telah)|$|\.)', caseSensitive: false);
+      final senderRegex = RegExp(r'(?:dari|pengirim|from)\s+([^.,\n]+?)(?:\s+(?:pada|sebesar|senilai|ke|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
       final sMatch = senderRegex.firstMatch(fullText);
-      final sender = sMatch != null ? sMatch.group(1)!.trim() : (title.isNotEmpty ? title.trim() : 'Transfer Masuk');
+      String sender = sMatch != null ? sMatch.group(1)!.trim() : '';
+      if (sender.isEmpty) {
+        if (lowText.contains('top up') || lowText.contains('topup') || lowText.contains('top-up')) {
+          sender = 'Top Up Saldo';
+        } else if (lowText.contains('isi saldo') || lowText.contains('pengisian saldo')) {
+          sender = 'Isi Saldo';
+        } else if (lowText.contains('add funds') || lowText.contains('add fund') || lowText.contains('tambah dana')) {
+          sender = 'Add Funds';
+        } else {
+          sender = title.isNotEmpty ? title.trim() : 'Transfer Masuk';
+        }
+      }
 
       return ParsedNotificationResult(
         amount: amount,
@@ -116,7 +153,7 @@ class NotificationParser {
         counterparty: sender,
       );
     } else {
-      final recipientRegex = RegExp(r'(?:ke|kepada|di)\s+([^.,\n]+?)(?:\s+(?:sebesar|senilai|pada|berhasil|telah)|$|\.)', caseSensitive: false);
+      final recipientRegex = RegExp(r'(?:ke|kepada|di|to)\s+([^.,\n]+?)(?:\s+(?:sebesar|senilai|pada|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
       final rMatch = recipientRegex.firstMatch(fullText);
       final recipient = rMatch != null ? rMatch.group(1)!.trim() : (title.isNotEmpty ? title.trim() : 'Pengeluaran Transaksi');
 

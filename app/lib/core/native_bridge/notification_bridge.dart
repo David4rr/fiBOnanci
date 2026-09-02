@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:drift/drift.dart' as drift;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,13 +14,18 @@ class NotificationBridge {
   static const _methodChannel = MethodChannel('com.fibonanci.app/notification_service');
   static const _eventChannel = EventChannel('com.fibonanci.app/live_notifications');
 
+  static final List<Map<String, dynamic>> _pendingNotifications = [];
+  static final ValueNotifier<int> pendingCountNotifier = ValueNotifier<int>(0);
+
   StreamSubscription? _liveSubscription;
+
+  static int get pendingCount => _pendingNotifications.length;
 
   /// Check if Android Notification Listener permission is granted by user
   static Future<bool> isPermissionGranted() async {
     try {
-      final bool granted = await _methodChannel.invokeMethod('isPermissionGranted');
-      return granted;
+      final bool? isGranted = await _methodChannel.invokeMethod('isPermissionGranted');
+      return isGranted ?? false;
     } catch (_) {
       return false;
     }
@@ -32,15 +38,47 @@ class NotificationBridge {
     } catch (_) {}
   }
 
-  /// Retrieve pending notifications buffered in Android SharedPreferences
+  static bool _isDuplicatePending(Map<String, dynamic> item) {
+    return _pendingNotifications.any((p) =>
+      p['package'] == item['package'] &&
+      p['text'] == item['text'] &&
+      p['timestamp'] == item['timestamp']
+    );
+  }
+
+  /// Retrieve pending notifications buffered in memory / SharedPreferences
   static Future<List<Map<String, dynamic>>> getPendingRawNotifications() async {
     try {
       final List<dynamic>? pending = await _methodChannel.invokeMethod('getPendingNotifications');
       if (pending != null) {
-        return pending.whereType<Map>().map((m) => Map<String, dynamic>.from(m)).toList();
+        for (final item in pending) {
+          if (item is Map) {
+            final map = Map<String, dynamic>.from(item);
+            if (!_isDuplicatePending(map)) {
+              _pendingNotifications.add(map);
+            }
+          }
+        }
+        pendingCountNotifier.value = _pendingNotifications.length;
       }
     } catch (_) {}
-    return [];
+    return List.unmodifiable(_pendingNotifications);
+  }
+
+  /// Removes a processed or discarded notification from pending list
+  static void removePendingNotification(Map<String, dynamic> raw) {
+    _pendingNotifications.removeWhere((p) =>
+      p['package'] == raw['package'] &&
+      p['text'] == raw['text'] &&
+      p['timestamp'] == raw['timestamp']
+    );
+    pendingCountNotifier.value = _pendingNotifications.length;
+  }
+
+  /// Clears all pending notifications
+  static void clearPendingNotifications() {
+    _pendingNotifications.clear();
+    pendingCountNotifier.value = 0;
   }
 
   /// Sync active package whitelist from Drift database to Android SharedPreferences
@@ -127,20 +165,41 @@ class NotificationBridge {
 
     if (parsed == null) return;
 
-    // If interactive review prompt is registered (app open), show modal to let user confirm/change wallet
-    if (onReviewPrompt != null) {
+    // Check if auto-confirm rule exists in SQLite
+    final rule = await db.getNotificationRuleForPackage(pkg);
+    final isAutoConfirm = rule?.autoConfirm ?? false;
+
+    // If interactive review prompt is registered and not auto-confirm:
+    if (!isAutoConfirm && onReviewPrompt != null) {
       final handled = await onReviewPrompt(parsed, pkg);
-      if (handled != null) return; // User reviewed and committed via modal
+      if (handled == true) {
+        // User confirmed and saved transaction via modal
+        removePendingNotification(raw);
+        return;
+      } else {
+        // User dismissed/closed modal without confirming: KEEP IN PENDING INBOX!
+        if (!_isDuplicatePending(raw)) {
+          _pendingNotifications.add(raw);
+          pendingCountNotifier.value = _pendingNotifications.length;
+        }
+        return; // Stop here — DO NOT auto-log to SQLite!
+      }
     }
 
-    // Resolve matching wallet in database
+    if (!isAutoConfirm && onReviewPrompt == null) {
+      // No UI prompt available: keep in pending inbox queue
+      if (!_isDuplicatePending(raw)) {
+        _pendingNotifications.add(raw);
+        pendingCountNotifier.value = _pendingNotifications.length;
+      }
+      return;
+    }
+
+    // Resolve matching wallet in database for auto-confirmed transactions
     final wallets = await db.select(db.wallets).get();
     if (wallets.isEmpty) return;
 
     WalletEntry? targetWallet;
-
-    // 1. Priority: Match against dynamic NotificationRules from SQLite
-    final rule = await db.getNotificationRuleForPackage(pkg);
     if (rule != null) {
       targetWallet = wallets.where((w) => w.id == rule.walletId).firstOrNull;
     }
@@ -253,7 +312,7 @@ class NotificationBridge {
         await db.updateWalletBalance(targetWallet.id, exactRealBal);
       }
     }
-
+    removePendingNotification(raw);
     onAutoLogged?.call('${targetWallet.name}: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
   }
 }

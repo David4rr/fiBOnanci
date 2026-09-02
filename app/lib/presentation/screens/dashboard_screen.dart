@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
+import '../../core/native_bridge/notification_bridge.dart';
 import '../modals/all_transactions_modal.dart';
 import '../modals/dashboard_modals.dart';
 import '../modals/pending_inbox_modal.dart';
@@ -117,17 +118,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => PendingInboxModal.show(context),
-                            child: Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF1E212D),
-                                border: Border.all(color: AppColors.canvasBorder, width: 1.5),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
-                              ),
+                            child: ValueListenableBuilder<int>(
+                              valueListenable: NotificationBridge.pendingCountNotifier,
+                              builder: (context, pendingCount, child) {
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: const Color(0xFF1E212D),
+                                        border: Border.all(color: AppColors.canvasBorder, width: 1.5),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
+                                      ),
+                                    ),
+                                    if (pendingCount > 0)
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: Container(
+                                          width: 10,
+                                          height: 10,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.neoChartreuse,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: AppColors.canvasBg, width: 1.5),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(width: 10),

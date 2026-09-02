@@ -227,5 +227,49 @@ void main() {
       expect(res.type, 'expense');
       expect(res.counterparty, 'Rekening BCA 0129381');
     });
+
+    test('Add funds notification in English parses as income with amount', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.bca',
+        title: 'BCA mobile',
+        body: 'Add funds of Rp 250.000 to your account was successful.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 250000.0);
+      expect(res.type, 'income');
+    });
+
+    test('Top up notification with amount parses as income', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.gojek.app',
+        title: 'GoPay',
+        body: 'Top up GoPay Rp 100.000 dari BCA berhasil.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 100000.0);
+      expect(res.type, 'income');
+    });
+
+    test('Tambah dana notification parses as income', () {
+      final res = NotificationParser.parse(
+        packageName: 'id.dana',
+        title: 'DANA',
+        body: 'Tambah dana sebesar Rp 50.000 ke saldo DANA berhasil.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 50000.0);
+      expect(res.type, 'income');
+    });
+
+    test('Isi saldo notification parses as income', () {
+      final res = NotificationParser.parse(
+        packageName: 'ovo.id',
+        title: 'OVO',
+        body: 'Isi saldo Rp 75.000 berhasil dilakukan.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 75000.0);
+      expect(res.type, 'income');
+    });
   });
 }

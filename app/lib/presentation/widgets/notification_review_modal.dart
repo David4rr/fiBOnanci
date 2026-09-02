@@ -139,12 +139,20 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.notifications_active, color: AppColors.neoChartreuse, size: 22),
-                            const SizedBox(width: 8),
-                            Text('Konfirmasi Notifikasi', style: AppTypography.sectionTitle),
-                          ],
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(Icons.notifications_active, color: AppColors.neoChartreuse, size: 22),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  'Konfirmasi Notifikasi',
+                                  style: AppTypography.sectionTitle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close, color: AppColors.textMuted),
