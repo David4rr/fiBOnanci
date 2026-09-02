@@ -59,6 +59,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<MarkSubscriptionPaidEvent>(_onMarkSubscriptionPaid);
     on<UpdateWalletBalanceEvent>(_onUpdateWalletBalance);
     on<AddWalletEvent>(_onAddWallet);
+    on<DeleteWalletEvent>(_onDeleteWallet);
     on<BindWalletToPackageEvent>(_onBindWalletToPackage);
     on<UnbindPackageEvent>(_onUnbindPackage);
     on<AddPocketEvent>(_onAddPocket);
@@ -84,12 +85,21 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
     // Internal reactive stream event handlers
     on<_WalletsUpdated>((event, emit) {
+      Set<String>? safeWallets = state.safeToSpendWalletIds;
+      if (safeWallets != null) {
+        final activeIds = event.wallets.map((w) => w.id).toSet();
+        safeWallets = safeWallets.intersection(activeIds);
+      }
       final metrics = SafeToSpendService.calculate(
         wallets: event.wallets,
         subscriptions: state.subscriptions,
-        selectedWalletIds: state.safeToSpendWalletIds,
+        selectedWalletIds: safeWallets,
       );
-      emit(state.copyWith(wallets: event.wallets, metrics: metrics));
+      emit(state.copyWith(
+        wallets: event.wallets,
+        safeToSpendWalletIds: safeWallets,
+        metrics: metrics,
+      ));
     });
     on<_CategoriesUpdated>((event, emit) {
       emit(state.copyWith(categories: event.categories));
@@ -291,6 +301,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       emit(state.copyWith(errorMessage: 'Gagal menambah rekening: $e'));
     }
   }
+  Future<void> _onDeleteWallet(DeleteWalletEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.deleteWallet(event.walletId);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal menghapus rekening: $e'));
+    }
+  }
+
 
   Future<void> _onBindWalletToPackage(BindWalletToPackageEvent event, Emitter<FinanceState> emit) async {
     try {

@@ -139,6 +139,12 @@ class AddWalletEvent extends FinanceEvent {
     this.boundPackageName,
   });
 }
+class DeleteWalletEvent extends FinanceEvent {
+  final String walletId;
+
+  const DeleteWalletEvent(this.walletId);
+}
+
 
 class BindWalletToPackageEvent extends FinanceEvent {
   final String walletId;

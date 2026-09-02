@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/finance/finance_bloc.dart';
+import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -54,14 +57,15 @@ class WalletDetailOverlay extends StatelessWidget {
           ),
         ),
 
-        // Centered Focused View
+        // Bottom-Anchored Focused Detail Sheet View
         Positioned.fill(
           child: SafeArea(
-            child: Center(
+            child: Align(
+              alignment: Alignment.bottomCenter,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                margin: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -70,22 +74,45 @@ class WalletDetailOverlay extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Detail Rekening',
-                          style: AppTypography.heroGreeting.copyWith(fontSize: 20),
-                        ),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: onClose,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.canvasCardSurface,
-                              border: Border.all(color: AppColors.canvasBorder, width: 1),
-                            ),
-                            child: const Icon(Icons.close, color: AppColors.textWhite, size: 16),
+                        Expanded(
+                          child: Text(
+                            'Detail Rekening',
+                            style: AppTypography.heroGreeting.copyWith(fontSize: 20),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        Row(
+                          children: [
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _confirmDeleteWallet(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.canvasCardSurface,
+                                  border: Border.all(color: AppColors.canvasBorder, width: 1),
+                                ),
+                                child: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 16),
+                              ),
+                            ),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: onClose,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.canvasCardSurface,
+                                  border: Border.all(color: AppColors.canvasBorder, width: 1),
+                                ),
+                                child: const Icon(Icons.close, color: AppColors.textWhite, size: 16),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -293,4 +320,76 @@ class WalletDetailOverlay extends StatelessWidget {
       ],
     );
   }
+  void _confirmDeleteWallet(BuildContext context) {
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.canvasCardSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: AppColors.canvasBorder),
+          ),
+          title: Text(
+            'Hapus Rekening?',
+            style: AppTypography.sectionTitle.copyWith(
+              color: AppColors.textWhite,
+              fontSize: 18,
+            ),
+          ),
+          content: Text(
+            'Rekening "${wallet.name}" beserta aturan notifikasinya akan dihapus. Riwayat mutasi transaksi sebelumnya tetap aman dan tercatat.',
+            style: AppTypography.listSubtitle.copyWith(
+              color: AppColors.textMuted,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(
+                'Batal',
+                style: AppTypography.listTitle.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.neoCoral,
+                foregroundColor: AppColors.textDarkPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    ).then((confirmed) {
+      if (confirmed == true && context.mounted) {
+        context.read<FinanceBloc>().add(DeleteWalletEvent(wallet.id));
+        onClose();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.neoCoral,
+            content: Text(
+              'Rekening ${wallet.name} berhasil dihapus.',
+              style: const TextStyle(
+                color: AppColors.textDarkPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }
+    });
+  }
+
 }

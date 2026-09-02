@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
 import '../database/app_database.dart';
+import '../../core/native_bridge/notification_bridge.dart';
 
 abstract class FinanceRepository {
   Stream<List<WalletEntry>> watchWallets();
@@ -73,6 +74,7 @@ abstract class FinanceRepository {
     required String iconName,
     String? boundPackageName,
   });
+  Future<void> deleteWallet(String walletId);
 
   Stream<List<NotificationRuleEntry>> watchNotificationRules();
   Future<List<NotificationRuleEntry>> getNotificationRules();
@@ -383,6 +385,12 @@ class DriftFinanceRepository implements FinanceRepository {
         packageName: packageName,
         isEnabled: isEnabled,
       );
+
+  @override
+  Future<void> deleteWallet(String walletId) async {
+    await db.deleteWallet(walletId);
+    await NotificationBridge.syncAllowedPackages(db);
+  }
 
   @override
   Future<void> unbindPackage(String packageName) => db.unbindPackage(packageName);

@@ -3,19 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'modernist_card_painter.dart';
+export 'modernist_card_painter.dart' show ModernistCardTheme, ModernistCardConfig;
 import '../../data/database/app_database.dart';
-
-/// Preset theme for the Swiss-editorial modernist cards in ref1.jpg
-enum ModernistCardTheme {
-  streamingCinematic,   // Dark Obsidian Crimson with bold curves (Netflix, Disney, HBO, YouTube)
-  audioEmerald,         // Neo Mint / Emerald with soundwave geometry (Spotify, Apple Music, Tidal)
-  utilitiesLemon,       // Acid Neon Lemon with energy sunburst (PLN, PDAM, BPJS, Pajak)
-  fiberInternet,        // Periwinkle Lavender with fiber concentric ovals (Indihome, Biznet, Telkomsel, Wifi)
-  aiCloudProductivity,  // Bone Warm Grey with 3 terracotta disks (ChatGPT, GitHub, iCloud, Google One, Notion)
-  housingLiving,        // Slate Charcoal with architectural lines (Kost, Sewa, Apartemen, Cicilan)
-  fitnessLifestyle,     // Hot Coral Terracotta with dynamic arcs (Gym, Fitness, Club)
-  recurringSmartBill,   // Oatmeal Sand with geometric waves (Default / General subscriptions)
-}
 
 /// Helper data class for card styling
 class _CardThemeConfig {

@@ -1,8 +1,113 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-import 'subscription_card.dart';
+/// Preset theme for the Swiss-editorial modernist cards in ref1.jpg
+enum ModernistCardTheme {
+  streamingCinematic,   // Dark Obsidian Crimson with bold curves (Netflix, Disney, HBO, YouTube)
+  audioEmerald,         // Neo Mint / Emerald with soundwave geometry (Spotify, Apple Music, Tidal)
+  utilitiesLemon,       // Acid Neon Lemon with energy sunburst (PLN, PDAM, BPJS, Pajak)
+  fiberInternet,        // Periwinkle Lavender with fiber concentric ovals (Indihome, Biznet, Telkomsel, Wifi)
+  aiCloudProductivity,  // Bone Warm Grey with 3 terracotta disks (ChatGPT, GitHub, iCloud, Google One, Notion)
+  housingLiving,        // Slate Charcoal with architectural lines (Kost, Sewa, Apartemen, Cicilan)
+  fitnessLifestyle,     // Hot Coral Terracotta with dynamic arcs (Gym, Fitness, Club)
+  recurringSmartBill,   // Oatmeal Sand with geometric waves (Default / General subscriptions)
+}
 
+/// Unified configuration for Modernist Cards matching the physical ATM reference.
+class ModernistCardConfig {
+  final Color backgroundColor;
+  final Color primaryGraphicColor;
+  final Color secondaryGraphicColor;
+  final Color textColor;
+  final Color badgeColor;
+  final String networkBadgeText;
+
+  const ModernistCardConfig({
+    required this.backgroundColor,
+    required this.primaryGraphicColor,
+    required this.secondaryGraphicColor,
+    required this.textColor,
+    required this.badgeColor,
+    required this.networkBadgeText,
+  });
+
+  static ModernistCardConfig forTheme(ModernistCardTheme theme) {
+    switch (theme) {
+      case ModernistCardTheme.streamingCinematic:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFF1E1418), // Cinematic dark obsidian crimson
+          primaryGraphicColor: Color(0xFFE50914), // Netflix red arc
+          secondaryGraphicColor: Color(0xFFFF5252),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFE50914),
+          networkBadgeText: 'STREAMING',
+        );
+      case ModernistCardTheme.audioEmerald:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFF7CB88D), // Emerald sage
+          primaryGraphicColor: Color(0xFF183820),
+          secondaryGraphicColor: Color(0xFF67A578),
+          textColor: Color(0xFF0F2615),
+          badgeColor: Color(0xFF0F2615),
+          networkBadgeText: 'AUDIO',
+        );
+      case ModernistCardTheme.utilitiesLemon:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFFF3F76E), // Acid neon lemon
+          primaryGraphicColor: Color(0xFFE2E658),
+          secondaryGraphicColor: Color(0xFF20221A),
+          textColor: Color(0xFF1A1C16),
+          badgeColor: Color(0xFF1A1C16),
+          networkBadgeText: 'UTILITY',
+        );
+      case ModernistCardTheme.fiberInternet:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFF9EACF0), // Periwinkle fiber
+          primaryGraphicColor: Color(0xFF1E2856),
+          secondaryGraphicColor: Color(0xFF8697E6),
+          textColor: Color(0xFF151C3E),
+          badgeColor: Color(0xFF151C3E),
+          networkBadgeText: 'INTERNET',
+        );
+      case ModernistCardTheme.aiCloudProductivity:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFFE5E3DC), // Bone warm grey
+          primaryGraphicColor: Color(0xFFE84E38), // Terracotta
+          secondaryGraphicColor: Color(0xFFE84E38),
+          textColor: Color(0xFF181A1E),
+          badgeColor: Color(0xFF181A1E),
+          networkBadgeText: 'PRO CLOUD',
+        );
+      case ModernistCardTheme.housingLiving:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFF56626A), // Slate charcoal
+          primaryGraphicColor: Color(0xFF455057),
+          secondaryGraphicColor: Color(0xFF75838B),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'HOUSING',
+        );
+      case ModernistCardTheme.fitnessLifestyle:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFFFF5252), // Hot coral
+          primaryGraphicColor: Color(0xFFE03838),
+          secondaryGraphicColor: Color(0xFFFF7A7A),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'FITNESS',
+        );
+      case ModernistCardTheme.recurringSmartBill:
+        return const ModernistCardConfig(
+          backgroundColor: Color(0xFFE0D8C6), // Oatmeal sand
+          primaryGraphicColor: Color(0xFFC7BC9E),
+          secondaryGraphicColor: Color(0xFF4A4438),
+          textColor: Color(0xFF2C2720),
+          badgeColor: Color(0xFF2C2720),
+          networkBadgeText: 'RECURRING',
+        );
+    }
+  }
+}
 /// Custom painter for the abstract modernist graphics in ref1.jpg
 class ModernistCardPainter extends CustomPainter {
   final ModernistCardTheme theme;

@@ -678,6 +678,27 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+  Future<void> deleteWallet(String walletId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      await (update(wallets)..where((t) => t.id.equals(walletId))).write(
+        WalletsCompanion(
+          isDeleted: const Value(true),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
+      await (update(notificationRules)..where((t) => t.walletId.equals(walletId))).write(
+        NotificationRulesCompanion(
+          isEnabled: const Value(false),
+          isDeleted: const Value(true),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
+    });
+  }
+
 
   Future<void> deleteTransactionWithBalanceReversal(String txId) {
     return transaction(() async {
