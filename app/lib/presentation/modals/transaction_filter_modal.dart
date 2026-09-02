@@ -10,12 +10,14 @@ class TransactionFilterModal {
     required String initialType,
     required String? initialWalletId,
     required void Function(String type, String? walletId) onApply,
+    bool showWalletFilter = true,
   }) {
     String currentType = initialType;
     String? currentWalletId = initialWalletId;
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: AppColors.canvasCardSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -23,11 +25,17 @@ class TransactionFilterModal {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setFilterState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 24,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: Container(
@@ -69,28 +77,29 @@ class TransactionFilterModal {
                       }),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'REKENING',
-                    style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildFilterChoiceChip(null, 'Semua Rekening', currentWalletId, (val) {
-                        currentWalletId = val;
-                        setFilterState(() {});
-                      }),
-                      for (final w in wallets)
-                        _buildFilterChoiceChip(w.id, w.name, currentWalletId, (val) {
+                  if (showWalletFilter && wallets.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'REKENING',
+                      style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildFilterChoiceChip(null, 'Semua Rekening', currentWalletId, (val) {
                           currentWalletId = val;
                           setFilterState(() {});
                         }),
-                    ],
-                  ),
+                        for (final w in wallets)
+                          _buildFilterChoiceChip(w.id, w.name, currentWalletId, (val) {
+                            currentWalletId = val;
+                            setFilterState(() {});
+                          }),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -117,12 +126,13 @@ class TransactionFilterModal {
                   ),
                 ],
               ),
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+          );
+        },
+      );
+    },
+  );
+}
 
   static Widget _buildFilterChoiceChip(
     String? value,

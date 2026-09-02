@@ -70,15 +70,45 @@ class EditBalanceModal {
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                'Penyesuaian Saldo: ${wallet.name}',
-                style: AppTypography.sectionTitle,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Ubah saldo awal rekening sesuai saldo riil saat ini di m-banking.',
-                style: AppTypography.listSubtitle,
+              const SizedBox(height: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Penyesuaian Saldo: ${wallet.name}',
+                          style: AppTypography.sectionTitle,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Ubah saldo awal rekening sesuai saldo riil saat ini di m-banking.',
+                          style: AppTypography.listSubtitle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.canvasInputSearch,
+                        border: Border.all(color: AppColors.canvasBorder, width: 0.8),
+                      ),
+                      child: const Icon(Icons.close, color: AppColors.textWhite, size: 18),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               TextField(
@@ -189,71 +219,103 @@ class EditBalanceModal {
                 ),
               ],
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.neoChartreuse,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    'Perbarui Saldo',
-                    style: AppTypography.listTitle.copyWith(
-                      color: AppColors.textDarkPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onPressed: () {
-                    final newBal = RupiahInputFormatter.parse(controller.text);
-                    final boundPkg = isCustomPackage
-                        ? customPackageController.text.trim()
-                        : selectedPackage;
-
-                    if (newBal > 0) {
-                      context.read<FinanceBloc>().add(
-                        UpdateWalletBalanceEvent(
-                          walletId: wallet.id,
-                          newBalance: newBal,
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.canvasBorder),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                      );
-                    }
-
-                    final repo = context.read<FinanceBloc>().repository;
-                    if (boundPkg != null && boundPkg.isNotEmpty) {
-                      repo.bindWalletToPackage(
-                        walletId: wallet.id,
-                        packageName: boundPkg,
-                      ).then((_) {
-                        if (repo is DriftFinanceRepository) {
-                          NotificationBridge.syncAllowedPackages(repo.db);
-                        }
-                      });
-                    } else if (currentRule != null) {
-                      repo.unbindPackage(currentRule!.packageName).then((_) {
-                        if (repo is DriftFinanceRepository) {
-                          NotificationBridge.syncAllowedPackages(repo.db);
-                        }
-                      });
-                    }
-
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: AppColors.neoChartreuse,
-                        content: Text(
-                          'Rekening ${wallet.name} berhasil diperbarui.',
-                          style: const TextStyle(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(
+                          'Batal',
+                          style: AppTypography.listTitle.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.neoChartreuse,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'Perbarui Saldo',
+                          style: AppTypography.listTitle.copyWith(
                             color: AppColors.textDarkPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        onPressed: () {
+                          final newBal = RupiahInputFormatter.parse(controller.text);
+                          final boundPkg = isCustomPackage
+                              ? customPackageController.text.trim()
+                              : selectedPackage;
+
+                          if (newBal > 0) {
+                            context.read<FinanceBloc>().add(
+                              UpdateWalletBalanceEvent(
+                                walletId: wallet.id,
+                                newBalance: newBal,
+                              ),
+                            );
+                          }
+
+                          final repo = context.read<FinanceBloc>().repository;
+                          if (boundPkg != null && boundPkg.isNotEmpty) {
+                            repo.bindWalletToPackage(
+                              walletId: wallet.id,
+                              packageName: boundPkg,
+                            ).then((_) {
+                              if (repo is DriftFinanceRepository) {
+                                NotificationBridge.syncAllowedPackages(repo.db);
+                              }
+                            });
+                          } else if (currentRule != null) {
+                            repo.unbindPackage(currentRule!.packageName).then((_) {
+                              if (repo is DriftFinanceRepository) {
+                                NotificationBridge.syncAllowedPackages(repo.db);
+                              }
+                            });
+                          }
+
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppColors.neoChartreuse,
+                              content: Text(
+                                'Rekening ${wallet.name} berhasil diperbarui.',
+                                style: const TextStyle(
+                                  color: AppColors.textDarkPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               SizedBox(

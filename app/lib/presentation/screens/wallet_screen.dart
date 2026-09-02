@@ -23,14 +23,15 @@ import '../widgets/wallet_detail_overlay.dart';
 
 class WalletScreen extends StatefulWidget {
   final ValueChanged<int>? onSegmentChanged;
+  final ValueChanged<bool>? onDetailViewChanged;
   final int initialSegment;
 
   const WalletScreen({
     super.key,
     this.onSegmentChanged,
+    this.onDetailViewChanged,
     this.initialSegment = 0,
   });
-
   static void showAddWalletModal(BuildContext context) {
     AddWalletModal.show(context);
   }
@@ -266,7 +267,10 @@ class _WalletScreenState extends State<WalletScreen> {
                             wallets: wallets,
                             fmt: currencyFormatter,
                             liftedWalletId: activeSelected?.id,
-                            onSelectWallet: (wallet) => setState(() => _liftedWallet = wallet),
+                            onSelectWallet: (wallet) {
+                              setState(() => _liftedWallet = wallet);
+                              widget.onDetailViewChanged?.call(true);
+                            },
                           ),
                         ),
                       ),
@@ -487,14 +491,19 @@ class _WalletScreenState extends State<WalletScreen> {
                   currencyFormatter: currencyFormatter,
                   computeSeries: CashflowAnalyticsService.compute30DaySeries,
                   computeDayLabels: CashflowAnalyticsService.compute30DayLabels,
-                  onClose: () => setState(() => _liftedWallet = null),
+                  onClose: () {
+                    setState(() => _liftedWallet = null);
+                    widget.onDetailViewChanged?.call(false);
+                  },
                   onEditBalance: () {
                     final w = activeSelected;
                     setState(() => _liftedWallet = null);
+                    widget.onDetailViewChanged?.call(false);
                     EditBalanceModal.show(context, w);
                   },
                   onAddTransaction: () {
                     setState(() => _liftedWallet = null);
+                    widget.onDetailViewChanged?.call(false);
                     TransactionModal.show(context);
                   },
                 ),

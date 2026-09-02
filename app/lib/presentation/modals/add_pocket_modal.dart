@@ -78,15 +78,44 @@ class AddPocketModal {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 18),
-                        Text('Buat Kantong Alokasi Baru', style: AppTypography.sectionTitle),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Pisahkan dana tabungan agar tidak terpakai saat belanja harian.',
-                          style: AppTypography.listSubtitle,
+                        const SizedBox(height: 14),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Buat Kantong Alokasi Baru', style: AppTypography.sectionTitle),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Pisahkan dana tabungan agar tidak terpakai saat belanja harian.',
+                                    style: AppTypography.listSubtitle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                Navigator.pop(ctx);
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.canvasInputSearch,
+                                  border: Border.all(color: AppColors.canvasBorder, width: 0.8),
+                                ),
+                                child: const Icon(Icons.close, color: AppColors.textWhite, size: 18),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
-
                         // Nama Kantong
                         TextField(
                           controller: nameController,
@@ -251,99 +280,129 @@ class AddPocketModal {
                         ],
                         const SizedBox(height: 24),
 
-                        // Tombol Buat Kantong
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: activeColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: SizedBox(
+                                height: 52,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: AppColors.canvasBorder),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                  onPressed: () {
+                                    HapticFeedback.selectionClick();
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Text(
+                                    'Batal',
+                                    style: AppTypography.listTitle.copyWith(
+                                      color: AppColors.textMuted,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                            onPressed: () {
-                              final name = nameController.text.trim();
-                              if (name.isEmpty) {
-                                setModalState(() {
-                                  nameError = 'Nama kantong wajib diisi';
-                                });
-                                return;
-                              }
-
-                              final target = RupiahInputFormatter.parse(targetController.text);
-                              final initial = RupiahInputFormatter.parse(initialController.text);
-
-                              if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
-                                final wallet = activeWallets.firstWhere(
-                                  (w) => w.id == selectedWalletId,
-                                  orElse: () => activeWallets.first,
-                                );
-                                if (initial > wallet.balance) {
-                                  setModalState(() {
-                                    initialError = 'Saldo tidak cukup (Maks Rp ${wallet.balance.toStringAsFixed(0)})';
-                                  });
-                                  return;
-                                }
-                              }
-
-                              // 1. Dispatch create pocket event
-                              context.read<FinanceBloc>().add(
-                                AddPocketEvent(
-                                  name: name,
-                                  type: selectedType,
-                                  targetAmount: target > 0 ? target : null,
-                                  initialAmount: initial,
-                                  colorHex: currentType['color'] as String,
-                                  iconName: selectedType,
-                                  linkedWalletId: selectedWalletId,
-                                ),
-                              );
-
-                              // 2. If initial amount > 0 and wallet selected, also deduct from wallet
-                              if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
-                                final wallet = activeWallets.firstWhere(
-                                  (w) => w.id == selectedWalletId,
-                                  orElse: () => activeWallets.first,
-                                );
-                                context.read<FinanceBloc>().add(
-                                  UpdateWalletBalanceEvent(
-                                    walletId: selectedWalletId!,
-                                    newBalance: wallet.balance - initial,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: SizedBox(
+                                height: 52,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: activeColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
                                   ),
-                                );
-                              }
+                                  onPressed: () {
+                                    final name = nameController.text.trim();
+                                    if (name.isEmpty) {
+                                      setModalState(() {
+                                        nameError = 'Nama kantong wajib diisi';
+                                      });
+                                      return;
+                                    }
 
-                              Navigator.of(ctx).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: AppColors.canvasCardSurface,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  content: Row(
-                                    children: [
-                                      const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 20),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          'Kantong "$name" berhasil dibuat!',
-                                          style: AppTypography.listTitle.copyWith(fontSize: 13),
+                                    final target = RupiahInputFormatter.parse(targetController.text);
+                                    final initial = RupiahInputFormatter.parse(initialController.text);
+
+                                    if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
+                                      final wallet = activeWallets.firstWhere(
+                                        (w) => w.id == selectedWalletId,
+                                        orElse: () => activeWallets.first,
+                                      );
+                                      if (initial > wallet.balance) {
+                                        setModalState(() {
+                                          initialError = 'Saldo tidak cukup (Maks Rp ${wallet.balance.toStringAsFixed(0)})';
+                                        });
+                                        return;
+                                      }
+                                    }
+
+                                    // 1. Dispatch create pocket event
+                                    context.read<FinanceBloc>().add(
+                                      AddPocketEvent(
+                                        name: name,
+                                        type: selectedType,
+                                        targetAmount: target > 0 ? target : null,
+                                        initialAmount: initial,
+                                        colorHex: currentType['color'] as String,
+                                        iconName: selectedType,
+                                        linkedWalletId: selectedWalletId,
+                                      ),
+                                    );
+
+                                    // 2. If initial amount > 0 and wallet selected, also deduct from wallet
+                                    if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
+                                      final wallet = activeWallets.firstWhere(
+                                        (w) => w.id == selectedWalletId,
+                                        orElse: () => activeWallets.first,
+                                      );
+                                      context.read<FinanceBloc>().add(
+                                        UpdateWalletBalanceEvent(
+                                          walletId: selectedWalletId!,
+                                          newBalance: wallet.balance - initial,
+                                        ),
+                                      );
+                                    }
+
+                                    Navigator.of(ctx).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppColors.canvasCardSurface,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        content: Row(
+                                          children: [
+                                            const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 20),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                'Kantong "$name" berhasil dibuat!',
+                                                style: AppTypography.listTitle.copyWith(fontSize: 13),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                  child: Text(
+                                    'Buat Kantong Sekarang',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppColors.canvasBg,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
-                            child: Text(
-                              'Buat Kantong Sekarang',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: AppColors.canvasBg,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 15,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),

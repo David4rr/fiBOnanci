@@ -87,20 +87,46 @@ class _TransactionModalState extends State<TransactionModal> {
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
 
-            // Header & Type Switcher
+            // Header Row with Title, Subtitle & Tactile (X) Close Button
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Catat Transaksi', style: AppTypography.sectionTitle),
-                IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textMuted),
-                  onPressed: () => Navigator.pop(context),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Catat Transaksi', style: AppTypography.sectionTitle),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pemasukan, pengeluaran, atau transfer antar rekening.',
+                        style: AppTypography.listSubtitle,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.canvasInputSearch,
+                      border: Border.all(color: AppColors.canvasBorder, width: 0.8),
+                    ),
+                    child: const Icon(Icons.close, color: AppColors.textWhite, size: 18),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // Type Segmented Pills
             Container(
@@ -187,24 +213,54 @@ class _TransactionModalState extends State<TransactionModal> {
             ),
             const SizedBox(height: 24),
 
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.neoChartreuse,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () => _saveTransaction(context),
-                child: Text(
-                  'Simpan Transaksi',
-                  style: AppTypography.listTitle.copyWith(
-                    color: AppColors.textDarkPrimary,
-                    fontWeight: FontWeight.w700,
+            // Action Buttons Row: [ Batal ] [ Simpan Transaksi ]
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    height: 52,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.canvasBorder),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Batal',
+                        style: AppTypography.listTitle.copyWith(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.neoChartreuse,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () => _saveTransaction(context),
+                      child: Text(
+                        'Simpan Transaksi',
+                        style: AppTypography.listTitle.copyWith(
+                          color: AppColors.textDarkPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

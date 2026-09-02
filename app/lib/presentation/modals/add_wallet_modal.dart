@@ -47,9 +47,41 @@ class AddWalletModal {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Text('Tambah Dompet / Rekening Baru', style: AppTypography.sectionTitle),
                   const SizedBox(height: 14),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Tambah Rekening Baru', style: AppTypography.sectionTitle),
+                            const SizedBox(height: 4),
+                            Text('Bank, E-Wallet, atau Kas Tunai', style: AppTypography.listSubtitle),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.pop(modalContext);
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.canvasInputSearch,
+                            border: Border.all(color: AppColors.canvasBorder, width: 0.8),
+                          ),
+                          child: const Icon(Icons.close, color: AppColors.textWhite, size: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: nameController,
                     style: AppTypography.listTitle,
@@ -189,44 +221,74 @@ class AddWalletModal {
                     ],
                   ],
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.neoChartreuse,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Text(
-                        'Simpan Rekening',
-                        style: AppTypography.listTitle.copyWith(
-                          color: AppColors.textDarkPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onPressed: () {
-                        final name = nameController.text.trim();
-                        final bal = RupiahInputFormatter.parse(balanceController.text);
-                        final boundPkg = isCustomPackage
-                            ? customPackageController.text.trim()
-                            : selectedPackage;
-                        if (name.isNotEmpty) {
-                          context.read<FinanceBloc>().add(
-                            AddWalletEvent(
-                              name: name,
-                              type: type,
-                              initialBalance: bal,
-                              colorHex: '#10B981',
-                              iconName: 'wallet',
-                              boundPackageName: boundPkg?.isNotEmpty == true ? boundPkg : null,
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: SizedBox(
+                          height: 52,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.canvasBorder),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
-                          );
-                          Navigator.pop(modalContext);
-                        }
-                      },
-                    ),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(modalContext);
+                            },
+                            child: Text(
+                              'Batal',
+                              style: AppTypography.listTitle.copyWith(
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.neoChartreuse,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              'Simpan Rekening',
+                              style: AppTypography.listTitle.copyWith(
+                                color: AppColors.textDarkPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onPressed: () {
+                              final name = nameController.text.trim();
+                              final bal = RupiahInputFormatter.parse(balanceController.text);
+                              final boundPkg = isCustomPackage
+                                  ? customPackageController.text.trim()
+                                  : selectedPackage;
+                              if (name.isNotEmpty) {
+                                context.read<FinanceBloc>().add(
+                                  AddWalletEvent(
+                                    name: name,
+                                    type: type,
+                                    initialBalance: bal,
+                                    colorHex: '#10B981',
+                                    iconName: 'wallet',
+                                    boundPackageName: boundPkg?.isNotEmpty == true ? boundPkg : null,
+                                  ),
+                                );
+                                Navigator.pop(modalContext);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

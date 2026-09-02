@@ -31,6 +31,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
   int _walletSegment = 0;
+  bool _isWalletDetailOpen = false;
   final _bridge = NotificationBridge();
   @override
   void initState() {
@@ -88,6 +89,7 @@ class _MainShellState extends State<MainShell> {
       WalletScreen(
         initialSegment: _walletSegment,
         onSegmentChanged: (seg) => _walletSegment = seg,
+        onDetailViewChanged: (isOpen) => setState(() => _isWalletDetailOpen = isOpen),
       ),
       _buildSettingsScreen(context),
     ];
@@ -96,10 +98,23 @@ class _MainShellState extends State<MainShell> {
       backgroundColor: AppColors.canvasBg,
       extendBody: true,
       body: screens[_currentIndex < screens.length ? _currentIndex : 0],
-      bottomNavigationBar: BottomNavDock(
-        currentIndex: _currentIndex,
-        onTapIndex: (index) => setState(() => _currentIndex = index),
-        onCenterAction: _onCenterAction,
+      bottomNavigationBar: AnimatedSlide(
+        offset: _isWalletDetailOpen ? const Offset(0, 1.8) : Offset.zero,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        child: AnimatedOpacity(
+          opacity: _isWalletDetailOpen ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          child: IgnorePointer(
+            ignoring: _isWalletDetailOpen,
+            child: BottomNavDock(
+              currentIndex: _currentIndex,
+              onTapIndex: (index) => setState(() => _currentIndex = index),
+              onCenterAction: _onCenterAction,
+            ),
+          ),
+        ),
       ),
     );
   }
