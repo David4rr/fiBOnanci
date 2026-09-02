@@ -9,17 +9,14 @@ import '../widgets/pocket_stock_chart_card.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
-import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../modals/add_wallet_modal.dart';
-import '../modals/edit_balance_modal.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import '../widgets/transaction_modal.dart';
 import '../widgets/trend_spline_chart.dart';
 import '../widgets/wallet_card_deck.dart';
 import '../widgets/wallet_cashflow_summary.dart';
-import '../widgets/wallet_detail_overlay.dart';
+import '../modals/wallet_detail_modal.dart';
 
 class WalletScreen extends StatefulWidget {
   final ValueChanged<int>? onSegmentChanged;
@@ -46,8 +43,6 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   late int _selectedSegment;
-  WalletEntry? _liftedWallet;
-
   @override
   void initState() {
     super.initState();
@@ -77,25 +72,10 @@ class _WalletScreenState extends State<WalletScreen> {
           for (final p in pockets) {
             totalPocketsAmount += p.currentAmount;
           }
-
-          final bool walletExists = _liftedWallet != null && wallets.any((w) => w.id == _liftedWallet!.id);
-          final activeSelected = walletExists
-              ? wallets.firstWhere((w) => w.id == _liftedWallet!.id)
-              : null;
-
-          if (_liftedWallet != null && !walletExists) {
-            _liftedWallet = null;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              widget.onDetailViewChanged?.call(false);
-            });
-          }
-
-          return Stack(
-            children: [
-              SafeArea(
-                bottom: false,
-                child: CustomScrollView(
-                  slivers: [
+          return SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              slivers: [
                     // Header
                     SliverToBoxAdapter(
                       child: Padding(
@@ -271,10 +251,8 @@ class _WalletScreenState extends State<WalletScreen> {
                           child: WalletCardDeck(
                             wallets: wallets,
                             fmt: currencyFormatter,
-                            liftedWalletId: activeSelected?.id,
                             onSelectWallet: (wallet) {
-                              setState(() => _liftedWallet = wallet);
-                              widget.onDetailViewChanged?.call(true);
+                              WalletDetailModal.show(context, wallet: wallet);
                             },
                           ),
                         ),
@@ -485,30 +463,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     const SliverToBoxAdapter(child: SizedBox(height: 140)),
                   ],
                 ),
-              ),
-
-              // Lifted Card Detail Overlay (Unenclosed standalone card, actions, chart & history)
-              if (activeSelected != null)
-                WalletDetailOverlay(
-                  wallet: activeSelected,
-                  allWallets: wallets,
-                  transactions: state.transactions,
-                  currencyFormatter: currencyFormatter,
-                  computeSeries: CashflowAnalyticsService.compute30DaySeries,
-                  computeDayLabels: CashflowAnalyticsService.compute30DayLabels,
-                  onClose: () {
-                    setState(() => _liftedWallet = null);
-                    widget.onDetailViewChanged?.call(false);
-                  },
-                  onEditBalance: () {
-                    EditBalanceModal.show(context, activeSelected);
-                  },
-                  onAddTransaction: () {
-                    TransactionModal.show(context, initialWalletId: activeSelected.id);
-                  },
-                ),
-            ],
-          );
+              );
         },
       ),
     );

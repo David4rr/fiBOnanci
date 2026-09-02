@@ -84,20 +84,10 @@ void main() {
       final bcaFinder = find.text('BCA Utama').first;
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-
-      // 5. Verify Full-Screen Header & Components (No cluttered Bento Grid)
+      // 5. Verify Modal Bottom Sheet Header & Components
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text('Detail Rekening'), findsOneWidget);
       expect(find.text('Informasi & Mutasi'), findsOneWidget);
-      expect(find.text('SALDO SAAT INI'), findsNothing);
-      expect(find.text('ARUS KAS (30H)'), findsNothing);
-
-      // Verify BottomNavDock is animated off-screen and faded out
-      final dockSlide = tester.widget<AnimatedSlide>(find.byType(AnimatedSlide).first);
-      expect(dockSlide.offset, const Offset(0, 1.8));
-      final dockOpacity = tester.widget<AnimatedOpacity>(
-        find.descendant(of: find.byType(AnimatedSlide), matching: find.byType(AnimatedOpacity)),
-      );
-      expect(dockOpacity.opacity, 0.0);
       expect(find.text('Ubah Saldo'), findsOneWidget);
       expect(find.text('Catat Transaksi'), findsOneWidget);
       // Verify 30-Day Trend Chart
@@ -147,16 +137,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verified returned to resting wallet deck
+      expect(find.byType(BottomSheet), findsNothing);
       expect(find.text('Rekening & Dompet'), findsOneWidget);
 
-      // Verified returned to resting wallet deck and BottomNavDock restored
-      expect(find.text('Rekening & Dompet'), findsOneWidget);
-      final restoredSlide = tester.widget<AnimatedSlide>(find.byType(AnimatedSlide).first);
-      expect(restoredSlide.offset, Offset.zero);
-      final restoredOpacity = tester.widget<AnimatedOpacity>(
-        find.descendant(of: find.byType(AnimatedSlide), matching: find.byType(AnimatedOpacity)),
-      );
-      expect(restoredOpacity.opacity, 1.0);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     });
@@ -217,12 +200,11 @@ void main() {
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();
 
-      final balanceField = find.descendant(of: find.byType(BottomSheet), matching: find.byType(TextField)).first;
+      final balanceField = find.descendant(of: find.byType(BottomSheet).last, matching: find.byType(TextField)).first;
       await tester.enterText(balanceField, '25000000');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Perbarui Saldo'));
       await tester.pumpAndSettle();
-
       // Verify user STAYS on account details overlay and sees updated balance!
       expect(find.text('Ubah Saldo'), findsOneWidget);
       expect(find.text('Catat Transaksi'), findsOneWidget);
@@ -232,12 +214,11 @@ void main() {
       await tester.tap(find.text('Catat Transaksi'));
       await tester.pumpAndSettle();
 
-      final amountField = find.descendant(of: find.byType(BottomSheet), matching: find.byType(TextField)).first;
+      final amountField = find.descendant(of: find.byType(BottomSheet).last, matching: find.byType(TextField)).first;
       await tester.enterText(amountField, '750000');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Simpan Transaksi'));
       await tester.pumpAndSettle();
-
       // Verify user STAYS on account details overlay and transaction was logged!
       expect(find.text('Ubah Saldo'), findsOneWidget);
       expect(find.text('Catat Transaksi'), findsOneWidget);

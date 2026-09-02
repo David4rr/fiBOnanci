@@ -25,7 +25,7 @@ class WalletCardDeck extends StatefulWidget {
     super.key,
     required this.wallets,
     required this.fmt,
-    required this.liftedWalletId,
+    this.liftedWalletId,
     required this.onSelectWallet,
   });
 

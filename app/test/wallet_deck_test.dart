@@ -74,20 +74,20 @@ void main() {
     final bcaFinder = find.text('BCA Utama');
     expect(bcaFinder, findsOneWidget);
 
-    // 3. Tap BCA card -> opens rich detail sheet with chart and history
+    // 3. Tap BCA card -> opens rich detail bottom sheet modal with chart and history
     await tester.tap(bcaFinder);
     await tester.pumpAndSettle();
 
-    // Verify: Exactly ONE BCA Utama card exists in the tree (NO duplicate/double card!)
-    expect(find.text('BCA Utama'), findsOneWidget);
-
-    // Verify in-place expanded contents directly under the card
+    // Verify: Detail modal is open with content
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.text('Detail Rekening'), findsOneWidget);
     expect(find.text('Tren Mutasi BCA Utama'), findsOneWidget);
     expect(find.text('Masuk'), findsWidgets);
     expect(find.text('Keluar'), findsWidgets);
     expect(find.text('Riwayat Transaksi'), findsOneWidget);
     expect(find.text('Ubah Saldo'), findsOneWidget);
     expect(find.text('Catat Transaksi'), findsOneWidget);
+
     // 4. Tap 'Ubah Saldo' -> opens edit balance modal
     await tester.tap(find.text('Ubah Saldo'));
     await tester.pumpAndSettle();
@@ -99,23 +99,19 @@ void main() {
     await tester.tap(find.text('Perbarui Saldo'));
     await tester.pumpAndSettle();
 
-    // Modal dismissed
+    // Edit modal dismissed, returning to detail modal
     expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsNothing);
-
-    // 6. Tap BCA card again to lift
-    await tester.tap(bcaFinder);
-    await tester.pumpAndSettle();
     expect(find.text('Detail Rekening'), findsOneWidget);
 
-    // Dismiss lifted card by tapping downward arrow icon
+    // 6. Dismiss detail bottom sheet by tapping downward arrow icon
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
     await tester.pumpAndSettle();
+
     // Expanded details collapsed
     expect(find.text('Tren Mutasi BCA Utama'), findsNothing);
     expect(find.text('Catat Transaksi'), findsNothing);
     // Card itself is still there in resting deck
     expect(find.text('BCA Utama'), findsOneWidget);
-
     await db.close();
   });
 }
