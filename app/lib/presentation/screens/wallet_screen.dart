@@ -78,12 +78,17 @@ class _WalletScreenState extends State<WalletScreen> {
             totalPocketsAmount += p.currentAmount;
           }
 
-          final activeSelected = _liftedWallet == null
-              ? null
-              : wallets.firstWhere(
-                  (w) => w.id == _liftedWallet!.id,
-                  orElse: () => _liftedWallet!,
-                );
+          final bool walletExists = _liftedWallet != null && wallets.any((w) => w.id == _liftedWallet!.id);
+          final activeSelected = walletExists
+              ? wallets.firstWhere((w) => w.id == _liftedWallet!.id)
+              : null;
+
+          if (_liftedWallet != null && !walletExists) {
+            _liftedWallet = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              widget.onDetailViewChanged?.call(false);
+            });
+          }
 
           return Stack(
             children: [
@@ -496,15 +501,10 @@ class _WalletScreenState extends State<WalletScreen> {
                     widget.onDetailViewChanged?.call(false);
                   },
                   onEditBalance: () {
-                    final w = activeSelected;
-                    setState(() => _liftedWallet = null);
-                    widget.onDetailViewChanged?.call(false);
-                    EditBalanceModal.show(context, w);
+                    EditBalanceModal.show(context, activeSelected);
                   },
                   onAddTransaction: () {
-                    setState(() => _liftedWallet = null);
-                    widget.onDetailViewChanged?.call(false);
-                    TransactionModal.show(context);
+                    TransactionModal.show(context, initialWalletId: activeSelected.id);
                   },
                 ),
             ],

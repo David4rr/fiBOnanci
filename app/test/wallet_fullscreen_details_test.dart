@@ -143,7 +143,7 @@ void main() {
       expect(find.text('Tipe: MASUK'), findsOneWidget);
       expect(find.text('Bonus Proyek Freelance'), findsOneWidget);
       expect(find.text('Makan Siang Resto'), findsNothing);
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
       await tester.pumpAndSettle();
 
       // Verified returned to resting wallet deck
@@ -193,11 +193,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsNothing);
+      // Verify user STAYS on account details overlay!
+      expect(find.text('Ubah Saldo'), findsOneWidget);
+      expect(find.text('Catat Transaksi'), findsOneWidget);
 
-      // 4. Re-open BCA detail overlay and tap Catat Transaksi
-      await tester.tap(find.text('BCA Utama').first);
-      await tester.pumpAndSettle();
-
+      // 4. Tap Catat Transaksi from detail overlay
       await tester.tap(find.text('Catat Transaksi'));
       await tester.pumpAndSettle();
 
@@ -209,6 +209,39 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Simpan Transaksi'), findsNothing);
+      // Verify user STAYS on account details overlay!
+      expect(find.text('Ubah Saldo'), findsOneWidget);
+      expect(find.text('Catat Transaksi'), findsOneWidget);
+
+      // 5. Perform real balance update from account details
+      await tester.tap(find.text('Ubah Saldo'));
+      await tester.pumpAndSettle();
+
+      final balanceField = find.descendant(of: find.byType(BottomSheet), matching: find.byType(TextField)).first;
+      await tester.enterText(balanceField, '25000000');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Perbarui Saldo'));
+      await tester.pumpAndSettle();
+
+      // Verify user STAYS on account details overlay and sees updated balance!
+      expect(find.text('Ubah Saldo'), findsOneWidget);
+      expect(find.text('Catat Transaksi'), findsOneWidget);
+      expect(find.textContaining('25.000.000'), findsWidgets);
+
+      // 6. Record transaction from account details
+      await tester.tap(find.text('Catat Transaksi'));
+      await tester.pumpAndSettle();
+
+      final amountField = find.descendant(of: find.byType(BottomSheet), matching: find.byType(TextField)).first;
+      await tester.enterText(amountField, '750000');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Simpan Transaksi'));
+      await tester.pumpAndSettle();
+
+      // Verify user STAYS on account details overlay and transaction was logged!
+      expect(find.text('Ubah Saldo'), findsOneWidget);
+      expect(find.text('Catat Transaksi'), findsOneWidget);
+      expect(find.textContaining('750.000'), findsWidgets);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));

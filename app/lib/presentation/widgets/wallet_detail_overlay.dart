@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../bloc/finance/finance_bloc.dart';
-import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -110,12 +107,16 @@ class _TactileHeroCardState extends State<_TactileHeroCard> {
           children: [
             Icon(Icons.check_circle_rounded, color: widget.cardColor, size: 18),
             const SizedBox(width: 10),
-            Text(
-              'Nomor rekening ${widget.wallet.name} disalin',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppColors.textWhite,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                'Nomor rekening ${widget.wallet.name} disalin',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.textWhite,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -1077,22 +1078,6 @@ class _WalletDetailOverlayState extends State<WalletDetailOverlay> with SingleTi
                         ),
                         child: Row(
                           children: [
-                            // Close / Back Circular Button
-                            _PressableScale(
-                              onTap: _handleClose,
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.canvasCardSurface,
-                                  border: Border.all(color: AppColors.canvasBorder, width: 0.8),
-                                ),
-                                child: const Icon(Icons.close, color: AppColors.textWhite, size: 17),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-
                             // Title, Badge, and Scrolled Balance Pill
                             Expanded(
                               child: Column(
@@ -1177,10 +1162,11 @@ class _WalletDetailOverlayState extends State<WalletDetailOverlay> with SingleTi
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 10),
 
-                            // Top Delete Quick Action
+                            // Close / Dismiss Downward Arrow Button (Far Right)
                             _PressableScale(
-                              onTap: () => _confirmDeleteWallet(context),
+                              onTap: _handleClose,
                               child: Container(
                                 width: 36,
                                 height: 36,
@@ -1189,7 +1175,7 @@ class _WalletDetailOverlayState extends State<WalletDetailOverlay> with SingleTi
                                   color: AppColors.canvasCardSurface,
                                   border: Border.all(color: AppColors.canvasBorder, width: 0.8),
                                 ),
-                                child: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 17),
+                                child: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textWhite, size: 22),
                               ),
                             ),
                           ],
@@ -1218,77 +1204,4 @@ class _WalletDetailOverlayState extends State<WalletDetailOverlay> with SingleTi
     }
   }
 
-  void _confirmDeleteWallet(BuildContext context) {
-    final messenger = ScaffoldMessenger.of(context);
-    final bloc = context.read<FinanceBloc>();
-    showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.canvasCardSurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: const BorderSide(color: AppColors.canvasBorder),
-          ),
-          title: Text(
-            'Hapus Rekening?',
-            style: AppTypography.sectionTitle.copyWith(
-              color: AppColors.textWhite,
-              fontSize: 17,
-            ),
-          ),
-          content: Text(
-            'Rekening "${widget.wallet.name}" beserta aturan notifikasinya akan dihapus. Riwayat mutasi transaksi sebelumnya tetap aman dan tercatat.',
-            style: AppTypography.listSubtitle.copyWith(
-              color: AppColors.textMuted,
-              fontSize: 13.5,
-              height: 1.4,
-            ),
-          ),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(
-                'Batal',
-                style: AppTypography.listTitle.copyWith(
-                  color: AppColors.textMuted,
-                  fontSize: 13.5,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.neoCoral,
-                foregroundColor: AppColors.textDarkPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
-    ).then((confirmed) {
-      if (confirmed == true && mounted) {
-        bloc.add(DeleteWalletEvent(widget.wallet.id));
-        widget.onClose();
-        messenger.showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.neoCoral,
-            content: Text(
-              'Rekening ${widget.wallet.name} berhasil dihapus.',
-              style: const TextStyle(
-                color: AppColors.textDarkPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
-      }
-    });
-  }
 }

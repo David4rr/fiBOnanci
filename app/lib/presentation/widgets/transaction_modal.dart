@@ -10,9 +10,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class TransactionModal extends StatefulWidget {
-  const TransactionModal({super.key});
+  final String? initialWalletId;
 
-  static Future<void> show(BuildContext context) {
+  const TransactionModal({super.key, this.initialWalletId});
+
+  static Future<void> show(BuildContext context, {String? initialWalletId}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -21,7 +23,7 @@ class TransactionModal extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => const TransactionModal(),
+      builder: (_) => TransactionModal(initialWalletId: initialWalletId),
     );
   }
 
@@ -44,8 +46,15 @@ class _TransactionModalState extends State<TransactionModal> {
     // Synchronously grab cached data from RAM via BLoC (0 ms latency!)
     final state = context.read<FinanceBloc>().state;
     if (state.wallets.isNotEmpty) {
-      _selectedWalletId = state.wallets.first.id;
-      if (state.wallets.length > 1) {
+      if (widget.initialWalletId != null && state.wallets.any((w) => w.id == widget.initialWalletId)) {
+        _selectedWalletId = widget.initialWalletId;
+      } else {
+        _selectedWalletId = state.wallets.first.id;
+      }
+      final otherWallets = state.wallets.where((w) => w.id != _selectedWalletId).toList();
+      if (otherWallets.isNotEmpty) {
+        _selectedDestinationWalletId = otherWallets.first.id;
+      } else if (state.wallets.length > 1) {
         _selectedDestinationWalletId = state.wallets[1].id;
       }
     }

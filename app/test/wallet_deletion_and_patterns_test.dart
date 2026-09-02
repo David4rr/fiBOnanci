@@ -143,23 +143,20 @@ void main() {
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
 
-      // 3. Verify WalletDetailOverlay appears with delete icon
+      // 3. Verify WalletDetailOverlay appears with downward arrow icon and no app bar delete icon
       expect(find.text('Detail Rekening'), findsOneWidget);
-      expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
 
-      // 4. Tap delete icon to test confirmation dialog dismissal
-      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      // 4. Test dismissing and re-opening via downward arrow
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
       await tester.pumpAndSettle();
+      expect(find.text('Detail Rekening'), findsNothing);
 
-      expect(find.text('Hapus Rekening?'), findsOneWidget);
-      expect(find.text('Batal'), findsOneWidget);
-      expect(find.text('Hapus'), findsOneWidget);
-
-      // Tap Batal -> dialog cancels, overlay remains
-      await tester.tap(find.text('Batal'));
+      // Re-lift BCA card
+      await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
       expect(find.text('Detail Rekening'), findsOneWidget);
-
       // 5. Open Ubah Saldo to test EditBalanceModal deletion
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();

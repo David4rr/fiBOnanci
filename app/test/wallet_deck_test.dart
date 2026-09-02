@@ -107,8 +107,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Detail Rekening'), findsOneWidget);
 
-    // Dismiss lifted card by tapping close icon
-    await tester.tap(find.byIcon(Icons.close));
+    // Dismiss lifted card by tapping downward arrow icon
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
     await tester.pumpAndSettle();
     // Expanded details collapsed
     expect(find.text('Tren Mutasi BCA Utama'), findsNothing);
