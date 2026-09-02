@@ -34,10 +34,29 @@ class WalletCardDeck extends StatefulWidget {
 }
 
 class _WalletCardDeckState extends State<WalletCardDeck> {
-  void _handleSelectCard(WalletEntry wallet) {
-    HapticFeedback.selectionClick();
-    widget.onSelectWallet(wallet);
+  String? _expandedWalletId;
+
+  @override
+  void didUpdateWidget(WalletCardDeck oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_expandedWalletId != null && !widget.wallets.any((w) => w.id == _expandedWalletId)) {
+      _expandedWalletId = null;
+    }
   }
+
+  void _handleCardTap(WalletEntry wallet) {
+    HapticFeedback.selectionClick();
+    if (_expandedWalletId == wallet.id) {
+      // Second tap on the already expanded card: Open Detail Modal with Hero morph!
+      widget.onSelectWallet(wallet);
+    } else {
+      // First tap: Expand this card to full layout!
+      setState(() {
+        _expandedWalletId = wallet.id;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final wallets = widget.wallets;
@@ -63,11 +82,21 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardW  = constraints.maxWidth;
-        final cardH  = cardW * WalletCardDeck.atmRatio;
-        final stackH = (wallets.length - 1) * WalletCardDeck.peekHeight + cardH + 16.0;
+        final cardW = constraints.maxWidth;
+        final cardH = cardW * WalletCardDeck.atmRatio;
+        final expandedIndex = _expandedWalletId != null
+            ? wallets.indexWhere((w) => w.id == _expandedWalletId)
+            : -1;
 
-        return SizedBox(
+        final double baseStackH = (wallets.length - 1) * WalletCardDeck.peekHeight + cardH + 16.0;
+        final double expansionShift = (cardH - WalletCardDeck.peekHeight).clamp(0.0, double.infinity);
+        final double stackH = expandedIndex != -1
+            ? baseStackH + expansionShift + 12.0
+            : baseStackH;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 320),
+          curve: const Cubic(0.16, 1.0, 0.3, 1.0),
           height: stackH,
           child: Stack(
             clipBehavior: Clip.none,
@@ -79,23 +108,47 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                   if (isLifted) {
                     return const SizedBox.shrink();
                   }
-                  final double topPos = i * WalletCardDeck.peekHeight;
 
-                  return Positioned(
+                  final isExpanded = expandedIndex == i;
+                  final double topPos = (expandedIndex != -1 && i > expandedIndex)
+                      ? i * WalletCardDeck.peekHeight + expansionShift + 12.0
+                      : i * WalletCardDeck.peekHeight;
+
+                  return AnimatedPositioned(
                     key: ValueKey('deck_card_${wallet.id}'),
+                    duration: const Duration(milliseconds: 320),
+                    curve: const Cubic(0.16, 1.0, 0.3, 1.0),
                     top: topPos,
                     left: 0,
                     right: 0,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: () => _handleSelectCard(wallet),
-                      child: WalletCard(
-                        wallet: wallet,
-                        index: i,
-                        fmt: fmt,
-                        cardH: cardH,
-                        isLifted: false,
-                        showBottomLayout: i == wallets.length - 1,
+                      onTap: () => _handleCardTap(wallet),
+                      child: Hero(
+                        tag: 'wallet_card_${wallet.id}',
+                        flightShuttleBuilder: (
+                          flightContext,
+                          animation,
+                          flightDirection,
+                          fromHeroContext,
+                          toHeroContext,
+                        ) {
+                          return Material(
+                            color: Colors.transparent,
+                            child: toHeroContext.widget,
+                          );
+                        },
+                        child: Material(
+                          color: Colors.transparent,
+                          child: WalletCard(
+                            wallet: wallet,
+                            index: i,
+                            fmt: fmt,
+                            cardH: cardH,
+                            isLifted: isExpanded,
+                            showBottomLayout: isExpanded,
+                          ),
+                        ),
                       ),
                     ),
                   );

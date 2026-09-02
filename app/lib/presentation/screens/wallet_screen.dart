@@ -16,7 +16,7 @@ import '../theme/app_typography.dart';
 import '../widgets/trend_spline_chart.dart';
 import '../widgets/wallet_card_deck.dart';
 import '../widgets/wallet_cashflow_summary.dart';
-import '../modals/wallet_detail_modal.dart';
+import 'wallet_detail_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   final ValueChanged<int>? onSegmentChanged;
@@ -252,7 +252,7 @@ class _WalletScreenState extends State<WalletScreen> {
                             wallets: wallets,
                             fmt: currencyFormatter,
                             onSelectWallet: (wallet) {
-                              WalletDetailModal.show(context, wallet: wallet);
+                              WalletDetailScreen.push(context, wallet: wallet);
                             },
                           ),
                         ),

@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
+import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
 
 void main() {
   setUpAll(() async {
@@ -80,12 +81,14 @@ void main() {
       await tester.tap(find.text('7 Akun Riil'));
       await tester.pumpAndSettle();
 
-      // 4. Tap BCA card in deck to trigger animated selection and open Full-Screen Details View
+      // 4. Tap 1: Expand BCA card in deck -> Tap 2: Open Full-Screen Detail Modal with Hero morph
       final bcaFinder = find.text('BCA Utama').first;
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-      // 5. Verify Modal Bottom Sheet Header & Components
-      expect(find.byType(BottomSheet), findsOneWidget);
+      await tester.tap(bcaFinder);
+      await tester.pumpAndSettle();
+      // 5. Verify WalletDetailScreen Header & Components
+      expect(find.byType(WalletDetailScreen), findsOneWidget);
       expect(find.text('Detail Rekening'), findsOneWidget);
       expect(find.text('Informasi & Mutasi'), findsOneWidget);
       expect(find.text('Ubah Saldo'), findsOneWidget);
@@ -133,11 +136,11 @@ void main() {
       expect(find.text('Tipe: MASUK'), findsOneWidget);
       expect(find.text('Bonus Proyek Freelance'), findsOneWidget);
       expect(find.text('Makan Siang Resto'), findsNothing);
-      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
       await tester.pumpAndSettle();
 
       // Verified returned to resting wallet deck
-      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.byType(WalletDetailScreen), findsNothing);
       expect(find.text('Rekening & Dompet'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
@@ -159,10 +162,12 @@ void main() {
       await tester.tap(find.text('7 Akun Riil'));
       await tester.pumpAndSettle();
 
-      // 2. Open BCA detail overlay
-      await tester.tap(find.text('BCA Utama').first);
+      // 2. Tap 1: Expand BCA card -> Tap 2: Open BCA detail modal
+      final bcaFinder = find.text('BCA Utama').first;
+      await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-
+      await tester.tap(bcaFinder);
+      await tester.pumpAndSettle();
       // 3. Open Ubah Saldo modal
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();

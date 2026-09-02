@@ -138,25 +138,25 @@ void main() {
       await tester.tap(find.text('7 Akun Riil'));
       await tester.pumpAndSettle();
 
-      // 2. Tap BCA card in deck to lift it
+      // 2. Tap 1: Expand BCA card -> Tap 2: Open Detail Modal
       final bcaFinder = find.text('BCA Utama').first;
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-
-      // 3. Verify WalletDetailOverlay appears with downward arrow icon and no app bar delete icon
+      await tester.tap(bcaFinder);
+      await tester.pumpAndSettle();
+      // 3. Verify WalletDetailScreen appears with back button and no app bar delete icon
       expect(find.text('Detail Rekening'), findsOneWidget);
-      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
 
-      // 4. Test dismissing and re-opening via downward arrow
-      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
+      // 4. Test dismissing and re-opening via back button
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Detail Rekening'), findsNothing);
 
-      // Re-lift BCA card
+      // Re-open BCA card modal (BCA card is already expanded in deck)
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-      expect(find.text('Detail Rekening'), findsOneWidget);
       // 5. Open Ubah Saldo to test EditBalanceModal deletion
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();

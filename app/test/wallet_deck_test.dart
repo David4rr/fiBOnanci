@@ -2,6 +2,7 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/widgets/bottom_nav_dock.dart';
+import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
@@ -74,12 +75,18 @@ void main() {
     final bcaFinder = find.text('BCA Utama');
     expect(bcaFinder, findsOneWidget);
 
-    // 3. Tap BCA card -> opens rich detail bottom sheet modal with chart and history
+    // 3. First Tap: Expands BCA card in the deck (revealing full physical ATM layout with chip/balance)
     await tester.tap(bcaFinder);
     await tester.pumpAndSettle();
 
-    // Verify: Detail modal is open with content
-    expect(find.byType(BottomSheet), findsOneWidget);
+    // Verify: BCA card is expanded in deck (showing masked card number or Saldo Tersedia)
+    expect(find.text('Saldo Tersedia'), findsOneWidget);
+
+    // 4. Second Tap on expanded BCA card: Opens rich detail bottom sheet modal with Hero transition
+    await tester.tap(bcaFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WalletDetailScreen), findsOneWidget);
     expect(find.text('Detail Rekening'), findsOneWidget);
     expect(find.text('Tren Mutasi BCA Utama'), findsOneWidget);
     expect(find.text('Masuk'), findsWidgets);
@@ -88,14 +95,14 @@ void main() {
     expect(find.text('Ubah Saldo'), findsOneWidget);
     expect(find.text('Catat Transaksi'), findsOneWidget);
 
-    // 4. Tap 'Ubah Saldo' -> opens edit balance modal
+    // 5. Tap 'Ubah Saldo' -> opens edit balance modal
     await tester.tap(find.text('Ubah Saldo'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsOneWidget);
     expect(find.text('Perbarui Saldo'), findsOneWidget);
 
-    // 5. Submit update
+    // 6. Submit update
     await tester.tap(find.text('Perbarui Saldo'));
     await tester.pumpAndSettle();
 
@@ -103,8 +110,8 @@ void main() {
     expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsNothing);
     expect(find.text('Detail Rekening'), findsOneWidget);
 
-    // 6. Dismiss detail bottom sheet by tapping downward arrow icon
-    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
+    // 7. Dismiss detail screen by tapping back button
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
 
     // Expanded details collapsed
