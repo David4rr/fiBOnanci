@@ -12,6 +12,7 @@ import '../theme/app_typography.dart';
 import '../widgets/profile_avatar.dart';
 import 'edit_profile_modal.dart';
 import 'financial_health_modal.dart';
+import '../widgets/notification_simulator_modal.dart';
 
 class ProfileModal extends StatelessWidget {
   final int walletCount;
@@ -590,6 +591,59 @@ class ProfileModal extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     'Periksa runway darurat, rasio cicilan & tabungan',
+                                    style: AppTypography.listSubtitle.copyWith(fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 13),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Bank Notification Simulator Shortcut
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        NotificationSimulatorModal.show(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E212D),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.canvasBorder),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.flash_on_rounded, color: AppColors.neoChartreuse, size: 20),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Simulator Notifikasi Bank',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppColors.textWhite,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Uji coba parsing BCA, blu, Mandiri, Jago, SeaBank, OVO',
                                     style: AppTypography.listSubtitle.copyWith(fontSize: 11),
                                   ),
                                 ],

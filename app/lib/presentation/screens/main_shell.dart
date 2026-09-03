@@ -104,7 +104,8 @@ class _MainShellState extends State<MainShell> {
             child: BottomNavDock(
               currentIndex: _currentIndex,
               onTapIndex: (index) => setState(() => _currentIndex = index),
-              onCenterAction: _onCenterAction,
+              onAddAction: _onAddAction,
+              onCenterAction: _onAddAction,
             ),
           ),
         ),
@@ -112,7 +113,7 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  void _onCenterAction() {
+  void _onAddAction() {
     switch (_currentIndex) {
       case 0:
         TransactionModal.show(context);
@@ -127,11 +128,12 @@ class _MainShellState extends State<MainShell> {
           _showWalletAddOptions(context);
         }
         break;
-      case 3:
-        NotificationSimulatorModal.show(context);
+      default:
+        TransactionModal.show(context);
         break;
     }
   }
+
 
   void _showWalletAddOptions(BuildContext context) {
     showModalBottomSheet(

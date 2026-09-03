@@ -6,59 +6,86 @@ import '../theme/app_colors.dart';
 class BottomNavDock extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTapIndex;
-  final VoidCallback onCenterAction;
+  final VoidCallback? onAddAction;
+  final VoidCallback? onCenterAction;
 
   const BottomNavDock({
     super.key,
     required this.currentIndex,
     required this.onTapIndex,
-    required this.onCenterAction,
-  });
+    this.onAddAction,
+    this.onCenterAction,
+  }) : assert(
+          onAddAction != null || onCenterAction != null,
+          'Either onAddAction or onCenterAction must be provided',
+        );
+
+  VoidCallback get _action => onAddAction ?? onCenterAction!;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 320,
+        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          heightFactor: 1.0,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SizedBox(
               height: 56,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 1. LEFT POD: Home & Tagihan (Frosted Glass Translucent Pod)
-                  SizedBox(
-                    width: 128,
-                    height: 56,
-                    child: ClipPath(
-                      clipper: const PodClipper(isLeft: true),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                        child: CustomPaint(
-                          painter: const PodBorderPainter(isLeft: true),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6, right: 16),
-                            child: Row(
-                              children: [
-                                _buildNavItem(
-                                  index: 0,
-                                  icon: Icons.dashboard_outlined,
-                                  activeIcon: Icons.dashboard,
-                                  label: 'Home',
-                                ),
-                                _buildNavItem(
-                                  index: 1,
-                                  icon: Icons.receipt_long_outlined,
-                                  activeIcon: Icons.receipt_long,
-                                  label: 'Tagihan',
+                  // 1. Grouped left-aligned, pill-shaped container (iPhone style)
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xB813141C),
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: const Color(0x33FFFFFF),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: Row(
+                                children: [
+                                  _buildNavItem(
+                                    index: 0,
+                                    icon: Icons.dashboard_outlined,
+                                    activeIcon: Icons.dashboard,
+                                    label: 'Home',
+                                  ),
+                                  _buildNavItem(
+                                    index: 1,
+                                    icon: Icons.receipt_long_outlined,
+                                    activeIcon: Icons.receipt_long,
+                                    label: 'Tagihan',
+                                  ),
+                                  _buildNavItem(
+                                    index: 2,
+                                    icon: Icons.account_balance_wallet_outlined,
+                                    activeIcon: Icons.account_balance_wallet,
+                                    label: 'Wallets',
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -66,46 +93,14 @@ class BottomNavDock extends StatelessWidget {
                     ),
                   ),
 
-                  // 2. CENTER FLAT CIRCULAR BUTTON (Floats in the concentric cradle)
-                  _CenterActionButton(onPressed: onCenterAction),
+                  const SizedBox(width: 12),
 
-                  // 3. RIGHT POD: Wallets & Settings (Frosted Glass Translucent Pod)
-                  SizedBox(
-                    width: 128,
-                    height: 56,
-                    child: ClipPath(
-                      clipper: const PodClipper(isLeft: false),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                        child: CustomPaint(
-                          painter: const PodBorderPainter(isLeft: false),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 6),
-                            child: Row(
-                              children: [
-                                _buildNavItem(
-                                  index: 2,
-                                  icon: Icons.account_balance_wallet_outlined,
-                                  activeIcon: Icons.account_balance_wallet,
-                                  label: 'Wallets',
-                                ),
-                                _buildNavItem(
-                                  index: 3,
-                                  icon: Icons.settings_outlined,
-                                  activeIcon: Icons.settings,
-                                  label: 'Settings',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // 2. Add: Isolated circular button, right-aligned
+                  _AddActionButton(onPressed: _action),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -251,29 +246,43 @@ class _NavItemWidgetState extends State<_NavItemWidget> {
         scale: _isPressed ? 0.90 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
-        child: SizedBox(
-          height: 56,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                widget.isActive ? widget.activeIcon : widget.icon,
-                color: widget.isActive ? AppColors.neoChartreuse : AppColors.textMuted,
-                size: widget.isActive ? 20 : 22,
-              ),
-              if (widget.isActive) ...[
-                const SizedBox(height: 2),
-                Text(
-                  widget.label,
-                  style: const TextStyle(
-                    color: AppColors.neoChartreuse,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? AppColors.neoChartreuse.withValues(alpha: 0.14)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  widget.isActive ? widget.activeIcon : widget.icon,
+                  color: widget.isActive ? AppColors.neoChartreuse : AppColors.textMuted,
+                  size: widget.isActive ? 19 : 21,
                 ),
+                if (widget.isActive) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.neoChartreuse,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -281,16 +290,16 @@ class _NavItemWidgetState extends State<_NavItemWidget> {
   }
 }
 
-class _CenterActionButton extends StatefulWidget {
+class _AddActionButton extends StatefulWidget {
   final VoidCallback onPressed;
 
-  const _CenterActionButton({required this.onPressed});
+  const _AddActionButton({required this.onPressed});
 
   @override
-  State<_CenterActionButton> createState() => _CenterActionButtonState();
+  State<_AddActionButton> createState() => _AddActionButtonState();
 }
 
-class _CenterActionButtonState extends State<_CenterActionButton> {
+class _AddActionButtonState extends State<_AddActionButton> {
   bool _isPressed = false;
 
   @override
@@ -309,18 +318,30 @@ class _CenterActionButtonState extends State<_CenterActionButton> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
         child: Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.neoChartreuse,
-            // Solid flat neon circle: ZERO STROKE, ZERO BORDER, ZERO SHADOW
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.neoChartreuse.withValues(alpha: 0.35),
+                blurRadius: 16,
+                spreadRadius: -2,
+                offset: const Offset(0, 4),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.30),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: const Center(
             child: Icon(
               Icons.add_rounded,
               color: AppColors.textDarkPrimary,
-              size: 28,
+              size: 30,
             ),
           ),
         ),
@@ -328,3 +349,4 @@ class _CenterActionButtonState extends State<_CenterActionButton> {
     );
   }
 }
+
