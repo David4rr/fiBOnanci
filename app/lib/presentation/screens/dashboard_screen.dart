@@ -87,8 +87,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final allTransactions = state.transactions;
             final metrics = state.metrics;
 
+            final now = DateTime.now();
+            final todayTransactions = allTransactions.where((t) {
+              final d = t.transactionDate.toLocal();
+              final n = now.toLocal();
+              return d.year == n.year && d.month == n.month && d.day == n.day;
+            }).toList();
+
+            final isFiltering = _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null;
+            final baseTransactions = isFiltering ? allTransactions : todayTransactions;
+
             final filteredTransactions = CashflowAnalyticsService.filterTransactions(
-              transactions: allTransactions,
+              transactions: baseTransactions,
               wallets: wallets,
               query: _searchQuery,
               typeFilter: _typeFilter,
@@ -175,23 +185,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
-                // Search Bar
+                // Search Bar (Consistent rectangular Swiss-minimalist styling)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                   child: Container(
-                    height: 46,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.canvasInputSearch,
-                      borderRadius: BorderRadius.circular(23),
-                      border: Border.all(
-                        color: _searchQuery.isNotEmpty
-                            ? AppColors.neoChartreuse.withValues(alpha: 0.5)
-                            : AppColors.canvasBorder,
-                        width: 1,
+                      height: 46,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.canvasInputSearch,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _searchQuery.isNotEmpty
+                              ? AppColors.neoChartreuse.withValues(alpha: 0.5)
+                              : AppColors.canvasBorder,
+                          width: 1,
+                        ),
                       ),
-                    ),
-                    child: Row(
+                      child: Row(
                       children: [
                         const Icon(Icons.search, color: AppColors.textMuted, size: 18),
                         const SizedBox(width: 10),
@@ -241,7 +251,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(8),
                               color: (_typeFilter != 'all' || _walletFilter != null)
                                   ? AppColors.neoChartreuse.withValues(alpha: 0.2)
                                   : Colors.transparent,
@@ -269,27 +279,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (_typeFilter != 'all')
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
-                            child: Chip(
-                              backgroundColor: AppColors.canvasInputSearch,
-                              side: const BorderSide(color: AppColors.neoChartreuse),
-                              label: Text(
-                                'Tipe: ${_typeFilter.toUpperCase()}',
-                                style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.canvasInputSearch,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.neoChartreuse, width: 1),
                               ),
-                              onDeleted: () => setState(() => _typeFilter = 'all'),
-                              deleteIconColor: AppColors.neoChartreuse,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Tipe: ${_typeFilter.toUpperCase()}',
+                                    style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => setState(() => _typeFilter = 'all'),
+                                    child: const Icon(Icons.close, size: 14, color: AppColors.neoChartreuse),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         if (_walletFilter != null)
-                          Chip(
-                            backgroundColor: AppColors.canvasInputSearch,
-                            side: const BorderSide(color: AppColors.neoChartreuse),
-                            label: Text(
-                              'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
-                              style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.canvasInputSearch,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.neoChartreuse, width: 1),
                             ),
-                            onDeleted: () => setState(() => _walletFilter = null),
-                            deleteIconColor: AppColors.neoChartreuse,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Rek: ${wallets.firstWhere((w) => w.id == _walletFilter, orElse: () => wallets.first).name}',
+                                  style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
+                                ),
+                                const SizedBox(width: 4),
+                                GestureDetector(
+                                  onTap: () => setState(() => _walletFilter = null),
+                                  child: const Icon(Icons.close, size: 14, color: AppColors.neoChartreuse),
+                                ),
+                              ],
+                            ),
                           ),
                       ],
                     ),
@@ -328,43 +362,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           allTransactions: allTransactions,
                           wallets: wallets,
                         ),
-                        child: Text(
-                          'Lihat Semua',
-                          style: AppTypography.listSubtitle.copyWith(color: AppColors.neoChartreuse),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.neoChartreuse.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.neoChartreuse.withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Lihat Semua',
+                                style: AppTypography.listSubtitle.copyWith(
+                                  color: AppColors.neoChartreuse,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 13,
+                                color: AppColors.neoChartreuse,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Overlapping Deck of Transactions (Isolated Scroll Section with Docking!)
+                // Overlapping Deck of Transactions (Shared component Hero animation for card history)
                 Expanded(
-                  child: filteredTransactions.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: AppColors.canvasCardSurface,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.canvasBorder),
-                              ),
-                              child: Text(
-                                _searchQuery.isNotEmpty
-                                    ? 'Tidak ada transaksi yang cocok dengan "$_searchQuery"'
-                                    : 'Belum ada transaksi. Tambahkan pengeluaran atau tunggu notifikasi bank masuk otomatis!',
-                                textAlign: TextAlign.center,
-                                style: AppTypography.listSubtitle,
+                  child: Hero(
+                    tag: 'expense_history_card_history',
+                    flightShuttleBuilder: (
+                      flightContext,
+                      animation,
+                      flightDirection,
+                      fromHeroContext,
+                      toHeroContext,
+                    ) {
+                      final Hero toHero = toHeroContext.widget as Hero;
+                      return Material(
+                        color: Colors.transparent,
+                        child: toHero.child,
+                      );
+                    },
+                    child: filteredTransactions.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: AppColors.canvasCardSurface,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: AppColors.canvasBorder),
+                                ),
+                                child: Text(
+                                  _searchQuery.isNotEmpty
+                                      ? 'Tidak ada transaksi yang cocok dengan "$_searchQuery"'
+                                      : 'Belum ada transaksi. Tambahkan pengeluaran atau tunggu notifikasi bank masuk otomatis!',
+                                  textAlign: TextAlign.center,
+                                  style: AppTypography.listSubtitle,
+                                ),
                               ),
                             ),
+                          )
+                        : StackedCardDeckScrollList(
+                            transactions: filteredTransactions,
+                            allTransactions: allTransactions,
+                            wallets: wallets,
                           ),
-                        )
-                      : StackedCardDeckScrollList(
-                          transactions: filteredTransactions,
-                          allTransactions: allTransactions,
-                          wallets: wallets,
-                        ),
+                  ),
                 ),
               ],
             );

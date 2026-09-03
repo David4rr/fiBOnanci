@@ -271,6 +271,127 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     });
+    testWidgets('Incomplete right swipe (canceling accept) springs back and item remains in inbox', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final rawNotification = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Pembayaran QR sebesar Rp 55.000 di Janji Jiwa berhasil.',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [rawNotification] : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Pembayaran QR sebesar Rp 55.000'), findsOneWidget);
+
+      // Drag only 40 pixels to the right (under the 100 threshold)
+      await tester.drag(find.text('Pembayaran QR sebesar Rp 55.000 di Janji Jiwa berhasil.'), const Offset(40, 0));
+      await tester.pumpAndSettle();
+
+      // Verified NOT confirmed: item stays in inbox
+      expect(NotificationBridge.pendingCount, 1);
+      expect(find.textContaining('Pembayaran QR sebesar Rp 55.000'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    testWidgets('Incomplete left swipe (canceling delete) springs back and item remains in inbox', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final rawNotification = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Pembayaran QR sebesar Rp 75.000 di Fore Coffee berhasil.',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [rawNotification] : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Pembayaran QR sebesar Rp 75.000'), findsOneWidget);
+
+      // Drag only -40 pixels to the left (under the 100 threshold)
+      await tester.drag(find.text('Pembayaran QR sebesar Rp 75.000 di Fore Coffee berhasil.'), const Offset(-40, 0));
+      await tester.pumpAndSettle();
+
+      // Verified NOT deleted: item stays in inbox
+      expect(NotificationBridge.pendingCount, 1);
+      expect(find.textContaining('Pembayaran QR sebesar Rp 75.000'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+    testWidgets('Swipe action triggers only when swiped at least 50% of screen width (cancel if < 50%)', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final rawNotification = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Pembayaran QR sebesar Rp 90.000 di Starbucks berhasil.',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [rawNotification] : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      // Logical screen width is 400. 50% is 200.
+      // 1. Drag 150px (37.5% < 50%) -> MUST CANCEL and spring back!
+      await tester.drag(find.text('Pembayaran QR sebesar Rp 90.000 di Starbucks berhasil.'), const Offset(150, 0));
+      await tester.pumpAndSettle();
+
+      expect(NotificationBridge.pendingCount, 1);
+      // 2. Drag 260px (260 - 18px touch slop = 242px > 200px threshold = > 50%) -> MUST TRIGGER confirm!
+      await tester.drag(find.text('Pembayaran QR sebesar Rp 90.000 di Starbucks berhasil.'), const Offset(260, 0));
+      await tester.pumpAndSettle();
+
+      expect(NotificationBridge.pendingCount, 0);
+      expect(find.text('Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
+    });
     testWidgets('Simulation feature allows picking preset and adds notification to inbox for review', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;

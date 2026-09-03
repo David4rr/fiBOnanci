@@ -34,14 +34,21 @@ class OverlappingDeckItem extends StatelessWidget {
     this.onManage,
   });
 
+  static final NumberFormat _expenseFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: '-Rp ',
+    decimalDigits: 0,
+  );
+
+  static final NumberFormat _incomeFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: '+Rp ',
+    decimalDigits: 0,
+  );
+
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: isExpense ? '-Rp ' : '+Rp ',
-      decimalDigits: 0,
-    );
-
+    final currencyFormatter = isExpense ? _expenseFormatter : _incomeFormatter;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -54,15 +61,27 @@ class OverlappingDeckItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: categoryColor,
           borderRadius: BorderRadius.circular(26),
-          border: isExpanded ? Border.all(color: const Color(0xFF0C0D11).withValues(alpha: 0.35), width: 2) : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isExpanded ? 0.45 : 0.35),
-              blurRadius: isExpanded ? 20 : 14,
-              offset: Offset(0, isExpanded ? -6 : -4),
-              spreadRadius: isExpanded ? 2 : 1,
-            ),
-          ],
+          border: Border.all(
+            color: isExpanded
+                ? const Color(0xFF0C0D11).withValues(alpha: 0.35)
+                : Colors.black.withValues(alpha: 0.06),
+            width: isExpanded ? 2 : 1,
+          ),
+          boxShadow: isExpanded
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),

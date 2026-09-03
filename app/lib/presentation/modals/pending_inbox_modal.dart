@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
@@ -8,11 +10,16 @@ import '../../core/notification_parser/notification_parser.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 
-/// Compact modal sheet for reviewing auto-logged notifications with interactive simulation.
-/// Swipe RIGHT → Correct (Benar / Simpan).
-/// Swipe LEFT  → Incorrect (Salah / Hapus transaksi & kembalikan saldo).
+/// Minimalist, high-end modal sheet for reviewing auto-logged notifications.
+///
+/// Features:
+/// - Pure swipe interaction (no clutter buttons on cards)
+/// - Color-coded item cards (NeoMint for Income, NeoCoral for Expense)
+/// - Spring-physics snap-back animation when item is not fully swiped
+///   (applies to both canceling a delete and canceling an accept action)
+/// - Clean, minimalist instruction header
+/// - Obsidian frosted glass canvas with hairline highlights
 class PendingInboxModal {
   static Future<void> show(BuildContext context, {AppDatabase? database}) async {
     final initialPending = await NotificationBridge.getPendingRawNotifications();
@@ -29,10 +36,7 @@ class PendingInboxModal {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) => _PendingInboxSheet(
         initialPending: initialPending,
         database: db,
@@ -80,17 +84,34 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppColors.neoMint,
+          backgroundColor: AppColors.canvasCardSurface,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          content: const Row(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.neoMint.withValues(alpha: 0.3)),
+          ),
+          content: Row(
             children: [
-              Icon(Icons.check_circle, color: AppColors.textDarkPrimary, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Transaksi terkonfirmasi benar',
-                style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.neoMint.withValues(alpha: 0.15),
+                ),
+                child: const Icon(Icons.check_rounded, color: AppColors.neoMint, size: 14),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  'Transaksi terkonfirmasi benar',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ],
           ),
@@ -111,17 +132,34 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppColors.neoCoral,
+          backgroundColor: AppColors.canvasCardSurface,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          content: const Row(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.neoCoral.withValues(alpha: 0.3)),
+          ),
+          content: Row(
             children: [
-              Icon(Icons.delete_outline, color: AppColors.textWhite, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Transaksi dihapus & saldo dikembalikan',
-                style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.neoCoral.withValues(alpha: 0.15),
+                ),
+                child: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 14),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  'Transaksi dihapus & saldo dikembalikan',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ],
           ),
@@ -143,18 +181,33 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppColors.neoChartreuse,
+          backgroundColor: AppColors.canvasCardSurface,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          content: const Row(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.neoChartreuse.withValues(alpha: 0.3)),
+          ),
+          content: Row(
             children: [
-              Icon(Icons.bolt_rounded, color: AppColors.textDarkPrimary, size: 20),
-              SizedBox(width: 8),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                ),
+                child: const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 14),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Notifikasi simulasi berhasil masuk! Geser kartu untuk review.',
-                  style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold, fontSize: 12.5),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
                 ),
               ),
             ],
@@ -248,12 +301,19 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetCtx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF0C0D11),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1,
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,34 +323,52 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textSubtle.withValues(alpha: 0.6),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
             Row(
               children: [
-                const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 20),
-                const SizedBox(width: 8),
-                Flexible(
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.neoChartreuse.withValues(alpha: 0.12),
+                    border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.25)),
+                  ),
+                  child: const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
                   child: Text(
                     'Pilih Skenario Notifikasi',
-                    style: AppTypography.sectionTitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.4,
+                      color: AppColors.textWhite,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               'Pilih salah satu skenario untuk disimulasikan langsung ke Inbox & Saldo Anda.',
-              style: AppTypography.listSubtitle.copyWith(fontSize: 11.5),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: AppColors.textMuted,
+                letterSpacing: -0.1,
+              ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(sheetCtx).height * 0.50,
+                maxHeight: MediaQuery.sizeOf(sheetCtx).height * 0.52,
               ),
               child: ListView.separated(
                 shrinkWrap: true,
@@ -303,45 +381,86 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                   final Color col = p['color'] as Color;
                   final Map<String, dynamic> payload = p['payload'] as Map<String, dynamic>;
 
-                  return Material(
-                    color: AppColors.canvasInputSearch,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () {
-                        Navigator.pop(sheetCtx);
-                        _injectNotification(payload);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: col.withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF13151D),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        width: 1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(1.5),
+                    child: Material(
+                      color: const Color(0xFF161822),
+                      borderRadius: BorderRadius.circular(14.5),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14.5),
+                        onTap: () {
+                          Navigator.pop(sheetCtx);
+                          _injectNotification(payload);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: col.withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: col.withValues(alpha: 0.2)),
+                                ),
+                                child: Icon(
+                                  col == AppColors.neoMint
+                                      ? Icons.arrow_downward_rounded
+                                      : Icons.arrow_upward_rounded,
+                                  color: col,
+                                  size: 15,
+                                ),
                               ),
-                              child: Icon(
-                                col == AppColors.neoMint ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-                                color: col,
-                                size: 16,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      bank,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textWhite,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      desc,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11.5,
+                                        color: col.withValues(alpha: 0.85),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(bank, style: AppTypography.listTitle.copyWith(fontSize: 13.5)),
-                                  const SizedBox(height: 2),
-                                  Text(desc, style: AppTypography.listSubtitle.copyWith(fontSize: 11.5, color: col)),
-                                ],
+                              Container(
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.04),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                                ),
+                                child: const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.textMuted,
+                                  size: 16,
+                                ),
                               ),
-                            ),
-                            const Icon(Icons.add_circle_outline_rounded, color: AppColors.neoChartreuse, size: 18),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -357,8 +476,18 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C0D11),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,33 +498,28 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSubtle.withValues(alpha: 0.6),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // Header with count badge & Simulation trigger
+          // Header with minimalist Tag, Title, Live Counter & Actions
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: AppColors.neoChartreuse.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.inbox_outlined, color: AppColors.neoChartreuse, size: 18),
-                    ),
-                    const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         'Kotak Masuk Notifikasi',
-                        style: AppTypography.sectionTitle,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
+                          color: AppColors.textWhite,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -404,44 +528,79 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.neoChartreuse,
+                          color: AppColors.neoChartreuse.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${_pending.length}',
-                          style: AppTypography.badgeLabel.copyWith(
-                            color: AppColors.textDarkPrimary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 10.5,
+                          border: Border.all(
+                            color: AppColors.neoChartreuse.withValues(alpha: 0.3),
+                            width: 1,
                           ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: AppColors.neoChartreuse,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${_pending.length}',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppColors.neoChartreuse,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 10.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
 
-              // Simulation trigger button in header
+              // Simulation trigger button: Minimalist Island Pill
               Material(
-                color: AppColors.neoChartreuse.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   onTap: () => _showSimulationPicker(context),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 14),
-                        const SizedBox(width: 3),
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                          ),
+                          child: const Icon(
+                            Icons.bolt_rounded,
+                            color: AppColors.neoChartreuse,
+                            size: 11,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
                         Text(
                           'Simulasi',
-                          style: AppTypography.badgeLabel.copyWith(
-                            color: AppColors.neoChartreuse,
-                            fontWeight: FontWeight.bold,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppColors.textWhite,
+                            fontWeight: FontWeight.w600,
                             fontSize: 11,
+                            letterSpacing: -0.1,
                           ),
                         ),
                       ],
@@ -450,68 +609,136 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                 ),
               ),
 
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
 
-              IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textMuted, size: 20),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                onPressed: () => Navigator.pop(context),
+              // Minimalist Close Button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.close_rounded, color: AppColors.textMuted, size: 15),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
 
-          const SizedBox(height: 6),
-
-          // Swipe instruction cue
+          // Cleaned-Up Delete & Accept Instruction Ribbon
           if (_pending.isNotEmpty)
             Container(
-              margin: const EdgeInsets.only(top: 6, bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              margin: const EdgeInsets.only(top: 12, bottom: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
-                color: AppColors.canvasInputSearch,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.canvasBorderSubtle),
+                color: Colors.white.withValues(alpha: 0.025),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Left side: Salah / Delete cue & quick-action
                   Flexible(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.arrow_back, size: 12, color: AppColors.neoCoral),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            'Geser Kiri: Salah',
-                            style: AppTypography.badgeLabel.copyWith(color: AppColors.neoCoral, fontSize: 10.5),
-                            overflow: TextOverflow.ellipsis,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          if (_pending.isNotEmpty) {
+                            _rejectItem(_pending.first);
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.arrow_back_rounded,
+                                size: 13,
+                                color: AppColors.neoCoral,
+                              ),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  'Salah',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.neoCoral,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
+
+                  // Center subtle separator
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text('•', style: TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      '•',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
+
+                  // Right side: Benar / Accept cue & quick-action
                   Flexible(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Geser Kanan: Benar',
-                            style: AppTypography.badgeLabel.copyWith(color: AppColors.neoMint, fontSize: 10.5),
-                            overflow: TextOverflow.ellipsis,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          if (_pending.isNotEmpty) {
+                            _confirmItem(_pending.first);
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  'Benar',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.neoMint,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 13,
+                                color: AppColors.neoMint,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 3),
-                        const Icon(Icons.arrow_forward, size: 12, color: AppColors.neoMint),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -519,52 +746,124 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
             ),
 
           if (_pending.isEmpty)
+            // Empty State: Double-Bezel Ethereal Minimalist Canvas
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: AppColors.canvasInputSearch,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.canvasBorderSubtle),
+                color: const Color(0xFF13151D),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: AppColors.neoMint.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.check_circle_outline, color: AppColors.neoMint, size: 22),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.listSubtitle.copyWith(height: 1.4, fontSize: 12),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.neoChartreuse,
-                      foregroundColor: AppColors.textDarkPrimary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    ),
-                    icon: const Icon(Icons.bolt_rounded, size: 16, color: AppColors.textDarkPrimary),
-                    label: Text(
-                      'Coba Simulasi Notifikasi Masuk',
-                      style: AppTypography.badgeLabel.copyWith(
-                        color: AppColors.textDarkPrimary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161822),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+                ),
+                child: Column(
+                  children: [
+                    // Concentric Halo Emblem
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.03),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.neoMint.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.neoMint.withValues(alpha: 0.12),
+                          ),
+                          child: const Icon(
+                            Icons.done_all_rounded,
+                            color: AppColors.neoMint,
+                            size: 16,
+                          ),
+                        ),
                       ),
                     ),
-                    onPressed: () => _showSimulationPicker(context),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1.5,
+                        color: AppColors.textMuted,
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    // High-End Nested Island CTA Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () => _showSimulationPicker(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.neoChartreuse,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.neoChartreuse.withValues(alpha: 0.18),
+                                blurRadius: 14,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0x1F000000),
+                                ),
+                                child: const Icon(
+                                  Icons.bolt_rounded,
+                                  size: 13,
+                                  color: AppColors.textDarkPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  'Coba Simulasi Notifikasi Masuk',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.textDarkPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 11.5,
+                                    letterSpacing: -0.1,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           else
@@ -590,209 +889,190 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                       ? 'SeaBank'
                       : (pkg.contains('shopee') ? 'ShopeePay' : (title.isNotEmpty ? title : 'Notifikasi Bank'));
 
+                  final isIncome = type == 'income';
+                  final Color cardAccent = isIncome ? AppColors.neoMint : AppColors.neoCoral;
+
                   final itemKey = ValueKey(item['transactionId'] ?? '${pkg}_${text}_$index');
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: Dismissible(
-                        key: itemKey,
-                        direction: DismissDirection.horizontal,
-                        // Swipe Right -> Correct (Benar)
-                        background: Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: AppColors.neoMint.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.neoMint.withValues(alpha: 0.5), width: 1.5),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 22),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Benar',
-                                style: AppTypography.listTitle.copyWith(
-                                  color: AppColors.neoMint,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                    child: _SpringSwipeableCard(
+                      key: itemKey,
+                      accentColor: cardAccent,
+                      onConfirmed: () => _confirmItem(item),
+                      onRejected: () => _rejectItem(item),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF13151D),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: cardAccent.withValues(alpha: 0.18),
+                            width: 1,
                           ),
                         ),
-                        // Swipe Left -> Incorrect (Salah)
-                        secondaryBackground: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: AppColors.neoCoral.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.neoCoral.withValues(alpha: 0.5), width: 1.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Salah',
-                                style: AppTypography.listTitle.copyWith(
-                                  color: AppColors.neoCoral,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 22),
-                            ],
-                          ),
-                        ),
-                        onDismissed: (direction) {
-                          if (direction == DismissDirection.startToEnd) {
-                            _confirmItem(item);
-                          } else {
-                            _rejectItem(item);
-                          }
-                        },
+                        padding: const EdgeInsets.all(1.5),
                         child: Container(
-                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.canvasInputSearch,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.canvasBorder),
+                            color: const Color(0xFF161822),
+                            borderRadius: BorderRadius.circular(16.5),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.03),
+                              width: 1,
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Top Row: Source + Badge & Amount
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Row(
+                          child: IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Left Color-Code Indicator Stripe
+                                Container(
+                                  width: 3.5,
+                                  decoration: BoxDecoration(
+                                    color: cardAccent,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+
+                                // Card Body Content (No Action Buttons!)
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(0, 12, 14, 12),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Flexible(
-                                          child: Text(
-                                            bankLabel,
-                                            style: AppTypography.listTitle.copyWith(fontSize: 14),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            'Auto',
-                                            style: AppTypography.badgeLabel.copyWith(
-                                              color: AppColors.neoChartreuse,
-                                              fontSize: 9.5,
-                                              fontWeight: FontWeight.bold,
+                                        // Top Row: Institution + Auto badge & Hero Amount
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      bankLabel,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 13.5,
+                                                        fontWeight: FontWeight.w700,
+                                                        letterSpacing: -0.2,
+                                                        color: AppColors.textWhite,
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                    decoration: BoxDecoration(
+                                                      color: cardAccent.withValues(alpha: 0.10),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(
+                                                        color: cardAccent.withValues(alpha: 0.20),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      isIncome ? 'MASUK' : 'KELUAR',
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        color: cardAccent,
+                                                        fontSize: 8.5,
+                                                        fontWeight: FontWeight.w700,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
+                                            if (amount > 0)
+                                              Text(
+                                                isIncome
+                                                    ? '+Rp ${amount.toStringAsFixed(0)}'
+                                                    : '-Rp ${amount.toStringAsFixed(0)}',
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 14.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: -0.3,
+                                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                                  color: isIncome ? AppColors.neoMint : AppColors.neoCoral,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+
+                                        // Counterparty & Destination Wallet
+                                        if (walletName != null || counterparty.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 5),
+                                            child: Row(
+                                              children: [
+                                                if (counterparty.isNotEmpty)
+                                                  Flexible(
+                                                    child: Text(
+                                                      counterparty,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 12.5,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: AppColors.textWhite.withValues(alpha: 0.85),
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                if (counterparty.isNotEmpty && walletName != null)
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                                    child: Text(
+                                                      '•',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: AppColors.textSubtle.withValues(alpha: 0.8),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (walletName != null)
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white.withValues(alpha: 0.04),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                    child: Text(
+                                                      walletName,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 10.5,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: AppColors.textMuted,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+
+                                        // Subdued Raw Text Notification
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 5),
+                                          child: Text(
+                                            text,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w400,
+                                              color: AppColors.textSubtle,
+                                              height: 1.35,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (amount > 0)
-                                    Text(
-                                      type == 'income'
-                                          ? '+Rp ${amount.toStringAsFixed(0)}'
-                                          : '-Rp ${amount.toStringAsFixed(0)}',
-                                      style: AppTypography.listAmount.copyWith(
-                                        fontSize: 14,
-                                        color: type == 'income' ? AppColors.neoMint : AppColors.neoCoral,
-                                      ),
-                                    ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              // Counterparty & Wallet destination info
-                              if (walletName != null || counterparty.isNotEmpty)
-                                Text(
-                                  [
-                                    ?walletName,
-                                    if (counterparty.isNotEmpty) counterparty,
-                                  ].join(' • '),
-                                  style: AppTypography.listSubtitle.copyWith(
-                                    color: AppColors.textMuted,
-                                    fontSize: 11.5,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-
-                              const SizedBox(height: 4),
-
-                              // Notification raw text preview
-                              Text(
-                                text,
-                                style: AppTypography.listSubtitle.copyWith(
-                                  fontSize: 11,
-                                  color: AppColors.textSubtle,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // Compact Action Buttons Bar
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 32,
-                                      child: OutlinedButton.icon(
-                                        style: OutlinedButton.styleFrom(
-                                          side: BorderSide(color: AppColors.neoCoral.withValues(alpha: 0.4)),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                                        ),
-                                        icon: const Icon(Icons.close_rounded, color: AppColors.neoCoral, size: 14),
-                                        label: Text(
-                                          'Salah',
-                                          style: AppTypography.badgeLabel.copyWith(
-                                            color: AppColors.neoCoral,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11.5,
-                                          ),
-                                        ),
-                                        onPressed: () => _rejectItem(item),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 32,
-                                      child: ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.neoChartreuse,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                                        ),
-                                        icon: const Icon(Icons.check_rounded, color: AppColors.textDarkPrimary, size: 14),
-                                        label: Text(
-                                          'Benar',
-                                          style: AppTypography.badgeLabel.copyWith(
-                                            color: AppColors.textDarkPrimary,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 11.5,
-                                          ),
-                                        ),
-                                        onPressed: () => _confirmItem(item),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -801,6 +1081,247 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
                 },
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A swipeable card wrapper that executes a realistic spring physics simulation
+/// when the user releases before the dismiss threshold (canceling either a delete
+/// or an accept action).
+class _SpringSwipeableCard extends StatefulWidget {
+  final Widget child;
+  final Color accentColor;
+  final VoidCallback onConfirmed;
+  final VoidCallback onRejected;
+
+  const _SpringSwipeableCard({
+    super.key,
+    required this.child,
+    required this.accentColor,
+    required this.onConfirmed,
+    required this.onRejected,
+  });
+
+  @override
+  State<_SpringSwipeableCard> createState() => _SpringSwipeableCardState();
+}
+
+class _SpringSwipeableCardState extends State<_SpringSwipeableCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _dragOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController.unbounded(vsync: this);
+    _controller.addListener(() {
+      setState(() {
+        _dragOffset = _controller.value;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (_controller.isAnimating) {
+      _controller.stop();
+    }
+    setState(() {
+      _dragOffset += details.primaryDelta ?? 0.0;
+      _controller.value = _dragOffset;
+    });
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0.0;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final threshold = screenWidth * 0.50;
+
+    // Only trigger when swiped at least 50% of screen width
+    if (_dragOffset >= threshold) {
+      _dismissRight();
+    } else if (_dragOffset <= -threshold) {
+      _dismissLeft();
+    } else {
+      // Less than 50% of screen width: treat as cancel and spring back
+      _snapBackWithSpring(velocity);
+    }
+  }
+
+  void _snapBackWithSpring(double velocity) {
+    final simulation = SpringSimulation(
+      const SpringDescription(
+        mass: 1.0,
+        stiffness: 420.0,
+        damping: 24.0,
+      ),
+      _dragOffset,
+      0.0,
+      velocity,
+    );
+    _controller.animateWith(simulation);
+  }
+
+  void _dismissRight() {
+    final target = MediaQuery.sizeOf(context).width;
+    _controller
+        .animateTo(
+      target,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+    )
+        .then((_) {
+      if (mounted) {
+        widget.onConfirmed();
+      }
+    });
+  }
+
+  void _dismissLeft() {
+    final target = -MediaQuery.sizeOf(context).width;
+    _controller
+        .animateTo(
+      target,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+    )
+        .then((_) {
+      if (mounted) {
+        widget.onRejected();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDraggingRight = _dragOffset > 0;
+    final isDraggingLeft = _dragOffset < 0;
+    final threshold = MediaQuery.sizeOf(context).width * 0.50;
+    final progress = (_dragOffset.abs() / threshold).clamp(0.0, 1.0);
+
+    return GestureDetector(
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+      onHorizontalDragEnd: _onHorizontalDragEnd,
+      child: Stack(
+        children: [
+          // Background Swipe Reveals
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Stack(
+                children: [
+                  // Confirm Reveal (Swiping Right)
+                  if (isDraggingRight)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.neoMint.withValues(alpha: 0.12 * progress),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: AppColors.neoMint.withValues(alpha: 0.35 * progress),
+                            width: 1,
+                          ),
+                        ),
+                        child: Opacity(
+                          opacity: (progress * 1.2).clamp(0.0, 1.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.neoMint.withValues(alpha: 0.2),
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  color: AppColors.neoMint,
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Benar',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.neoMint,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Reject Reveal (Swiping Left)
+                  if (isDraggingLeft)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.neoCoral.withValues(alpha: 0.12 * progress),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: AppColors.neoCoral.withValues(alpha: 0.35 * progress),
+                            width: 1,
+                          ),
+                        ),
+                        child: Opacity(
+                          opacity: (progress * 1.2).clamp(0.0, 1.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Salah',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.neoCoral,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.neoCoral.withValues(alpha: 0.2),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: AppColors.neoCoral,
+                                  size: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Foreground Card with Translation
+          Transform.translate(
+            offset: Offset(_dragOffset, 0),
+            child: widget.child,
+          ),
         ],
       ),
     );
