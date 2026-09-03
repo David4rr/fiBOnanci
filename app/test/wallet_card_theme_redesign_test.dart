@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -447,6 +448,74 @@ void main() {
       // Advance clock past 6s total -> auto-collapses
       await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
+      cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
+      expect(cards[0].showBottomLayout, isFalse);
+    });
+
+    testWidgets('Expanded stacked card auto-closes on account detail view exit', (tester) async {
+      final now = DateTime.now().toUtc();
+      final topWallet = WalletEntry(
+        id: 'w_top',
+        name: 'BCA Utama',
+        type: 'bank',
+        currency: 'IDR',
+        balance: 5000000.0,
+        colorHex: '#0060AF',
+        iconName: 'wallet',
+        accountNumber: '1122334455',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+      final bottomWallet = WalletEntry(
+        id: 'w_bottom_cash',
+        name: 'Kas Tunai Dompet',
+        type: 'cash',
+        currency: 'IDR',
+        balance: 250000.0,
+        colorHex: '#10B981',
+        iconName: 'wallet',
+        accountNumber: null,
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final completer = Completer<void>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WalletCardDeck(
+              wallets: [topWallet, bottomWallet],
+              fmt: fmt,
+              onSelectWallet: (_) => completer.future,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Tap top card to expand it
+      await tester.tap(find.text('BCA Utama'));
+      await tester.pumpAndSettle();
+      var cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
+      expect(cards[0].showBottomLayout, isTrue);
+
+      // 2. Tap expanded card to open detail view
+      await tester.tap(find.text('BCA Utama'));
+      await tester.pump();
+
+      // Detail view is open, card is still expanded while open
+      cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
+      expect(cards[0].showBottomLayout, isTrue);
+
+      // 3. Exit detail view
+      completer.complete();
+      await tester.pumpAndSettle();
+
+      // Card automatically closes upon exiting detail view!
       cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
       expect(cards[0].showBottomLayout, isFalse);
     });

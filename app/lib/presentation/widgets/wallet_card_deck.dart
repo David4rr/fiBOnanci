@@ -17,8 +17,7 @@ class WalletCardDeck extends StatefulWidget {
   final List<WalletEntry> wallets;
   final NumberFormat fmt;
   final String? liftedWalletId;
-  final ValueChanged<WalletEntry> onSelectWallet;
-
+  final FutureOr<void> Function(WalletEntry wallet) onSelectWallet;
   static const double atmRatio   = 53.98 / 85.60; // ≈ 0.631
   static const double peekHeight = 78.0;          // 78px per peek
 
@@ -69,14 +68,21 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
     }
   }
 
-  void _handleCardTap(WalletEntry wallet) {
+  Future<void> _handleCardTap(WalletEntry wallet) async {
     HapticFeedback.selectionClick();
     final isBottomCard = widget.wallets.isNotEmpty && widget.wallets.last.id == wallet.id;
     if (widget.wallets.length == 1 || isBottomCard || _expandedWalletId == wallet.id) {
       // Unstacked card (single card or bottom card of deck) or second tap on already expanded card:
       // Open Detail Screen directly with Hero morph!
       _cancelAutoCloseTimer();
-      widget.onSelectWallet(wallet);
+      final wasExpanded = _expandedWalletId == wallet.id;
+      await widget.onSelectWallet(wallet);
+      if (mounted && wasExpanded) {
+        // Auto-close card on account detail view exit!
+        setState(() {
+          _expandedWalletId = null;
+        });
+      }
     } else {
       // First tap on a stacked card: Expand this card to full layout and start 6s auto-close timer!
       setState(() {
@@ -85,7 +91,6 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
       _startAutoCloseTimer();
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final wallets = widget.wallets;

@@ -251,9 +251,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           child: WalletCardDeck(
                             wallets: wallets,
                             fmt: currencyFormatter,
-                            onSelectWallet: (wallet) {
-                              WalletDetailScreen.push(context, wallet: wallet);
-                            },
+                            onSelectWallet: (wallet) => WalletDetailScreen.push(context, wallet: wallet),
                           ),
                         ),
                       ),

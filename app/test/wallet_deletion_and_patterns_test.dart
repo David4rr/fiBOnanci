@@ -154,10 +154,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Detail Rekening'), findsNothing);
 
-      // Re-open BCA card modal (BCA card is already expanded in deck)
+      // Re-open BCA card (tap to expand, then tap to open detail since card auto-closed on exit)
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-      // 5. Open Ubah Saldo to test EditBalanceModal deletion
+      await tester.tap(bcaFinder);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();
 
