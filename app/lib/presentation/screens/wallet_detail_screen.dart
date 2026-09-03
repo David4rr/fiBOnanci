@@ -106,6 +106,9 @@ class _TactileHeroCardState extends State<_TactileHeroCard> {
   void _handleTap(BuildContext context) {
     HapticFeedback.lightImpact();
     setState(() => _isCopied = true);
+    final accNum = widget.wallet.accountNumber?.trim();
+    final textToCopy = (accNum != null && accNum.isNotEmpty) ? accNum : widget.wallet.name;
+    Clipboard.setData(ClipboardData(text: textToCopy));
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -122,7 +125,9 @@ class _TactileHeroCardState extends State<_TactileHeroCard> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Nomor rekening ${widget.wallet.name} disalin',
+                accNum != null && accNum.isNotEmpty
+                    ? 'Nomor rekening $accNum disalin'
+                    : 'Nama rekening ${widget.wallet.name} disalin',
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.textWhite,
                   fontSize: 13,

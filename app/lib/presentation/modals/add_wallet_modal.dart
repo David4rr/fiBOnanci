@@ -12,6 +12,7 @@ class AddWalletModal {
   static void show(BuildContext context) {
     final nameController = TextEditingController();
     final balanceController = TextEditingController();
+    final accountNumberController = TextEditingController();
     final customPackageController = TextEditingController();
     String type = 'bank';
     String? selectedPackage;
@@ -33,10 +34,12 @@ class AddWalletModal {
                 24,
                 24 + MediaQuery.of(ctx).viewInsets.bottom,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Center(
                     child: Container(
                       width: 40,
@@ -108,6 +111,22 @@ class AddWalletModal {
                     decoration: InputDecoration(
                       hintText: 'Saldo Awal (Rp)',
                       prefixText: 'Rp ',
+                      filled: true,
+                      fillColor: AppColors.canvasInputSearch,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: accountNumberController,
+                    keyboardType: TextInputType.text,
+                    style: AppTypography.listTitle,
+                    decoration: InputDecoration(
+                      hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
+                      hintStyle: AppTypography.listSubtitle,
                       filled: true,
                       fillColor: AppColors.canvasInputSearch,
                       border: OutlineInputBorder(
@@ -268,6 +287,7 @@ class AddWalletModal {
                             onPressed: () {
                               final name = nameController.text.trim();
                               final bal = RupiahInputFormatter.parse(balanceController.text);
+                              final accNum = accountNumberController.text.trim();
                               final boundPkg = isCustomPackage
                                   ? customPackageController.text.trim()
                                   : selectedPackage;
@@ -276,6 +296,7 @@ class AddWalletModal {
                                   AddWalletEvent(
                                     name: name,
                                     type: type,
+                                    accountNumber: accNum.isNotEmpty ? accNum : null,
                                     initialBalance: bal,
                                     colorHex: '#10B981',
                                     iconName: 'wallet',
@@ -290,7 +311,8 @@ class AddWalletModal {
                       ),
                     ],
                   ),
-                ],
+                  ],
+                ),
               ),
             );
           },

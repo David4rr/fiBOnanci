@@ -115,16 +115,19 @@ class MarkSubscriptionPaidEvent extends FinanceEvent {
 class UpdateWalletBalanceEvent extends FinanceEvent {
   final String walletId;
   final double newBalance;
+  final String? accountNumber;
 
   const UpdateWalletBalanceEvent({
     required this.walletId,
     required this.newBalance,
+    this.accountNumber,
   });
 }
 
 class AddWalletEvent extends FinanceEvent {
   final String name;
   final String type;
+  final String? accountNumber;
   final double initialBalance;
   final String colorHex;
   final String iconName;
@@ -133,6 +136,7 @@ class AddWalletEvent extends FinanceEvent {
   const AddWalletEvent({
     required this.name,
     required this.type,
+    this.accountNumber,
     required this.initialBalance,
     required this.colorHex,
     required this.iconName,

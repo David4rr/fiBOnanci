@@ -64,11 +64,12 @@ abstract class FinanceRepository {
 
   Future<void> markSubscriptionAsPaid(String subscriptionId);
 
-  Future<void> updateWalletBalance(String walletId, double newBalance);
+  Future<void> updateWalletBalance(String walletId, double newBalance, {String? accountNumber});
 
   Future<void> addWallet({
     required String name,
     required String type,
+    String? accountNumber,
     required double initialBalance,
     required String colorHex,
     required String iconName,
@@ -328,14 +329,21 @@ class DriftFinanceRepository implements FinanceRepository {
   }
 
   @override
-  Future<void> updateWalletBalance(String walletId, double newBalance) {
-    return db.updateWalletBalance(walletId, newBalance);
+  Future<void> updateWalletBalance(String walletId, double newBalance, {String? accountNumber}) {
+    return db.updateWalletBalance(
+      walletId,
+      newBalance,
+      accountNumber: accountNumber != null
+          ? drift.Value(accountNumber.trim().isNotEmpty ? accountNumber.trim() : null)
+          : const drift.Value.absent(),
+    );
   }
 
   @override
   Future<void> addWallet({
     required String name,
     required String type,
+    String? accountNumber,
     required double initialBalance,
     required String colorHex,
     required String iconName,
@@ -343,11 +351,13 @@ class DriftFinanceRepository implements FinanceRepository {
   }) async {
     final now = DateTime.now().toUtc();
     final walletId = _uuid.v4();
+    final cleanAccountNum = accountNumber?.trim();
     await db.into(db.wallets).insert(
       WalletsCompanion(
         id: drift.Value(walletId),
         name: drift.Value(name),
         type: drift.Value(type),
+        accountNumber: drift.Value(cleanAccountNum != null && cleanAccountNum.isNotEmpty ? cleanAccountNum : null),
         balance: drift.Value(initialBalance),
         colorHex: drift.Value(colorHex),
         iconName: drift.Value(iconName),

@@ -16,6 +16,9 @@ class EditBalanceModal {
     final controller = TextEditingController(
       text: RupiahInputFormatter.format(wallet.balance),
     );
+    final accountNumberController = TextEditingController(
+      text: wallet.accountNumber ?? '',
+    );
     final customPackageController = TextEditingController();
     String? selectedPackage;
     bool isCustomPackage = false;
@@ -127,6 +130,22 @@ class EditBalanceModal {
                   prefixStyle: AppTypography.heroGreeting.copyWith(
                     color: AppColors.neoChartreuse,
                   ),
+                  filled: true,
+                  fillColor: AppColors.canvasInputSearch,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: accountNumberController,
+                keyboardType: TextInputType.text,
+                style: AppTypography.listTitle,
+                decoration: InputDecoration(
+                  hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
+                  hintStyle: AppTypography.listSubtitle,
                   filled: true,
                   fillColor: AppColors.canvasInputSearch,
                   border: OutlineInputBorder(
@@ -267,18 +286,18 @@ class EditBalanceModal {
                         ),
                         onPressed: () {
                           final newBal = RupiahInputFormatter.parse(controller.text);
+                          final accNum = accountNumberController.text.trim();
                           final boundPkg = isCustomPackage
                               ? customPackageController.text.trim()
                               : selectedPackage;
 
-                          if (newBal > 0) {
-                            context.read<FinanceBloc>().add(
-                              UpdateWalletBalanceEvent(
-                                walletId: wallet.id,
-                                newBalance: newBal,
-                              ),
-                            );
-                          }
+                          context.read<FinanceBloc>().add(
+                            UpdateWalletBalanceEvent(
+                              walletId: wallet.id,
+                              newBalance: newBal > 0 ? newBal : wallet.balance,
+                              accountNumber: accNum,
+                            ),
+                          );
 
                           final repo = context.read<FinanceBloc>().repository;
                           if (boundPkg != null && boundPkg.isNotEmpty) {

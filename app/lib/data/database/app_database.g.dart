@@ -147,6 +147,17 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, WalletEntry> {
     requiredDuringInsert: false,
     defaultValue: const Constant('wallet'),
   );
+  static const VerificationMeta _accountNumberMeta = const VerificationMeta(
+    'accountNumber',
+  );
+  @override
+  late final GeneratedColumn<String> accountNumber = GeneratedColumn<String>(
+    'account_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -160,6 +171,7 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, WalletEntry> {
     balance,
     colorHex,
     iconName,
+    accountNumber,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -246,6 +258,15 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, WalletEntry> {
         iconName.isAcceptableOrUnknown(data['icon_name']!, _iconNameMeta),
       );
     }
+    if (data.containsKey('account_number')) {
+      context.handle(
+        _accountNumberMeta,
+        accountNumber.isAcceptableOrUnknown(
+          data['account_number']!,
+          _accountNumberMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -299,6 +320,10 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, WalletEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}icon_name'],
       )!,
+      accountNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_number'],
+      ),
     );
   }
 
@@ -320,6 +345,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
   final double balance;
   final String colorHex;
   final String iconName;
+  final String? accountNumber;
   const WalletEntry({
     required this.id,
     required this.createdAt,
@@ -332,6 +358,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
     required this.balance,
     required this.colorHex,
     required this.iconName,
+    this.accountNumber,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -347,6 +374,9 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
     map['balance'] = Variable<double>(balance);
     map['color_hex'] = Variable<String>(colorHex);
     map['icon_name'] = Variable<String>(iconName);
+    if (!nullToAbsent || accountNumber != null) {
+      map['account_number'] = Variable<String>(accountNumber);
+    }
     return map;
   }
 
@@ -363,6 +393,9 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
       balance: Value(balance),
       colorHex: Value(colorHex),
       iconName: Value(iconName),
+      accountNumber: accountNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountNumber),
     );
   }
 
@@ -383,6 +416,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
       balance: serializer.fromJson<double>(json['balance']),
       colorHex: serializer.fromJson<String>(json['colorHex']),
       iconName: serializer.fromJson<String>(json['iconName']),
+      accountNumber: serializer.fromJson<String?>(json['accountNumber']),
     );
   }
   @override
@@ -400,6 +434,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
       'balance': serializer.toJson<double>(balance),
       'colorHex': serializer.toJson<String>(colorHex),
       'iconName': serializer.toJson<String>(iconName),
+      'accountNumber': serializer.toJson<String?>(accountNumber),
     };
   }
 
@@ -415,6 +450,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
     double? balance,
     String? colorHex,
     String? iconName,
+    Value<String?> accountNumber = const Value.absent(),
   }) => WalletEntry(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
@@ -427,6 +463,9 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
     balance: balance ?? this.balance,
     colorHex: colorHex ?? this.colorHex,
     iconName: iconName ?? this.iconName,
+    accountNumber: accountNumber.present
+        ? accountNumber.value
+        : this.accountNumber,
   );
   WalletEntry copyWithCompanion(WalletsCompanion data) {
     return WalletEntry(
@@ -441,6 +480,9 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
       balance: data.balance.present ? data.balance.value : this.balance,
       colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
       iconName: data.iconName.present ? data.iconName.value : this.iconName,
+      accountNumber: data.accountNumber.present
+          ? data.accountNumber.value
+          : this.accountNumber,
     );
   }
 
@@ -457,7 +499,8 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
           ..write('currency: $currency, ')
           ..write('balance: $balance, ')
           ..write('colorHex: $colorHex, ')
-          ..write('iconName: $iconName')
+          ..write('iconName: $iconName, ')
+          ..write('accountNumber: $accountNumber')
           ..write(')'))
         .toString();
   }
@@ -475,6 +518,7 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
     balance,
     colorHex,
     iconName,
+    accountNumber,
   );
   @override
   bool operator ==(Object other) =>
@@ -490,7 +534,8 @@ class WalletEntry extends DataClass implements Insertable<WalletEntry> {
           other.currency == this.currency &&
           other.balance == this.balance &&
           other.colorHex == this.colorHex &&
-          other.iconName == this.iconName);
+          other.iconName == this.iconName &&
+          other.accountNumber == this.accountNumber);
 }
 
 class WalletsCompanion extends UpdateCompanion<WalletEntry> {
@@ -505,6 +550,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
   final Value<double> balance;
   final Value<String> colorHex;
   final Value<String> iconName;
+  final Value<String?> accountNumber;
   final Value<int> rowid;
   const WalletsCompanion({
     this.id = const Value.absent(),
@@ -518,6 +564,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
     this.balance = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.iconName = const Value.absent(),
+    this.accountNumber = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletsCompanion.insert({
@@ -532,6 +579,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
     this.balance = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.iconName = const Value.absent(),
+    this.accountNumber = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -550,6 +598,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
     Expression<double>? balance,
     Expression<String>? colorHex,
     Expression<String>? iconName,
+    Expression<String>? accountNumber,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -564,6 +613,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
       if (balance != null) 'balance': balance,
       if (colorHex != null) 'color_hex': colorHex,
       if (iconName != null) 'icon_name': iconName,
+      if (accountNumber != null) 'account_number': accountNumber,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -580,6 +630,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
     Value<double>? balance,
     Value<String>? colorHex,
     Value<String>? iconName,
+    Value<String?>? accountNumber,
     Value<int>? rowid,
   }) {
     return WalletsCompanion(
@@ -594,6 +645,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
       balance: balance ?? this.balance,
       colorHex: colorHex ?? this.colorHex,
       iconName: iconName ?? this.iconName,
+      accountNumber: accountNumber ?? this.accountNumber,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -634,6 +686,9 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
     if (iconName.present) {
       map['icon_name'] = Variable<String>(iconName.value);
     }
+    if (accountNumber.present) {
+      map['account_number'] = Variable<String>(accountNumber.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -654,6 +709,7 @@ class WalletsCompanion extends UpdateCompanion<WalletEntry> {
           ..write('balance: $balance, ')
           ..write('colorHex: $colorHex, ')
           ..write('iconName: $iconName, ')
+          ..write('accountNumber: $accountNumber, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5241,6 +5297,7 @@ typedef $$WalletsTableCreateCompanionBuilder =
       Value<double> balance,
       Value<String> colorHex,
       Value<String> iconName,
+      Value<String?> accountNumber,
       Value<int> rowid,
     });
 typedef $$WalletsTableUpdateCompanionBuilder =
@@ -5256,6 +5313,7 @@ typedef $$WalletsTableUpdateCompanionBuilder =
       Value<double> balance,
       Value<String> colorHex,
       Value<String> iconName,
+      Value<String?> accountNumber,
       Value<int> rowid,
     });
 
@@ -5422,6 +5480,11 @@ class $$WalletsTableFilterComposer
 
   ColumnFilters<String> get iconName => $composableBuilder(
     column: $table.iconName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountNumber => $composableBuilder(
+    column: $table.accountNumber,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5614,6 +5677,11 @@ class $$WalletsTableOrderingComposer
     column: $table.iconName,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get accountNumber => $composableBuilder(
+    column: $table.accountNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WalletsTableAnnotationComposer
@@ -5657,6 +5725,11 @@ class $$WalletsTableAnnotationComposer
 
   GeneratedColumn<String> get iconName =>
       $composableBuilder(column: $table.iconName, builder: (column) => column);
+
+  GeneratedColumn<String> get accountNumber => $composableBuilder(
+    column: $table.accountNumber,
+    builder: (column) => column,
+  );
 
   Expression<T> transactions<T extends Object>(
     Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
@@ -5830,6 +5903,7 @@ class $$WalletsTableTableManager
                 Value<double> balance = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
                 Value<String> iconName = const Value.absent(),
+                Value<String?> accountNumber = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WalletsCompanion(
                 id: id,
@@ -5843,6 +5917,7 @@ class $$WalletsTableTableManager
                 balance: balance,
                 colorHex: colorHex,
                 iconName: iconName,
+                accountNumber: accountNumber,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5858,6 +5933,7 @@ class $$WalletsTableTableManager
                 Value<double> balance = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
                 Value<String> iconName = const Value.absent(),
+                Value<String?> accountNumber = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WalletsCompanion.insert(
                 id: id,
@@ -5871,6 +5947,7 @@ class $$WalletsTableTableManager
                 balance: balance,
                 colorHex: colorHex,
                 iconName: iconName,
+                accountNumber: accountNumber,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

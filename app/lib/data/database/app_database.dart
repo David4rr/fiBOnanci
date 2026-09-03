@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -37,6 +37,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         await m.createTable(profiles);
         await _seedDefaultProfile();
+      }
+      if (from < 4) {
+        await m.addColumn(wallets, wallets.accountNumber);
       }
     },
     beforeOpen: (details) async {
@@ -63,6 +66,13 @@ class AppDatabase extends _$AppDatabase {
         if ((count.data['c'] as int? ?? 0) == 0) {
           await _seedDefaultProfile();
         }
+      }
+      // Ensure account_number column exists in wallets table
+      final walletColumns = await customSelect("PRAGMA table_info(wallets)").get();
+      final hasAccountNumber = walletColumns.any((c) => c.data['name'] == 'account_number');
+      if (!hasAccountNumber) {
+        final m = createMigrator();
+        await m.addColumn(wallets, wallets.accountNumber);
       }
     },
   );
@@ -669,10 +679,15 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> updateWalletBalance(String walletId, double newBalance) async {
+  Future<void> updateWalletBalance(
+    String walletId,
+    double newBalance, {
+    Value<String?> accountNumber = const Value.absent(),
+  }) async {
     await (update(wallets)..where((t) => t.id.equals(walletId))).write(
       WalletsCompanion(
         balance: Value(newBalance),
+        accountNumber: accountNumber,
         updatedAt: Value(DateTime.now().toUtc()),
         isSynced: const Value(false),
       ),

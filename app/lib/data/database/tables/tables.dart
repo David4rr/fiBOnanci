@@ -20,6 +20,7 @@ class Wallets extends Table with SyncableTable {
   RealColumn get balance => real().withDefault(const Constant(0.0))();
   TextColumn get colorHex => text().withLength(min: 7, max: 7).withDefault(const Constant('#10B981'))();
   TextColumn get iconName => text().withDefault(const Constant('wallet'))();
+  TextColumn get accountNumber => text().nullable()();
 }
 
 @DataClassName('CategoryEntry')

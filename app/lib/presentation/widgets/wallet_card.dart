@@ -119,11 +119,12 @@ class WalletCard extends StatelessWidget {
   });
 
 
-  String _generateMaskedNumber(WalletEntry wallet) {
-    final seed = (wallet.id.hashCode).abs();
-    final firstPart = (1000 + (seed % 9000)).toString();
-    final lastPart = (1000 + ((seed ~/ 10) % 9000)).toString();
-    return '$firstPart ...... $lastPart';
+  String _formatAccountNumber(WalletEntry wallet) {
+    final num = wallet.accountNumber?.trim();
+    if (num == null || num.isEmpty) {
+      return '-';
+    }
+    return num;
   }
 
   Widget _buildNetworkBadge(String badgeText, ModernistCardConfig config) {
@@ -193,7 +194,7 @@ class WalletCard extends StatelessWidget {
     final theme = resolveWalletTheme(wallet, index);
     final config = ModernistCardConfig.forTheme(theme);
     final badgeText = resolveWalletNetworkBadge(wallet, theme);
-    final maskedNumber = _generateMaskedNumber(wallet);
+    final accountNumberDisplay = _formatAccountNumber(wallet);
     final isDark = config.backgroundColor.computeLuminance() < 0.35;
 
     // ── Top layout: compact top-pinned header row for peeking stack cards ──
@@ -335,7 +336,7 @@ class WalletCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // Contactless Icon & Masked Card Number
+              // Contactless Icon & Account Number (defaults to '-' if blank)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
@@ -343,12 +344,12 @@ class WalletCard extends StatelessWidget {
                   _buildContactlessIcon(config.textColor),
                   const SizedBox(height: 5),
                   Text(
-                    maskedNumber,
+                    accountNumberDisplay,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                       color: config.textColor.withValues(alpha: 0.75),
-                      letterSpacing: 1.0,
+                      letterSpacing: accountNumberDisplay == '-' ? 0.0 : 1.0,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),

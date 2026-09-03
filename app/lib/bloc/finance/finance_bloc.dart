@@ -281,7 +281,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   Future<void> _onUpdateWalletBalance(UpdateWalletBalanceEvent event, Emitter<FinanceState> emit) async {
     try {
-      await repository.updateWalletBalance(event.walletId, event.newBalance);
+      await repository.updateWalletBalance(
+        event.walletId,
+        event.newBalance,
+        accountNumber: event.accountNumber,
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal update saldo: $e'));
     }
@@ -292,6 +296,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       await repository.addWallet(
         name: event.name,
         type: event.type,
+        accountNumber: event.accountNumber,
         initialBalance: event.initialBalance,
         colorHex: event.colorHex,
         iconName: event.iconName,
