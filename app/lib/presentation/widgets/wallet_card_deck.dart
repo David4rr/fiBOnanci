@@ -8,18 +8,13 @@ import '../theme/app_typography.dart';
 import 'wallet_card.dart';
 
 /// Clean tactile stacked card deck view with fluid spring physics and uniform peeking.
-///
-/// Features:
-/// - Tactile card selection lift transition with spring physics and parting background cards.
-/// - Dynamic elevation, scale, and tactile shadow response.
-/// - Zero duplicate cards during focus transitions.
 class WalletCardDeck extends StatefulWidget {
   final List<WalletEntry> wallets;
   final NumberFormat fmt;
   final String? liftedWalletId;
   final FutureOr<void> Function(WalletEntry wallet) onSelectWallet;
-  static const double atmRatio   = 53.98 / 85.60; // ≈ 0.631
-  static const double peekHeight = 78.0;          // 78px per peek
+  static const double atmRatio = 53.98 / 85.60;
+  static const double peekHeight = 78.0;
 
   const WalletCardDeck({
     super.key,
@@ -41,9 +36,7 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
     _autoCloseTimer?.cancel();
     _autoCloseTimer = Timer(const Duration(seconds: 6), () {
       if (mounted && _expandedWalletId != null) {
-        setState(() {
-          _expandedWalletId = null;
-        });
+        setState(() => _expandedWalletId = null);
       }
     });
   }
@@ -72,25 +65,18 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
     HapticFeedback.selectionClick();
     final isBottomCard = widget.wallets.isNotEmpty && widget.wallets.last.id == wallet.id;
     if (widget.wallets.length == 1 || isBottomCard || _expandedWalletId == wallet.id) {
-      // Unstacked card (single card or bottom card of deck) or second tap on already expanded card:
-      // Open Detail Screen directly with Hero morph!
       _cancelAutoCloseTimer();
       final wasExpanded = _expandedWalletId == wallet.id;
       await widget.onSelectWallet(wallet);
       if (mounted && wasExpanded) {
-        // Auto-close card on account detail view exit!
-        setState(() {
-          _expandedWalletId = null;
-        });
+        setState(() => _expandedWalletId = null);
       }
     } else {
-      // First tap on a stacked card: Expand this card to full layout and start 6s auto-close timer!
-      setState(() {
-        _expandedWalletId = wallet.id;
-      });
+      setState(() => _expandedWalletId = wallet.id);
       _startAutoCloseTimer();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final wallets = widget.wallets;
@@ -105,11 +91,7 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
           border: Border.all(color: AppColors.canvasBorder),
         ),
         child: Center(
-          child: Text(
-            'Belum ada rekening. Ketuk + untuk menambahkan.',
-            textAlign: TextAlign.center,
-            style: AppTypography.listSubtitle,
-          ),
+          child: Text('Belum ada rekening. Ketuk + untuk menambahkan.', textAlign: TextAlign.center, style: AppTypography.listSubtitle),
         ),
       );
     }
@@ -118,43 +100,41 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
       builder: (context, constraints) {
         final cardW = constraints.maxWidth;
         final cardH = cardW * WalletCardDeck.atmRatio;
-        final expandedIndex = _expandedWalletId != null
-            ? wallets.indexWhere((w) => w.id == _expandedWalletId)
-            : -1;
-
-        final double baseStackH = (wallets.length - 1) * WalletCardDeck.peekHeight + cardH + 16.0;
-        final double expansionShift = (cardH - WalletCardDeck.peekHeight).clamp(0.0, double.infinity);
-        final double stackH = expandedIndex != -1
-            ? baseStackH + expansionShift + 12.0
-            : baseStackH;
+        final expandedIndex = _expandedWalletId != null ? wallets.indexWhere((w) => w.id == _expandedWalletId) : -1;
+        final deckH = wallets.length == 1
+            ? cardH
+            : (expandedIndex >= 0
+                ? cardH + (wallets.length - 1) * WalletCardDeck.peekHeight + 20.0
+                : cardH + (wallets.length - 1) * WalletCardDeck.peekHeight);
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 320),
-          curve: const Cubic(0.16, 1.0, 0.3, 1.0),
-          height: stackH,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          height: deckH,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               for (int i = 0; i < wallets.length; i++) ...[
                 Builder(builder: (context) {
                   final wallet = wallets[i];
-                  final isLifted = widget.liftedWalletId == wallet.id;
-                  if (isLifted) {
-                    return const SizedBox.shrink();
-                  }
-
                   final isBottomCard = i == wallets.length - 1;
                   final isSingleCard = wallets.length == 1;
                   final isExpanded = isSingleCard || isBottomCard || expandedIndex == i;
                   final shouldAnimate = !isSingleCard && !isBottomCard;
-                  final double topPos = (expandedIndex != -1 && i > expandedIndex)
-                      ? i * WalletCardDeck.peekHeight + expansionShift + 12.0
-                      : i * WalletCardDeck.peekHeight;
+                  double topOffset;
+                  if (expandedIndex == -1) {
+                    topOffset = i * WalletCardDeck.peekHeight;
+                  } else if (i <= expandedIndex) {
+                    topOffset = i * WalletCardDeck.peekHeight;
+                  } else {
+                    topOffset = (i * WalletCardDeck.peekHeight) + (cardH - WalletCardDeck.peekHeight) + 16.0;
+                  }
+
                   return AnimatedPositioned(
                     key: ValueKey('deck_card_${wallet.id}'),
-                    duration: const Duration(milliseconds: 320),
-                    curve: const Cubic(0.16, 1.0, 0.3, 1.0),
-                    top: topPos,
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeOutCubic,
+                    top: topOffset,
                     left: 0,
                     right: 0,
                     child: GestureDetector(
@@ -162,17 +142,19 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                       onTap: () => _handleCardTap(wallet),
                       child: Hero(
                         tag: 'wallet_card_${wallet.id}',
-                        flightShuttleBuilder: (
-                          flightContext,
-                          animation,
-                          flightDirection,
-                          fromHeroContext,
-                          toHeroContext,
-                        ) {
-                          final Hero toHero = toHeroContext.widget as Hero;
+                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
                           return Material(
                             color: Colors.transparent,
-                            child: toHero.child,
+                            child: WalletCard(
+                              wallet: wallet,
+                              index: i,
+                              allWallets: wallets,
+                              fmt: fmt,
+                              cardH: cardH,
+                              isLifted: true,
+                              showBottomLayout: true,
+                              animate: false,
+                            ),
                           );
                         },
                         child: Material(

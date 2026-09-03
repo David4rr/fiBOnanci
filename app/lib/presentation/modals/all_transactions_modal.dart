@@ -5,9 +5,6 @@ import '../screens/expense_history_screen.dart';
 export '../screens/expense_history_screen.dart';
 
 /// Backward-compatible wrapper for [ExpenseHistoryScreen].
-///
-/// Uses dedicated full-screen navigation with interactive spring animation
-/// and tactile pull-to-dismiss gesture physics.
 class AllTransactionsModal extends ExpenseHistoryScreen {
   const AllTransactionsModal({
     super.key,
@@ -24,6 +21,7 @@ class AllTransactionsModal extends ExpenseHistoryScreen {
       context,
       allTransactions: allTransactions,
       wallets: wallets,
+      builder: (_) => AllTransactionsModal(allTransactions: allTransactions, wallets: wallets),
     );
   }
 }

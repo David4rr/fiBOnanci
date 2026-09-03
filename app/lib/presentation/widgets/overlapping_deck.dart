@@ -4,11 +4,12 @@ import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
-import '../theme/app_colors.dart';
+import 'expense_category_helpers.dart';
+import 'overlapping_deck_item.dart';
 import 'transaction_detail_modal.dart';
 
+export 'expense_category_helpers.dart';
 export 'overlapping_deck_item.dart';
-import 'overlapping_deck_item.dart';
 
 /// Interactive scrollable stacked card deck matching the Apple Wallet / Passbook physics in the reference.
 class StackedCardDeckScrollList extends StatefulWidget {
@@ -39,7 +40,6 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
   late AnimationController _flingController;
   Animation<double>? _flingAnimation;
 
-  // Stacking metrics
   static const double _cardStep = 85.0;
   static const double _collapsedCardHeight = 190.0;
   static const double _expandedCardHeight = 295.0;
@@ -77,7 +77,9 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
 
   double _getMaxScroll(int count, String? expandedId, double viewportHeight) {
     if (count <= 1) return 0.0;
-    final totalNatural = (count - 1) * _cardStep + (expandedId != null ? _expandDisplacement : 0.0) + (expandedId != null ? _expandedCardHeight : _collapsedCardHeight);
+    final totalNatural = (count - 1) * _cardStep +
+        (expandedId != null ? _expandDisplacement : 0.0) +
+        (expandedId != null ? _expandedCardHeight : _collapsedCardHeight);
     final availableHeight = viewportHeight - widget.bottomPadding;
     return math.max(0.0, totalNatural - availableHeight);
   }
@@ -113,9 +115,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
   @override
   Widget build(BuildContext context) {
     final list = widget.transactions;
-    if (list.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (list.isEmpty) return const SizedBox.shrink();
 
     final String? currentExpandedId = widget.onToggleExpand != null ? widget.expandedTxId : _internalExpandedId;
     final sourceTransactions = widget.allTransactions ?? widget.transactions;
@@ -145,7 +145,6 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                     final cardColor = getExpenseCategoryColor(tx.type, tx.notes, tx.type, i);
                     final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
 
-                    // Compute real 7-day spending/income only when expanded (huge performance win)
                     final weeklySpending = isExpanded
                         ? CashflowAnalyticsService.computeWeeklySpending(
                             sourceTransactions,
@@ -154,11 +153,8 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                             type: tx.type,
                           )
                         : null;
-                    // Natural unconstrained Y
                     final double naturalTop = _getNaturalTop(i, currentExpandedId, list);
                     final double screenY = naturalTop - _scrollOffset;
-
-                    // Clamped docking Y at top header
                     final double dockY = math.min(i, _maxDockedHeaders) * _dockStep;
                     final double computedTop = math.max(screenY, dockY);
 
@@ -170,9 +166,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                       right: 0,
                       child: OverlappingDeckItem(
                         title: tx.notes?.isNotEmpty == true ? tx.notes! : (tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan'),
-                        category: tx.type == 'transfer'
-                            ? 'TRANSFER'
-                            : (tx.type == 'expense' ? 'PENGELUARAN' : 'PEMASUKAN'),
+                        category: tx.type == 'transfer' ? 'TRANSFER' : (tx.type == 'expense' ? 'PENGELUARAN' : 'PEMASUKAN'),
                         amount: tx.amount,
                         isExpense: tx.type == 'expense' || tx.type == 'transfer',
                         categoryColor: cardColor,
@@ -186,9 +180,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                           if (widget.onToggleExpand != null) {
                             widget.onToggleExpand!(newId);
                           } else {
-                            setState(() {
-                              _internalExpandedId = newId;
-                            });
+                            setState(() => _internalExpandedId = newId);
                           }
                         },
                         onManage: () => TransactionDetailModal.show(context, transaction: tx),
@@ -204,61 +196,3 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
     );
   }
 }
-
-/// Dynamic category color helper
-Color getExpenseCategoryColor(String? category, String? title, String? type, int index) {
-  final str = '${category ?? ''} ${title ?? ''}'.toLowerCase();
-  if (str.contains('makan') || str.contains('food') || str.contains('resto') || str.contains('taco') || str.contains('mcd') || str.contains('kfc') || str.contains('kopi') || str.contains('cafe')) {
-    return const Color(0xFFCBB776); // Warm Ochre / Sand
-  }
-  if (str.contains('spotify') || str.contains('musik') || str.contains('music') || str.contains('hiburan') || str.contains('entertain') || str.contains('game')) {
-    return const Color(0xFF7E9D75); // Sage Olive Green
-  }
-  if (str.contains('amazon') || str.contains('belanja') || str.contains('product') || str.contains('shop') || str.contains('shopee') || str.contains('tokopedia')) {
-    return const Color(0xFFFF7052); // Bold Neo-Orange
-  }
-  if (str.contains('transport') || str.contains('grab') || str.contains('gojek') || str.contains('uber') || str.contains('bensin') || str.contains('parkir')) {
-    return const Color(0xFF2EBFA5); // Neo-Teal
-  }
-  if (str.contains('tagihan') || str.contains('bill') || str.contains('listrik') || str.contains('internet') || str.contains('pulsa') || str.contains('pln')) {
-    return const Color(0xFFA78BFA); // Neo-Lavender
-  }
-  if (type == 'income') {
-    return AppColors.neoMint;
-  }
-
-  const fallbackPalette = [
-    Color(0xFFFF7052), // Orange
-    Color(0xFF7E9D75), // Sage Green
-    Color(0xFFCBB776), // Sand Ochre
-    Color(0xFF2EBFA5), // Teal
-    Color(0xFFA78BFA), // Lavender
-    Color(0xFFD4F442), // Neo-Chartreuse
-  ];
-  return fallbackPalette[index % fallbackPalette.length];
-}
-
-/// Dynamic category icon helper
-IconData getExpenseCategoryIcon(String? category, String? title) {
-  final str = '${category ?? ''} ${title ?? ''}'.toLowerCase();
-  if (str.contains('makan') || str.contains('food') || str.contains('resto') || str.contains('taco') || str.contains('mcd') || str.contains('kfc') || str.contains('kopi') || str.contains('cafe')) {
-    return Icons.restaurant_rounded;
-  }
-  if (str.contains('spotify') || str.contains('musik') || str.contains('music')) {
-    return Icons.music_note_rounded;
-  }
-  if (str.contains('netflix') || str.contains('film') || str.contains('movie') || str.contains('hiburan') || str.contains('game')) {
-    return Icons.play_arrow_rounded;
-  }
-  if (str.contains('amazon') || str.contains('belanja') || str.contains('shop') || str.contains('shopee') || str.contains('tokopedia') || str.contains('product')) {
-    return Icons.shopping_bag_rounded;
-  }
-  if (str.contains('transport') || str.contains('grab') || str.contains('gojek') || str.contains('uber') || str.contains('bensin')) {
-    return Icons.directions_car_rounded;
-  }
-  if (str.contains('transfer')) {
-    return Icons.swap_horiz_rounded;
-  }
-  return Icons.receipt_long_rounded;
-}
-

@@ -7,13 +7,6 @@ import '../theme/app_colors.dart';
 import 'subscription_card.dart';
 
 /// Tactile vertical card deck matching the physical ATM card reference.
-///
-/// Features:
-/// - Active/center card floats elevated at full scale with high contrast.
-/// - Cards above center stack upward into an overlapping ceiling deck.
-/// - Cards below center stack downward with lower rims peeking.
-/// - 120Hz smooth scrolling / flick physics with page snapping.
-/// - Tapping a peeking card rolls it directly to center; tapping the center card opens details.
 class SubscriptionStackedDeck extends StatefulWidget {
   final List<SubscriptionEntry> subscriptions;
   final List<WalletEntry> wallets;
@@ -43,9 +36,7 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
     _animController = AnimationController(vsync: this);
     _animController.addListener(() {
       if (_snapAnimation != null) {
-        setState(() {
-          _currentPage = _snapAnimation!.value;
-        });
+        setState(() => _currentPage = _snapAnimation!.value);
       }
     });
   }
@@ -82,13 +73,9 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
   }
 
   void _onDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0.0;
-    if (velocity.abs() > 250) {
-      final target = velocity < 0 ? _currentPage.floor() + 1.0 : _currentPage.ceil() - 1.0;
-      _snapTo(target);
-    } else {
-      _snapTo(_currentPage.roundToDouble());
-    }
+    final velocity = -details.primaryVelocity! / 1000.0;
+    final target = (_currentPage + velocity * 0.4).roundToDouble();
+    _snapTo(target);
   }
 
   @override
@@ -98,18 +85,18 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double viewportHeight = constraints.maxHeight;
-        final double centerY = math.max(0.0, (viewportHeight - _cardHeight) / 2.0 - 15.0);
+        final totalHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 340.0;
+        final centerY = (totalHeight - _cardHeight) / 2;
 
-        final sortedIndices = List<int>.generate(list.length, (i) => i)
-          ..sort((a, b) {
-            final distA = (a - _currentPage).abs();
-            final distB = (b - _currentPage).abs();
-            return distB.compareTo(distA);
-          });
+        final sortedIndices = List<int>.generate(list.length, (i) => i);
+        sortedIndices.sort((a, b) {
+          final distA = (a - _currentPage).abs();
+          final distB = (b - _currentPage).abs();
+          return distB.compareTo(distA);
+        });
 
         return GestureDetector(
-          behavior: HitTestBehavior.translucent,
+          behavior: HitTestBehavior.opaque,
           onVerticalDragUpdate: _onDragUpdate,
           onVerticalDragEnd: _onDragEnd,
           child: Stack(
@@ -123,28 +110,24 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
                     for (final i in sortedIndices)
                       Builder(builder: (context) {
                         final sub = list[i];
-                        final wallet = widget.wallets.firstWhere(
-                          (w) => w.id == sub.walletId,
-                          orElse: () => widget.wallets.first,
-                        );
-
-                        final double diff = i - _currentPage;
-                        final double absDiff = diff.abs();
+                        final wallet = widget.wallets.firstWhere((w) => w.id == sub.walletId, orElse: () => widget.wallets.first);
+                        final diff = i - _currentPage;
+                        final absDiff = diff.abs();
 
                         double top;
+                        double scale;
                         if (diff < 0) {
-                          top = centerY - (math.pow(absDiff, 0.78) * 60.0);
+                          top = centerY + (diff * 22.0).clamp(-centerY + 10.0, 0.0);
+                          scale = (1.0 + diff * 0.05).clamp(0.85, 1.0);
                         } else {
-                          top = centerY + (math.pow(absDiff, 0.78) * 60.0);
+                          top = centerY + math.min(diff * 40.0, centerY + 60.0);
+                          scale = (1.0 - diff * 0.04).clamp(0.88, 1.0);
                         }
-
-                        final double scale = (1.0 - absDiff * 0.015).clamp(0.92, 1.0);
 
                         return Positioned(
                           top: top,
                           left: 0,
                           right: 0,
-                          height: _cardHeight,
                           child: Transform.scale(
                             scale: scale,
                             alignment: Alignment.center,
@@ -167,7 +150,6 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
                   ],
                 ),
               ),
-
               if (list.length > 1)
                 Positioned(
                   bottom: 8,

@@ -6,22 +6,22 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/database/app_database.dart';
 import '../notification_parser/notification_parser.dart';
-import '../notification_parser/parsed_notification.dart';
-typedef NotificationReviewPrompt = Future<bool?> Function(ParsedNotificationResult parsed, String rawPackage);
+import 'notification_inbox.dart';
+import 'notification_wallet_resolver.dart';
 
+export 'notification_inbox.dart';
+
+typedef NotificationReviewPrompt = Future<bool?> Function(ParsedNotificationResult parsed, String rawPackage);
 
 class NotificationBridge {
   static const _methodChannel = MethodChannel('com.fibonanci.app/notification_service');
   static const _eventChannel = EventChannel('com.fibonanci.app/live_notifications');
 
-  static final List<Map<String, dynamic>> _pendingNotifications = [];
-  static final ValueNotifier<int> pendingCountNotifier = ValueNotifier<int>(0);
-
   StreamSubscription? _liveSubscription;
 
-  static int get pendingCount => _pendingNotifications.length;
+  static ValueNotifier<int> get pendingCountNotifier => NotificationInbox.pendingCountNotifier;
+  static int get pendingCount => NotificationInbox.pendingCount;
 
-  /// Check if Android Notification Listener permission is granted by user
   static Future<bool> isPermissionGranted() async {
     try {
       final bool? isGranted = await _methodChannel.invokeMethod('isPermissionGranted');
@@ -31,72 +31,34 @@ class NotificationBridge {
     }
   }
 
-  /// Open Android OS "Notification Access" Settings page directly
   static Future<void> openPermissionSettings() async {
     try {
       await _methodChannel.invokeMethod('openPermissionSettings');
     } catch (_) {}
   }
 
-  static bool _isDuplicatePending(Map<String, dynamic> item) {
-    return _pendingNotifications.any((p) =>
-      (item['transactionId'] != null && p['transactionId'] == item['transactionId']) ||
-      (p['package'] == item['package'] &&
-       p['text'] == item['text'] &&
-       (p['timestamp'] == item['timestamp'] || (p['title'] == item['title'] && item['title'] != null)))
-    );
-  }
+  static Future<List<Map<String, dynamic>>> getPendingRawNotifications() =>
+      NotificationInbox.getPendingRawNotifications();
 
-  /// Retrieve pending notifications buffered in memory
-  static Future<List<Map<String, dynamic>>> getPendingRawNotifications() async {
-    pendingCountNotifier.value = _pendingNotifications.length;
-    return List<Map<String, dynamic>>.from(_pendingNotifications);
-  }
+  static void removePendingNotification(Map<String, dynamic> raw) =>
+      NotificationInbox.removePendingNotification(raw);
 
-  /// Removes a processed or discarded notification from pending list
-  static void removePendingNotification(Map<String, dynamic> raw) {
-    _pendingNotifications.removeWhere((p) =>
-      (raw['transactionId'] != null && p['transactionId'] == raw['transactionId']) ||
-      (p['package'] == raw['package'] &&
-       p['text'] == raw['text'] &&
-       (p['timestamp'] == raw['timestamp'] || p['title'] == raw['title']))
-    );
-    pendingCountNotifier.value = _pendingNotifications.length;
-  }
+  static void confirmNotification(Map<String, dynamic> item) =>
+      NotificationInbox.confirmNotification(item);
 
-  /// Confirm that an auto-logged notification is correct; removes it from the inbox
-  static void confirmNotification(Map<String, dynamic> item) {
-    removePendingNotification(item);
-  }
+  static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) =>
+      NotificationInbox.rejectNotification(item, db);
 
-  /// Mark notification as incorrect: deletes the auto-logged transaction, reverts balance, and removes from inbox
-  static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) async {
-    final txId = item['transactionId'] as String?;
-    if (txId != null && txId.isNotEmpty) {
-      try {
-        await db.deleteTransactionWithBalanceReversal(txId);
-      } catch (_) {}
-    }
-    removePendingNotification(item);
-  }
+  static void clearPendingNotifications() =>
+      NotificationInbox.clearPendingNotifications();
 
-  /// Clears all pending notifications
-  static void clearPendingNotifications() {
-    _pendingNotifications.clear();
-    pendingCountNotifier.value = 0;
-  }
-
-  /// Sync active package whitelist from Drift database to Android SharedPreferences
   static Future<void> syncAllowedPackages(AppDatabase db) async {
     try {
       final activePackages = await db.getActiveNotificationPackages();
-      await _methodChannel.invokeMethod('updateAllowedPackages', {
-        'packages': activePackages,
-      });
+      await _methodChannel.invokeMethod('updateAllowedPackages', {'packages': activePackages});
     } catch (_) {}
   }
 
-  /// Query installed banking apps from Android OS
   static Future<List<Map<String, String>>> getInstalledBankApps() async {
     try {
       final List<dynamic>? apps = await _methodChannel.invokeMethod('getInstalledBankApps');
@@ -106,29 +68,25 @@ class NotificationBridge {
     } catch (_) {}
     return [];
   }
-  /// Start background/live listener and process pending buffered notifications
+
   Future<void> startListening(
     AppDatabase db, {
     Function(String message)? onAutoLogged,
     NotificationReviewPrompt? onReviewPrompt,
   }) async {
-    // 0. Synchronize active package whitelist to Android background listener
     await syncAllowedPackages(db);
-
-    // 1. Process any pending notifications buffered while app was inactive
     await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
 
-    // 2. Listen to real-time live notifications while app is in foreground
     _liveSubscription?.cancel();
     try {
       _liveSubscription = _eventChannel.receiveBroadcastStream().listen((dynamic event) {
         if (event is Map) {
-          final map = Map<String, dynamic>.from(event);
-          handleRawNotification(map, db, onAutoLogged: onAutoLogged);
+          handleRawNotification(Map<String, dynamic>.from(event), db, onAutoLogged: onAutoLogged);
         }
       }, onError: (_) {});
     } catch (_) {}
   }
+
   void stopListening() {
     _liveSubscription?.cancel();
     _liveSubscription = null;
@@ -143,15 +101,13 @@ class NotificationBridge {
       if (pending != null) {
         for (final item in pending) {
           if (item is Map) {
-            final map = Map<String, dynamic>.from(item);
-            await handleRawNotification(map, db, onAutoLogged: onAutoLogged);
+            await handleRawNotification(Map<String, dynamic>.from(item), db, onAutoLogged: onAutoLogged);
           }
         }
       }
     } catch (_) {}
   }
 
-  /// Main entry point for processing and auto-logging incoming notifications
   static Future<void> handleRawNotification(
     Map<String, dynamic> raw,
     AppDatabase db, {
@@ -161,102 +117,22 @@ class NotificationBridge {
     final title = raw['title'] as String? ?? '';
     final text = raw['text'] as String? ?? '';
 
-    // Run through deterministic on-device parser
-    final ParsedNotificationResult? parsed = NotificationParser.parse(
-      packageName: pkg,
-      title: title,
-      body: text,
-    );
-
+    final parsed = NotificationParser.parse(packageName: pkg, title: title, body: text);
     if (parsed == null) return;
-    // 1. Fetch configured notification rule for package
-    final rule = await db.getNotificationRuleForPackage(pkg);
 
-    // 2. Resolve matching wallet in database for auto-logged transactions
-    final wallets = await db.select(db.wallets).get();
-    if (wallets.isEmpty) return;
+    final targetWallet = await NotificationWalletResolver.resolve(db: db, pkg: pkg, title: title, text: text);
+    if (targetWallet == null) return;
 
-    WalletEntry? targetWallet;
-    if (rule != null) {
-      targetWallet = wallets.where((w) => w.id == rule.walletId).firstOrNull;
-    }
-
-    // 2. Secondary fallback: Heuristic keyword matching on package & notification text
-    if (targetWallet == null) {
-      final lowText = '$title $text'.toLowerCase();
-
-      if (pkg.contains('seabank') ||
-          pkg.contains('bke') ||
-          pkg.contains('digitalbank') ||
-          pkg.contains('sea.bank') ||
-          lowText.contains('seabank')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('seabank'), orElse: () => wallets.first);
-      } else if (pkg.contains('bcadigital') || pkg.contains('blu') || lowText.contains('blu')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('blu'), orElse: () => wallets.first);
-      } else if (pkg.contains('bca') || lowText.contains('bca')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('bca utama'), orElse: () => wallets.first);
-      } else if (pkg.contains('mandiri') || lowText.contains('mandiri') || lowText.contains('livin')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('mandiri'), orElse: () => wallets.first);
-      } else if (pkg.contains('jago') || lowText.contains('jago')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('jago'), orElse: () => wallets.first);
-      } else if (pkg.contains('ovo') || lowText.contains('ovo')) {
-        targetWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('ovo'), orElse: () => wallets.first);
-      } else if (pkg.contains('shopee') || lowText.contains('shopee')) {
-        final shopeeWallets = wallets.where((w) => w.name.toLowerCase().contains('shopee')).toList();
-        if (shopeeWallets.isNotEmpty) {
-          targetWallet = shopeeWallets.first;
-        } else {
-          // Auto-create ShopeePay wallet on-the-fly if not in database
-          final newId = const Uuid().v4();
-          final now = DateTime.now().toUtc();
-          await db.into(db.wallets).insert(
-            WalletsCompanion(
-              id: drift.Value(newId),
-              name: const drift.Value('ShopeePay'),
-              type: const drift.Value('ewallet'),
-              balance: const drift.Value(0.0),
-              colorHex: const drift.Value('#EE4D2D'),
-              iconName: const drift.Value('shopping_bag'),
-              createdAt: drift.Value(now),
-              updatedAt: drift.Value(now),
-            ),
-          );
-          targetWallet = await (db.select(db.wallets)..where((t) => t.id.equals(newId))).getSingle();
-        }
-      } else {
-        // Fallback: check if notification text names a wallet
-        for (final w in wallets) {
-          if (lowText.contains(w.name.toLowerCase())) {
-            targetWallet = w;
-            break;
-          }
-        }
-      }
-    }
-
-    targetWallet ??= wallets.first;
-
-    // Resolve default category
     final categories = await db.select(db.categories).get();
-    final defaultCat = categories.firstWhere(
-      (c) => c.type == parsed.type,
-      orElse: () => categories.first,
-    );
-
+    final defaultCat = categories.firstWhere((c) => c.type == parsed.type, orElse: () => categories.first);
     final now = DateTime.now().toUtc();
-    const uuid = Uuid();
 
-    // Check duplicate externalRef
     if (parsed.externalRef != null) {
-      final existing = await (db.select(db.transactions)
-            ..where((t) => t.externalRef.equals(parsed.externalRef!)))
-          .get();
-      if (existing.isNotEmpty) return; // Prevent duplicate ingestion
+      final existing = await (db.select(db.transactions)..where((t) => t.externalRef.equals(parsed.externalRef!))).get();
+      if (existing.isNotEmpty) return;
     }
 
-    final txId = uuid.v4();
-
-    // Commit to SQLite and atomically adjust balance
+    final txId = const Uuid().v4();
     await db.logTransactionWithBalanceMutation(
       tx: TransactionsCompanion(
         id: drift.Value(txId),
@@ -273,25 +149,8 @@ class NotificationBridge {
       ),
     );
 
-    // If notification contains real-time ending balance snapshot, sync exact wallet balance
-    final balanceSnapshotRegex = RegExp(
-      r'Saldo\s+saat\s+ini\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)',
-      caseSensitive: false,
-    );
-    final balSnapMatch = balanceSnapshotRegex.firstMatch(text);
-    if (balSnapMatch != null) {
-      String cleaned = balSnapMatch.group(1)!.replaceAll(' ', '');
-      if (cleaned.contains(',') && cleaned.lastIndexOf(',') == cleaned.length - 3) {
-        cleaned = cleaned.substring(0, cleaned.length - 3).replaceAll(RegExp(r'[.,]'), '');
-      } else {
-        cleaned = cleaned.replaceAll(RegExp(r'[.,]'), '');
-      }
-      final exactRealBal = double.tryParse(cleaned);
-      if (exactRealBal != null && exactRealBal > 0) {
-        await db.updateWalletBalance(targetWallet.id, exactRealBal);
-      }
-    }
-    // Add to pending notifications buffer for Inbox review
+    _syncBalanceSnapshotIfPresent(text, db, targetWallet.id);
+
     final inboxItem = Map<String, dynamic>.from(raw);
     inboxItem['transactionId'] = txId;
     inboxItem['amount'] = parsed.amount;
@@ -300,11 +159,24 @@ class NotificationBridge {
     inboxItem['walletName'] = targetWallet.name;
     inboxItem['walletId'] = targetWallet.id;
 
-    if (!_isDuplicatePending(inboxItem)) {
-      _pendingNotifications.add(inboxItem);
-      pendingCountNotifier.value = _pendingNotifications.length;
-    }
-
+    NotificationInbox.addPending(inboxItem);
     onAutoLogged?.call('${targetWallet.name}: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
+  }
+
+  static void _syncBalanceSnapshotIfPresent(String text, AppDatabase db, String walletId) async {
+    final reg = RegExp(r'Saldo\s+saat\s+ini\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false);
+    final match = reg.firstMatch(text);
+    if (match != null) {
+      String cleaned = match.group(1)!.replaceAll(' ', '');
+      if (cleaned.contains(',') && cleaned.lastIndexOf(',') == cleaned.length - 3) {
+        cleaned = cleaned.substring(0, cleaned.length - 3).replaceAll(RegExp(r'[.,]'), '');
+      } else {
+        cleaned = cleaned.replaceAll(RegExp(r'[.,]'), '');
+      }
+      final exactBal = double.tryParse(cleaned);
+      if (exactBal != null && exactBal > 0) {
+        await db.updateWalletBalance(walletId, exactBal);
+      }
+    }
   }
 }
