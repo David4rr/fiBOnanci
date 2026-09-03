@@ -524,6 +524,126 @@ class SubscriptionCard extends StatelessWidget {
           networkBadgeText: 'RECURRING',
           badgeType: _CardBadgeType.gpay,
         );
+      case ModernistCardTheme.tokyoMidnight:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF0D1424),
+          primaryGraphicColor: Color(0xFF3B82F6),
+          secondaryGraphicColor: Color(0xFF60A5FA),
+          textColor: Color(0xFFF1F5F9),
+          badgeColor: Color(0xFF3B82F6),
+          networkBadgeText: 'MIDNIGHT',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.solarAmber:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFF59E0B),
+          primaryGraphicColor: Color(0xFFB45309),
+          secondaryGraphicColor: Color(0xFFFDE68A),
+          textColor: Color(0xFF1C1304),
+          badgeColor: Color(0xFF1C1304),
+          networkBadgeText: 'SOLAR',
+          badgeType: _CardBadgeType.chip,
+        );
+      case ModernistCardTheme.arcticGlacier:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFBAE6FD),
+          primaryGraphicColor: Color(0xFF0369A1),
+          secondaryGraphicColor: Color(0xFFE0F2FE),
+          textColor: Color(0xFF0C243C),
+          badgeColor: Color(0xFF0C243C),
+          networkBadgeText: 'GLACIER',
+          badgeType: _CardBadgeType.diners,
+        );
+      case ModernistCardTheme.cyberNeon:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF1E1035),
+          primaryGraphicColor: Color(0xFFEC4899),
+          secondaryGraphicColor: Color(0xFF06B6D4),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFEC4899),
+          networkBadgeText: 'CYBER',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.matchaZen:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF8A9A5B),
+          primaryGraphicColor: Color(0xFF283618),
+          secondaryGraphicColor: Color(0xFFDDA15E),
+          textColor: Color(0xFF19220F),
+          badgeColor: Color(0xFF19220F),
+          networkBadgeText: 'MATCHA',
+          badgeType: _CardBadgeType.jcb,
+        );
+      case ModernistCardTheme.terracottaSunset:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFC2410C),
+          primaryGraphicColor: Color(0xFF7C2D12),
+          secondaryGraphicColor: Color(0xFFFDBA74),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'TERRA',
+          badgeType: _CardBadgeType.amex,
+        );
+      case ModernistCardTheme.monochromeStark:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF111114),
+          primaryGraphicColor: Color(0xFFE4E4E7),
+          secondaryGraphicColor: Color(0xFF3F3F46),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'STARK',
+          badgeType: _CardBadgeType.amex,
+        );
+      case ModernistCardTheme.lavenderDusk:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFDDD6FE),
+          primaryGraphicColor: Color(0xFF5B21B6),
+          secondaryGraphicColor: Color(0xFF8B5CF6),
+          textColor: Color(0xFF2E1065),
+          badgeColor: Color(0xFF2E1065),
+          networkBadgeText: 'LAVENDER',
+          badgeType: _CardBadgeType.diners,
+        );
+      case ModernistCardTheme.cobaltVault:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF1D4ED8),
+          primaryGraphicColor: Color(0xFF1E3A8A),
+          secondaryGraphicColor: Color(0xFF93C5FD),
+          textColor: Color(0xFFFFFFFF),
+          badgeColor: Color(0xFFFFFFFF),
+          networkBadgeText: 'COBALT',
+          badgeType: _CardBadgeType.mastercard,
+        );
+      case ModernistCardTheme.blushPop:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFFF472B6),
+          primaryGraphicColor: Color(0xFF9D174D),
+          secondaryGraphicColor: Color(0xFFFBCFE8),
+          textColor: Color(0xFF500724),
+          badgeColor: Color(0xFF500724),
+          networkBadgeText: 'BLUSH',
+          badgeType: _CardBadgeType.gpay,
+        );
+      case ModernistCardTheme.nordicPine:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF14281D),
+          primaryGraphicColor: Color(0xFF10B981),
+          secondaryGraphicColor: Color(0xFF047857),
+          textColor: Color(0xFFECFDF5),
+          badgeColor: Color(0xFF10B981),
+          networkBadgeText: 'NORDIC',
+          badgeType: _CardBadgeType.jcb,
+        );
+      case ModernistCardTheme.copperPatina:
+        return const _CardThemeConfig(
+          backgroundColor: Color(0xFF9A3412),
+          primaryGraphicColor: Color(0xFFB45309),
+          secondaryGraphicColor: Color(0xFFFDE68A),
+          textColor: Color(0xFFFFFBEB),
+          badgeColor: Color(0xFFFFFBEB),
+          networkBadgeText: 'COPPER',
+          badgeType: _CardBadgeType.chip,
+        );
     }
   }
 }

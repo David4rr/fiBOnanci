@@ -81,12 +81,14 @@ class _TactileHeroCard extends StatefulWidget {
   final int cardIndex;
   final NumberFormat fmt;
   final Color cardColor;
+  final List<WalletEntry>? allWallets;
 
   const _TactileHeroCard({
     required this.wallet,
     required this.cardIndex,
     required this.fmt,
     required this.cardColor,
+    this.allWallets,
   });
 
   @override
@@ -189,9 +191,10 @@ class _TactileHeroCardState extends State<_TactileHeroCard> {
                       fromHeroContext,
                       toHeroContext,
                     ) {
+                      final Hero toHero = toHeroContext.widget as Hero;
                       return Material(
                         color: Colors.transparent,
-                        child: toHeroContext.widget,
+                        child: toHero.child,
                       );
                     },
                     child: Material(
@@ -199,6 +202,7 @@ class _TactileHeroCardState extends State<_TactileHeroCard> {
                       child: WalletCard(
                         wallet: widget.wallet,
                         index: widget.cardIndex,
+                        allWallets: widget.allWallets,
                         fmt: widget.fmt,
                         cardH: cardH,
                         isLifted: true,
@@ -462,6 +466,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                             cardIndex: cardIndex,
                             fmt: widget.currencyFormatter,
                             cardColor: cardColor,
+                            allWallets: state.wallets,
                           ),
                         ),
                       ),

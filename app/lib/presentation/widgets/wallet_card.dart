@@ -4,16 +4,38 @@ import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
 import 'modernist_card_painter.dart';
-const kWalletColors = [
-  Color(0xFF9EACF0), // periwinkle
-  Color(0xFFF3F76E), // acid lemon
-  Color(0xFFFF5252), // hot coral
-  Color(0xFFE5E3DC), // bone warm grey
-  Color(0xFF7CB88D), // emerald sage
-  Color(0xFF1E1418), // obsidian crimson
-  Color(0xFFE0D8C6), // oatmeal sand
-  Color(0xFF56626A), // slate charcoal
+/// Complete dynamic palette of all 20 curated themes.
+/// Orders themes with maximum visual contrast (dark obsidian, vibrant neon, warm pastel, cool ice, earthy sage).
+const List<ModernistCardTheme> kDynamicModernistThemes = [
+  ModernistCardTheme.fiberInternet,       // 0: Periwinkle Lavender (Pastel cool) - Base
+  ModernistCardTheme.utilitiesLemon,      // 1: Acid Neon Lemon (High-voltage neon) - Base
+  ModernistCardTheme.streamingCinematic,  // 2: Dark Obsidian Crimson (Dark tech luxury) - Base
+  ModernistCardTheme.aiCloudProductivity, // 3: Bone Warm Grey & Terracotta (Warm minimalist) - Base
+  ModernistCardTheme.tokyoMidnight,       // 4: Deep Japanese Indigo & Cobalt (Deep cool luxury)
+  ModernistCardTheme.fitnessLifestyle,    // 5: Hot Coral Terracotta (Vibrant warm) - Base
+  ModernistCardTheme.audioEmerald,        // 6: Emerald Sage & Mint (Organic cool) - Base
+  ModernistCardTheme.solarAmber,          // 7: Radiant Solar Amber (Rich gold)
+  ModernistCardTheme.monochromeStark,     // 8: Swiss Stark Black & White (Architectural dark)
+  ModernistCardTheme.arcticGlacier,       // 9: Frosted Ice Cyan (Clean ice pastel)
+  ModernistCardTheme.copperPatina,        // 10: Burnished Industrial Copper (Warm patina)
+  ModernistCardTheme.cyberNeon,           // 11: Cyberpunk Ultra Violet & Magenta (Dark neon)
+  ModernistCardTheme.recurringSmartBill,  // 12: Oatmeal Sand & Waves (Earthy warm) - Base
+  ModernistCardTheme.cobaltVault,         // 13: Royal Electric Cobalt (Vivid blue)
+  ModernistCardTheme.matchaZen,           // 14: Japanese Matcha & Zen Pebble (Earthy green)
+  ModernistCardTheme.terracottaSunset,    // 15: Burnt Terracotta Sunset (Warm dusk)
+  ModernistCardTheme.lavenderDusk,        // 16: Soft Lilac Orchid & Eclipse (Soft violet)
+  ModernistCardTheme.housingLiving,       // 17: Slate Charcoal (Minimalist slate) - Base
+  ModernistCardTheme.blushPop,            // 18: Neo-Pastel Blush Pink (Playful pop)
+  ModernistCardTheme.nordicPine,          // 19: Scandinavian Deep Pine & Mint (Deep forest)
 ];
+
+/// Curated list of wallet accent colors matching the expanded dynamic themes.
+final List<Color> kWalletColors = kDynamicModernistThemes.map((t) {
+  final config = ModernistCardConfig.forTheme(t);
+  return config.backgroundColor.computeLuminance() < 0.35
+      ? config.primaryGraphicColor
+      : config.backgroundColor;
+}).toList();
 
 Color getWalletColor(int index, [String? colorHex]) {
   if (colorHex != null && colorHex != '#10B981' && colorHex != '#10b981') {
@@ -21,63 +43,33 @@ Color getWalletColor(int index, [String? colorHex]) {
       return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
     } catch (_) {}
   }
-  final themes = ModernistCardTheme.values;
-  final theme = themes[index.abs() % themes.length];
+  final theme = kDynamicModernistThemes[index.abs() % kDynamicModernistThemes.length];
   final config = ModernistCardConfig.forTheme(theme);
   return config.backgroundColor.computeLuminance() < 0.35
       ? config.primaryGraphicColor
       : config.backgroundColor;
 }
 
-
 /// Resolves a ModernistCardTheme deterministically for a wallet based on its name and index.
-ModernistCardTheme resolveWalletTheme(WalletEntry wallet, int index) {
-  final lower = wallet.name.toLowerCase();
+/// Resolves a ModernistCardTheme dynamically with strict collision avoidance:
+/// - When [allWallets] is supplied, guarantees no two cards in the collection share the same theme.
+/// - When [explicitTheme] is provided, uses it directly.
+/// - Fallback: index-based unique allocation cycling through all 20 curated themes.
+ModernistCardTheme resolveWalletTheme(
+  WalletEntry wallet,
+  int index, {
+  List<WalletEntry>? allWallets,
+  ModernistCardTheme? explicitTheme,
+}) {
+  if (explicitTheme != null) return explicitTheme;
 
-  // 1. Blue banks (BCA, blu, CIMB, Permata) -> Periwinkle fiber (concentric modernist ovals)
-  if (lower.contains('bca') || lower.contains('blu') || lower.contains('cimb') || lower.contains('permata')) {
-    return ModernistCardTheme.fiberInternet;
+  if (allWallets != null && allWallets.isNotEmpty) {
+    final walletIdx = allWallets.indexWhere((w) => w.id == wallet.id);
+    final effectiveIdx = walletIdx >= 0 ? walletIdx : index;
+    return kDynamicModernistThemes[effectiveIdx.abs() % kDynamicModernistThemes.length];
   }
 
-  // 2. Yellow / Gold banks (Mandiri, Livin, BSI, Krom) -> Acid Neon Lemon (sunburst)
-  if (lower.contains('mandiri') || lower.contains('livin') || lower.contains('bsi') || lower.contains('krom')) {
-    return ModernistCardTheme.utilitiesLemon;
-  }
-
-  // 3. Tangerine / Coral modern banks (Jago, Aladin, Neobank) -> Hot Coral (dynamic arcs)
-  if (lower.contains('jago') || lower.contains('neo') || lower.contains('aladin')) {
-    return ModernistCardTheme.fitnessLifestyle;
-  }
-
-  // 4. SeaBank / ShopeePay / Terracotta -> Bone Warm Grey with Terracotta Disks
-  if (lower.contains('seabank') || lower.contains('sea') || lower.contains('shopee')) {
-    return ModernistCardTheme.aiCloudProductivity;
-  }
-
-  // 5. Green E-Wallets / Banks (GoPay, LinkAja, Hibank) -> Emerald Sage (soundwave hatching)
-  if (lower.contains('gopay') || lower.contains('gojek') || lower.contains('linkaja')) {
-    return ModernistCardTheme.audioEmerald;
-  }
-
-  // 6. Purple / Dark tech (OVO, DANA, Jenius) -> Dark Obsidian Crimson
-  if (lower.contains('ovo') || lower.contains('dana') || lower.contains('jenius')) {
-    return ModernistCardTheme.streamingCinematic;
-  }
-
-  // 7. Cash / Kas Tunai -> Oatmeal Sand (geometric waves)
-  if (wallet.type == 'cash' || lower.contains('kas') || lower.contains('tunai')) {
-    return ModernistCardTheme.recurringSmartBill;
-  }
-
-  // 8. Slate / Charcoal banks (BRI, BNI, Danamon) -> Slate Charcoal
-  if (lower.contains('bri') || lower.contains('bni') || lower.contains('danamon')) {
-    return ModernistCardTheme.housingLiving;
-  }
-
-  // Fallback: cycle through the 8 themes deterministically by index / seed
-  final themes = ModernistCardTheme.values;
-  final seed = wallet.id.hashCode ^ index;
-  return themes[seed.abs() % themes.length];
+  return kDynamicModernistThemes[index.abs() % kDynamicModernistThemes.length];
 }
 
 /// Resolves the wallet category / status badge (e.g. BANK, E-WALLET, KAS TUNAI)
@@ -107,6 +99,9 @@ class WalletCard extends StatelessWidget {
   final double cardH;
   final bool isLifted;
   final bool showBottomLayout;
+  final bool animate;
+  final ModernistCardTheme? theme;
+  final List<WalletEntry>? allWallets;
 
   const WalletCard({
     super.key,
@@ -116,6 +111,9 @@ class WalletCard extends StatelessWidget {
     required this.cardH,
     this.isLifted = false,
     this.showBottomLayout = false,
+    this.animate = true,
+    this.theme,
+    this.allWallets,
   });
 
 
@@ -146,36 +144,51 @@ class WalletCard extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(Color textColor) {
+  Widget _buildChip(Color textColor, bool isDark) {
+    final chipBaseColor = isDark
+        ? const Color(0xFFD4AF37).withValues(alpha: 0.22)
+        : textColor.withValues(alpha: 0.12);
+    final chipBorderColor = isDark
+        ? const Color(0xFFFFDF73).withValues(alpha: 0.45)
+        : textColor.withValues(alpha: 0.32);
+    final circuitColor = isDark
+        ? const Color(0xFFFFDF73).withValues(alpha: 0.35)
+        : textColor.withValues(alpha: 0.24);
+
     return Container(
-      width: 32,
-      height: 24,
+      width: 36,
+      height: 27,
       decoration: BoxDecoration(
-        color: textColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(5),
+        color: chipBaseColor,
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: textColor.withValues(alpha: 0.28),
-          width: 0.8,
+          color: chipBorderColor,
+          width: 0.9,
         ),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 18,
-            height: 14,
+            width: 22,
+            height: 16,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2.5),
+              borderRadius: BorderRadius.circular(3),
               border: Border.all(
-                color: textColor.withValues(alpha: 0.22),
-                width: 0.6,
+                color: circuitColor,
+                width: 0.7,
               ),
             ),
           ),
           Container(
-            width: 1,
-            height: 14,
-            color: textColor.withValues(alpha: 0.22),
+            width: 0.8,
+            height: 16,
+            color: circuitColor,
+          ),
+          Container(
+            width: 22,
+            height: 0.8,
+            color: circuitColor,
           ),
         ],
       ),
@@ -191,174 +204,134 @@ class WalletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = resolveWalletTheme(wallet, index);
-    final config = ModernistCardConfig.forTheme(theme);
-    final badgeText = resolveWalletNetworkBadge(wallet, theme);
+    final resolvedTheme = resolveWalletTheme(
+      wallet,
+      index,
+      allWallets: allWallets,
+      explicitTheme: theme,
+    );
+    final config = ModernistCardConfig.forTheme(resolvedTheme);
+    final badgeText = resolveWalletNetworkBadge(wallet, resolvedTheme);
     final accountNumberDisplay = _formatAccountNumber(wallet);
     final isDark = config.backgroundColor.computeLuminance() < 0.35;
-
-    // ── Top layout: compact top-pinned header row for peeking stack cards ──
-    final topLayout = Align(
-      alignment: Alignment.topCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    wallet.name,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: config.textColor,
-                      letterSpacing: -0.3,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'SALDO TERSEDIA',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: config.textColor.withValues(alpha: 0.60),
-                    ),
-                  ),
-                ],
-              ),
+    // ── Persistent Physical ATM Card Layout (No jarring text jump or cross-fade) ──
+    final headerRow = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Text(
+            wallet.name,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: config.textColor,
+              letterSpacing: -0.4,
             ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildNetworkBadge(badgeText, config),
-                const SizedBox(height: 3),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    fmt.format(wallet.balance),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
-                      color: config.textColor,
-                      letterSpacing: -0.5,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 10),
+        _buildNetworkBadge(badgeText, config),
+      ],
+    );
+
+    // ── Stacked Peek Balance Row (Visible when card is collapsed in deck) ──
+    final peekBalanceRow = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'SALDO TERSEDIA',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.8,
+            color: config.textColor.withValues(alpha: 0.65),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            fmt.format(wallet.balance),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
+              color: config.textColor,
+              letterSpacing: -0.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+
+    final chipRow = Row(
+      children: [
+        _buildChip(config.textColor, isDark),
+      ],
+    );
+
+    final bottomRow = Row(
+      children: [
+        // Amount
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  fmt.format(wallet.balance),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w800,
+                    color: config.textColor,
+                    letterSpacing: -0.8,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Saldo Tersedia',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: config.textColor.withValues(alpha: 0.65),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Contactless Icon & Account Number (defaults to '-' if blank)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildContactlessIcon(config.textColor),
+            const SizedBox(height: 5),
+            Text(
+              accountNumberDisplay,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: config.textColor.withValues(alpha: 0.75),
+                letterSpacing: accountNumberDisplay == '-' ? 0.0 : 1.0,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ],
         ),
-      ),
-    );
-
-    // ── Bottom layout: full physical ATM card view matching SubscriptionCard ──
-    final bottomLayout = Padding(
-      padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Top Row: Title / Type & Network Badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  wallet.name,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: config.textColor,
-                    letterSpacing: -0.4,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 10),
-              _buildNetworkBadge(badgeText, config),
-            ],
-          ),
-
-          // Middle: Tactile ATM EMV Smart Chip
-          Row(
-            children: [
-              _buildChip(config.textColor),
-            ],
-          ),
-          // Bottom Row: Large Amount (Left) & Masked Number with Contactless Icon (Right)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Amount
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        fmt.format(wallet.balance),
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w800,
-                          color: config.textColor,
-                          letterSpacing: -0.8,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Saldo Tersedia',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: config.textColor.withValues(alpha: 0.65),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Contactless Icon & Account Number (defaults to '-' if blank)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildContactlessIcon(config.textColor),
-                  const SizedBox(height: 5),
-                  Text(
-                    accountNumberDisplay,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      color: config.textColor.withValues(alpha: 0.75),
-                      letterSpacing: accountNumberDisplay == '-' ? 0.0 : 1.0,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
+      ],
     );
 
     return AnimatedContainer(
@@ -370,16 +343,21 @@ class WalletCard extends StatelessWidget {
         color: config.backgroundColor,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.10),
-          width: 0.8,
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.14 : 0.08),
+          width: 0.9,
         ),
         boxShadow: isLifted
             ? [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.55),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
                   spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: config.backgroundColor.withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
                 ),
               ]
             : [
@@ -393,11 +371,30 @@ class WalletCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // Background Subtle Tonal Gradient Depth
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    config.backgroundColor,
+                    Color.alphaBlend(
+                      (isDark ? Colors.black : Colors.white).withValues(alpha: isDark ? 0.20 : 0.10),
+                      config.backgroundColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // Background Geometric Modernist Painter
           Positioned.fill(
             child: CustomPaint(
               painter: ModernistCardPainter(
-                theme: theme,
+                theme: resolvedTheme,
                 primaryColor: config.primaryGraphicColor,
                 secondaryColor: config.secondaryGraphicColor,
               ),
@@ -411,31 +408,98 @@ class WalletCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
-                    end: const Alignment(0.6, 0.8),
+                    end: const Alignment(0.65, 0.85),
                     colors: [
-                      Colors.white.withValues(alpha: isDark ? 0.10 : 0.16),
+                      Colors.white.withValues(alpha: isDark ? 0.12 : 0.18),
                       Colors.white.withValues(alpha: 0.0),
                     ],
-                    stops: const [0.0, 0.55],
+                    stops: const [0.0, 0.60],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Card Foreground Content (Top layout or Bottom layout)
+          // Card Foreground Content (Rock-solid static header with smoothly animated card body)
           Positioned.fill(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 240),
-              child: showBottomLayout
-                  ? SizedBox.expand(
-                      key: const ValueKey('bottom_layout'),
-                      child: bottomLayout,
-                    )
-                  : SizedBox.expand(
-                      key: const ValueKey('top_layout'),
-                      child: topLayout,
-                    ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+              child: Stack(
+                children: [
+                  // 1. Permanent Static Header Row: ALWAYS at the top, NEVER animates, NEVER ghosts
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: headerRow,
+                  ),
+
+                  // 2. Card Body: Smoothly transitions if animate=true, or renders directly without animation when unstacked
+                  Positioned.fill(
+                    top: 26,
+                    child: () {
+                      final bodyWidget = showBottomLayout
+                          ? SizedBox.expand(
+                              key: const ValueKey('expanded_card_body'),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Spacer(flex: 3),
+                                  chipRow,
+                                  const Spacer(flex: 4),
+                                  bottomRow,
+                                ],
+                              ),
+                            )
+                          : SizedBox(
+                              key: const ValueKey('compact_card_body'),
+                              width: double.infinity,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: peekBalanceRow,
+                              ),
+                            );
+
+                      if (!animate) {
+                        return bodyWidget;
+                      }
+
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        switchInCurve: const Cubic(0.16, 1.0, 0.3, 1.0),
+                        switchOutCurve: Curves.easeOut,
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return Stack(
+                            alignment: Alignment.topLeft,
+                            children: [
+                              ...previousChildren,
+                              ?currentChild,
+                            ],
+                          );
+                        },
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(0.15, 1.0, curve: Curves.easeOut),
+                            ),
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.08),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: const Cubic(0.16, 1.0, 0.3, 1.0),
+                              )),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: bodyWidget,
+                      );
+                    }(),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -79,9 +79,8 @@ void main() {
     await tester.tap(bcaFinder);
     await tester.pumpAndSettle();
 
-    // Verify: BCA card is expanded in deck (showing masked card number or Saldo Tersedia)
-    expect(find.text('Saldo Tersedia'), findsOneWidget);
-
+    // Verify: BCA card is expanded in deck (showing full ATM layout with chip/balance)
+    expect(find.text('Saldo Tersedia'), findsWidgets);
     // 4. Second Tap on expanded BCA card: Opens rich detail bottom sheet modal with Hero transition
     await tester.tap(bcaFinder);
     await tester.pumpAndSettle();
