@@ -144,13 +144,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(bcaFinder);
       await tester.pumpAndSettle();
-      // 3. Verify WalletDetailScreen appears with back button and no app bar delete icon
+      // 3. Verify WalletDetailScreen appears with dismiss button and no app bar delete icon
       expect(find.text('Detail Rekening'), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
 
-      // 4. Test dismissing and re-opening via back button
-      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+      // 4. Test dismissing and re-opening via dismiss button
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Detail Rekening'), findsNothing);
 

@@ -49,7 +49,8 @@ class _TransactionModalState extends State<TransactionModal> {
       final others = state.wallets.where((w) => w.id != _selectedWalletId).toList();
       _selectedDestinationWalletId = others.isNotEmpty ? others.first.id : (state.wallets.length > 1 ? state.wallets[1].id : null);
     }
-    if (state.categories.isNotEmpty) _selectedCategoryId = state.categories.first.id;
+    final initialCats = state.categories.where((c) => c.type == _type).toList();
+    if (initialCats.isNotEmpty) _selectedCategoryId = initialCats.first.id;
   }
 
   @override
@@ -80,9 +81,18 @@ class _TransactionModalState extends State<TransactionModal> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final state = context.watch<FinanceBloc>().state;
+    final matchingCats = state.categories.where((c) => c.type == _type).toList();
+    if (_type != 'transfer' && (_selectedCategoryId == null || !matchingCats.any((c) => c.id == _selectedCategoryId))) {
+      _selectedCategoryId = matchingCats.isNotEmpty ? matchingCats.first.id : null;
+    }
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.canvasCardSurface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -94,7 +104,14 @@ class _TransactionModalState extends State<TransactionModal> {
               subtitle: 'Catatan instan tanpa loading',
               onClose: () => Navigator.pop(context),
             ),
-            TransactionTypeToggle(selectedType: _type, onTypeChanged: (t) => setState(() => _type = t)),
+            TransactionTypeToggle(
+              selectedType: _type,
+              onTypeChanged: (t) => setState(() {
+                _type = t;
+                final cats = state.categories.where((c) => c.type == t).toList();
+                _selectedCategoryId = cats.isNotEmpty ? cats.first.id : null;
+              }),
+            ),
             const SizedBox(height: 16),
             CurrencyAmountField(controller: _amountController),
             const SizedBox(height: 12),
@@ -127,7 +144,7 @@ class _TransactionModalState extends State<TransactionModal> {
                   isExpanded: true,
                   dropdownColor: AppColors.canvasCardSurface,
                   hint: Text('Pilih Kategori', style: AppTypography.listSubtitle),
-                  items: state.categories.where((c) => c.type == _type).map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
+                  items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
                   onChanged: (val) => setState(() => _selectedCategoryId = val),
                 ),
               ),
@@ -163,6 +180,7 @@ class _TransactionModalState extends State<TransactionModal> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

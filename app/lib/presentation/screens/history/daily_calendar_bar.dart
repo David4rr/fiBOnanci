@@ -109,7 +109,7 @@ class DailyCalendarBar extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                        color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
+                        color: isSelected ? AppColors.textWhite : AppColors.textMuted,
                       ),
                     ),
                     if (count > 0) ...[
@@ -117,7 +117,7 @@ class DailyCalendarBar extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0x1F000000) : Colors.white.withValues(alpha: 0.08),
+                          color: isSelected ? Colors.white.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -125,7 +125,7 @@ class DailyCalendarBar extends StatelessWidget {
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: isSelected ? AppColors.textDarkPrimary : AppColors.neoChartreuse,
+                            color: isSelected ? AppColors.textWhite : AppColors.textMuted,
                           ),
                         ),
                       ),

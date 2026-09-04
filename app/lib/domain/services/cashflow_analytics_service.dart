@@ -157,16 +157,17 @@ class CashflowAnalyticsService {
                 ),
         );
         final walletName = wallet.name.toLowerCase();
-
+        final typeIndo = tx.type == 'income' ? 'pemasukan masuk' : (tx.type == 'expense' ? 'pengeluaran keluar' : 'transfer');
         final match = notes.contains(cleanQuery) ||
             type.contains(cleanQuery) ||
+            typeIndo.contains(cleanQuery) ||
             amt.contains(cleanQuery) ||
             walletName.contains(cleanQuery);
         if (!match) return false;
       }
 
       if (typeFilter != 'all' && tx.type != typeFilter) return false;
-      if (walletFilter != null && tx.walletId != walletFilter) return false;
+      if (walletFilter != null && tx.walletId != walletFilter && tx.destinationWalletId != walletFilter) return false;
 
       return true;
     }).toList();

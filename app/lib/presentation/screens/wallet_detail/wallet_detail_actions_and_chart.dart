@@ -55,14 +55,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: PressableScale(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => TransactionModal(initialWalletId: wallet.id),
-                    );
-                  },
+                  onTap: () => TransactionModal.show(context, initialWalletId: wallet.id),
                   child: Container(
                     height: 44,
                     decoration: BoxDecoration(

@@ -99,22 +99,48 @@ class WalletCard extends StatelessWidget {
                   Positioned(top: 0, left: 0, right: 0, child: headerRow),
                   Positioned.fill(
                     top: 26,
-                    child: showBottomLayout
-                        ? SizedBox.expand(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Spacer(flex: 3),
-                                chipRow,
-                                const Spacer(flex: 4),
-                                bottomRow,
-                              ],
+                    child: () {
+                      final bodyWidget = showBottomLayout
+                          ? SizedBox.expand(
+                              key: const ValueKey('expanded_card_body'),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Spacer(flex: 3),
+                                  chipRow,
+                                  const Spacer(flex: 4),
+                                  bottomRow,
+                                ],
+                              ),
+                            )
+                          : SizedBox(
+                              key: const ValueKey('compact_card_body'),
+                              width: double.infinity,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: peekBalanceRow,
+                              ),
+                            );
+
+                      if (!animate) return bodyWidget;
+
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        switchInCurve: const Cubic(0.16, 1.0, 0.3, 1.0),
+                        switchOutCurve: Curves.easeOut,
+                        layoutBuilder: (current, prev) => Stack(alignment: Alignment.topLeft, children: [...prev, ?current]),
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: CurvedAnimation(parent: animation, curve: const Interval(0.15, 1.0, curve: Curves.easeOut)),
+                          child: SlideTransition(
+                            position: Tween<Offset>(begin: const Offset(0, 0.20), end: Offset.zero).animate(
+                              CurvedAnimation(parent: animation, curve: const Cubic(0.16, 1.0, 0.3, 1.0)),
                             ),
-                          )
-                        : SizedBox(
-                            height: 24,
-                            child: Align(alignment: Alignment.centerLeft, child: peekBalanceRow),
+                            child: child,
                           ),
+                        ),
+                        child: bodyWidget,
+                      );
+                    }(),
                   ),
                 ],
               ),

@@ -109,8 +109,8 @@ void main() {
     expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsNothing);
     expect(find.text('Detail Rekening'), findsOneWidget);
 
-    // 7. Dismiss detail screen by tapping back button
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    // 7. Dismiss detail modal by tapping dismiss button
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
     await tester.pumpAndSettle();
 
     // Expanded details collapsed

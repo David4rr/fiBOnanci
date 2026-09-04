@@ -9,6 +9,8 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
+import 'package:fibonanci_app/presentation/theme/app_colors.dart';
+import 'package:fibonanci_app/presentation/widgets/transaction_modal.dart';
 
 void main() {
   setUpAll(() async {
@@ -136,7 +138,7 @@ void main() {
       expect(find.text('Tipe: MASUK'), findsOneWidget);
       expect(find.text('Bonus Proyek Freelance'), findsOneWidget);
       expect(find.text('Makan Siang Resto'), findsNothing);
-      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
       await tester.pumpAndSettle();
 
       // Verified returned to resting wallet deck
@@ -192,6 +194,14 @@ void main() {
       expect(find.text('Simpan Transaksi'), findsOneWidget);
       expect(find.text('Batal'), findsOneWidget);
 
+      // Verify non-transparent background on both BottomSheet and TransactionModal
+      final bottomSheet = tester.widget<BottomSheet>(find.byType(BottomSheet).last);
+      expect(bottomSheet.backgroundColor, AppColors.canvasCardSurface);
+      final modalContainer = tester.widget<Container>(
+        find.descendant(of: find.byType(TransactionModal), matching: find.byType(Container)).first,
+      );
+      final modalDeco = modalContainer.decoration as BoxDecoration?;
+      expect(modalDeco?.color, AppColors.canvasCardSurface);
       // Tap Batal button to dismiss
       await tester.tap(find.text('Batal'));
       await tester.pumpAndSettle();

@@ -107,7 +107,8 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> with Single
         : (sortedDays.isNotEmpty ? sortedDays.length - 1 : 0);
     final currentDayKey = sortedDays.isNotEmpty ? sortedDays[safeIndex] : '';
     final currentDayTxs = sortedDays.isNotEmpty ? (dayGroups[currentDayKey] ?? const []) : <TransactionEntry>[];
-    final totalExpense = filtered.where((t) => t.type == 'expense' || t.type == 'transfer').fold(0.0, (s, t) => s + t.amount);
+    final isIncome = _typeFilter == 'income';
+    final totalFiltered = filtered.where((t) => isIncome ? t.type == 'income' : (t.type == 'expense' || t.type == 'transfer')).fold(0.0, (s, t) => s + t.amount);
     final dragScale = (1.0 - (_dragOffset / 1200.0)).clamp(0.92, 1.0);
 
     return Scaffold(
@@ -144,7 +145,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> with Single
                               children: [
                                 Text('Riwayat\nPengeluaran', style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textWhite, height: 1.06, letterSpacing: -0.8)),
                                 const SizedBox(height: 4),
-                                Text('Total Terfilter: ${_currencyFormatter.format(totalExpense)}', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+                                Text('Total Terfilter: ${_currencyFormatter.format(totalFiltered)}', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
                               ],
                             ),
                           ),

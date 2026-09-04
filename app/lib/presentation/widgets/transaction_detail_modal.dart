@@ -90,7 +90,10 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
     if (_destinationWalletId == null && wallets.length > 1) {
       _destinationWalletId = wallets.firstWhere((w) => w.id != _walletId, orElse: () => wallets.last).id;
     }
-    _categoryId = categories.any((c) => c.id == _categoryId) ? _categoryId : (categories.isNotEmpty ? categories.first.id : '');
+    final matchingCats = categories.where((c) => c.type == _type).toList();
+    if (_type != 'transfer' && !matchingCats.any((c) => c.id == _categoryId)) {
+      _categoryId = matchingCats.isNotEmpty ? matchingCats.first.id : '';
+    }
 
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
@@ -114,7 +117,16 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
               ],
             ),
             const SizedBox(height: 16),
-            TransactionTypeToggle(selectedType: _type, onTypeChanged: (t) => setState(() => _type = t)),
+            TransactionTypeToggle(
+              selectedType: _type,
+              onTypeChanged: (t) => setState(() {
+                _type = t;
+                final matching = categories.where((c) => c.type == t).toList();
+                if (t != 'transfer' && !matching.any((c) => c.id == _categoryId)) {
+                  _categoryId = matching.isNotEmpty ? matching.first.id : '';
+                }
+              }),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _amountController,
@@ -147,7 +159,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
                   value: _categoryId.isNotEmpty ? _categoryId : null,
                   isExpanded: true,
                   dropdownColor: AppColors.canvasCardSurface,
-                  items: categories.where((c) => c.type == _type).map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
+                  items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
                   onChanged: (v) => setState(() => _categoryId = v!),
                 ),
               ),
