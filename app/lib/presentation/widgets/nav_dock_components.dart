@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+export 'add_action_button.dart';
 
 class NavItemWidget extends StatefulWidget {
   final bool isActive;
@@ -27,48 +28,65 @@ class _NavItemWidgetState extends State<NavItemWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final scale = _isPressed ? 0.88 : (widget.isActive ? 1.0 : 0.90);
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        widget.onTap();
+      },
       child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 120),
+        scale: scale,
+        duration: const Duration(milliseconds: 140),
         curve: Curves.easeOut,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
           height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: widget.isActive
-                ? AppColors.neoChartreuse.withValues(alpha: 0.14)
+                ? AppColors.neoChartreuse.withValues(alpha: 0.16)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(22),
+            border: widget.isActive
+                ? Border.all(
+                    color: AppColors.neoChartreuse.withValues(alpha: 0.35),
+                    width: 1.0,
+                  )
+                : null,
           ),
           child: Center(
-            child: Column(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   widget.isActive ? widget.activeIcon : widget.icon,
-                  color: widget.isActive ? AppColors.neoChartreuse : AppColors.textMuted,
-                  size: widget.isActive ? 19 : 21,
+                  color: widget.isActive
+                      ? AppColors.neoChartreuse
+                      : AppColors.textMuted,
+                  size: 20,
                 ),
                 if (widget.isActive) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.neoChartreuse,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      style: const TextStyle(
+                        color: AppColors.neoChartreuse,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                 ],
@@ -81,62 +99,3 @@ class _NavItemWidgetState extends State<NavItemWidget> {
   }
 }
 
-class AddActionButton extends StatefulWidget {
-  final VoidCallback onPressed;
-
-  const AddActionButton({super.key, required this.onPressed});
-
-  @override
-  State<AddActionButton> createState() => _AddActionButtonState();
-}
-
-class _AddActionButtonState extends State<AddActionButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: () {
-        HapticFeedback.lightImpact();
-        widget.onPressed();
-      },
-      child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.neoChartreuse,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.neoChartreuse.withValues(alpha: 0.35),
-                blurRadius: 16,
-                spreadRadius: -2,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.30),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.add_rounded,
-              color: AppColors.textDarkPrimary,
-              size: 30,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

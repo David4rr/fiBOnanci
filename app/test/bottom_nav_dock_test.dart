@@ -85,5 +85,96 @@ void main() {
       expect(decoration.color, AppColors.neoChartreuse);
       expect(container.constraints?.maxWidth ?? (container.child != null ? 56.0 : 0.0), 56.0);
     });
+
+    testWidgets('Add button triggers 3D tilt, spring slingshot, and rotation on tap', (tester) async {
+      bool actionTriggered = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            bottomNavigationBar: BottomNavDock(
+              currentIndex: 0,
+              onTapIndex: (_) {},
+              onAddAction: () => actionTriggered = true,
+            ),
+          ),
+        ),
+      );
+
+      final addIcon = find.byIcon(Icons.add_rounded);
+      expect(addIcon, findsOneWidget);
+
+      // Tap the Add button
+      await tester.tap(addIcon);
+      expect(actionTriggered, isTrue);
+
+      // Advance into animation: shockwave ring is active and rotation is in progress
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final rotationTransition = tester.widget<RotationTransition>(
+        find.descendant(
+          of: find.byType(AddActionButton),
+          matching: find.byType(RotationTransition),
+        ),
+      );
+      expect(rotationTransition.turns.value, greaterThan(0.0));
+
+      // Pump until animation settles
+      await tester.pumpAndSettle();
+      expect(rotationTransition.turns.value, 0.25);
+    });
+
+    testWidgets('Active nav item expands horizontally while inactive items shrink and animate', (tester) async {
+      int selectedIndex = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            bottomNavigationBar: StatefulBuilder(
+              builder: (context, setState) {
+                return BottomNavDock(
+                  currentIndex: selectedIndex,
+                  onTapIndex: (i) => setState(() => selectedIndex = i),
+                  onAddAction: () {},
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Find the sized boxes containing each nav item
+      final homeFinder = find.ancestor(of: find.text('Home'), matching: find.byType(SizedBox)).first;
+      final homeSizeInitial = tester.getSize(homeFinder);
+
+      final tagihanIconFinder = find.byIcon(Icons.receipt_long_outlined);
+      final tagihanFinder = find.ancestor(of: tagihanIconFinder, matching: find.byType(SizedBox)).first;
+      final tagihanSizeInitial = tester.getSize(tagihanFinder);
+
+      // Active item (Home) is expanded relative to inactive Tagihan (compact 1.35x ratio)
+      expect(homeSizeInitial.width, greaterThan(tagihanSizeInitial.width * 1.25));
+      // Tap Tagihan to switch active tab
+      await tester.tap(tagihanIconFinder);
+      await tester.pump();
+      // Pump mid-animation frame
+      await tester.pump(const Duration(milliseconds: 140));
+
+      final tagihanSizeMid = tester.getSize(find.ancestor(of: find.byIcon(Icons.receipt_long), matching: find.byType(SizedBox)).first);
+      // Tagihan has started expanding
+      expect(tagihanSizeMid.width, greaterThan(tagihanSizeInitial.width));
+
+      // Let animation settle
+      await tester.pumpAndSettle();
+
+      final homeFinderAfter = find.ancestor(of: find.byIcon(Icons.dashboard_outlined), matching: find.byType(SizedBox)).first;
+      final homeSizeFinal = tester.getSize(homeFinderAfter);
+
+      final tagihanFinderAfter = find.ancestor(of: find.text('Tagihan'), matching: find.byType(SizedBox)).first;
+      final tagihanSizeFinal = tester.getSize(tagihanFinderAfter);
+
+      // Tagihan is now expanded, and Home has shrunk
+      expect(tagihanSizeFinal.width, greaterThan(homeSizeFinal.width * 1.25));
+      expect(homeSizeFinal.width, lessThan(homeSizeInitial.width));
+    });
   });
 }

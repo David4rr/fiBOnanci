@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+
+import 'nav_dock_animated_row.dart';
 import 'nav_dock_components.dart';
 
+export 'nav_dock_animated_row.dart';
 export 'nav_dock_components.dart';
 export 'pod_clipper.dart';
 
@@ -23,6 +26,27 @@ class BottomNavDock extends StatelessWidget {
         );
 
   VoidCallback get _action => onAddAction ?? onCenterAction!;
+
+  static const _navItems = [
+    DockItemData(
+      index: 0,
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard,
+      label: 'Home',
+    ),
+    DockItemData(
+      index: 1,
+      icon: Icons.receipt_long_outlined,
+      activeIcon: Icons.receipt_long,
+      label: 'Tagihan',
+    ),
+    DockItemData(
+      index: 2,
+      icon: Icons.account_balance_wallet_outlined,
+      activeIcon: Icons.account_balance_wallet,
+      label: 'Wallets',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -64,28 +88,12 @@ class BottomNavDock extends StatelessWidget {
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              child: Row(
-                                children: [
-                                  _buildNavItem(
-                                    index: 0,
-                                    icon: Icons.dashboard_outlined,
-                                    activeIcon: Icons.dashboard,
-                                    label: 'Home',
-                                  ),
-                                  _buildNavItem(
-                                    index: 1,
-                                    icon: Icons.receipt_long_outlined,
-                                    activeIcon: Icons.receipt_long,
-                                    label: 'Tagihan',
-                                  ),
-                                  _buildNavItem(
-                                    index: 2,
-                                    icon: Icons.account_balance_wallet_outlined,
-                                    activeIcon: Icons.account_balance_wallet,
-                                    label: 'Wallets',
-                                  ),
-                                ],
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              child: AnimatedNavDockRow(
+                                currentIndex: currentIndex,
+                                onTapIndex: onTapIndex,
+                                items: _navItems,
                               ),
                             ),
                           ),
@@ -100,23 +108,6 @@ class BottomNavDock extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required int index,
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-  }) {
-    return Expanded(
-      child: NavItemWidget(
-        isActive: currentIndex == index,
-        icon: icon,
-        activeIcon: activeIcon,
-        label: label,
-        onTap: () => onTapIndex(index),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
+import '../widgets/common/common_widgets.dart';
 import '../widgets/bottom_nav_dock.dart';
 import '../widgets/subscription_modal.dart';
 import '../widgets/transaction_modal.dart';
@@ -100,24 +101,26 @@ class _MainShellState extends State<MainShell> {
       const SettingsScreen(),
     ];
 
-    return Scaffold(
-      backgroundColor: AppColors.canvasBg,
-      extendBody: true,
-      body: screens[_currentIndex < screens.length ? _currentIndex : 0],
-      bottomNavigationBar: AnimatedSlide(
-        offset: _isWalletDetailOpen ? const Offset(0, 1.8) : Offset.zero,
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-        child: AnimatedOpacity(
-          opacity: _isWalletDetailOpen ? 0.0 : 1.0,
+    return IPhoneViewportContainer(
+      child: Scaffold(
+        backgroundColor: AppColors.canvasBg,
+        extendBody: true,
+        body: screens[_currentIndex < screens.length ? _currentIndex : 0],
+        bottomNavigationBar: AnimatedSlide(
+          offset: _isWalletDetailOpen ? const Offset(0, 1.8) : Offset.zero,
           duration: const Duration(milliseconds: 260),
           curve: Curves.easeOutCubic,
-          child: IgnorePointer(
-            ignoring: _isWalletDetailOpen,
-            child: BottomNavDock(
-              currentIndex: _currentIndex,
-              onTapIndex: (index) => setState(() => _currentIndex = index),
-              onAddAction: _onAddAction,
+          child: AnimatedOpacity(
+            opacity: _isWalletDetailOpen ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOutCubic,
+            child: IgnorePointer(
+              ignoring: _isWalletDetailOpen,
+              child: BottomNavDock(
+                currentIndex: _currentIndex,
+                onTapIndex: (index) => setState(() => _currentIndex = index),
+                onAddAction: _onAddAction,
+              ),
             ),
           ),
         ),

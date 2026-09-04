@@ -9,6 +9,7 @@ import 'data/database/app_database.dart';
 import 'data/repositories/finance_repository.dart';
 import 'presentation/screens/main_shell.dart';
 import 'presentation/theme/app_colors.dart';
+import 'presentation/widgets/common/common_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,10 @@ class FiBOnanciApp extends StatelessWidget {
             ThemeData.dark().textTheme,
           ),
         ),
+        builder: (context, child) {
+          if (child == null) return const SizedBox.shrink();
+          return IPhoneViewportContainer(child: child);
+        },
         home: MainShell(db: database),
       ),
     );
