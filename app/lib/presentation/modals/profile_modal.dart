@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../theme/app_colors.dart';
+import '../widgets/common/common_widgets.dart';
 import '../theme/app_typography.dart';
 import 'profile/profile_actions.dart';
 import 'profile/profile_general_data_card.dart';
@@ -61,27 +62,14 @@ class ProfileModal extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                 child: Column(
                   children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.textSubtle,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Profil Pengguna', style: AppTypography.heroGreeting.copyWith(fontSize: 20)),
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close, color: AppColors.textMuted, size: 20),
-                          splashRadius: 20,
-                        ),
-                      ],
+                    const ModalGrabHandle(),
+                    ModalHeader(
+                      title: 'Profil Pengguna',
+                      titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 20),
+                      closeIconColor: AppColors.textMuted,
+                      closeIconSize: 20,
+                      padding: EdgeInsets.zero,
+                      onClose: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../theme/app_colors.dart';
+import '../widgets/common/common_widgets.dart';
 import '../theme/app_typography.dart';
 import 'health/financial_health_pillar_card.dart';
 import 'health/financial_health_score_card.dart';
@@ -38,30 +39,14 @@ class FinancialHealthModal {
                     controller: scrollController,
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
                     children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 4,
-                          decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Audit Kesehatan Finansial', style: AppTypography.heroGreeting.copyWith(fontSize: 22)),
-                              const SizedBox(height: 2),
-                              Text('Berdasarkan rasio arus kas, aset, & tagihan riil', style: AppTypography.listSubtitle),
-                            ],
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            icon: const Icon(Icons.close, color: AppColors.textMuted, size: 18),
-                          ),
-                        ],
+                      const ModalGrabHandle(width: 44, padding: EdgeInsets.only(bottom: 20)),
+                      ModalHeader(
+                        title: 'Audit Kesehatan Finansial',
+                        subtitle: 'Berdasarkan rasio arus kas, aset, & tagihan riil',
+                        titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 22),
+                        closeIconColor: AppColors.textMuted,
+                        padding: const EdgeInsets.only(bottom: 24),
+                        onClose: () => Navigator.of(ctx).pop(),
                       ),
                       const SizedBox(height: 24),
                       FinancialHealthScoreCard(report: report),

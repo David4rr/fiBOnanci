@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
 
@@ -11,6 +9,7 @@ import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'subscription_modal_selectors.dart';
+import 'common/common_widgets.dart';
 
 export 'subscription_modal_selectors.dart';
 
@@ -118,44 +117,21 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(isEditing ? 'Edit Tagihan Rutin' : 'Tambah Tagihan Baru', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 4),
-                  Text('Langganan, cicilan, atau tagihan rutin', style: AppTypography.listSubtitle),
-                ]),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: isEditing ? 'Edit Tagihan Rutin' : 'Tambah Tagihan Baru',
+              subtitle: 'Langganan, cicilan, atau tagihan rutin',
+              onClose: () => Navigator.pop(context),
             ),
             const SizedBox(height: 16),
-            TextField(
+            AppTextField(
               controller: _titleController,
-              style: AppTypography.listTitle,
-              decoration: InputDecoration(
-                hintText: 'cth: Netflix, Spotify, Listrik PLN, Kosan',
-                hintStyle: AppTypography.listSubtitle,
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
+              hintText: 'cth: Netflix, Spotify, Listrik PLN, Kosan',
             ),
             const SizedBox(height: 12),
-            TextField(
+            CurrencyAmountField(
               controller: _costController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
-              style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
-              decoration: InputDecoration(
-                prefixText: 'Rp ',
-                prefixStyle: AppTypography.heroGreeting.copyWith(color: AppColors.neoCoral),
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
+              prefixColor: AppColors.neoCoral,
             ),
             const SizedBox(height: 12),
             SubscriptionDueDaySlider(dueDay: _dueDay, onDayChanged: (d) => setState(() => _dueDay = d)),
@@ -164,17 +140,9 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
             const SizedBox(height: 12),
             SubscriptionAutoDeductSwitch(autoDeduct: _autoDeduct, onToggle: (val) => setState(() => _autoDeduct = val)),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                onPressed: () => _saveSubscription(context),
-                child: Text(
-                  isEditing ? 'Simpan Perubahan' : 'Simpan Tagihan',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textDarkPrimary),
-                ),
-              ),
+            PrimaryActionButton(
+              text: isEditing ? 'Simpan Perubahan' : 'Simpan Tagihan',
+              onPressed: () => _saveSubscription(context),
             ),
             if (isEditing) ...[
               const SizedBox(height: 12),

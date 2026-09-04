@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../widgets/common/search_filter_chip.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import 'wallet_detail_search_bar.dart';
@@ -95,17 +96,9 @@ class WalletDetailHistorySection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.neoChartreuse, width: 1)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Tipe: ${_getFilterTypeLabel(selectedFilter).toUpperCase()}', style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse)),
-                        const SizedBox(width: 4),
-                        GestureDetector(onTap: () => onFilterChanged(WalletTxFilter.all), child: const Icon(Icons.close, size: 14, color: AppColors.neoChartreuse)),
-                      ],
-                    ),
+                  SearchFilterChip(
+                    label: 'Tipe: ${_getFilterTypeLabel(selectedFilter).toUpperCase()}',
+                    onClear: () => onFilterChanged(WalletTxFilter.all),
                   ),
                 ],
               ),

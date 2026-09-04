@@ -5,6 +5,7 @@ import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/common_widgets.dart';
 
 class SubscriptionDueDaySlider extends StatelessWidget {
   final int dueDay;
@@ -129,25 +130,15 @@ class SubscriptionAutoDeductSwitch extends StatelessWidget {
 }
 
 void showSubscriptionDeleteDialog(BuildContext context, String subscriptionId) {
-  showDialog(
-    context: context,
-    builder: (dialogCtx) => AlertDialog(
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('Hapus Tagihan?', style: AppTypography.sectionTitle),
-      content: Text('Tagihan ini akan dihapus dari daftar monitoring komitmen bulanan.', style: AppTypography.listSubtitle),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Batal', style: TextStyle(color: AppColors.textMuted))),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoCoral, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          onPressed: () {
-            context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
-            Navigator.pop(dialogCtx);
-            Navigator.pop(context);
-          },
-          child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-      ],
-    ),
+  AppConfirmationDialog.show(
+    context,
+    title: 'Hapus Tagihan?',
+    content: 'Tagihan ini akan dihapus dari daftar monitoring komitmen bulanan.',
+    confirmText: 'Hapus',
+    confirmColor: AppColors.neoCoral,
+    onConfirm: () {
+      context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
+      Navigator.pop(context);
+    },
   );
 }

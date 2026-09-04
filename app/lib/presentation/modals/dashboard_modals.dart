@@ -3,6 +3,7 @@ export 'profile_modal.dart';
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
+import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -53,17 +54,7 @@ class WalletsListModal {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textSubtle,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
               Text('Rincian Saldo Rekening', style: AppTypography.sectionTitle),
               const SizedBox(height: 14),
               for (final w in wallets)
@@ -111,17 +102,7 @@ class DailyPaceModal {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textSubtle,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
               Text('Alokasi Harian (Daily Pace)', style: AppTypography.sectionTitle),
               const SizedBox(height: 14),
               Container(

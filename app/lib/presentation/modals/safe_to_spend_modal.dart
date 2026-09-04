@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
+import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'safe_to_spend_accounts_selector.dart';
@@ -30,8 +31,7 @@ class SafeToSpendModal {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-                  const SizedBox(height: 18),
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
                   Row(
                     children: [
                       Container(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 
 class TransactionFilterModal {
   static void show({
@@ -37,17 +38,7 @@ class TransactionFilterModal {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.textSubtle,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
                   Text('Filter Transaksi', style: AppTypography.sectionTitle),
                   const SizedBox(height: 16),
 
@@ -101,28 +92,14 @@ class TransactionFilterModal {
                     ),
                   ],
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
+                  PrimaryActionButton(
+                    text: 'Terapkan Filter',
                     height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.neoChartreuse,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {
-                        onApply(currentType, currentWalletId);
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(
-                        'Terapkan Filter',
-                        style: AppTypography.listTitle.copyWith(
-                          color: AppColors.textDarkPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    borderRadius: 14,
+                    onPressed: () {
+                      onApply(currentType, currentWalletId);
+                      Navigator.pop(ctx);
+                    },
                   ),
                 ],
               ),

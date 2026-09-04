@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 
 /// Swiss-Editorial Filter Modal for Subscription Screen matching TransactionFilterModal on Dashboard.
 class SubscriptionFilterModal {
@@ -32,17 +32,7 @@ class SubscriptionFilterModal {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.textSubtle,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
                   Text('Filter Tagihan', style: AppTypography.sectionTitle),
                   const SizedBox(height: 16),
 
@@ -91,26 +81,14 @@ class SubscriptionFilterModal {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
+                  PrimaryActionButton(
+                    text: 'Terapkan Filter',
                     height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.neoChartreuse,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        onApply(currentStatus, currentWalletId);
-                      },
-                      child: Text(
-                        'Terapkan Filter',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColors.textDarkPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                    borderRadius: 16,
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      onApply(currentStatus, currentWalletId);
+                    },
                   ),
                 ],
               ),

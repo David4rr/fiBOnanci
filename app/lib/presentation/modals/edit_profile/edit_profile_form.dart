@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'edit_profile_input_field.dart';
 
 class EditProfileHeader extends StatelessWidget {
@@ -15,14 +16,14 @@ class EditProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Column(
         children: [
-          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: Text(isEditing ? 'Edit Profil' : 'Tambah Profil Baru', style: AppTypography.heroGreeting.copyWith(fontSize: 20), overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close, color: AppColors.textMuted, size: 20), splashRadius: 20),
-            ],
+          const ModalGrabHandle(),
+          ModalHeader(
+            title: isEditing ? 'Edit Profil' : 'Tambah Profil Baru',
+            titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 20),
+            closeIconColor: AppColors.textMuted,
+            closeIconSize: 20,
+            padding: EdgeInsets.zero,
+            onClose: () => Navigator.of(context).pop(),
           ),
         ],
       ),

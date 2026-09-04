@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
+
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
+import '../../core/formatters/rupiah_input_formatter.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/common_widgets.dart';
 import 'transaction_modal_selectors.dart';
 
 export 'transaction_modal_selectors.dart';
 
 class TransactionModal extends StatefulWidget {
   final String? initialWalletId;
+
   const TransactionModal({super.key, this.initialWalletId});
 
   static Future<void> show(BuildContext context, {String? initialWalletId}) {
-    return showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      useSafeArea: true,
       backgroundColor: AppColors.canvasCardSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (_) => TransactionModal(initialWalletId: initialWalletId),
+      builder: (ctx) => TransactionModal(initialWalletId: initialWalletId),
     );
   }
 
@@ -30,9 +31,9 @@ class TransactionModal extends StatefulWidget {
 }
 
 class _TransactionModalState extends State<TransactionModal> {
-  String _type = 'expense';
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
+  String _type = 'expense';
   String? _selectedWalletId;
   String? _selectedDestinationWalletId;
   String? _selectedCategoryId;
@@ -61,15 +62,17 @@ class _TransactionModalState extends State<TransactionModal> {
   void _onSave() {
     final amount = RupiahInputFormatter.parse(_amountController.text);
     if (amount <= 0 || _selectedWalletId == null || (_type != 'transfer' && _selectedCategoryId == null)) return;
-    context.read<FinanceBloc>().add(AddTransactionEvent(
-      walletId: _selectedWalletId!,
-      categoryId: _type == 'transfer' ? '11111111-1111-4111-8111-111111111111' : _selectedCategoryId!,
-      amount: amount,
-      type: _type,
-      destinationWalletId: _type == 'transfer' ? _selectedDestinationWalletId : null,
-      notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
-      transactionDate: DateTime.now(),
-    ));
+    context.read<FinanceBloc>().add(
+      AddTransactionEvent(
+        walletId: _selectedWalletId!,
+        categoryId: _type == 'transfer' ? '11111111-1111-4111-8111-111111111111' : _selectedCategoryId!,
+        amount: amount,
+        type: _type,
+        destinationWalletId: _type == 'transfer' ? _selectedDestinationWalletId : null,
+        notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
+        transactionDate: DateTime.now(),
+      ),
+    );
     Navigator.pop(context);
   }
 
@@ -85,37 +88,15 @@ class _TransactionModalState extends State<TransactionModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Catat Transaksi', style: AppTypography.sectionTitle),
-                    const SizedBox(height: 4),
-                    Text('Catatan instan tanpa loading', style: AppTypography.listSubtitle),
-                  ]),
-                ),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: 'Catat Transaksi',
+              subtitle: 'Catatan instan tanpa loading',
+              onClose: () => Navigator.pop(context),
             ),
-            const SizedBox(height: 16),
             TransactionTypeToggle(selectedType: _type, onTypeChanged: (t) => setState(() => _type = t)),
             const SizedBox(height: 16),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
-              style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
-              decoration: InputDecoration(
-                prefixText: 'Rp ',
-                prefixStyle: AppTypography.heroGreeting.copyWith(color: AppColors.neoChartreuse),
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-            ),
+            CurrencyAmountField(controller: _amountController),
             const SizedBox(height: 12),
             TransactionDropdownContainer(
               child: DropdownButton<String>(
@@ -151,16 +132,9 @@ class _TransactionModalState extends State<TransactionModal> {
                 ),
               ),
             const SizedBox(height: 12),
-            TextField(
+            AppTextField(
               controller: _notesController,
-              style: AppTypography.listTitle,
-              decoration: InputDecoration(
-                hintText: 'Catatan (Opsional)',
-                hintStyle: AppTypography.listSubtitle,
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
+              hintText: 'Catatan (Opsional)',
             ),
             const SizedBox(height: 24),
             Row(
@@ -179,13 +153,9 @@ class _TransactionModalState extends State<TransactionModal> {
                 const SizedBox(width: 10),
                 Expanded(
                   flex: 2,
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
-                      onPressed: _onSave,
-                      child: Text('Simpan Transaksi', style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800)),
-                    ),
+                  child: PrimaryActionButton(
+                    text: 'Simpan Transaksi',
+                    onPressed: _onSave,
                   ),
                 ),
               ],

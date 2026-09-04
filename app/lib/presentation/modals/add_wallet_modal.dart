@@ -7,11 +7,9 @@ import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 import 'wallet/wallet_binding_selector.dart';
 import 'wallet/wallet_type_selector.dart';
-
-export 'wallet/wallet_binding_selector.dart';
-export 'wallet/wallet_type_selector.dart';
 
 class AddWalletModal {
   static void show(BuildContext context) {
@@ -39,35 +37,15 @@ class AddWalletModal {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 14),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Tambah Rekening Baru', style: AppTypography.sectionTitle),
-                              const SizedBox(height: 4),
-                              Text('Bank, E-Wallet, atau Kas Tunai', style: AppTypography.listSubtitle),
-                            ],
-                          ),
-                        ),
-                        IconButton(onPressed: () => Navigator.pop(modalContext), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-                      ],
+                    const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                    ModalHeader(
+                      title: 'Tambah Rekening Baru',
+                      subtitle: 'Bank, E-Wallet, atau Kas Tunai',
+                      onClose: () => Navigator.pop(modalContext),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
+                    AppTextField(
                       controller: nameController,
-                      style: AppTypography.listTitle,
-                      decoration: InputDecoration(
-                        hintText: 'Nama Rekening (cth: Kas Tunai, Bank Jago Saving)',
-                        hintStyle: AppTypography.listSubtitle,
-                        filled: true,
-                        fillColor: AppColors.canvasInputSearch,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      ),
+                      hintText: 'Nama Rekening (cth: Kas Tunai, Bank Jago Saving)',
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -84,17 +62,9 @@ class AddWalletModal {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    TextField(
+                    AppTextField(
                       controller: accountNumberController,
-                      keyboardType: TextInputType.text,
-                      style: AppTypography.listTitle,
-                      decoration: InputDecoration(
-                        hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
-                        hintStyle: AppTypography.listSubtitle,
-                        filled: true,
-                        fillColor: AppColors.canvasInputSearch,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      ),
+                      hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
                     ),
                     const SizedBox(height: 12),
                     WalletTypeSelector(selectedType: type, onTypeChanged: (val) => setModalState(() => type = val)),

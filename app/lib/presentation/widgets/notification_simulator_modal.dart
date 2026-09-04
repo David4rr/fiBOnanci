@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/notification_parser/notification_parser.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/common_widgets.dart';
 import 'notification_review_modal.dart';
 import 'notification_simulator_presets.dart';
 
@@ -63,23 +64,18 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 18),
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.flash_on, color: AppColors.neoChartreuse, size: 22),
-                    const SizedBox(width: 8),
-                    Text('Simulator Notifikasi Bank', style: AppTypography.sectionTitle),
-                  ],
-                ),
+                Row(children: [
+                  const Icon(Icons.flash_on, color: AppColors.neoChartreuse, size: 22),
+                  const SizedBox(width: 8),
+                  Text('Simulator Notifikasi Bank', style: AppTypography.sectionTitle),
+                ]),
                 IconButton(icon: const Icon(Icons.close, color: AppColors.textMuted), onPressed: () => Navigator.pop(context)),
               ],
             ),
-            const SizedBox(height: 8),
-            Text('Uji coba parsing notifikasi perbankan Indonesia langsung di memori HP.', style: AppTypography.listSubtitle),
             const SizedBox(height: 16),
             Text('PRESET NOTIFIKASI NYATA', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 8),
@@ -95,17 +91,11 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
             const SizedBox(height: 16),
             Text('BODY TEKS NOTIFIKASI', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 6),
-            TextField(
+            AppTextField(
               controller: _bodyController,
+              hintText: 'Tempel teks notifikasi di sini...',
               maxLines: 3,
-              style: AppTypography.listTitle,
               onChanged: (_) => _triggerParse(),
-              decoration: InputDecoration(
-                hintText: 'Tempel teks notifikasi di sini...',
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
             ),
             const SizedBox(height: 18),
             Text('HASIL PARSING REALTIME (ON-DEVICE)', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),

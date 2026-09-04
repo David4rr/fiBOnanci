@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
@@ -10,6 +10,7 @@ import '../../data/database/app_database.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 import 'wallet/wallet_binding_selector.dart';
 import 'wallet/wallet_delete_dialog.dart';
 
@@ -56,50 +57,17 @@ class EditBalanceModal {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 14),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Penyesuaian Saldo: ${wallet.name}', style: AppTypography.sectionTitle),
-                              const SizedBox(height: 4),
-                              Text('Ubah saldo awal rekening sesuai saldo riil saat ini di m-banking.', style: AppTypography.listSubtitle),
-                            ],
-                          ),
-                        ),
-                        IconButton(onPressed: () => Navigator.pop(modalContext), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-                      ],
+                    const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                    ModalHeader(
+                      title: 'Penyesuaian Saldo: ${wallet.name}',
+                      subtitle: 'Ubah saldo awal rekening sesuai saldo riil saat ini di m-banking.',
+                      onClose: () => Navigator.pop(modalContext),
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: controller,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
-                      style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
-                      decoration: InputDecoration(
-                        prefixText: 'Rp ',
-                        prefixStyle: AppTypography.heroGreeting.copyWith(color: AppColors.neoChartreuse),
-                        filled: true,
-                        fillColor: AppColors.canvasInputSearch,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      ),
-                    ),
+                    CurrencyAmountField(controller: controller),
                     const SizedBox(height: 12),
-                    TextField(
+                    AppTextField(
                       controller: accountNumberController,
-                      keyboardType: TextInputType.text,
-                      style: AppTypography.listTitle,
-                      decoration: InputDecoration(
-                        hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
-                        hintStyle: AppTypography.listSubtitle,
-                        filled: true,
-                        fillColor: AppColors.canvasInputSearch,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      ),
+                      hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
                     ),
                     const SizedBox(height: 14),
                     WalletBindingSelector(
@@ -138,6 +106,7 @@ class EditBalanceModal {
                                 final newBal = RupiahInputFormatter.parse(controller.text);
                                 final accNum = accountNumberController.text.trim();
                                 final boundPkg = isCustomPackage ? customPackageController.text.trim() : selectedPackage;
+
                                 context.read<FinanceBloc>().add(
                                   UpdateWalletBalanceEvent(
                                     walletId: wallet.id,
@@ -163,12 +132,11 @@ class EditBalanceModal {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Center(
                       child: TextButton.icon(
-                        style: TextButton.styleFrom(foregroundColor: AppColors.neoCoral),
-                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                        label: Text('Hapus Rekening', style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13, fontWeight: FontWeight.w700)),
+                        icon: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 18),
+                        label: Text('Hapus Rekening', style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13.5, fontWeight: FontWeight.w600)),
                         onPressed: () => WalletDeleteDialog.show(context, modalContext, wallet),
                       ),
                     ),

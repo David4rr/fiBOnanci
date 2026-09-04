@@ -7,6 +7,7 @@ import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/common_widgets.dart';
 
 class TransactionDetailComponents {
   static Widget buildWalletDropdown({
@@ -91,32 +92,22 @@ class TransactionDetailComponents {
   }
 
   static void showDeleteDialog(BuildContext context, String transactionId) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppColors.canvasCardSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Hapus Transaksi?', style: AppTypography.sectionTitle),
-        content: Text('Transaksi ini akan dihapus permanen dan saldo dompet akan dikembalikan.', style: AppTypography.listSubtitle),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Batal', style: TextStyle(color: AppColors.textMuted))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoCoral, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            onPressed: () {
-              context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
-              Navigator.pop(dialogCtx);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  backgroundColor: AppColors.neoCoral,
-                  content: Text('Transaksi dihapus & saldo dompet dikembalikan semula!', style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
-                ),
-              );
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+    AppConfirmationDialog.show(
+      context,
+      title: 'Hapus Transaksi?',
+      content: 'Transaksi ini akan dihapus permanen dan saldo dompet akan dikembalikan.',
+      confirmText: 'Hapus',
+      confirmColor: AppColors.neoCoral,
+      onConfirm: () {
+        context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.neoCoral,
+            content: Text('Transaksi dihapus & saldo dompet dikembalikan semula!', style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

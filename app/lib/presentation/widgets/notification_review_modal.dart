@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
+import 'common/common_widgets.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notification_parser/parsed_notification.dart';
 import '../../data/repositories/finance_repository.dart';
@@ -103,18 +104,11 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Review Notifikasi Bank', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 4),
-                  Text('Deteksi otomatis dari ${widget.rawPackage}', style: AppTypography.listSubtitle),
-                ]),
-                IconButton(onPressed: () => Navigator.pop(context, false), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: 'Review Notifikasi Bank',
+              subtitle: 'Deteksi otomatis dari ${widget.rawPackage}',
+              onClose: () => Navigator.pop(context, false),
             ),
             const SizedBox(height: 16),
             Row(
@@ -125,17 +119,9 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
+            CurrencyAmountField(
               controller: _amountController,
-              keyboardType: TextInputType.number,
-              style: AppTypography.heroGreeting.copyWith(color: AppColors.textWhite),
-              decoration: InputDecoration(
-                prefixText: 'Rp ',
-                prefixStyle: AppTypography.heroGreeting.copyWith(color: _type == 'income' ? AppColors.neoMint : AppColors.neoCoral),
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
+              prefixColor: _type == 'income' ? AppColors.neoMint : AppColors.neoCoral,
             ),
             const SizedBox(height: 16),
             Text('REKENING TUJUAN / ASAL', style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse)),
@@ -146,11 +132,7 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
             const SizedBox(height: 6),
             NotificationReviewSelectors.buildCategoryDropdown(categories: state.categories, selectedCategoryId: _selectedCategoryId, onChanged: (v) => setState(() => _selectedCategoryId = v)),
             const SizedBox(height: 16),
-            TextField(
-              controller: _notesController,
-              style: AppTypography.listTitle,
-              decoration: InputDecoration(hintText: 'Catatan / Merchant', filled: true, fillColor: AppColors.canvasInputSearch, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
-            ),
+            AppTextField(controller: _notesController, hintText: 'Catatan / Merchant'),
             const SizedBox(height: 14),
             CheckboxListTile(
               value: _rememberBinding,
@@ -178,13 +160,10 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
                 const SizedBox(width: 14),
                 Expanded(
                   flex: 2,
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                      onPressed: _isSaving ? null : () => _confirmAndSave(context),
-                      child: _isSaving ? const CircularProgressIndicator(color: AppColors.textDarkPrimary) : Text('Konfirmasi Simpan', style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800)),
-                    ),
+                  child: PrimaryActionButton(
+                    text: 'Konfirmasi Simpan',
+                    isLoading: _isSaving,
+                    onPressed: _isSaving ? null : () => _confirmAndSave(context),
                   ),
                 ),
               ],

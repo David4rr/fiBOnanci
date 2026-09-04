@@ -8,6 +8,7 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
+import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'pocket/pocket_type_selector.dart';
@@ -49,23 +50,11 @@ class AddPocketModal {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-                        const SizedBox(height: 14),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Buat Kantong Alokasi Baru', style: AppTypography.sectionTitle),
-                                  const SizedBox(height: 4),
-                                  Text('Pisahkan dana tabungan agar tidak terpakai saat belanja harian.', style: AppTypography.listSubtitle),
-                                ],
-                              ),
-                            ),
-                            IconButton(onPressed: () => Navigator.pop(modalContext), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-                          ],
+                        const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                        ModalHeader(
+                          title: 'Buat Kantong Alokasi Baru',
+                          subtitle: 'Pisahkan dana tabungan agar tidak terpakai saat belanja harian.',
+                          onClose: () => Navigator.pop(modalContext),
                         ),
                         const SizedBox(height: 16),
                         Text('TIPE KANTONG', style: AppTypography.listSubtitle),

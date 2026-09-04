@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/database/app_database.dart';
 import '../../modals/transaction_filter_modal.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
+import '../../widgets/common/search_filter_chip.dart';
 
 class DashboardSearchBar extends StatelessWidget {
   final TextEditingController searchController;
@@ -107,34 +107,15 @@ class DashboardSearchBar extends StatelessWidget {
                 if (typeFilter != 'all')
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.neoChartreuse, width: 1)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Tipe: ${typeFilter.toUpperCase()}', style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse)),
-                          const SizedBox(width: 4),
-                          GestureDetector(onTap: onClearTypeFilter, child: const Icon(Icons.close, size: 14, color: AppColors.neoChartreuse)),
-                        ],
-                      ),
+                    child: SearchFilterChip(
+                      label: 'Tipe: ${typeFilter.toUpperCase()}',
+                      onClear: onClearTypeFilter,
                     ),
                   ),
                 if (walletFilter != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.neoChartreuse, width: 1)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Rek: ${wallets.firstWhere((w) => w.id == walletFilter, orElse: () => wallets.first).name}',
-                          style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(onTap: onClearWalletFilter, child: const Icon(Icons.close, size: 14, color: AppColors.neoChartreuse)),
-                      ],
-                    ),
+                  SearchFilterChip(
+                    label: 'Rek: ${wallets.firstWhere((w) => w.id == walletFilter, orElse: () => wallets.first).name}',
+                    onClear: onClearWalletFilter,
                   ),
               ],
             ),
