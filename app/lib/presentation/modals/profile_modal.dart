@@ -5,7 +5,6 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
-import '../theme/app_typography.dart';
 import 'profile/profile_actions.dart';
 import 'profile/profile_general_data_card.dart';
 import 'profile/profile_header_card.dart';
@@ -65,9 +64,6 @@ class ProfileModal extends StatelessWidget {
                     const ModalGrabHandle(),
                     ModalHeader(
                       title: 'Profil Pengguna',
-                      titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 20),
-                      closeIconColor: AppColors.textMuted,
-                      closeIconSize: 20,
                       padding: EdgeInsets.zero,
                       onClose: () => Navigator.of(context).pop(),
                     ),

@@ -7,6 +7,7 @@ import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 import '../widgets/pocket_transaction_tile.dart';
 import 'pocket/pocket_detail_views.dart';
 import 'pocket/pocket_transfer_dialog.dart';
@@ -46,8 +47,7 @@ class PocketDetailModal {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-                      const SizedBox(height: 18),
+                      const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
                       PocketDetailHeader(pocket: latestPocket, pocketColor: pocketColor, currencyFormatter: currencyFormatter),
                       const SizedBox(height: 20),
                       PocketDetailActions(pocket: latestPocket, pocketColor: pocketColor),

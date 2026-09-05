@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
@@ -75,10 +74,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     children: [
                       Text(
                         'Tagihan & Langganan',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textWhite, letterSpacing: -0.6),
+                        style: AppTypography.modalTitle,
                       ),
-                      const SizedBox(height: 2),
-                      Text('${subscriptions.length} Kartu Terdaftar • Diurutkan jatuh tempo', style: AppTypography.listSubtitle),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${subscriptions.length} Kartu Terdaftar • Diurutkan jatuh tempo',
+                        style: AppTypography.modalSubtitle,
+                      ),
                     ],
                   ),
                 ),

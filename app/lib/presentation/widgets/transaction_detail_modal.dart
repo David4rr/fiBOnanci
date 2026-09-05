@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'transaction_detail_components.dart';
 import 'transaction_modal_selectors.dart';
+import 'common/common_widgets.dart';
 
 export 'transaction_detail_components.dart';
 
@@ -102,19 +103,11 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.textSubtle, borderRadius: BorderRadius.circular(2)))),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Edit Transaksi', style: AppTypography.sectionTitle),
-                    const SizedBox(height: 4),
-                    Text('Ubah kategori, rekening, atau nominal', style: AppTypography.listSubtitle),
-                  ]),
-                ),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: AppColors.textWhite, size: 18)),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: 'Edit Transaksi',
+              subtitle: 'Ubah kategori, rekening, atau nominal',
+              onClose: () => Navigator.pop(context),
             ),
             const SizedBox(height: 16),
             TransactionTypeToggle(

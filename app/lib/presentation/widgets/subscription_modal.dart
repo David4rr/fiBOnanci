@@ -133,8 +133,14 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
           children: [
             const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
             ModalHeader(
-              title: isEditing ? 'Edit Tagihan Rutin' : 'Tambah Tagihan Baru',
-              subtitle: 'Langganan, cicilan, atau tagihan rutin',
+              title: isEditing
+                  ? (_isInstallment ? 'Edit Cicilan' : 'Edit Tagihan Rutin')
+                  : (_isInstallment ? 'Tambah Cicilan Baru' : 'Tambah Tagihan Baru'),
+              subtitle: _isInstallment
+                  ? 'Rencana cicilan tenor & jatuh tempo'
+                  : 'Langganan, tagihan rutin, atau tagihan berkala',
+              titleStyle: AppTypography.modalTitle,
+              subtitleStyle: AppTypography.modalSubtitle,
               onClose: () => Navigator.pop(context),
             ),
             const SizedBox(height: 16),

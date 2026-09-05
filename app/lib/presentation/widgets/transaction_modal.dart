@@ -101,7 +101,13 @@ class _TransactionModalState extends State<TransactionModal> {
             const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
             ModalHeader(
               title: 'Catat Transaksi',
-              subtitle: 'Catatan instan tanpa loading',
+              subtitle: _type == 'expense'
+                  ? 'Pengeluaran kas atau mutasi keluar'
+                  : (_type == 'income'
+                      ? 'Pemasukan gaji atau dana masuk'
+                      : 'Transfer antar rekening & dompet'),
+              titleStyle: AppTypography.modalTitle,
+              subtitleStyle: AppTypography.modalSubtitle,
               onClose: () => Navigator.pop(context),
             ),
             TransactionTypeToggle(

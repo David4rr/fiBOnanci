@@ -6,6 +6,8 @@ import 'package:fibonanci_app/presentation/widgets/subscription_card.dart';
 import 'package:fibonanci_app/presentation/widgets/subscription_due_day_slider.dart';
 import 'package:fibonanci_app/presentation/widgets/subscription_installment_selector.dart';
 import 'package:fibonanci_app/presentation/widgets/subscription_stacked_deck.dart';
+import 'package:fibonanci_app/presentation/widgets/common/common_widgets.dart';
+import 'package:fibonanci_app/presentation/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -358,6 +360,36 @@ void main() {
       await tester.pumpAndSettle();
       expect(totalCycles, 6);
       expect(find.text('Durasi Tenor'), findsNothing);
+    });
+
+    testWidgets('ModalHeader standardizes title typography to AppTypography.modalTitle', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ModalHeader(
+              title: 'Standardized Modal',
+              subtitle: 'Consistent subtitle across app',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final textWidget = tester.widget<Text>(find.text('Standardized Modal'));
+      expect(textWidget.style?.fontSize, 28);
+      expect(textWidget.style?.fontWeight, FontWeight.w800);
+      expect(textWidget.style?.letterSpacing, -0.8);
+
+      final subWidget = tester.widget<Text>(find.text('Consistent subtitle across app'));
+      expect(subWidget.style?.fontSize, 12);
+      expect(subWidget.style?.fontWeight, FontWeight.w500);
+
+      // Verify standardized down-arrow dismiss icon
+      final iconFinder = find.byIcon(Icons.keyboard_arrow_down_rounded);
+      expect(iconFinder, findsOneWidget);
+      final iconWidget = tester.widget<Icon>(iconFinder);
+      expect(iconWidget.size, 28);
+      expect(iconWidget.color, AppColors.textWhite);
     });
   });
 }

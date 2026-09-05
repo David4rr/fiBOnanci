@@ -8,6 +8,7 @@ class ModalHeader extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onClose;
   final bool showCloseButton;
+  final IconData closeIcon;
   final Color closeIconColor;
   final double closeIconSize;
   final Widget? trailing;
@@ -21,8 +22,9 @@ class ModalHeader extends StatelessWidget {
     this.subtitle,
     this.onClose,
     this.showCloseButton = true,
+    this.closeIcon = Icons.keyboard_arrow_down_rounded,
     this.closeIconColor = AppColors.textWhite,
-    this.closeIconSize = 18,
+    this.closeIconSize = 28,
     this.trailing,
     this.titleStyle,
     this.subtitleStyle,
@@ -42,13 +44,13 @@ class ModalHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: titleStyle ?? AppTypography.sectionTitle,
+                  style: titleStyle ?? AppTypography.modalTitle,
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     subtitle!,
-                    style: subtitleStyle ?? AppTypography.listSubtitle,
+                    style: subtitleStyle ?? AppTypography.modalSubtitle,
                   ),
                 ],
               ],
@@ -62,7 +64,7 @@ class ModalHeader extends StatelessWidget {
               constraints: const BoxConstraints(),
               splashRadius: 20,
               onPressed: onClose ?? () => Navigator.of(context).pop(),
-              icon: Icon(Icons.close, color: closeIconColor, size: closeIconSize),
+              icon: Icon(closeIcon, color: closeIconColor, size: closeIconSize),
             ),
         ],
       ),

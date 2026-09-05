@@ -64,19 +64,12 @@ class _NotificationSimulatorModalState extends State<NotificationSimulatorModal>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(children: [
-                  const Icon(Icons.flash_on, color: AppColors.neoChartreuse, size: 22),
-                  const SizedBox(width: 8),
-                  Text('Simulator Notifikasi Bank', style: AppTypography.sectionTitle),
-                ]),
-                IconButton(icon: const Icon(Icons.close, color: AppColors.textMuted), onPressed: () => Navigator.pop(context)),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: 'Simulator Notifikasi',
+              subtitle: 'Uji parser bank & deteksi transaksi riil',
+              onClose: () => Navigator.pop(context),
             ),
-            const SizedBox(height: 16),
             Text('PRESET NOTIFIKASI NYATA', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 8),
             NotificationSimulatorPresetsChips(

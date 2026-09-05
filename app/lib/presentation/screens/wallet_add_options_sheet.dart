@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 import 'wallet_screen.dart';
 
 class WalletAddOptionsSheet {
@@ -22,11 +23,12 @@ class WalletAddOptionsSheet {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.canvasBorder, borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 20),
-              Text('Tambah ke Finansial', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-              const SizedBox(height: 6),
-              Text('Pilih jenis alokasi atau akun yang ingin kamu buat.', style: AppTypography.listSubtitle),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+              ModalHeader(
+                title: 'Tambah ke Finansial',
+                subtitle: 'Pilih jenis alokasi atau akun yang ingin kamu buat.',
+                onClose: () => Navigator.pop(sheetContext),
+              ),
               const SizedBox(height: 20),
               _buildTile(
                 icon: Icons.savings_outlined,

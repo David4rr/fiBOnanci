@@ -31,25 +31,12 @@ class SafeToSpendModal {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: metrics.statusColor.withValues(alpha: 0.2)),
-                        child: Icon(Icons.shield_outlined, color: metrics.statusColor, size: 24),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Smart Safe-to-Spend', style: AppTypography.sectionTitle),
-                            Text('Status: ${metrics.statusLabel}', style: TextStyle(color: metrics.statusColor, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                  ModalHeader(
+                    title: 'Smart Safe-to-Spend',
+                    subtitle: 'Status: ${metrics.statusLabel}',
+                    subtitleStyle: TextStyle(color: metrics.statusColor, fontWeight: FontWeight.bold, fontSize: 12),
+                    onClose: () => Navigator.pop(context),
                   ),
                   const SizedBox(height: 18),
                   SafeToSpendAccountsSelector(wallets: wallets, selectedIds: selectedIds, isAll: isAll),

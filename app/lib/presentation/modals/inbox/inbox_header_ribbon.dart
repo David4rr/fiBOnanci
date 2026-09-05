@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 
 class InboxHeaderRibbon extends StatelessWidget {
   final int pendingCount;
@@ -29,12 +30,7 @@ class InboxHeaderRibbon extends StatelessWidget {
                   Flexible(
                     child: Text(
                       'Kotak Masuk Notifikasi',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.4,
-                        color: AppColors.textWhite,
-                      ),
+                      style: AppTypography.modalTitle,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -93,21 +89,15 @@ class InboxHeaderRibbon extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.04),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-                  ),
-                  child: const Center(child: Icon(Icons.close_rounded, color: AppColors.textMuted, size: 15)),
-                ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 20,
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 28,
+                color: AppColors.textWhite,
               ),
             ),
           ],

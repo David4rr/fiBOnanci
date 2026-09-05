@@ -9,6 +9,7 @@ import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/subscription_modal.dart';
+import '../../widgets/common/common_widgets.dart';
 
 class SubscriptionCardDetailSheet {
   static void show(BuildContext context, SubscriptionEntry sub, WalletEntry wallet) {
@@ -31,28 +32,34 @@ class SubscriptionCardDetailSheet {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 44, height: 4, decoration: BoxDecoration(color: AppColors.canvasBorder, borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 20),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(sub.title, style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textWhite)),
-                        const SizedBox(height: 4),
-                        Text(
-                          sub.isInstallment
-                              ? 'Jatuh tempo tgl ${sub.dueDay} • Cicilan (${sub.paidCycles}/${sub.totalCycles ?? "?"} bulan)'
-                              : 'Jatuh tempo setiap tanggal ${sub.dueDay} • ${sub.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan'}',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: AppColors.textMuted),
-                        ),
-                      ],
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+              ModalHeader(
+                title: sub.title,
+                subtitle: sub.isInstallment
+                    ? 'Jatuh tempo tgl ${sub.dueDay} • Cicilan (${sub.paidCycles}/${sub.totalCycles ?? "?"} bulan)'
+                    : 'Jatuh tempo setiap tanggal ${sub.dueDay} • ${sub.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan'}',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currencyFormatter.format(sub.cost),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.neoCoral,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                  ),
-                  Text(currencyFormatter.format(sub.cost), style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.neoCoral, fontFeatures: const [FontFeature.tabularFigures()])),
-                ],
+                    const SizedBox(width: 8),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 20,
+                      onPressed: () => Navigator.pop(modalCtx),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textWhite, size: 28),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               Container(

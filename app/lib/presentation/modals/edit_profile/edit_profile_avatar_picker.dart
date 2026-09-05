@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/profile_avatar.dart';
+import '../../widgets/common/common_widgets.dart';
 
 class EditProfileAvatarPicker {
   static Widget buildPickerWidget({
@@ -129,8 +130,12 @@ class EditProfileAvatarPicker {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Pilih Sumber Foto', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 16),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+              ModalHeader(
+                title: 'Pilih Sumber Foto',
+                subtitle: 'Galeri perangkat atau kamera',
+                onClose: () => Navigator.of(ctx).pop(),
+              ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.neoChartreuse.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.photo_library_outlined, color: AppColors.neoChartreuse, size: 20)),

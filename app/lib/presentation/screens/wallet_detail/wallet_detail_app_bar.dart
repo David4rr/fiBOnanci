@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 
 class WalletDetailAppBar extends StatelessWidget {
   final WalletEntry wallet;
@@ -48,25 +49,14 @@ class WalletDetailAppBar extends StatelessWidget {
                   children: [
                     Text(
                       'Detail Rekening',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textWhite,
-                        height: 1.06,
-                        letterSpacing: -0.8,
-                      ),
+                      style: AppTypography.modalTitle,
                     ),
                     Row(
                       children: [
                         Flexible(
                           child: Text(
                             'Informasi & Mutasi',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textMuted,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.modalSubtitle,
                           ),
                         ),
                         if (headerBalanceOpacity > 0.1) ...[

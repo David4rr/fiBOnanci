@@ -54,9 +54,12 @@ class WalletsListModal {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-              Text('Rincian Saldo Rekening', style: AppTypography.sectionTitle),
-              const SizedBox(height: 14),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+              ModalHeader(
+                title: 'Rincian Saldo Rekening',
+                subtitle: 'Ringkasan saldo riil per akun keuangan',
+                onClose: () => Navigator.pop(ctx),
+              ),
               for (final w in wallets)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -102,9 +105,12 @@ class DailyPaceModal {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-              Text('Alokasi Harian (Daily Pace)', style: AppTypography.sectionTitle),
-              const SizedBox(height: 14),
+              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+              ModalHeader(
+                title: 'Alokasi Harian (Daily Pace)',
+                subtitle: 'Daily burn allowance & sisa hari siklus',
+                onClose: () => Navigator.pop(ctx),
+              ),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(

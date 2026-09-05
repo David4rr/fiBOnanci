@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
 
 class ExpenseHistoryAppBar extends StatelessWidget {
@@ -45,22 +45,12 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                     children: [
                       Text(
                         'Riwayat\nPengeluaran',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textWhite,
-                          height: 1.06,
-                          letterSpacing: -0.8,
-                        ),
+                        style: AppTypography.modalTitle,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Total Terfilter: ${currencyFormatter.format(totalFiltered)}',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textMuted,
-                        ),
+                        style: AppTypography.modalSubtitle,
                       ),
                     ],
                   ),

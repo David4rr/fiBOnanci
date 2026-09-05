@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'edit_profile_input_field.dart';
 
@@ -19,9 +17,6 @@ class EditProfileHeader extends StatelessWidget {
           const ModalGrabHandle(),
           ModalHeader(
             title: isEditing ? 'Edit Profil' : 'Tambah Profil Baru',
-            titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 20),
-            closeIconColor: AppColors.textMuted,
-            closeIconSize: 20,
             padding: EdgeInsets.zero,
             onClose: () => Navigator.of(context).pop(),
           ),

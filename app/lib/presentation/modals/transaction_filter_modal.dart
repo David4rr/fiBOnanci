@@ -38,9 +38,12 @@ class TransactionFilterModal {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-                  Text('Filter Transaksi', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 16),
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                  ModalHeader(
+                    title: 'Filter Transaksi',
+                    subtitle: 'Pilih jenis transaksi & rekening',
+                    onClose: () => Navigator.pop(ctx),
+                  ),
 
                   Text(
                     'TIPE TRANSAKSI',

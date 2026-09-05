@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/common_widgets.dart';
 
 final List<Map<String, dynamic>> kInboxSimulationPresets = [
   {
@@ -100,31 +101,11 @@ class InboxSimulationPicker {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-                    border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.25)),
-                  ),
-                  child: const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 16),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text('Pilih Skenario Notifikasi', style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.4, color: AppColors.textWhite)),
-                ),
-              ],
+            const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+            ModalHeader(
+              title: 'Pilih Skenario Notifikasi',
+              subtitle: 'Pilih skenario simulasi notifikasi bank',
+              onClose: () => Navigator.pop(sheetCtx),
             ),
             const SizedBox(height: 14),
             Flexible(

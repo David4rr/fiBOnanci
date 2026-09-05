@@ -43,8 +43,6 @@ class FinancialHealthModal {
                       ModalHeader(
                         title: 'Audit Kesehatan Finansial',
                         subtitle: 'Berdasarkan rasio arus kas, aset, & tagihan riil',
-                        titleStyle: AppTypography.heroGreeting.copyWith(fontSize: 22),
-                        closeIconColor: AppColors.textMuted,
                         padding: const EdgeInsets.only(bottom: 24),
                         onClose: () => Navigator.of(ctx).pop(),
                       ),

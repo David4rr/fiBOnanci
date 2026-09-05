@@ -32,9 +32,12 @@ class SubscriptionFilterModal {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-                  Text('Filter Tagihan', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 16),
+                  const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                  ModalHeader(
+                    title: 'Filter Tagihan',
+                    subtitle: 'Status pembayaran & frekuensi siklus',
+                    onClose: () => Navigator.pop(ctx),
+                  ),
 
                   Text(
                     'STATUS PEMBAYARAN',

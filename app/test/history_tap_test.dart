@@ -78,7 +78,7 @@ void main() {
     );
 
     // Close modal
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
     await tester.pumpAndSettle();
 
     final txAfter = await (db.select(db.transactions)..where((t) => t.id.equals(txId))).getSingle();

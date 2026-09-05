@@ -8,6 +8,7 @@ import '../../core/notification_parser/notification_parser.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../theme/app_colors.dart';
+import '../widgets/common/common_widgets.dart';
 import 'inbox/inbox_empty_view.dart';
 import 'inbox/inbox_header_ribbon.dart';
 import 'inbox/inbox_notification_card.dart';
@@ -119,8 +120,7 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2)))),
-          const SizedBox(height: 18),
+          const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
           InboxHeaderRibbon(
             pendingCount: _pending.length,
             onSimulate: () => InboxSimulationPicker.show(context, _injectNotification),

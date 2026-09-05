@@ -10,33 +10,19 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import 'pocket_transfer_dialog.dart';
 
-IconData getPocketIcon(String type) {
-  switch (type) {
-    case 'savings':
-      return Icons.savings_outlined;
-    case 'retirement':
-      return Icons.elderly_outlined;
-    case 'emergency':
-      return Icons.shield_outlined;
-    case 'goal':
-    default:
-      return Icons.flag_outlined;
-  }
-}
+IconData getPocketIcon(String type) => switch (type) {
+  'savings' => Icons.savings_outlined,
+  'retirement' => Icons.elderly_outlined,
+  'emergency' => Icons.shield_outlined,
+  _ => Icons.flag_outlined,
+};
 
-String getPocketTypeLabel(String type) {
-  switch (type) {
-    case 'savings':
-      return 'Simpanan';
-    case 'retirement':
-      return 'Masa Tua';
-    case 'emergency':
-      return 'Dana Darurat';
-    case 'goal':
-    default:
-      return 'Target / Impian';
-  }
-}
+String getPocketTypeLabel(String type) => switch (type) {
+  'savings' => 'Simpanan',
+  'retirement' => 'Masa Tua',
+  'emergency' => 'Dana Darurat',
+  _ => 'Target / Impian',
+};
 
 class PocketDetailHeader extends StatelessWidget {
   final PocketEntry pocket;
@@ -72,10 +58,21 @@ class PocketDetailHeader extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(pocket.name, style: AppTypography.sectionTitle),
+                  Text(pocket.name, style: AppTypography.modalTitle),
                   const SizedBox(height: 2),
                   Text(getPocketTypeLabel(pocket.type), style: TextStyle(color: pocketColor, fontSize: 12, fontWeight: FontWeight.w600)),
                 ],
+              ),
+            ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 20,
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 28,
+                color: AppColors.textWhite,
               ),
             ),
           ],
