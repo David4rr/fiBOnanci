@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -47,31 +46,6 @@ class WalletDetailHistorySection extends StatelessWidget {
     }
   }
 
-  Widget _buildFilterChip(String label, WalletTxFilter filter) {
-    final isSelected = selectedFilter == filter;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onFilterChanged(filter);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.neoChartreuse : AppColors.canvasInputSearch,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? AppColors.neoChartreuse : AppColors.canvasBorder),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.plusJakartaSans(
-            color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,25 +78,6 @@ class WalletDetailHistorySection extends StatelessWidget {
               ),
             ),
           ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip('Semua', WalletTxFilter.all),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Masuk', WalletTxFilter.income),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Keluar', WalletTxFilter.expense),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Transfer', WalletTxFilter.transfer),
-                ],
-              ),
-            ),
-          ),
-        ),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),

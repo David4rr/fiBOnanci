@@ -7,7 +7,7 @@ import '../../../data/database/app_database.dart';
 import '../wallet_detail_screen.dart';
 
 class WalletDetailModalRoute {
-  static Future<void> show(BuildContext context, {required WalletEntry wallet}) {
+  static Future<void> show(BuildContext context, {required WalletEntry wallet, double initialChildSize = 1.0}) {
     final financeBloc = context.read<FinanceBloc>();
     final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     return Navigator.of(context).push<void>(
@@ -23,6 +23,7 @@ class WalletDetailModalRoute {
             child: WalletDetailScreen(
               walletId: wallet.id,
               currencyFormatter: currencyFormatter,
+              initialChildSize: initialChildSize,
             ),
           );
         },

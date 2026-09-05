@@ -44,6 +44,7 @@ class WalletDetailScrollView extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       controller: scrollController,
+      cacheExtent: 600,
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         SliverToBoxAdapter(

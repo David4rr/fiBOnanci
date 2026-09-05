@@ -10,18 +10,21 @@ class AllTransactionsModal extends ExpenseHistoryScreen {
     super.key,
     required super.allTransactions,
     required super.wallets,
+    super.initialChildSize,
   });
 
   static Future<void> show(
     BuildContext context, {
     required List<TransactionEntry> allTransactions,
     required List<WalletEntry> wallets,
+    double initialChildSize = 1.0,
   }) {
     return ExpenseHistoryScreen.show(
       context,
       allTransactions: allTransactions,
       wallets: wallets,
-      builder: (_) => AllTransactionsModal(allTransactions: allTransactions, wallets: wallets),
+      initialChildSize: initialChildSize,
+      builder: (_) => AllTransactionsModal(allTransactions: allTransactions, wallets: wallets, initialChildSize: initialChildSize),
     );
   }
 }

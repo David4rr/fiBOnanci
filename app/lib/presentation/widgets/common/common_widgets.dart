@@ -1,6 +1,7 @@
 export 'app_confirmation_dialog.dart';
 export 'app_text_field.dart';
 export 'currency_amount_field.dart';
+export 'expandable_modal_sheet.dart';
 export 'iphone_viewport_container.dart';
 export 'modal_grab_handle.dart';
 export 'modal_header.dart';

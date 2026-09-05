@@ -163,18 +163,31 @@ void main() {
       expect(find.text('Bonus Project'), findsOneWidget);
       expect(find.text('Makan Malam'), findsOneWidget);
 
-      // Tap 'Masuk' filter chip
-      await tester.tap(find.widgetWithText(GestureDetector, 'Masuk').first);
+      // Tap tune button to filter by Pemasukan (income)
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pemasukan'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Terapkan Filter'));
       await tester.pumpAndSettle();
       expect(find.text('Bonus Project'), findsOneWidget);
       expect(find.text('Makan Malam'), findsNothing);
 
-      // Tap 'Keluar' filter chip
-      await tester.tap(find.widgetWithText(GestureDetector, 'Keluar').first);
+      // Tap tune button to filter by Pengeluaran (expense)
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pengeluaran'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Terapkan Filter'));
       await tester.pumpAndSettle();
       expect(find.text('Makan Malam'), findsOneWidget);
       expect(find.text('Bonus Project'), findsNothing); // MUST NOT appear under Keluar
 
+      // Tap clear on the active SearchFilterChip
+      await tester.tap(find.byIcon(Icons.close).last);
+      await tester.pumpAndSettle();
+      expect(find.text('Bonus Project'), findsOneWidget);
+      expect(find.text('Makan Malam'), findsOneWidget);
       await db.close();
     });
 
