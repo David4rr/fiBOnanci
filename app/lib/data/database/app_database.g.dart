@@ -2282,6 +2282,55 @@ class $SubscriptionsTable extends Subscriptions
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isInstallmentMeta = const VerificationMeta(
+    'isInstallment',
+  );
+  @override
+  late final GeneratedColumn<bool> isInstallment = GeneratedColumn<bool>(
+    'is_installment',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_installment" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _totalCyclesMeta = const VerificationMeta(
+    'totalCycles',
+  );
+  @override
+  late final GeneratedColumn<int> totalCycles = GeneratedColumn<int>(
+    'total_cycles',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidCyclesMeta = const VerificationMeta(
+    'paidCycles',
+  );
+  @override
+  late final GeneratedColumn<int> paidCycles = GeneratedColumn<int>(
+    'paid_cycles',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deadlineDateMeta = const VerificationMeta(
+    'deadlineDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deadlineDate = GeneratedColumn<DateTime>(
+    'deadline_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2298,6 +2347,10 @@ class $SubscriptionsTable extends Subscriptions
     autoDeduct,
     status,
     lastPaidDate,
+    isInstallment,
+    totalCycles,
+    paidCycles,
+    deadlineDate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2414,6 +2467,39 @@ class $SubscriptionsTable extends Subscriptions
         ),
       );
     }
+    if (data.containsKey('is_installment')) {
+      context.handle(
+        _isInstallmentMeta,
+        isInstallment.isAcceptableOrUnknown(
+          data['is_installment']!,
+          _isInstallmentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_cycles')) {
+      context.handle(
+        _totalCyclesMeta,
+        totalCycles.isAcceptableOrUnknown(
+          data['total_cycles']!,
+          _totalCyclesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paid_cycles')) {
+      context.handle(
+        _paidCyclesMeta,
+        paidCycles.isAcceptableOrUnknown(data['paid_cycles']!, _paidCyclesMeta),
+      );
+    }
+    if (data.containsKey('deadline_date')) {
+      context.handle(
+        _deadlineDateMeta,
+        deadlineDate.isAcceptableOrUnknown(
+          data['deadline_date']!,
+          _deadlineDateMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2479,6 +2565,22 @@ class $SubscriptionsTable extends Subscriptions
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_paid_date'],
       ),
+      isInstallment: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_installment'],
+      )!,
+      totalCycles: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_cycles'],
+      ),
+      paidCycles: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paid_cycles'],
+      )!,
+      deadlineDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deadline_date'],
+      ),
     );
   }
 
@@ -2504,6 +2606,10 @@ class SubscriptionEntry extends DataClass
   final bool autoDeduct;
   final String status;
   final DateTime? lastPaidDate;
+  final bool isInstallment;
+  final int? totalCycles;
+  final int paidCycles;
+  final DateTime? deadlineDate;
   const SubscriptionEntry({
     required this.id,
     required this.createdAt,
@@ -2519,6 +2625,10 @@ class SubscriptionEntry extends DataClass
     required this.autoDeduct,
     required this.status,
     this.lastPaidDate,
+    required this.isInstallment,
+    this.totalCycles,
+    required this.paidCycles,
+    this.deadlineDate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2538,6 +2648,14 @@ class SubscriptionEntry extends DataClass
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || lastPaidDate != null) {
       map['last_paid_date'] = Variable<DateTime>(lastPaidDate);
+    }
+    map['is_installment'] = Variable<bool>(isInstallment);
+    if (!nullToAbsent || totalCycles != null) {
+      map['total_cycles'] = Variable<int>(totalCycles);
+    }
+    map['paid_cycles'] = Variable<int>(paidCycles);
+    if (!nullToAbsent || deadlineDate != null) {
+      map['deadline_date'] = Variable<DateTime>(deadlineDate);
     }
     return map;
   }
@@ -2560,6 +2678,14 @@ class SubscriptionEntry extends DataClass
       lastPaidDate: lastPaidDate == null && nullToAbsent
           ? const Value.absent()
           : Value(lastPaidDate),
+      isInstallment: Value(isInstallment),
+      totalCycles: totalCycles == null && nullToAbsent
+          ? const Value.absent()
+          : Value(totalCycles),
+      paidCycles: Value(paidCycles),
+      deadlineDate: deadlineDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadlineDate),
     );
   }
 
@@ -2583,6 +2709,10 @@ class SubscriptionEntry extends DataClass
       autoDeduct: serializer.fromJson<bool>(json['autoDeduct']),
       status: serializer.fromJson<String>(json['status']),
       lastPaidDate: serializer.fromJson<DateTime?>(json['lastPaidDate']),
+      isInstallment: serializer.fromJson<bool>(json['isInstallment']),
+      totalCycles: serializer.fromJson<int?>(json['totalCycles']),
+      paidCycles: serializer.fromJson<int>(json['paidCycles']),
+      deadlineDate: serializer.fromJson<DateTime?>(json['deadlineDate']),
     );
   }
   @override
@@ -2603,6 +2733,10 @@ class SubscriptionEntry extends DataClass
       'autoDeduct': serializer.toJson<bool>(autoDeduct),
       'status': serializer.toJson<String>(status),
       'lastPaidDate': serializer.toJson<DateTime?>(lastPaidDate),
+      'isInstallment': serializer.toJson<bool>(isInstallment),
+      'totalCycles': serializer.toJson<int?>(totalCycles),
+      'paidCycles': serializer.toJson<int>(paidCycles),
+      'deadlineDate': serializer.toJson<DateTime?>(deadlineDate),
     };
   }
 
@@ -2621,6 +2755,10 @@ class SubscriptionEntry extends DataClass
     bool? autoDeduct,
     String? status,
     Value<DateTime?> lastPaidDate = const Value.absent(),
+    bool? isInstallment,
+    Value<int?> totalCycles = const Value.absent(),
+    int? paidCycles,
+    Value<DateTime?> deadlineDate = const Value.absent(),
   }) => SubscriptionEntry(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
@@ -2636,6 +2774,10 @@ class SubscriptionEntry extends DataClass
     autoDeduct: autoDeduct ?? this.autoDeduct,
     status: status ?? this.status,
     lastPaidDate: lastPaidDate.present ? lastPaidDate.value : this.lastPaidDate,
+    isInstallment: isInstallment ?? this.isInstallment,
+    totalCycles: totalCycles.present ? totalCycles.value : this.totalCycles,
+    paidCycles: paidCycles ?? this.paidCycles,
+    deadlineDate: deadlineDate.present ? deadlineDate.value : this.deadlineDate,
   );
   SubscriptionEntry copyWithCompanion(SubscriptionsCompanion data) {
     return SubscriptionEntry(
@@ -2661,6 +2803,18 @@ class SubscriptionEntry extends DataClass
       lastPaidDate: data.lastPaidDate.present
           ? data.lastPaidDate.value
           : this.lastPaidDate,
+      isInstallment: data.isInstallment.present
+          ? data.isInstallment.value
+          : this.isInstallment,
+      totalCycles: data.totalCycles.present
+          ? data.totalCycles.value
+          : this.totalCycles,
+      paidCycles: data.paidCycles.present
+          ? data.paidCycles.value
+          : this.paidCycles,
+      deadlineDate: data.deadlineDate.present
+          ? data.deadlineDate.value
+          : this.deadlineDate,
     );
   }
 
@@ -2680,7 +2834,11 @@ class SubscriptionEntry extends DataClass
           ..write('dueDay: $dueDay, ')
           ..write('autoDeduct: $autoDeduct, ')
           ..write('status: $status, ')
-          ..write('lastPaidDate: $lastPaidDate')
+          ..write('lastPaidDate: $lastPaidDate, ')
+          ..write('isInstallment: $isInstallment, ')
+          ..write('totalCycles: $totalCycles, ')
+          ..write('paidCycles: $paidCycles, ')
+          ..write('deadlineDate: $deadlineDate')
           ..write(')'))
         .toString();
   }
@@ -2701,6 +2859,10 @@ class SubscriptionEntry extends DataClass
     autoDeduct,
     status,
     lastPaidDate,
+    isInstallment,
+    totalCycles,
+    paidCycles,
+    deadlineDate,
   );
   @override
   bool operator ==(Object other) =>
@@ -2719,7 +2881,11 @@ class SubscriptionEntry extends DataClass
           other.dueDay == this.dueDay &&
           other.autoDeduct == this.autoDeduct &&
           other.status == this.status &&
-          other.lastPaidDate == this.lastPaidDate);
+          other.lastPaidDate == this.lastPaidDate &&
+          other.isInstallment == this.isInstallment &&
+          other.totalCycles == this.totalCycles &&
+          other.paidCycles == this.paidCycles &&
+          other.deadlineDate == this.deadlineDate);
 }
 
 class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
@@ -2737,6 +2903,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
   final Value<bool> autoDeduct;
   final Value<String> status;
   final Value<DateTime?> lastPaidDate;
+  final Value<bool> isInstallment;
+  final Value<int?> totalCycles;
+  final Value<int> paidCycles;
+  final Value<DateTime?> deadlineDate;
   final Value<int> rowid;
   const SubscriptionsCompanion({
     this.id = const Value.absent(),
@@ -2753,6 +2923,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     this.autoDeduct = const Value.absent(),
     this.status = const Value.absent(),
     this.lastPaidDate = const Value.absent(),
+    this.isInstallment = const Value.absent(),
+    this.totalCycles = const Value.absent(),
+    this.paidCycles = const Value.absent(),
+    this.deadlineDate = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SubscriptionsCompanion.insert({
@@ -2770,6 +2944,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     this.autoDeduct = const Value.absent(),
     this.status = const Value.absent(),
     this.lastPaidDate = const Value.absent(),
+    this.isInstallment = const Value.absent(),
+    this.totalCycles = const Value.absent(),
+    this.paidCycles = const Value.absent(),
+    this.deadlineDate = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -2794,6 +2972,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     Expression<bool>? autoDeduct,
     Expression<String>? status,
     Expression<DateTime>? lastPaidDate,
+    Expression<bool>? isInstallment,
+    Expression<int>? totalCycles,
+    Expression<int>? paidCycles,
+    Expression<DateTime>? deadlineDate,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2811,6 +2993,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
       if (autoDeduct != null) 'auto_deduct': autoDeduct,
       if (status != null) 'status': status,
       if (lastPaidDate != null) 'last_paid_date': lastPaidDate,
+      if (isInstallment != null) 'is_installment': isInstallment,
+      if (totalCycles != null) 'total_cycles': totalCycles,
+      if (paidCycles != null) 'paid_cycles': paidCycles,
+      if (deadlineDate != null) 'deadline_date': deadlineDate,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2830,6 +3016,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     Value<bool>? autoDeduct,
     Value<String>? status,
     Value<DateTime?>? lastPaidDate,
+    Value<bool>? isInstallment,
+    Value<int?>? totalCycles,
+    Value<int>? paidCycles,
+    Value<DateTime?>? deadlineDate,
     Value<int>? rowid,
   }) {
     return SubscriptionsCompanion(
@@ -2847,6 +3037,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
       autoDeduct: autoDeduct ?? this.autoDeduct,
       status: status ?? this.status,
       lastPaidDate: lastPaidDate ?? this.lastPaidDate,
+      isInstallment: isInstallment ?? this.isInstallment,
+      totalCycles: totalCycles ?? this.totalCycles,
+      paidCycles: paidCycles ?? this.paidCycles,
+      deadlineDate: deadlineDate ?? this.deadlineDate,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2896,6 +3090,18 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     if (lastPaidDate.present) {
       map['last_paid_date'] = Variable<DateTime>(lastPaidDate.value);
     }
+    if (isInstallment.present) {
+      map['is_installment'] = Variable<bool>(isInstallment.value);
+    }
+    if (totalCycles.present) {
+      map['total_cycles'] = Variable<int>(totalCycles.value);
+    }
+    if (paidCycles.present) {
+      map['paid_cycles'] = Variable<int>(paidCycles.value);
+    }
+    if (deadlineDate.present) {
+      map['deadline_date'] = Variable<DateTime>(deadlineDate.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2919,6 +3125,10 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
           ..write('autoDeduct: $autoDeduct, ')
           ..write('status: $status, ')
           ..write('lastPaidDate: $lastPaidDate, ')
+          ..write('isInstallment: $isInstallment, ')
+          ..write('totalCycles: $totalCycles, ')
+          ..write('paidCycles: $paidCycles, ')
+          ..write('deadlineDate: $deadlineDate, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7395,6 +7605,10 @@ typedef $$SubscriptionsTableCreateCompanionBuilder =
       Value<bool> autoDeduct,
       Value<String> status,
       Value<DateTime?> lastPaidDate,
+      Value<bool> isInstallment,
+      Value<int?> totalCycles,
+      Value<int> paidCycles,
+      Value<DateTime?> deadlineDate,
       Value<int> rowid,
     });
 typedef $$SubscriptionsTableUpdateCompanionBuilder =
@@ -7413,6 +7627,10 @@ typedef $$SubscriptionsTableUpdateCompanionBuilder =
       Value<bool> autoDeduct,
       Value<String> status,
       Value<DateTime?> lastPaidDate,
+      Value<bool> isInstallment,
+      Value<int?> totalCycles,
+      Value<int> paidCycles,
+      Value<DateTime?> deadlineDate,
       Value<int> rowid,
     });
 
@@ -7526,6 +7744,26 @@ class $$SubscriptionsTableFilterComposer
 
   ColumnFilters<DateTime> get lastPaidDate => $composableBuilder(
     column: $table.lastPaidDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isInstallment => $composableBuilder(
+    column: $table.isInstallment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalCycles => $composableBuilder(
+    column: $table.totalCycles,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get paidCycles => $composableBuilder(
+    column: $table.paidCycles,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deadlineDate => $composableBuilder(
+    column: $table.deadlineDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7645,6 +7883,26 @@ class $$SubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isInstallment => $composableBuilder(
+    column: $table.isInstallment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalCycles => $composableBuilder(
+    column: $table.totalCycles,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get paidCycles => $composableBuilder(
+    column: $table.paidCycles,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deadlineDate => $composableBuilder(
+    column: $table.deadlineDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$WalletsTableOrderingComposer get walletId {
     final $$WalletsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7743,6 +8001,26 @@ class $$SubscriptionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get isInstallment => $composableBuilder(
+    column: $table.isInstallment,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalCycles => $composableBuilder(
+    column: $table.totalCycles,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get paidCycles => $composableBuilder(
+    column: $table.paidCycles,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deadlineDate => $composableBuilder(
+    column: $table.deadlineDate,
+    builder: (column) => column,
+  );
+
   $$WalletsTableAnnotationComposer get walletId {
     final $$WalletsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -7832,6 +8110,10 @@ class $$SubscriptionsTableTableManager
                 Value<bool> autoDeduct = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> lastPaidDate = const Value.absent(),
+                Value<bool> isInstallment = const Value.absent(),
+                Value<int?> totalCycles = const Value.absent(),
+                Value<int> paidCycles = const Value.absent(),
+                Value<DateTime?> deadlineDate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SubscriptionsCompanion(
                 id: id,
@@ -7848,6 +8130,10 @@ class $$SubscriptionsTableTableManager
                 autoDeduct: autoDeduct,
                 status: status,
                 lastPaidDate: lastPaidDate,
+                isInstallment: isInstallment,
+                totalCycles: totalCycles,
+                paidCycles: paidCycles,
+                deadlineDate: deadlineDate,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7866,6 +8152,10 @@ class $$SubscriptionsTableTableManager
                 Value<bool> autoDeduct = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> lastPaidDate = const Value.absent(),
+                Value<bool> isInstallment = const Value.absent(),
+                Value<int?> totalCycles = const Value.absent(),
+                Value<int> paidCycles = const Value.absent(),
+                Value<DateTime?> deadlineDate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SubscriptionsCompanion.insert(
                 id: id,
@@ -7882,6 +8172,10 @@ class $$SubscriptionsTableTableManager
                 autoDeduct: autoDeduct,
                 status: status,
                 lastPaidDate: lastPaidDate,
+                isInstallment: isInstallment,
+                totalCycles: totalCycles,
+                paidCycles: paidCycles,
+                deadlineDate: deadlineDate,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

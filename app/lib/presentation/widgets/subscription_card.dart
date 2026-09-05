@@ -116,7 +116,15 @@ class SubscriptionCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SubscriptionCardBadges.buildStatusBadge(isPaidThisMonth, subscription.dueDay, config),
+                      SubscriptionCardBadges.buildStatusBadge(
+                        isPaidThisMonth,
+                        subscription.dueDay,
+                        config,
+                        isInstallment: subscription.isInstallment,
+                        totalCycles: subscription.totalCycles,
+                        paidCycles: subscription.paidCycles,
+                        isCompleted: subscription.status == 'completed',
+                      ),
                     ],
                   ),
                   Row(
@@ -138,7 +146,9 @@ class SubscriptionCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            subscription.billingCycle == 'monthly' ? '/bulan' : '/tahun',
+                            subscription.isInstallment
+                                ? 'cicilan /bulan (tenor ${subscription.totalCycles ?? 0} bln)'
+                                : (subscription.billingCycle == 'monthly' ? '/bulan' : '/tahun'),
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,

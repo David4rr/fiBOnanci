@@ -1,9 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../data/database/app_database.dart';
-import '../theme/app_colors.dart';
 import 'subscription_card.dart';
 
 /// Tactile vertical card deck matching the physical ATM card reference.
@@ -150,31 +147,6 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
                   ],
                 ),
               ),
-              if (list.length > 1)
-                Positioned(
-                  bottom: 8,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF13151D).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.canvasBorder),
-                      ),
-                      child: Text(
-                        '${(_currentPage.round().clamp(0, list.length - 1) + 1)} / ${list.length}',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         );

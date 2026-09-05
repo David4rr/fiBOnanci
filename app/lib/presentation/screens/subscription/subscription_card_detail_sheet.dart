@@ -42,7 +42,12 @@ class SubscriptionCardDetailSheet {
                       children: [
                         Text(sub.title, style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textWhite)),
                         const SizedBox(height: 4),
-                        Text('Jatuh tempo setiap tanggal ${sub.dueDay} • ${sub.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan'}', style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: AppColors.textMuted)),
+                        Text(
+                          sub.isInstallment
+                              ? 'Jatuh tempo tgl ${sub.dueDay} • Cicilan (${sub.paidCycles}/${sub.totalCycles ?? "?"} bulan)'
+                              : 'Jatuh tempo setiap tanggal ${sub.dueDay} • ${sub.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan'}',
+                          style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: AppColors.textMuted),
+                        ),
                       ],
                     ),
                   ),
@@ -63,22 +68,35 @@ class SubscriptionCardDetailSheet {
                     const Divider(color: AppColors.canvasBorder, height: 18),
                     _buildDetailRow(
                       'Status Periode Ini',
-                      isPaidThisMonth ? 'Sudah Lunas ✓' : 'Belum Dibayar',
-                      isPaidThisMonth ? Icons.verified_rounded : Icons.pending_actions_rounded,
-                      valueColor: isPaidThisMonth ? AppColors.neoMint : AppColors.neoCoral,
+                      (sub.status == 'completed' || (sub.isInstallment && sub.totalCycles != null && sub.paidCycles >= sub.totalCycles!))
+                          ? 'Cicilan Selesai ✓'
+                          : (isPaidThisMonth ? 'Sudah Lunas ✓' : 'Belum Dibayar'),
+                      (isPaidThisMonth || sub.status == 'completed') ? Icons.verified_rounded : Icons.pending_actions_rounded,
+                      valueColor: (isPaidThisMonth || sub.status == 'completed') ? AppColors.neoMint : AppColors.neoCoral,
                     ),
+                    if (sub.isInstallment) ...[
+                      const Divider(color: AppColors.canvasBorder, height: 18),
+                      _buildDetailRow('Rencana Cicilan', '${sub.paidCycles} dari ${sub.totalCycles ?? 0} bulan lunas', Icons.timelapse_rounded, valueColor: sub.status == 'completed' ? AppColors.neoMint : AppColors.neoCoral),
+                      if (sub.deadlineDate != null) ...[
+                        const Divider(color: AppColors.canvasBorder, height: 18),
+                        _buildDetailRow('Tenggat Selesai', DateFormat('MMMM yyyy', 'id_ID').format(sub.deadlineDate!), Icons.event_available_rounded),
+                      ],
+                    ],
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              if (!isPaidThisMonth)
+              if (!isPaidThisMonth && sub.status != 'completed')
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
                     icon: const Icon(Icons.check_circle_outline, color: AppColors.textDarkPrimary),
-                    label: Text('Tandai Sudah Lunas Bulan Ini', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800)),
+                    label: Text(
+                      sub.isInstallment ? 'Bayar Cicilan Bulan Ini (${sub.paidCycles + 1}/${sub.totalCycles ?? "?"})' : 'Tandai Sudah Lunas Bulan Ini',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800),
+                    ),
                     onPressed: () {
                       context.read<FinanceBloc>().add(MarkSubscriptionPaidEvent(sub.id));
                       Navigator.pop(modalCtx);
@@ -102,7 +120,12 @@ class SubscriptionCardDetailSheet {
                       const Icon(Icons.verified_rounded, color: AppColors.neoMint, size: 22),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text('Tagihan periode bulan ini telah lunas tercatat di buku kas.', style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontSize: 13, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          sub.status == 'completed'
+                              ? 'Semua cicilan telah lunas! Rencana pembiayaan ini telah selesai.'
+                              : 'Tagihan periode bulan ini telah lunas tercatat di buku kas.',
+                          style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ],
                   ),
@@ -129,7 +152,7 @@ class SubscriptionCardDetailSheet {
                       label: const Text('Hapus', style: TextStyle(color: AppColors.neoCoral, fontWeight: FontWeight.bold)),
                       onPressed: () {
                         Navigator.pop(modalCtx);
-                        _confirmDelete(context, sub);
+                        showSubscriptionDeleteDialog(context, sub.id);
                       },
                     ),
                   ),
@@ -154,26 +177,4 @@ class SubscriptionCardDetailSheet {
     );
   }
 
-  static void _confirmDelete(BuildContext context, SubscriptionEntry sub) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.canvasCardSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Hapus Tagihan?', style: AppTypography.sectionTitle),
-        content: Text('Tagihan "${sub.title}" akan dihapus dari daftar monitoring komitmen bulanan.', style: AppTypography.listSubtitle),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal', style: TextStyle(color: AppColors.textMuted))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoCoral, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            onPressed: () {
-              context.read<FinanceBloc>().add(DeleteSubscriptionEvent(sub.id));
-              Navigator.pop(ctx);
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
 }

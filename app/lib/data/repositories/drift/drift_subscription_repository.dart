@@ -15,6 +15,9 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     required String categoryId,
     bool autoDeduct = false,
     String billingCycle = 'monthly',
+    bool isInstallment = false,
+    int? totalCycles,
+    DateTime? deadlineDate,
   }) {
     final now = DateTime.now().toUtc();
     return db.into(db.subscriptions).insert(
@@ -28,6 +31,10 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
         dueDay: drift.Value(dueDay),
         autoDeduct: drift.Value(autoDeduct),
         status: const drift.Value('active'),
+        isInstallment: drift.Value(isInstallment),
+        totalCycles: drift.Value(totalCycles),
+        paidCycles: const drift.Value(0),
+        deadlineDate: drift.Value(deadlineDate),
         createdAt: drift.Value(now),
         updatedAt: drift.Value(now),
       ),
@@ -44,6 +51,10 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     bool autoDeduct = false,
     String billingCycle = 'monthly',
     String status = 'active',
+    bool isInstallment = false,
+    int? totalCycles,
+    int paidCycles = 0,
+    DateTime? deadlineDate,
   }) async {
     final now = DateTime.now().toUtc();
     await (db.update(db.subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
@@ -56,6 +67,10 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
         autoDeduct: drift.Value(autoDeduct),
         billingCycle: drift.Value(billingCycle),
         status: drift.Value(status),
+        isInstallment: drift.Value(isInstallment),
+        totalCycles: drift.Value(totalCycles),
+        paidCycles: drift.Value(paidCycles),
+        deadlineDate: drift.Value(deadlineDate),
         updatedAt: drift.Value(now),
       ),
     );

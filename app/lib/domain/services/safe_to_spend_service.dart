@@ -119,6 +119,8 @@ class SafeToSpendService {
 
     for (final sub in subscriptions) {
       if (sub.isDeleted || sub.status != 'active') continue;
+      if (sub.isInstallment && sub.totalCycles != null && sub.paidCycles >= sub.totalCycles!) continue;
+      if (sub.isInstallment && sub.deadlineDate != null && now.isAfter(sub.deadlineDate!)) continue;
 
       final lastPaid = sub.lastPaidDate;
       final isPaidThisCycle = lastPaid != null && lastPaid.isAfter(currentMonthStart);

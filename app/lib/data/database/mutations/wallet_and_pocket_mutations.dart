@@ -73,13 +73,24 @@ extension WalletAndPocketMutations on AppDatabase {
       final now = DateTime.now().toUtc();
       const uuid = Uuid();
 
+      final isInstallment = sub.isInstallment;
+      final newPaidCycles = sub.paidCycles + 1;
+      final isComplete = isInstallment && sub.totalCycles != null && newPaidCycles >= sub.totalCycles!;
+      final newStatus = isComplete ? 'completed' : sub.status;
+
       await (update(subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
         SubscriptionsCompanion(
           lastPaidDate: Value(now),
+          paidCycles: Value(newPaidCycles),
+          status: Value(newStatus),
           updatedAt: Value(now),
           isSynced: const Value(false),
         ),
       );
+
+      final txNotes = isInstallment && sub.totalCycles != null
+          ? 'Pembayaran Cicilan ($newPaidCycles/${sub.totalCycles}): ${sub.title}'
+          : 'Pembayaran Tagihan: ${sub.title}';
 
       await logTransactionWithBalanceMutation(
         tx: TransactionsCompanion(
@@ -88,7 +99,7 @@ extension WalletAndPocketMutations on AppDatabase {
           categoryId: Value(sub.categoryId),
           amount: Value(sub.cost),
           type: const Value('expense'),
-          notes: Value('Pembayaran Tagihan: ${sub.title}'),
+          notes: Value(txNotes),
           transactionDate: Value(now),
           source: const Value('subscription_recurring'),
           createdAt: Value(now),

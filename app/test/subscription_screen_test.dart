@@ -138,6 +138,8 @@ void main() {
 
       // Edit name
       await tester.enterText(find.widgetWithText(TextField, 'Spotify Family'), 'Spotify Duo Platinum');
+      await tester.ensureVisible(find.text('Simpan Perubahan'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Simpan Perubahan'));
       await tester.pumpAndSettle();
 

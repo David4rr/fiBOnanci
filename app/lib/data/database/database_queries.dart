@@ -19,7 +19,7 @@ extension DatabaseQueries on AppDatabase {
 
   Stream<List<SubscriptionEntry>> watchActiveSubscriptions() {
     return (select(subscriptions)
-          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.status.equals('active'))
+          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.status.isNotValue('cancelled'))
           ..orderBy([(t) => OrderingTerm.asc(t.dueDay)]))
         .watch();
   }

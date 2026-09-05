@@ -7,41 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
 
-class SubscriptionDueDaySlider extends StatelessWidget {
-  final int dueDay;
-  final ValueChanged<int> onDayChanged;
-
-  const SubscriptionDueDaySlider({
-    super.key,
-    required this.dueDay,
-    required this.onDayChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('TANGGAL JATUH TEMPO', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
-            Text('Setiap Tgl $dueDay', style: AppTypography.cardMetricLabel.copyWith(color: AppColors.neoChartreuse)),
-          ],
-        ),
-        Slider(
-          value: dueDay.toDouble(),
-          min: 1,
-          max: 31,
-          divisions: 30,
-          activeColor: AppColors.neoChartreuse,
-          inactiveColor: AppColors.canvasInputSearch,
-          onChanged: (val) => onDayChanged(val.round()),
-        ),
-      ],
-    );
-  }
-}
+export 'subscription_due_day_slider.dart';
 
 class SubscriptionWalletDropdown extends StatelessWidget {
   final List<WalletEntry> wallets;
@@ -138,7 +104,6 @@ void showSubscriptionDeleteDialog(BuildContext context, String subscriptionId) {
     confirmColor: AppColors.neoCoral,
     onConfirm: () {
       context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
-      Navigator.pop(context);
     },
   );
 }

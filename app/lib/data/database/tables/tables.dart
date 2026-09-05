@@ -57,6 +57,10 @@ class Subscriptions extends Table with SyncableTable {
   BoolColumn get autoDeduct => boolean().withDefault(const Constant(false))();
   TextColumn get status => text().withDefault(const Constant('active'))();
   DateTimeColumn get lastPaidDate => dateTime().nullable()();
+  BoolColumn get isInstallment => boolean().withDefault(const Constant(false))();
+  IntColumn get totalCycles => integer().nullable()();
+  IntColumn get paidCycles => integer().withDefault(const Constant(0))();
+  DateTimeColumn get deadlineDate => dateTime().nullable()();
 }
 
 @DataClassName('NotificationRuleEntry')

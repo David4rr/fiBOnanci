@@ -8,8 +8,9 @@ import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'subscription_modal_selectors.dart';
 import 'common/common_widgets.dart';
+import 'subscription_installment_selector.dart';
+import 'subscription_modal_selectors.dart';
 
 export 'subscription_modal_selectors.dart';
 
@@ -36,9 +37,10 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
   late final TextEditingController _costController;
   late int _dueDay;
   late bool _autoDeduct;
+  late bool _isInstallment;
+  late int _totalCycles;
   String? _selectedWalletId;
   String? _selectedCategoryId;
-
   @override
   void initState() {
     super.initState();
@@ -48,6 +50,8 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
       _costController = TextEditingController(text: NumberFormat.decimalPattern('id_ID').format(sub.cost.round()));
       _dueDay = sub.dueDay;
       _autoDeduct = sub.autoDeduct;
+      _isInstallment = sub.isInstallment;
+      _totalCycles = sub.totalCycles ?? 3;
       _selectedWalletId = sub.walletId;
       _selectedCategoryId = sub.categoryId;
     } else {
@@ -55,6 +59,8 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
       _costController = TextEditingController();
       _dueDay = 15;
       _autoDeduct = false;
+      _isInstallment = false;
+      _totalCycles = 3;
       final state = context.read<FinanceBloc>().state;
       if (state.wallets.isNotEmpty) _selectedWalletId = state.wallets.first.id;
       if (state.categories.isNotEmpty) {
@@ -79,6 +85,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
     if (title.isEmpty || cost <= 0 || _selectedWalletId == null || _selectedCategoryId == null) return;
 
     final bloc = context.read<FinanceBloc>();
+    final deadline = _isInstallment ? SubscriptionInstallmentSelector.calculateDeadlineDate(dueDay: _dueDay, totalCycles: _totalCycles) : null;
     if (widget.subscription != null) {
       bloc.add(UpdateSubscriptionEvent(
         subscriptionId: widget.subscription!.id,
@@ -88,6 +95,10 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
         walletId: _selectedWalletId!,
         categoryId: _selectedCategoryId!,
         autoDeduct: _autoDeduct,
+        isInstallment: _isInstallment,
+        totalCycles: _isInstallment ? _totalCycles : null,
+        paidCycles: widget.subscription!.paidCycles,
+        deadlineDate: deadline,
       ));
     } else {
       bloc.add(AddSubscriptionEvent(
@@ -97,6 +108,9 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
         walletId: _selectedWalletId!,
         categoryId: _selectedCategoryId!,
         autoDeduct: _autoDeduct,
+        isInstallment: _isInstallment,
+        totalCycles: _isInstallment ? _totalCycles : null,
+        deadlineDate: deadline,
       ));
     }
     Navigator.pop(context);
@@ -132,6 +146,14 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
             CurrencyAmountField(
               controller: _costController,
               prefixColor: AppColors.neoCoral,
+            ),
+            const SizedBox(height: 12),
+            SubscriptionInstallmentSelector(
+              isInstallment: _isInstallment,
+              totalCycles: _totalCycles,
+              dueDay: _dueDay,
+              onToggleInstallment: (v) => setState(() => _isInstallment = v),
+              onCyclesChanged: (c) => setState(() => _totalCycles = c),
             ),
             const SizedBox(height: 12),
             SubscriptionDueDaySlider(dueDay: _dueDay, onDayChanged: (d) => setState(() => _dueDay = d)),

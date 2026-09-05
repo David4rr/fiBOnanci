@@ -3,7 +3,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'subscription_card_theme.dart';
 
 class SubscriptionCardBadges {
-  static Widget buildStatusBadge(bool isPaid, int dueDay, SubscriptionCardThemeConfig config) {
+  static Widget buildStatusBadge(
+    bool isPaid,
+    int dueDay,
+    SubscriptionCardThemeConfig config, {
+    bool isInstallment = false,
+    int? totalCycles,
+    int paidCycles = 0,
+    bool isCompleted = false,
+  }) {
     final now = DateTime.now();
     final today = now.day;
     Color badgeBg;
@@ -12,7 +20,36 @@ class SubscriptionCardBadges {
     String statusText;
     final isDarkBg = config.backgroundColor.computeLuminance() < 0.35;
 
-    if (isPaid) {
+    if (isCompleted || (isInstallment && totalCycles != null && paidCycles >= totalCycles)) {
+      badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
+      dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
+      textColor = dotColor;
+      statusText = 'CICILAN LUNAS ($paidCycles/${totalCycles ?? paidCycles})';
+    } else if (isInstallment && isPaid) {
+      badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
+      dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
+      textColor = dotColor;
+      statusText = 'CICILAN $paidCycles/${totalCycles ?? "?"} • LUNAS';
+    } else if (isInstallment) {
+      final currentStep = (paidCycles + 1).clamp(1, totalCycles ?? 99);
+      if (today == dueDay) {
+        badgeBg = const Color(0xFFDC2626);
+        dotColor = Colors.white;
+        textColor = Colors.white;
+        statusText = 'CICILAN $currentStep/$totalCycles • HARI INI';
+      } else if (today < dueDay && (dueDay - today) <= 3) {
+        final diff = dueDay - today;
+        badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.9);
+        dotColor = const Color(0xFFF59E0B);
+        textColor = const Color(0xFFFBBF24);
+        statusText = 'CICILAN $currentStep/$totalCycles • H-$diff';
+      } else {
+        badgeBg = isDarkBg ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF0F172A).withValues(alpha: 0.85);
+        dotColor = isDarkBg ? Colors.white.withValues(alpha: 0.8) : config.backgroundColor;
+        textColor = Colors.white;
+        statusText = 'CICILAN $currentStep/$totalCycles • TGL $dueDay';
+      }
+    } else if (isPaid) {
       badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
       dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
       textColor = dotColor;

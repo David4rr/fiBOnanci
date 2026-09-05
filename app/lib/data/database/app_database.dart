@@ -29,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +44,12 @@ class AppDatabase extends _$AppDatabase {
         await _seedDefaultProfile();
       }
       if (from < 4) await m.addColumn(wallets, wallets.accountNumber);
+      if (from < 5) {
+        await m.addColumn(subscriptions, subscriptions.isInstallment);
+        await m.addColumn(subscriptions, subscriptions.totalCycles);
+        await m.addColumn(subscriptions, subscriptions.paidCycles);
+        await m.addColumn(subscriptions, subscriptions.deadlineDate);
+      }
     },
     beforeOpen: (details) async {
       final existingPockets = await customSelect(
@@ -73,6 +79,15 @@ class AppDatabase extends _$AppDatabase {
       if (!hasAccountNumber) {
         final m = createMigrator();
         await m.addColumn(wallets, wallets.accountNumber);
+      }
+      final subColumns = await customSelect("PRAGMA table_info(subscriptions)").get();
+      final hasIsInstallment = subColumns.any((c) => c.data['name'] == 'is_installment');
+      if (!hasIsInstallment) {
+        final m = createMigrator();
+        await m.addColumn(subscriptions, subscriptions.isInstallment);
+        await m.addColumn(subscriptions, subscriptions.totalCycles);
+        await m.addColumn(subscriptions, subscriptions.paidCycles);
+        await m.addColumn(subscriptions, subscriptions.deadlineDate);
       }
     },
   );

@@ -11,6 +11,9 @@ extension SubscriptionBlocHandlers on FinanceBloc {
         categoryId: event.categoryId,
         autoDeduct: event.autoDeduct,
         billingCycle: event.billingCycle,
+        isInstallment: event.isInstallment,
+        totalCycles: event.totalCycles,
+        deadlineDate: event.deadlineDate,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah langganan: $e'));
@@ -29,6 +32,10 @@ extension SubscriptionBlocHandlers on FinanceBloc {
         autoDeduct: event.autoDeduct,
         billingCycle: event.billingCycle,
         status: event.status,
+        isInstallment: event.isInstallment,
+        totalCycles: event.totalCycles,
+        paidCycles: event.paidCycles,
+        deadlineDate: event.deadlineDate,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal update langganan: $e'));

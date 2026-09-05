@@ -43,6 +43,9 @@ abstract class FinanceRepository {
     required String categoryId,
     bool autoDeduct = false,
     String billingCycle = 'monthly',
+    bool isInstallment = false,
+    int? totalCycles,
+    DateTime? deadlineDate,
   });
 
   Future<void> updateSubscription({
@@ -55,6 +58,10 @@ abstract class FinanceRepository {
     bool autoDeduct = false,
     String billingCycle = 'monthly',
     String status = 'active',
+    bool isInstallment = false,
+    int? totalCycles,
+    int paidCycles = 0,
+    DateTime? deadlineDate,
   });
 
   Future<void> deleteSubscription(String subscriptionId);
