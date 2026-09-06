@@ -31,9 +31,9 @@ class DashboardHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hello $username', style: AppTypography.heroGreeting),
+                Text('fiBOnanci', style: AppTypography.heroGreeting),
                 const SizedBox(height: 2),
-                Text('Selamat datang kembali!', style: AppTypography.listSubtitle),
+                Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle),
               ],
             ),
           ),

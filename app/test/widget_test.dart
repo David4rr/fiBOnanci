@@ -24,7 +24,8 @@ void main() {
     final repo = DriftFinanceRepository(db);
     await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
     await tester.pumpAndSettle();
-    expect(find.text('Hello David'), findsOneWidget);
+    expect(find.text('fiBOnanci'), findsOneWidget);
+    expect(find.text('Hallo David selamat datang kembali!'), findsOneWidget);
     expect(find.text('Safe to Spend'), findsOneWidget);
     expect(find.text('Riwayat Transaksi'), findsOneWidget);
     expect(find.byIcon(Icons.add_rounded), findsOneWidget);

@@ -227,8 +227,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Greeting with profile username
-      expect(find.text('Hello David'), findsOneWidget);
-      expect(find.text('Selamat datang kembali!'), findsOneWidget);
+      expect(find.text('fiBOnanci'), findsOneWidget);
+      expect(find.text('Hallo David selamat datang kembali!'), findsOneWidget);
 
       // ABSOLUTELY NO 35/100 or KRITIS status badge on dashboard!
       expect(find.textContaining('35/100'), findsNothing);

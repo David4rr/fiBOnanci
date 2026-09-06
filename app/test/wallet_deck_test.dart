@@ -29,7 +29,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Home tab initially active
-    expect(find.text('Hello David'), findsOneWidget);
+    expect(find.text('fiBOnanci'), findsOneWidget);
+    expect(find.text('Hallo David selamat datang kembali!'), findsOneWidget);
     expect(find.text('7 Akun Riil'), findsOneWidget);
 
     // Tap Card 2 (7 Akun Riil) on Dashboard
