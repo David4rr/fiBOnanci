@@ -9,6 +9,7 @@ class AppColors {
   static const Color canvasInputSearch = Color(0xFF1C1E26);
   static const Color canvasBorder = Color(0xFF2A2C38);
   static const Color canvasBorderSubtle = Color(0xFF1F2230);
+  static const Color carbonBlack = Color(0xFF0C0A00);
 
   // ===========================================================================
   // VIBRANT NEO-PASTEL PALETTE (Card & Folder Accents)

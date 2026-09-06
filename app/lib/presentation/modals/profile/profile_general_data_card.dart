@@ -87,16 +87,12 @@ class ProfileGeneralDataCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.canvasInputSearch,
+            color: AppColors.carbonBlack,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: Column(
             children: [
-              buildDataRow(label: 'Username', value: '@${profile.username}'),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'Nama Lengkap', value: profile.fullName),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
               buildDataRow(label: 'Profesi / Pekerjaan', value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
               Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
               buildDataRow(label: 'Email', value: hasEmail ? profile.email! : '—', isMuted: !hasEmail),

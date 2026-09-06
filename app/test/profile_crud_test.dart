@@ -268,12 +268,12 @@ void main() {
       // Verify ProfileModal is opened
       expect(find.byType(ProfileModal), findsOneWidget);
       expect(find.text('Profil Pengguna'), findsOneWidget);
-      expect(find.text('David Arrozaqi'), findsNWidgets(2));
-      expect(find.text('@David'), findsNWidgets(2));
+      expect(find.text('David Arrozaqi'), findsOneWidget);
+      expect(find.text('@David'), findsOneWidget);
       expect(find.text('+ Profil Baru'), findsNothing);
-      expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.person_outline_rounded), findsNothing);
       expect(find.text('DATA UMUM & DETAIL AKUN'), findsOneWidget);
-      expect(find.text('Software Engineer'), findsNWidgets(2));
+      expect(find.text('Software Engineer'), findsOneWidget);
 
       // Verify ellipsis icon (…) replaces clock
       expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);

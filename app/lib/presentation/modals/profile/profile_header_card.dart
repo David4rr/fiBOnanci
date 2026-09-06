@@ -32,7 +32,6 @@ class ProfileHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasOcc = profile.occupation?.isNotEmpty == true;
     final state = context.watch<FinanceBloc>().state;
     final metrics = state.metrics;
     final healthScore = state.healthReport.overallScore;
@@ -62,12 +61,7 @@ class ProfileHeaderCard extends StatelessWidget {
               clipper: clipper,
               child: Container(
                 decoration: const BoxDecoration(
-                  color: AppColors.canvasCardSurface,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF222636), Color(0xFF161824)],
-                  ),
+                  color: AppColors.carbonBlack,
                 ),
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Column(
@@ -82,30 +76,36 @@ class ProfileHeaderCard extends StatelessWidget {
                               child: Material(
                                 type: MaterialType.transparency,
                                 child: Container(
-                                  width: 44, height: 44,
-                                  decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [Colors.white.withValues(alpha: 0.18), const Color(0xFF1E212D)], center: const Alignment(-0.2, -0.2)), border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5)),
-                                  child: Center(child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 36, iconSize: 18)),
+                                  width: 58, height: 58,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF1E212D),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5),
+                                  ),
+                                  child: Center(
+                                    child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 50, iconSize: 26),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.person_outline_rounded, size: 15, color: AppColors.neoChartreuse),
-                                    const SizedBox(width: 5),
-                                    Expanded(
-                                      child: Text(profile.fullName, style: GoogleFonts.plusJakartaSans(fontSize: 16.5, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.4), overflow: TextOverflow.ellipsis),
-                                    ),
-                                  ],
+                                Text(
+                                  profile.fullName,
+                                  style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.4),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 1.5),
-                                Text(hasOcc ? profile.occupation! : 'Software Engineer', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                                Text('@${profile.username}', style: GoogleFonts.plusJakartaSans(fontSize: 9.5, color: AppColors.textMuted.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 3),
+                                Text(
+                                  '@${profile.username}',
+                                  style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ],
                             ),
                           ),
