@@ -181,6 +181,79 @@ void main() {
       // Verify NO account number (maskedNumber pattern) is rendered
       expect(find.textContaining('......'), findsNothing);
     });
+    testWidgets('BillingCardLayout uses same layout: title on top-left, status on top-right, no middle container', (tester) async {
+      final now = DateTime.now();
+      final sub = SubscriptionEntry(
+        id: 'sub-bill-1',
+        walletId: 'w-1',
+        categoryId: 'c-1',
+        title: 'Netflix Premium 4K',
+        cost: 186000.0,
+        dueDay: 20,
+        autoDeduct: true,
+        status: 'active',
+        billingCycle: 'monthly',
+        isInstallment: false,
+        paidCycles: 0,
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      final wallet = WalletEntry(
+        id: 'w-1',
+        name: 'BCA Prioritas',
+        type: 'bank',
+        currency: 'IDR',
+        iconName: 'wallet',
+        balance: 25000000.0,
+        colorHex: '#00529B',
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      );
+
+      const config = SubscriptionCardThemeConfig(
+        backgroundColor: Color(0xFF18181B),
+        primaryGraphicColor: Color(0xFFFAFAFA),
+        secondaryGraphicColor: Color(0xFF71717A),
+        textColor: Color(0xFFFAFAFA),
+        badgeColor: Color(0xFFFAFAFA),
+        networkBadgeText: 'PREMIUM',
+        badgeType: CardBadgeType.chip,
+      );
+
+      final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BillingCardLayout(
+              subscription: sub,
+              wallet: wallet,
+              config: config,
+              currencyFormatter: fmt,
+              isPaidThisMonth: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify title is on top-left and status badge is on top-right
+      expect(find.text('Netflix Premium 4K'), findsOneWidget);
+      expect(find.textContaining('JATUH TEMPO'), findsOneWidget);
+
+      // Verify NO middle container icon or text
+      expect(find.byIcon(Icons.event_repeat_rounded), findsNothing);
+
+      // Verify recurring label and amount on bottom
+      expect(find.text('tagihan rutin /bulan'), findsOneWidget);
+      expect(find.text('Rp 186.000'), findsOneWidget);
+    });
+
 
     testWidgets('WalletPocketsView drops progress bar from savings pocket cards', (tester) async {
       final now = DateTime.now();

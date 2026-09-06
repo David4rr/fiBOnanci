@@ -29,87 +29,40 @@ class BillingCardLayout extends StatelessWidget {
     final accent = config.textColor;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 18, 22, 16),
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Top Row: Title on Left & Status Badge on Right
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: accent.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Text(
-                            isMonthly ? 'LANGGANAN BULANAN' : 'LANGGANAN TAHUNAN',
-                            style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: accent),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      subscription.title,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: accent, letterSpacing: -0.4),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: Text(
+                  subscription.title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: accent,
+                    letterSpacing: -0.4,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  SubscriptionCardBadges.buildNetworkBadge(config),
-                  const SizedBox(height: 3),
-                  Text(
-                    wallet?.name.toUpperCase() ?? 'KARTU UTAMA',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: accent.withValues(alpha: 0.65)),
-                  ),
-                ],
+              const SizedBox(width: 10),
+              SubscriptionCardBadges.buildStatusBadge(
+                isPaidThisMonth,
+                subscription.dueDay,
+                config,
+                isInstallment: false,
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: accent.withValues(alpha: 0.14), width: 0.8),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SubscriptionCardBadges.buildStatusBadge(
-                  isPaidThisMonth,
-                  subscription.dueDay,
-                  config,
-                  isInstallment: false,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.event_repeat_rounded, size: 13, color: accent.withValues(alpha: 0.7)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Tgl ${subscription.dueDay} / bln',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w700, color: accent.withValues(alpha: 0.85)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+
+          // Bottom Row: Recurring Cost & Contactless Icon
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -119,18 +72,31 @@ class BillingCardLayout extends StatelessWidget {
                 children: [
                   Text(
                     currencyFormatter.format(subscription.cost),
-                    style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w800, color: accent, letterSpacing: -0.6, fontFeatures: const [FontFeature.tabularFigures()]),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: accent,
+                      letterSpacing: -0.6,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     isMonthly ? 'tagihan rutin /bulan' : 'tagihan rutin /tahun',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: accent.withValues(alpha: 0.65)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: accent.withValues(alpha: 0.65),
+                    ),
                   ),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: CustomPaint(size: const Size(20, 15), painter: ContactlessPainter(color: accent.withValues(alpha: 0.85))),
+                child: CustomPaint(
+                  size: const Size(20, 15),
+                  painter: ContactlessPainter(color: accent.withValues(alpha: 0.85)),
+                ),
               ),
             ],
           ),
