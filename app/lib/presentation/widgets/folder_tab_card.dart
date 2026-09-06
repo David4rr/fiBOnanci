@@ -52,6 +52,35 @@ class FolderTabClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
+/// Custom painter that strokes the exact asymmetric folder tab border path.
+class FolderTabBorderPainter extends CustomPainter {
+  final FolderTabClipper clipper;
+  final Color borderColor;
+  final double borderWidth;
+
+  const FolderTabBorderPainter({
+    this.clipper = const FolderTabClipper(),
+    this.borderColor = const Color(0xFF2E3244),
+    this.borderWidth = 1.2,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = clipper.getClip(size);
+    final paint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderWidth;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant FolderTabBorderPainter oldDelegate) =>
+      oldDelegate.borderColor != borderColor ||
+      oldDelegate.borderWidth != borderWidth ||
+      oldDelegate.clipper != clipper;
+}
+
 
 class FolderTabCard extends StatelessWidget {
   final Color backgroundColor;

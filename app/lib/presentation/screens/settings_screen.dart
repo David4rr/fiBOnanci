@@ -48,7 +48,13 @@ class SettingsScreen extends StatelessWidget {
                     decoration: BoxDecoration(color: AppColors.canvasCardSurface, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.canvasBorder)),
                     child: Row(
                       children: [
-                        ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 52, iconSize: 26),
+                        Hero(
+                          tag: 'profile_avatar_hero',
+                          child: Material(
+                            type: MaterialType.transparency,
+                            child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 52, iconSize: 26),
+                          ),
+                        ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(

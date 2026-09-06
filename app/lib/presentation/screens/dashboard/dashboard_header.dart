@@ -83,7 +83,13 @@ class DashboardHeader extends StatelessWidget {
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => ProfileModal.show(context, walletCount: walletCount, txCount: txCount),
-                child: ProfileAvatar(avatarPath: avatarPath, name: username, size: 42),
+                child: Hero(
+                  tag: 'profile_avatar_hero',
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: ProfileAvatar(avatarPath: avatarPath, name: username, size: 42),
+                  ),
+                ),
               ),
             ],
           ),

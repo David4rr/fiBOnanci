@@ -5,6 +5,7 @@ import 'package:fibonanci_app/bloc/finance/finance_state.dart';
 import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/presentation/modals/edit_profile_modal.dart';
+import 'package:fibonanci_app/presentation/modals/profile_modal.dart';
 import 'package:fibonanci_app/presentation/screens/dashboard_screen.dart';
 import 'package:fibonanci_app/presentation/widgets/profile_avatar.dart';
 import 'package:flutter/material.dart';
@@ -265,13 +266,39 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify ProfileModal is opened
+      expect(find.byType(ProfileModal), findsOneWidget);
       expect(find.text('Profil Pengguna'), findsOneWidget);
       expect(find.text('David Arrozaqi'), findsNWidgets(2));
       expect(find.text('@David'), findsNWidgets(2));
-      expect(find.text('Edit Profil'), findsOneWidget);
-      expect(find.text('+ Profil Baru'), findsOneWidget);
+      expect(find.text('+ Profil Baru'), findsNothing);
+      expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
       expect(find.text('DATA UMUM & DETAIL AKUN'), findsOneWidget);
       expect(find.text('Software Engineer'), findsNWidgets(2));
+
+      // Verify ellipsis icon (…) replaces clock
+      expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
+
+      // Verify redundant Health Finance Details card is NOT on the profile card
+      expect(find.text('Health Finance Details'), findsNothing);
+
+      // Tap ellipsis (…) -> opens ProfileMenuModal with Edit, New, Health menus
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+      expect(find.text('Menu Profil'), findsOneWidget);
+      expect(find.text('Edit Profile'), findsOneWidget);
+      expect(find.text('New Profile'), findsOneWidget);
+      expect(find.text('Health Finance Details'), findsOneWidget);
+
+      // Tap 'Health Finance Details' from menu -> opens FinancialHealthModal
+      await tester.tap(find.text('Health Finance Details'));
+      await tester.pumpAndSettle();
+      expect(find.text('Audit Kesehatan Finansial'), findsOneWidget);
+
+      // Dismiss FinancialHealthModal and verify ProfileModal remains open
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded).last);
+      await tester.pumpAndSettle();
+      expect(find.text('Profil Pengguna'), findsOneWidget);
+      expect(find.text('Audit Kesehatan Finansial'), findsNothing);
     });
 
     testWidgets('EditProfileModal validates inputs and allows updating profile', (tester) async {

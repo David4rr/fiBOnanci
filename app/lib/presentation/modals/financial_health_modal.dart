@@ -14,13 +14,15 @@ export 'health/financial_health_score_card.dart';
 
 class FinancialHealthModal {
   static void show(BuildContext context) {
+    final bloc = context.read<FinanceBloc>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.canvasBg,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-      builder: (ctx) {
-        return BlocBuilder<FinanceBloc, FinanceState>(
+      builder: (ctx) => BlocProvider.value(
+        value: bloc,
+        child: BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
             final report = state.healthReport;
 
@@ -66,8 +68,8 @@ class FinancialHealthModal {
               },
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
+import 'billing_card_layout.dart';
+import 'installment_card_layout.dart';
 import 'modernist_card_painter.dart';
-import 'subscription_card_badges.dart';
 import 'subscription_card_resolver.dart';
 import 'subscription_card_theme.dart';
-
-export 'modernist_card_painter.dart' show ModernistCardTheme, ModernistCardConfig;
+export 'billing_card_layout.dart';
+export 'installment_card_layout.dart';
+export 'modernist_card_theme.dart';
 export 'subscription_card_badges.dart';
 export 'subscription_card_resolver.dart';
 export 'subscription_card_theme.dart';
-
-/// Tactile Swiss-editorial ATM-style Subscription Card strictly matching ref1.jpg.
+/// Tactile ATM-style card representing either a fixed installment plan or recurring subscription.
 class SubscriptionCard extends StatelessWidget {
   final SubscriptionEntry subscription;
   final WalletEntry? wallet;
@@ -72,116 +72,23 @@ class SubscriptionCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              subscription.title,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w800,
-                                color: config.textColor,
-                                letterSpacing: -0.4,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              wallet?.name.toUpperCase() ?? 'KARTU UTAMA',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: config.textColor.withValues(alpha: 0.65),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SubscriptionCardBadges.buildNetworkBadge(config),
-                    ],
+            subscription.isInstallment
+                ? InstallmentCardLayout(
+                    subscription: subscription,
+                    wallet: wallet,
+                    config: config,
+                    currencyFormatter: currencyFormatter,
+                    maskedNumber: maskedNumber,
+                    isPaidThisMonth: isPaidThisMonth,
+                  )
+                : BillingCardLayout(
+                    subscription: subscription,
+                    wallet: wallet,
+                    config: config,
+                    currencyFormatter: currencyFormatter,
+                    maskedNumber: maskedNumber,
+                    isPaidThisMonth: isPaidThisMonth,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SubscriptionCardBadges.buildStatusBadge(
-                        isPaidThisMonth,
-                        subscription.dueDay,
-                        config,
-                        isInstallment: subscription.isInstallment,
-                        totalCycles: subscription.totalCycles,
-                        paidCycles: subscription.paidCycles,
-                        isCompleted: subscription.status == 'completed',
-                      ),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            currencyFormatter.format(subscription.cost),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w800,
-                              color: config.textColor,
-                              letterSpacing: -0.8,
-                              fontFeatures: const [FontFeature.tabularFigures()],
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subscription.isInstallment
-                                ? 'cicilan /bulan (tenor ${subscription.totalCycles ?? 0} bln)'
-                                : (subscription.billingCycle == 'monthly' ? '/bulan' : '/tahun'),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: config.textColor.withValues(alpha: 0.65),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          CustomPaint(
-                            size: const Size(16, 12),
-                            painter: ContactlessPainter(color: config.textColor.withValues(alpha: 0.85)),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            maskedNumber,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: config.textColor.withValues(alpha: 0.75),
-                              letterSpacing: 1.2,
-                              fontFeatures: const [FontFeature.tabularFigures()],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

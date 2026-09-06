@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../data/database/app_database.dart';
 import 'subscription_card_theme.dart';
-
 class SubscriptionCardBadges {
   static Widget buildStatusBadge(
     bool isPaid,
@@ -106,6 +106,84 @@ class SubscriptionCardBadges {
         config.networkBadgeText,
         style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w900, color: config.backgroundColor, letterSpacing: 0.6),
       ),
+    );
+  }
+
+  static Widget buildInstallmentProgress({
+    required bool isPaidThisMonth,
+    required SubscriptionEntry subscription,
+    required SubscriptionCardThemeConfig config,
+  }) {
+    final totalCycles = subscription.totalCycles ?? 1;
+    final paidCycles = subscription.paidCycles;
+    final isCompleted = subscription.status == 'completed' || paidCycles >= totalCycles;
+    final remainingCycles = (totalCycles - paidCycles).clamp(0, totalCycles);
+    final progress = (paidCycles / totalCycles).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            buildStatusBadge(
+              isPaidThisMonth,
+              subscription.dueDay,
+              config,
+              isInstallment: true,
+              totalCycles: totalCycles,
+              paidCycles: paidCycles,
+              isCompleted: isCompleted,
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(color: config.textColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+              child: Text(
+                isCompleted ? 'LUNAS' : 'Sisa $remainingCycles bln',
+                style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: config.textColor),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 7),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: SizedBox(
+            height: 4,
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: config.textColor.withValues(alpha: 0.16),
+              valueColor: AlwaysStoppedAnimation<Color>(config.textColor),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget buildBillingSchedule({
+    required bool isPaidThisMonth,
+    required SubscriptionEntry subscription,
+    required SubscriptionCardThemeConfig config,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        buildStatusBadge(
+          isPaidThisMonth,
+          subscription.dueDay,
+          config,
+          isInstallment: false,
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+          decoration: BoxDecoration(color: config.textColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+          child: Text(
+            subscription.billingCycle == 'monthly' ? 'BULANAN' : 'TAHUNAN',
+            style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.6, color: config.textColor),
+          ),
+        ),
+      ],
     );
   }
 }

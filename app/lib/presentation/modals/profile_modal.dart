@@ -12,8 +12,9 @@ import 'profile/profile_header_card.dart';
 export 'profile/profile_actions.dart';
 export 'profile/profile_general_data_card.dart';
 export 'profile/profile_header_card.dart';
+export 'profile/profile_menu_modal.dart';
 
-class ProfileModal extends StatelessWidget {
+class ProfileModal extends StatefulWidget {
   final int walletCount;
   final int txCount;
 
@@ -25,23 +26,47 @@ class ProfileModal extends StatelessWidget {
 
   static void show(BuildContext context, {required int walletCount, required int txCount}) {
     final bloc = context.read<FinanceBloc>();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => BlocProvider.value(
-        value: bloc,
-        child: ProfileModal(
-          walletCount: walletCount,
-          txCount: txCount,
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        barrierLabel: 'Tutup',
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (ctx, animation, secondaryAnimation) => BlocProvider.value(
+          value: bloc,
+          child: ProfileModal(
+            walletCount: walletCount,
+            txCount: txCount,
+          ),
         ),
+        transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 0.18),
+              end: Offset.zero,
+            ).animate(curved),
+            child: FadeTransition(
+              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
 
+  @override
+  State<ProfileModal> createState() => _ProfileModalState();
+}
+
+class _ProfileModalState extends State<ProfileModal> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
@@ -49,41 +74,44 @@ class ProfileModal extends StatelessWidget {
         final profile = state.profile;
         final profiles = state.profiles;
 
-        return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.90,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Column(
-                  children: [
-                    const ModalGrabHandle(),
-                    ModalHeader(
-                      title: 'Profil Pengguna',
-                      padding: EdgeInsets.zero,
-                      onClose: () => Navigator.of(context).pop(),
-                    ),
-                  ],
+        return Scaffold(
+          backgroundColor: AppColors.canvasBg,
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 8, bottom: 4),
+                  child: Center(child: ModalGrabHandle()),
                 ),
-              ),
-              const Divider(color: AppColors.canvasBorder, height: 16),
-              Flexible(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                  children: [
-                    ProfileHeaderCard(profile: profile, totalProfiles: profiles.length),
-                    const SizedBox(height: 20),
-                    ProfileGeneralDataCard(profile: profile, walletCount: walletCount, txCount: txCount),
-                    ProfileActions(profile: profile, profiles: profiles),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                  child: ModalHeader(
+                    title: 'Profil Pengguna',
+                    subtitle: 'Ringkasan identitas & performa finansial',
+                    padding: EdgeInsets.zero,
+                    onClose: () => Navigator.of(context).pop(),
+                  ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+                    children: [
+                      ProfileHeaderCard(
+                        profile: profile,
+                        totalProfiles: profiles.length,
+                        walletCount: widget.walletCount,
+                        txCount: widget.txCount,
+                      ),
+                      const SizedBox(height: 16),
+                      ProfileGeneralDataCard(profile: profile, walletCount: widget.walletCount, txCount: widget.txCount),
+                      ProfileActions(profile: profile, profiles: profiles),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -1,6 +1,7 @@
 export 'profile_modal.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
@@ -92,6 +93,7 @@ class WalletsListModal {
 
 class DailyPaceModal {
   static void show(BuildContext context, SafeToSpendMetrics metrics) {
+    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.canvasCardSurface,
@@ -127,7 +129,7 @@ class DailyPaceModal {
                     const Divider(color: AppColors.canvasBorder),
                     buildCalcRow(
                       'Batas Aman Belanja / Hari',
-                      'Rp ${metrics.safeToSpendDaily.toStringAsFixed(0)}',
+                      currencyFormatter.format(metrics.safeToSpendDaily),
                       AppColors.neoCyan,
                       isBold: true,
                     ),

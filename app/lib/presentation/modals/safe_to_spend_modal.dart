@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
@@ -24,7 +24,7 @@ class SafeToSpendModal {
             final metrics = state.metrics;
             final selectedIds = state.safeToSpendWalletIds ?? <String>{};
             final isAll = state.safeToSpendWalletIds == null || state.safeToSpendWalletIds!.isEmpty;
-
+            final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -48,19 +48,19 @@ class SafeToSpendModal {
                       children: [
                         _buildCalcRow(
                           isAll ? 'Total Saldo Riil' : 'Saldo Rekening Terpilih',
-                          '+Rp ${metrics.totalRealBalance.toStringAsFixed(0)}',
+                          '+${currencyFormatter.format(metrics.totalRealBalance)}',
                           AppColors.neoChartreuse,
                         ),
                         const Divider(color: AppColors.canvasBorder),
                         _buildCalcRow(
                           isAll ? 'Sisa Tagihan Bulan Ini' : 'Tagihan Terkait Terpilih',
-                          '-Rp ${metrics.pendingBills.toStringAsFixed(0)}',
+                          '-${currencyFormatter.format(metrics.pendingBills)}',
                           AppColors.neoCoral,
                         ),
                         const Divider(color: AppColors.canvasBorder, height: 16),
-                        _buildCalcRow('Sisa Aman Bulan Ini', 'Rp ${metrics.safeToSpendMonthly.toStringAsFixed(0)}', metrics.statusColor, isBold: true),
+                        _buildCalcRow('Sisa Aman Bulan Ini', currencyFormatter.format(metrics.safeToSpendMonthly), metrics.statusColor, isBold: true),
                         const SizedBox(height: 8),
-                        _buildCalcRow('Alokasi Harian (${metrics.daysRemainingInMonth} hr)', 'Rp ${metrics.safeToSpendDaily.toStringAsFixed(0)} / hr', AppColors.neoCyan),
+                        _buildCalcRow('Alokasi Harian (${metrics.daysRemainingInMonth} hr)', '${currencyFormatter.format(metrics.safeToSpendDaily)} / hr', AppColors.neoCyan),
                       ],
                     ),
                   ),

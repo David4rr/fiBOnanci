@@ -1,170 +1,183 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../bloc/finance/finance_bloc.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
+import '../../widgets/folder_tab_card.dart';
 import '../../widgets/profile_avatar.dart';
 import '../edit_profile_modal.dart';
-import 'profile_delete_dialog.dart';
+import 'profile_card_painters.dart';
+import 'profile_menu_modal.dart';
 
 export 'profile_delete_dialog.dart';
+export 'profile_menu_modal.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final ProfileEntry profile;
   final int totalProfiles;
+  final int? walletCount;
+  final int? txCount;
 
-  const ProfileHeaderCard({
-    super.key,
-    required this.profile,
-    required this.totalProfiles,
-  });
+  const ProfileHeaderCard({super.key, required this.profile, required this.totalProfiles, this.walletCount, this.txCount});
+
+  Widget _buildStat(IconData icon, String val, String unit) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [Icon(icon, color: AppColors.neoChartreuse, size: 14.5), const SizedBox(width: 4), Text(val, style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()]))]),
+      Text(unit, style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.canvasInputSearch,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.canvasBorder),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => EditProfileModal.show(context, profile: profile),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 64, iconSize: 34),
-                    Positioned(
-                      right: -2,
-                      bottom: -2,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.neoChartreuse,
-                          border: Border.all(color: const Color(0xFF17181F), width: 2),
-                        ),
-                        child: const Icon(Icons.camera_alt, size: 11, color: AppColors.textDarkPrimary),
-                      ),
-                    ),
-                  ],
+    final hasOcc = profile.occupation?.isNotEmpty == true;
+    final state = context.watch<FinanceBloc>().state;
+    final metrics = state.metrics;
+    final healthScore = state.healthReport.overallScore;
+    final wallets = walletCount ?? state.wallets.length;
+    final txs = txCount ?? state.transactions.length;
+    final subs = state.subscriptions.length;
+    final burnFormatted = NumberFormat('#,###', 'id_ID').format(metrics.safeToSpendDaily.toInt());
+
+    const clipper = FolderTabClipper(tabWidthFactor: 0.58, cornerRadius: 24.0, stepDepth: 18.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final tabW = w * 0.58;
+        final dotCenterX = (tabW + 24.0) + ((w - 24.0) - (tabW + 24.0)) * 0.44;
+        final rightOffset = (w - dotCenterX - 22.0).clamp(16.0, w);
+        return Stack(
+          children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 14),
+          child: CustomPaint(
+            foregroundPainter: const FolderTabBorderPainter(
+              clipper: clipper,
+              borderColor: Color(0xFF2E3244),
+              borderWidth: 1.2,
+            ),
+            child: ClipPath(
+              clipper: clipper,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.canvasCardSurface,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF222636), Color(0xFF161824)],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            profile.fullName,
-                            style: AppTypography.heroGreeting.copyWith(fontSize: 18),
-                            overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => EditProfileModal.show(context, profile: profile),
+                            child: Hero(
+                              tag: 'profile_avatar_hero',
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: Container(
+                                  width: 44, height: 44,
+                                  decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [Colors.white.withValues(alpha: 0.18), const Color(0xFF1E212D)], center: const Alignment(-0.2, -0.2)), border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5)),
+                                  child: Center(child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 36, iconSize: 18)),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.neoMint.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(6),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person_outline_rounded, size: 15, color: AppColors.neoChartreuse),
+                                    const SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(profile.fullName, style: GoogleFonts.plusJakartaSans(fontSize: 16.5, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.4), overflow: TextOverflow.ellipsis),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 1.5),
+                                Text(hasOcc ? profile.occupation! : 'Software Engineer', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                                Text('@${profile.username}', style: GoogleFonts.plusJakartaSans(fontSize: 9.5, color: AppColors.textMuted.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
+                              ],
+                            ),
                           ),
-                          child: Text(
-                            'AKTIF',
-                            style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontSize: 9, fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '@${profile.username}',
-                      style: GoogleFonts.plusJakartaSans(color: AppColors.neoChartreuse, fontWeight: FontWeight.w700, fontSize: 13),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      profile.occupation?.isNotEmpty == true ? profile.occupation! : 'Pengguna fiBOnanci',
-                      style: AppTypography.listSubtitle.copyWith(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: GestureDetector(
-                  onTap: () => EditProfileModal.show(context, profile: profile),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(color: AppColors.neoChartreuse, borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.edit_outlined, color: AppColors.textDarkPrimary, size: 15),
-                            const SizedBox(width: 6),
-                            Text('Edit Profil', style: GoogleFonts.plusJakartaSans(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w700, fontSize: 12.5)),
-                          ],
-                        ),
+                        ],
                       ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: GestureDetector(
-                  onTap: () => EditProfileModal.show(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(color: const Color(0xFF1E212D), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.canvasBorder)),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.person_add_alt_1_outlined, color: AppColors.textWhite, size: 15),
-                            const SizedBox(width: 6),
-                            Text('+ Profil Baru', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 12.5)),
-                          ],
-                        ),
+                      const SizedBox(height: 12),
+                      ProfileFinancialTimelinePill(realBalance: metrics.totalRealBalance, pendingBills: metrics.pendingBills, safeToSpend: metrics.safeToSpendMonthly),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(burnFormatted, style: GoogleFonts.plusJakartaSans(fontSize: 30, fontWeight: FontWeight.w800, color: const Color(0xFFEEEEEE), letterSpacing: -0.8, fontFeatures: const [FontFeature.tabularFigures()])),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const CustomPaint(size: Size(15, 14), painter: FinancialShieldPainter()),
+                                    const SizedBox(height: 2),
+                                    Text('Aman', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
+                                    Text('Harian', style: GoogleFonts.plusJakartaSans(fontSize: 9, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                                Text('$healthScore', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()])),
+                                const SizedBox(width: 2),
+                                Text('SKOR', style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                              ]),
+                              const SizedBox(height: 2),
+                              SizedBox(width: 64, height: 24, child: CustomPaint(painter: ProfileWaveChartPainter(scores: [state.healthReport.emergencyRunway.score, state.healthReport.fixedCommitment.score, state.healthReport.savingsMargin.score, state.healthReport.spendPacing.score, healthScore.toDouble()]))),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStat(Icons.account_balance_wallet_outlined, '$wallets', 'Rekening'),
+                          _buildStat(Icons.swap_horiz_rounded, '$txs', 'Transaksi'),
+                          _buildStat(Icons.event_repeat_rounded, '$subs', 'Tagihan Rutin'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => showProfileDeleteDialog(context, profile, totalProfiles),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                  ),
-                  child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
-                ),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+            Positioned(
+              top: 5,
+              right: rightOffset,
+              child: ProportionalThreeDots(
+                onTap: () => showProfileMenuModal(context, profile: profile, totalProfiles: totalProfiles),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
