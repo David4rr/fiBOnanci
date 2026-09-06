@@ -120,18 +120,10 @@ class TransactionFilterModal {
     String? currentGroup,
     ValueChanged<String?> onSelected,
   ) {
-    final isSelected = value == currentGroup;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: AppColors.neoChartreuse,
-      backgroundColor: AppColors.canvasInputSearch,
-      labelStyle: TextStyle(
-        color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 12,
-      ),
-      onSelected: (_) => onSelected(value),
+    return AppChoiceChip(
+      label: label,
+      selected: value == currentGroup,
+      onTap: () => onSelected(value),
     );
   }
 }

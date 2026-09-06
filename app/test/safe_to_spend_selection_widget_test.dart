@@ -2,6 +2,7 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:flutter/material.dart';
+import 'package:fibonanci_app/presentation/widgets/common/common_widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -38,7 +39,7 @@ void main() {
     expect(find.textContaining('Semua (7)'), findsWidgets);
 
     // 3. Tap "BCA Utama" chip in the modal to isolate to BCA
-    final bcaChip = find.widgetWithText(FilterChip, 'BCA Utama');
+    final bcaChip = find.widgetWithText(AppChoiceChip, 'BCA Utama');
     expect(bcaChip, findsOneWidget);
     await tester.tap(bcaChip);
     await tester.pumpAndSettle();
@@ -48,7 +49,7 @@ void main() {
     expect(find.text('Saldo Rekening Terpilih'), findsOneWidget);
 
     // 4. Tap "Semua (7)" chip to reset back to all accounts
-    await tester.tap(find.widgetWithText(FilterChip, 'Semua (7)'));
+    await tester.tap(find.widgetWithText(AppChoiceChip, 'Semua (7)'));
     await tester.pumpAndSettle();
 
     expect(find.text('Semua (7)'), findsWidgets);

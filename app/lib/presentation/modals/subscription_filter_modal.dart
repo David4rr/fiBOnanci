@@ -108,22 +108,10 @@ class SubscriptionFilterModal {
     T groupValue,
     ValueChanged<T?> onSelected,
   ) {
-    final isSelected = value == groupValue;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onSelected(value),
-      backgroundColor: AppColors.canvasInputSearch,
-      selectedColor: AppColors.neoChartreuse,
-      labelStyle: TextStyle(
-        color: isSelected ? AppColors.textDarkPrimary : AppColors.textWhite,
-        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-        fontSize: 12.5,
-      ),
-      side: BorderSide(
-        color: isSelected ? AppColors.neoChartreuse : AppColors.canvasBorder,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return AppChoiceChip(
+      label: label,
+      selected: value == groupValue,
+      onTap: () => onSelected(value),
     );
   }
 }
