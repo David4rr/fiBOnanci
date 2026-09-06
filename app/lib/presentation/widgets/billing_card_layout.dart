@@ -12,7 +12,6 @@ class BillingCardLayout extends StatelessWidget {
   final WalletEntry? wallet;
   final SubscriptionCardThemeConfig config;
   final NumberFormat currencyFormatter;
-  final String maskedNumber;
   final bool isPaidThisMonth;
 
   const BillingCardLayout({
@@ -21,7 +20,6 @@ class BillingCardLayout extends StatelessWidget {
     required this.wallet,
     required this.config,
     required this.currencyFormatter,
-    required this.maskedNumber,
     required this.isPaidThisMonth,
   });
 
@@ -130,16 +128,9 @@ class BillingCardLayout extends StatelessWidget {
                   ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  CustomPaint(size: const Size(16, 12), painter: ContactlessPainter(color: accent.withValues(alpha: 0.85))),
-                  const SizedBox(height: 4),
-                  Text(
-                    maskedNumber,
-                    style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: accent.withValues(alpha: 0.75), letterSpacing: 1.0, fontFeatures: const [FontFeature.tabularFigures()]),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: CustomPaint(size: const Size(20, 15), painter: ContactlessPainter(color: accent.withValues(alpha: 0.85))),
               ),
             ],
           ),

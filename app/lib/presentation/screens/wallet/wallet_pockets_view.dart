@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/bento_folder_card.dart';
 import '../../widgets/pocket_stock_chart_card.dart';
+import '../../widgets/pocket_card_theme.dart';
 
 class WalletPocketsView extends StatelessWidget {
   final List<PocketEntry> pockets;
@@ -121,17 +122,17 @@ class WalletPocketsView extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final pocket = pockets[index];
-                final Color pColor = Color(int.parse(pocket.colorHex.replaceAll('#', '0xFF')));
+                final config = PocketCardThemeConfig.resolve(pocket, index, allPockets: pockets);
                 final target = pocket.targetAmount;
                 final current = pocket.currentAmount;
-                final double? progress = (target != null && target > 0) ? (current / target).clamp(0.0, 1.0) : null;
-                final isDark = ThemeData.estimateBrightnessForColor(pColor) == Brightness.dark;
-                final Color primaryText = isDark ? AppColors.textWhite : AppColors.textDarkPrimary;
-                final Color secondaryText = isDark ? Colors.white.withValues(alpha: 0.95) : AppColors.textDarkPrimary;
-                final Color tertiaryText = isDark ? Colors.white.withValues(alpha: 0.70) : AppColors.textDarkSecondary;
 
                 return BentoFolderCard(
-                  backgroundColor: pColor,
+                  backgroundColor: config.backgroundColor,
+                  gradient: config.gradient,
+                  textColor: config.primaryTextColor,
+                  subtitleColor: config.secondaryTextColor,
+                  iconColor: config.iconColor,
+                  iconBgColor: config.iconBgColor,
                   height: 148,
                   iconData: getPocketIcon(pocket.type),
                   title: currencyFormatter.format(current),
@@ -141,30 +142,25 @@ class WalletPocketsView extends StatelessWidget {
                     children: [
                       Text(
                         pocket.name,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.w700, color: secondaryText, letterSpacing: -0.2),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: config.secondaryTextColor,
+                          letterSpacing: -0.2,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              target != null && target > 0 ? currencyFormatter.format(target) : 'Tanpa target',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w600, color: tertiaryText),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (progress != null) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              '${(progress * 100).toInt()}%',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: primaryText, fontFeatures: const [FontFeature.tabularFigures()]),
-                            ),
-                          ],
-                        ],
+                      Text(
+                        target != null && target > 0 ? 'Target ${currencyFormatter.format(target)}' : 'Tanpa target',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: config.tertiaryTextColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

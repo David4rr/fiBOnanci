@@ -6,7 +6,6 @@ import 'billing_card_layout.dart';
 import 'installment_card_layout.dart';
 import 'modernist_card_painter.dart';
 import 'subscription_card_resolver.dart';
-import 'subscription_card_theme.dart';
 export 'billing_card_layout.dart';
 export 'installment_card_layout.dart';
 export 'modernist_card_theme.dart';
@@ -37,10 +36,14 @@ class SubscriptionCard extends StatelessWidget {
         subscription.lastPaidDate!.year == now.year &&
         subscription.lastPaidDate!.month == now.month;
 
-    final theme = SubscriptionCardResolver.resolve(subscription.title, indexOverride ?? subscription.title.hashCode);
-    final config = SubscriptionCardThemeConfig.forTheme(theme);
+    final effectiveIdx = (indexOverride ?? subscription.title.hashCode).abs();
+    final theme = SubscriptionCardResolver.resolve(subscription.title, effectiveIdx, index: indexOverride);
+    final config = SubscriptionCardResolver.resolveConfig(
+      subscription: subscription,
+      index: effectiveIdx,
+      wallet: wallet,
+    );
     final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-    final maskedNumber = SubscriptionCardResolver.generateMaskedNumber(subscription, wallet);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -78,7 +81,6 @@ class SubscriptionCard extends StatelessWidget {
                     wallet: wallet,
                     config: config,
                     currencyFormatter: currencyFormatter,
-                    maskedNumber: maskedNumber,
                     isPaidThisMonth: isPaidThisMonth,
                   )
                 : BillingCardLayout(
@@ -86,7 +88,6 @@ class SubscriptionCard extends StatelessWidget {
                     wallet: wallet,
                     config: config,
                     currencyFormatter: currencyFormatter,
-                    maskedNumber: maskedNumber,
                     isPaidThisMonth: isPaidThisMonth,
                   ),
           ],

@@ -28,13 +28,13 @@ class SubscriptionCardThemeConfig {
         return const SubscriptionCardThemeConfig(
           backgroundColor: Color(0xFF1E1418), primaryGraphicColor: Color(0xFFE50914),
           secondaryGraphicColor: Color(0xFFFF5252), textColor: Color(0xFFFFFFFF),
-          badgeColor: Color(0xFFE50914), networkBadgeText: 'STREAMING', badgeType: CardBadgeType.mastercard,
+          badgeColor: Color(0xFFE50914), networkBadgeText: 'PREMIUM', badgeType: CardBadgeType.mastercard,
         );
       case ModernistCardTheme.audioEmerald:
         return const SubscriptionCardThemeConfig(
           backgroundColor: Color(0xFF7CB88D), primaryGraphicColor: Color(0xFF183820),
           secondaryGraphicColor: Color(0xFF67A578), textColor: Color(0xFF0F2615),
-          badgeColor: Color(0xFF0F2615), networkBadgeText: 'AUDIO', badgeType: CardBadgeType.chip,
+          badgeColor: Color(0xFF0F2615), networkBadgeText: 'AUDIO PASS', badgeType: CardBadgeType.chip,
         );
       case ModernistCardTheme.utilitiesLemon:
         return const SubscriptionCardThemeConfig(
@@ -145,5 +145,50 @@ class SubscriptionCardThemeConfig {
           badgeColor: Color(0xFFF59E0B), networkBadgeText: 'COPPER', badgeType: CardBadgeType.amex,
         );
     }
+  }
+
+  static SubscriptionCardThemeConfig forDynamic({
+    required ModernistCardTheme theme,
+    required int index,
+    required String seedId,
+    String? walletName,
+    bool isInstallment = false,
+  }) {
+    final baseConfig = forTheme(theme);
+    final networkName = walletName?.toUpperCase() ?? (isInstallment ? 'CICILAN' : baseConfig.networkBadgeText);
+    if (index < 20) {
+      return SubscriptionCardThemeConfig(
+        backgroundColor: baseConfig.backgroundColor,
+        primaryGraphicColor: baseConfig.primaryGraphicColor,
+        secondaryGraphicColor: baseConfig.secondaryGraphicColor,
+        textColor: baseConfig.textColor,
+        badgeColor: baseConfig.badgeColor,
+        networkBadgeText: networkName,
+        badgeType: baseConfig.badgeType,
+      );
+    }
+
+    final double goldenHue = (210.0 + (index * 137.508) + (seedId.hashCode.abs() % 29)) % 360.0;
+    final bool isDark = index % 2 == 0;
+    final Color bg = isDark
+        ? HSLColor.fromAHSL(1.0, goldenHue, 0.62, 0.16).toColor()
+        : HSLColor.fromAHSL(1.0, goldenHue, 0.76, 0.78).toColor();
+    final Color primaryG = isDark
+        ? HSLColor.fromAHSL(1.0, (goldenHue + 35) % 360, 0.85, 0.62).toColor()
+        : HSLColor.fromAHSL(1.0, (goldenHue + 45) % 360, 0.80, 0.32).toColor();
+    final Color secondaryG = isDark
+        ? HSLColor.fromAHSL(1.0, (goldenHue + 175) % 360, 0.70, 0.48).toColor()
+        : HSLColor.fromAHSL(1.0, (goldenHue + 155) % 360, 0.65, 0.42).toColor();
+    final Color txt = isDark ? Colors.white : const Color(0xFF0A0B0E);
+
+    return SubscriptionCardThemeConfig(
+      backgroundColor: bg,
+      primaryGraphicColor: primaryG,
+      secondaryGraphicColor: secondaryG,
+      textColor: txt,
+      badgeColor: txt,
+      networkBadgeText: networkName,
+      badgeType: CardBadgeType.values[index % CardBadgeType.values.length],
+    );
   }
 }

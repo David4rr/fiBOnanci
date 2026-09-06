@@ -84,6 +84,7 @@ class FolderTabBorderPainter extends CustomPainter {
 
 class FolderTabCard extends StatelessWidget {
   final Color backgroundColor;
+  final Gradient? gradient;
   final Widget child;
   final double? width;
   final double? height;
@@ -93,6 +94,7 @@ class FolderTabCard extends StatelessWidget {
   const FolderTabCard({
     super.key,
     required this.backgroundColor,
+    this.gradient,
     required this.child,
     this.width,
     this.height = 145,
@@ -110,7 +112,10 @@ class FolderTabCard extends StatelessWidget {
         child: Container(
           width: width,
           height: height,
-          color: backgroundColor,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            gradient: gradient,
+          ),
           padding: padding,
           child: child,
         ),

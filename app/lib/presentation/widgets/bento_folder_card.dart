@@ -10,6 +10,7 @@ import 'folder_tab_card.dart';
 /// Shared consistently across Dashboard Bento Grid and Wallet Pocket Allocations.
 class BentoFolderCard extends StatelessWidget {
   final Color backgroundColor;
+  final Gradient? gradient;
   final Widget? icon;
   final IconData? iconData;
   final Widget? topTrailing;
@@ -29,6 +30,7 @@ class BentoFolderCard extends StatelessWidget {
   const BentoFolderCard({
     super.key,
     required this.backgroundColor,
+    this.gradient,
     this.icon,
     this.iconData,
     this.topTrailing,
@@ -66,6 +68,7 @@ class BentoFolderCard extends StatelessWidget {
         (isDark ? Colors.white.withValues(alpha: 0.18) : AppColors.cardIconBadgeBg);
     return FolderTabCard(
       backgroundColor: backgroundColor,
+      gradient: gradient,
       height: height,
       padding: padding,
       onTap: onTap,
