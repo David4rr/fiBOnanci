@@ -140,7 +140,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         : SubscriptionStackedDeck(
                             subscriptions: filtered,
                             wallets: wallets,
-                            onTapCard: (sub, wallet) => SubscriptionCardDetailSheet.show(context, sub, wallet),
+                            onTapCard: (sub, wallet, index) => SubscriptionCardDetailSheet.show(context, sub, wallet, indexOverride: index),
                           ),
                   ),
                 ],

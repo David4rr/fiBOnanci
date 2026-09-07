@@ -36,8 +36,15 @@ class SubscriptionCard extends StatelessWidget {
         subscription.lastPaidDate!.year == now.year &&
         subscription.lastPaidDate!.month == now.month;
 
-    final effectiveIdx = (indexOverride ?? subscription.title.hashCode).abs();
-    final theme = SubscriptionCardResolver.resolve(subscription.title, effectiveIdx, index: indexOverride);
+    final effectiveIdx = (indexOverride ??
+            (subscription.title.hashCode.abs() %
+                SubscriptionCardResolver.kCardThemes.length))
+        .abs();
+    final theme = SubscriptionCardResolver.resolve(
+      subscription.title,
+      effectiveIdx,
+      index: effectiveIdx,
+    );
     final config = SubscriptionCardResolver.resolveConfig(
       subscription: subscription,
       index: effectiveIdx,

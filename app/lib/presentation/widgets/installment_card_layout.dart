@@ -72,8 +72,9 @@ class InstallmentCardLayout extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     currencyFormatter.format(subscription.cost),
@@ -95,6 +96,7 @@ class InstallmentCardLayout extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),

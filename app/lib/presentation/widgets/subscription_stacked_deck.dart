@@ -7,7 +7,7 @@ import 'subscription_card.dart';
 class SubscriptionStackedDeck extends StatefulWidget {
   final List<SubscriptionEntry> subscriptions;
   final List<WalletEntry> wallets;
-  final void Function(SubscriptionEntry, WalletEntry) onTapCard;
+  final void Function(SubscriptionEntry, WalletEntry, int) onTapCard;
 
   const SubscriptionStackedDeck({
     super.key,
@@ -128,18 +128,28 @@ class _SubscriptionStackedDeckState extends State<SubscriptionStackedDeck> with 
                           child: Transform.scale(
                             scale: scale,
                             alignment: Alignment.center,
-                            child: SubscriptionCard(
-                              subscription: sub,
-                              wallet: wallet,
-                              indexOverride: i,
-                              isFocused: absDiff < 0.35,
-                              onTap: () {
-                                if (absDiff < 0.35) {
-                                  widget.onTapCard(sub, wallet);
-                                } else {
-                                  _snapTo(i.toDouble());
-                                }
+                            child: Hero(
+                              tag: 'subscription_card_${sub.id}',
+                              flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                                final Hero toHero = toHeroContext.widget as Hero;
+                                return Material(color: Colors.transparent, child: toHero.child);
                               },
+                              child: Material(
+                                color: Colors.transparent,
+                                child: SubscriptionCard(
+                                  subscription: sub,
+                                  wallet: wallet,
+                                  indexOverride: i,
+                                  isFocused: absDiff < 0.35,
+                                  onTap: () {
+                                    if (absDiff < 0.35) {
+                                      widget.onTapCard(sub, wallet, i);
+                                    } else {
+                                      _snapTo(i.toDouble());
+                                    }
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         );

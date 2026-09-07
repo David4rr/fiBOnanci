@@ -249,7 +249,7 @@ void main() {
             body: SubscriptionStackedDeck(
               subscriptions: mockSubs,
               wallets: mockWallets,
-              onTapCard: (_, _) {},
+              onTapCard: (_, _, _) {},
             ),
           ),
         ),
