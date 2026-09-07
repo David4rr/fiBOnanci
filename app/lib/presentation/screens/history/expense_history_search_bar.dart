@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import '../../../data/database/app_database.dart';
-import '../../modals/transaction_filter_modal.dart';
-import '../../theme/app_colors.dart';
-import '../../widgets/common/search_filter_chip.dart';
+import '../../widgets/common/expandable_search_filter_bar.dart';
 
 class ExpenseHistorySearchBar extends StatelessWidget {
   final TextEditingController searchController;
@@ -33,100 +31,17 @@ class ExpenseHistorySearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasActiveFilter = typeFilter != 'all' || walletFilter != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-          child: Container(
-            height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.canvasInputSearch,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: searchQuery.isNotEmpty ? AppColors.neoChartreuse.withValues(alpha: 0.5) : AppColors.canvasBorder,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: AppColors.textMuted, size: 18),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    style: const TextStyle(color: AppColors.textWhite, fontSize: 13.5),
-                    onChanged: onSearchChanged,
-                    decoration: const InputDecoration(
-                      hintText: 'Cari transaksi, rekening, merchant...',
-                      hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ),
-                if (searchQuery.isNotEmpty)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: onClearSearch,
-                    child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, color: AppColors.textMuted, size: 16)),
-                  ),
-                const SizedBox(width: 6),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    TransactionFilterModal.show(
-                      context: context,
-                      wallets: wallets,
-                      initialType: typeFilter,
-                      initialWalletId: walletFilter,
-                      onApply: onFilterApplied,
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: hasActiveFilter ? AppColors.neoChartreuse.withValues(alpha: 0.2) : Colors.transparent,
-                    ),
-                    child: Icon(Icons.tune, color: hasActiveFilter ? AppColors.neoChartreuse : AppColors.textWhite, size: 17),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (hasActiveFilter)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  if (typeFilter != 'all')
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: SearchFilterChip(
-                        label: 'Tipe: ${typeFilter.toUpperCase()}',
-                        onClear: onClearTypeFilter,
-                      ),
-                    ),
-                  if (walletFilter != null)
-                    SearchFilterChip(
-                      label: 'Rek: ${wallets.firstWhere((w) => w.id == walletFilter, orElse: () => wallets.first).name}',
-                      onClear: onClearWalletFilter,
-                    ),
-                ],
-              ),
-            ),
-          ),
-      ],
+    return ExpandableSearchFilterBar(
+      searchController: searchController,
+      searchQuery: searchQuery,
+      typeFilter: typeFilter,
+      walletFilter: walletFilter,
+      wallets: wallets,
+      onSearchChanged: onSearchChanged,
+      onClearSearch: onClearSearch,
+      onFilterApplied: onFilterApplied,
+      onClearTypeFilter: onClearTypeFilter,
+      onClearWalletFilter: onClearWalletFilter,
     );
   }
 }
