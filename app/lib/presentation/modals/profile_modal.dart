@@ -3,16 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
 import 'profile/profile_actions.dart';
+import 'profile/profile_edit_tab.dart';
 import 'profile/profile_general_data_card.dart';
 import 'profile/profile_header_card.dart';
 
 export 'profile/profile_actions.dart';
+export 'profile/profile_edit_tab.dart';
 export 'profile/profile_general_data_card.dart';
 export 'profile/profile_header_card.dart';
 export 'profile/profile_menu_modal.dart';
+export 'profile/profile_morphing_menu.dart';
 
 class ProfileModal extends StatefulWidget {
   final int walletCount;
@@ -67,6 +71,38 @@ class ProfileModal extends StatefulWidget {
 }
 
 class _ProfileModalState extends State<ProfileModal> {
+  late final PageController _pageController;
+  int _currentTab = 0;
+  ProfileEntry? _editingProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _goToEdit(ProfileEntry? targetProfile) {
+    setState(() {
+      _editingProfile = targetProfile;
+      _currentTab = 1;
+    });
+    _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+  }
+
+  void _goToSummary() {
+    setState(() {
+      _currentTab = 0;
+      _editingProfile = null;
+    });
+    _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
@@ -80,33 +116,44 @@ class _ProfileModalState extends State<ProfileModal> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 8, bottom: 4),
-                  child: Center(child: ModalGrabHandle()),
-                ),
+                const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle())),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                   child: ModalHeader(
-                    title: 'Profil Pengguna',
-                    subtitle: 'Ringkasan identitas & performa finansial',
+                    title: _currentTab == 0 ? 'Profil Pengguna' : (_editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru'),
+                    subtitle: _currentTab == 0 ? 'Ringkasan identitas & performa finansial' : (_editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat'),
+                    closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
                     padding: EdgeInsets.zero,
-                    onClose: () => Navigator.of(context).pop(),
+                    onClose: () => _currentTab == 0 ? Navigator.of(context).pop() : _goToSummary(),
                   ),
                 ),
                 Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      ProfileHeaderCard(
-                        profile: profile,
-                        totalProfiles: profiles.length,
-                        walletCount: widget.walletCount,
-                        txCount: widget.txCount,
+                      ListView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+                        children: [
+                          ProfileHeaderCard(
+                            profile: profile,
+                            totalProfiles: profiles.length,
+                            walletCount: widget.walletCount,
+                            txCount: widget.txCount,
+                            onEditProfile: () => _goToEdit(profile),
+                            onNewProfile: () => _goToEdit(null),
+                          ),
+                          const SizedBox(height: 16),
+                          ProfileGeneralDataCard(profile: profile, walletCount: widget.walletCount, txCount: widget.txCount),
+                          ProfileActions(profile: profile, profiles: profiles),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      ProfileGeneralDataCard(profile: profile, walletCount: widget.walletCount, txCount: widget.txCount),
-                      ProfileActions(profile: profile, profiles: profiles),
+                      ProfileEditTab(
+                        key: ValueKey(_editingProfile?.id ?? 'new_profile'),
+                        initialProfile: _editingProfile,
+                        onSaved: _goToSummary,
+                      ),
                     ],
                   ),
                 ),

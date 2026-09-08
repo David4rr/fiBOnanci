@@ -11,8 +11,6 @@ class PocketCardThemeConfig {
   final Color tertiaryTextColor;
   final Color iconColor;
   final Color iconBgColor;
-  final Gradient gradient;
-
   const PocketCardThemeConfig({
     required this.backgroundColor,
     required this.primaryTextColor,
@@ -20,7 +18,6 @@ class PocketCardThemeConfig {
     required this.tertiaryTextColor,
     required this.iconColor,
     required this.iconBgColor,
-    required this.gradient,
   });
 
   /// Curated base neo-pastel & deep-jewel seed colors for early cards.
@@ -57,8 +54,6 @@ class PocketCardThemeConfig {
     if (isDark) {
       // Rich deep jewel / obsidian surface with luminous accent typography
       final baseColor = HSLColor.fromAHSL(1.0, goldenHue, 0.58, 0.16).toColor();
-      final gradStart = HSLColor.fromAHSL(1.0, goldenHue, 0.65, 0.20).toColor();
-      final gradEnd = HSLColor.fromAHSL(1.0, (goldenHue + 28) % 360, 0.52, 0.12).toColor();
       final accentColor = HSLColor.fromAHSL(1.0, goldenHue, 0.85, 0.65).toColor();
 
       return PocketCardThemeConfig(
@@ -68,21 +63,12 @@ class PocketCardThemeConfig {
         tertiaryTextColor: Colors.white.withValues(alpha: 0.68),
         iconColor: accentColor,
         iconBgColor: accentColor.withValues(alpha: 0.18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [gradStart, gradEnd],
-        ),
       );
     } else {
       // Vibrant neo-pastel surface with crisp high-contrast dark typography
       final seedColor = i < _curatedSeeds.length
           ? _curatedSeeds[i]
           : HSLColor.fromAHSL(1.0, goldenHue, 0.78, 0.74).toColor();
-      final hsl = HSLColor.fromColor(seedColor);
-      final gradStart = hsl.withLightness((hsl.lightness + 0.05).clamp(0.0, 1.0)).toColor();
-      final gradEnd = hsl.withLightness((hsl.lightness - 0.08).clamp(0.0, 1.0)).toColor();
-
       return PocketCardThemeConfig(
         backgroundColor: seedColor,
         primaryTextColor: AppColors.textDarkPrimary,
@@ -90,11 +76,6 @@ class PocketCardThemeConfig {
         tertiaryTextColor: AppColors.textDarkSecondary,
         iconColor: AppColors.textDarkPrimary,
         iconBgColor: AppColors.cardIconBadgeBg,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [gradStart, gradEnd],
-        ),
       );
     }
   }

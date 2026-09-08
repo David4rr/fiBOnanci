@@ -10,18 +10,21 @@ import '../../widgets/folder_tab_card.dart';
 import '../../widgets/profile_avatar.dart';
 import '../edit_profile_modal.dart';
 import 'profile_card_painters.dart';
-import 'profile_menu_modal.dart';
+import 'profile_morphing_menu.dart';
 
 export 'profile_delete_dialog.dart';
-export 'profile_menu_modal.dart';
+export 'profile_morphing_menu.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final ProfileEntry profile;
   final int totalProfiles;
-  final int? walletCount;
-  final int? txCount;
+  final int? walletCount, txCount;
+  final VoidCallback? onEditProfile, onNewProfile, onHealthDetails;
 
-  const ProfileHeaderCard({super.key, required this.profile, required this.totalProfiles, this.walletCount, this.txCount});
+  const ProfileHeaderCard({
+    super.key, required this.profile, required this.totalProfiles,
+    this.walletCount, this.txCount, this.onEditProfile, this.onNewProfile, this.onHealthDetails,
+  });
 
   Widget _buildStat(IconData icon, String val, String unit) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -70,7 +73,7 @@ class ProfileHeaderCard extends StatelessWidget {
                       Row(
                         children: [
                           GestureDetector(
-                            onTap: () => EditProfileModal.show(context, profile: profile),
+                            onTap: onEditProfile ?? () => EditProfileModal.show(context, profile: profile),
                             child: Hero(
                               tag: 'profile_avatar_hero',
                               child: Material(
@@ -171,8 +174,12 @@ class ProfileHeaderCard extends StatelessWidget {
             Positioned(
               top: 5,
               right: rightOffset,
-              child: ProportionalThreeDots(
-                onTap: () => showProfileMenuModal(context, profile: profile, totalProfiles: totalProfiles),
+              child: ProfileMorphingMenu(
+                profile: profile,
+                totalProfiles: totalProfiles,
+                onEditProfile: onEditProfile,
+                onNewProfile: onNewProfile,
+                onHealthDetails: onHealthDetails,
               ),
             ),
           ],

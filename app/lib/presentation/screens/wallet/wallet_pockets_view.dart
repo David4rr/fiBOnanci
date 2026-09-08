@@ -128,7 +128,6 @@ class WalletPocketsView extends StatelessWidget {
 
                 return BentoFolderCard(
                   backgroundColor: config.backgroundColor,
-                  gradient: config.gradient,
                   textColor: config.primaryTextColor,
                   subtitleColor: config.secondaryTextColor,
                   iconColor: config.iconColor,

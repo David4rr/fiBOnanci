@@ -8,6 +8,7 @@ import '../../widgets/common/common_widgets.dart';
 import '../edit_profile_modal.dart';
 import '../financial_health_modal.dart';
 import 'profile_delete_dialog.dart';
+export 'profile_morphing_menu.dart';
 
 void showProfileMenuModal(BuildContext context, {required ProfileEntry profile, int totalProfiles = 1}) {
   showModalBottomSheet(
