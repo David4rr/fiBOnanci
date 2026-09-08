@@ -7,7 +7,8 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
-import 'package:fibonanci_app/presentation/widgets/common/slide_to_delete_button.dart';
+import 'package:fibonanci_app/presentation/widgets/common/common_widgets.dart';
+import 'package:fibonanci_app/presentation/widgets/transaction_modal.dart';
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID', null);
@@ -66,6 +67,10 @@ void main() {
       expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
 
+      // Verify Ubah Saldo fields start at top below app bar, not pushed to bottom
+      final amountOffset = tester.getTopLeft(find.descendant(of: find.byType(WalletDetailEditTab), matching: find.byType(CurrencyAmountField)));
+      final appBarBottom = tester.getBottomLeft(find.byType(WalletDetailAppBar)).dy;
+      expect(amountOffset.dy, lessThanOrEqualTo(appBarBottom + 24));
       // Verify SlideToDeleteButton is present on the edit tab
       expect(find.byType(SlideToDeleteButton), findsOneWidget);
       expect(find.text('Hapus Rekening'), findsOneWidget);
@@ -170,6 +175,10 @@ void main() {
       expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
 
+      // Verify widgets start at top below app bar, not pushed to the bottom of the screen
+      final toggleOffset = tester.getTopLeft(find.byType(TransactionTypeToggle));
+      final appBarBottom = tester.getBottomLeft(find.byType(WalletDetailAppBar)).dy;
+      expect(toggleOffset.dy, lessThanOrEqualTo(appBarBottom + 24));
       // Tap the morphed left arrow to return to details view
       await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
       await tester.pumpAndSettle();
@@ -184,7 +193,7 @@ void main() {
       await tester.tap(find.text('Catat Transaksi'));
       await tester.pumpAndSettle();
 
-      final amountField = find.descendant(of: find.byType(BottomSheet).last, matching: find.byType(TextField)).first;
+      final amountField = find.descendant(of: find.byType(TransactionModal), matching: find.byType(TextField)).first;
       await tester.enterText(amountField, '200000');
       await tester.pumpAndSettle();
 

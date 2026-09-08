@@ -194,9 +194,7 @@ void main() {
       expect(find.text('Simpan Transaksi'), findsOneWidget);
       expect(find.text('Batal'), findsOneWidget);
 
-      // Verify non-transparent background on both BottomSheet and TransactionModal
-      final bottomSheet = tester.widget<BottomSheet>(find.byType(BottomSheet).last);
-      expect(bottomSheet.backgroundColor, AppColors.canvasCardSurface);
+      // Verify non-transparent background on TransactionModal
       final modalContainer = tester.widget<Container>(
         find.descendant(of: find.byType(TransactionModal), matching: find.byType(Container)).first,
       );
@@ -215,7 +213,7 @@ void main() {
       await tester.tap(find.text('Ubah Saldo'));
       await tester.pumpAndSettle();
 
-      final balanceField = find.descendant(of: find.byType(BottomSheet).last, matching: find.byType(TextField)).first;
+      final balanceField = find.descendant(of: find.byType(WalletDetailEditTab), matching: find.byType(TextField)).first;
       await tester.enterText(balanceField, '25000000');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Perbarui Saldo'));
@@ -229,7 +227,7 @@ void main() {
       await tester.tap(find.text('Catat Transaksi'));
       await tester.pumpAndSettle();
 
-      final amountField = find.descendant(of: find.byType(BottomSheet).last, matching: find.byType(TextField)).first;
+      final amountField = find.descendant(of: find.byType(TransactionModal), matching: find.byType(TextField)).first;
       await tester.enterText(amountField, '750000');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Simpan Transaksi'));

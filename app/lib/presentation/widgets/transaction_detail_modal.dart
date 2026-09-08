@@ -109,9 +109,11 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
       _categoryId = matchingCats.isNotEmpty ? matchingCats.first.id : '';
     }
 
-    return Padding(
-      padding: widget.isInline ? EdgeInsets.fromLTRB(20, 16, 20, 48 + bottomInset) : EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
-      child: SingleChildScrollView(
+    return ColoredBox(
+      color: AppColors.canvasCardSurface,
+      child: Padding(
+        padding: widget.isInline ? EdgeInsets.fromLTRB(20, 16, 20, 48 + bottomInset) : EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
+        child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -183,6 +185,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

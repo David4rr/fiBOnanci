@@ -100,17 +100,14 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomSheet(
-      onClosing: widget.onReturnToDetails,
-      enableDrag: false,
-      backgroundColor: AppColors.canvasCardSurface,
-      builder: (context) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, 48 + MediaQuery.of(context).viewInsets.bottom),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return ColoredBox(
+      color: AppColors.canvasCardSurface,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 48 + MediaQuery.of(context).viewInsets.bottom),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           CurrencyAmountField(controller: _controller),
           const SizedBox(height: 12),
           AppTextField(
@@ -177,8 +174,7 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
           ),
         ],
       ),
-    );
-  },
-);
+    ),
+  );
 }
 }

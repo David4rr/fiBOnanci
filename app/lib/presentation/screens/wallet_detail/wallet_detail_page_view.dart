@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
-import '../../theme/app_colors.dart';
 import '../../widgets/transaction_detail_modal.dart';
 import '../../widgets/transaction_modal.dart';
 import 'wallet_detail_edit_tab.dart';
@@ -94,29 +93,19 @@ class WalletDetailPageView extends StatelessWidget {
           wallet: wallet,
           onReturnToDetails: onReturnToDetails,
         ),
-        BottomSheet(
-          onClosing: onReturnToDetails,
-          enableDrag: false,
-          backgroundColor: AppColors.canvasCardSurface,
-          builder: (context) => TransactionModal(
-            initialWalletId: wallet.id,
+        TransactionModal(
+          initialWalletId: wallet.id,
+          isInline: true,
+          onClose: onReturnToDetails,
+          onSaved: onReturnToDetails,
+        ),
+        if (selectedTransaction != null)
+          TransactionDetailModal(
+            transaction: selectedTransaction!,
             isInline: true,
             onClose: onReturnToDetails,
             onSaved: onReturnToDetails,
-          ),
-        ),
-        if (selectedTransaction != null)
-          BottomSheet(
-            onClosing: onReturnToDetails,
-            enableDrag: false,
-            backgroundColor: AppColors.canvasCardSurface,
-            builder: (context) => TransactionDetailModal(
-              transaction: selectedTransaction!,
-              isInline: true,
-              onClose: onReturnToDetails,
-              onSaved: onReturnToDetails,
-              onDeleted: onReturnToDetails,
-            ),
+            onDeleted: onReturnToDetails,
           )
         else
           const SizedBox.shrink(),

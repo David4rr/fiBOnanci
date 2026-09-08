@@ -95,9 +95,9 @@ class _TransactionModalState extends State<TransactionModal> {
     }
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: widget.isInline ? BorderRadius.zero : const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Padding(
         padding: widget.isInline
