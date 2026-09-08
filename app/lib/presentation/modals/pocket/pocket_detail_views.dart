@@ -40,43 +40,7 @@ class PocketDetailHeader extends StatelessWidget {
     final latestCurrent = pocket.currentAmount;
     final latestProgress = (target != null && target > 0) ? (latestCurrent / target).clamp(0.0, 1.0) : 1.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(color: pocketColor.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(14)),
-              child: Center(child: Icon(getPocketIcon(pocket.type), color: pocketColor, size: 24)),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(pocket.name, style: AppTypography.modalTitle),
-                  const SizedBox(height: 2),
-                  Text(getPocketTypeLabel(pocket.type), style: TextStyle(color: pocketColor, fontSize: 12, fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 20,
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 28,
-                color: AppColors.textWhite,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Container(
+    return Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: AppColors.canvasInputSearch,
@@ -114,8 +78,6 @@ class PocketDetailHeader extends StatelessWidget {
               ],
             ],
           ),
-        ),
-      ],
     );
   }
 }

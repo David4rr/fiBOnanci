@@ -11,6 +11,7 @@ class ModalHeader extends StatelessWidget {
   final IconData closeIcon;
   final Color closeIconColor;
   final double closeIconSize;
+  final Widget? leading;
   final Widget? trailing;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
@@ -25,6 +26,7 @@ class ModalHeader extends StatelessWidget {
     this.closeIcon = Icons.keyboard_arrow_down_rounded,
     this.closeIconColor = AppColors.textWhite,
     this.closeIconSize = 28,
+    this.leading,
     this.trailing,
     this.titleStyle,
     this.subtitleStyle,
@@ -38,6 +40,7 @@ class ModalHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ?leading,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

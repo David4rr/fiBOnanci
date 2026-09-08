@@ -89,9 +89,12 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
       final notes = _selectedTransaction?.notes?.trim();
       return notes != null && notes.isNotEmpty ? notes : 'Ubah rincian mutasi transaksi';
     }
-    return '${getPocketTypeLabel(latestPocket.type)} • Target: ${_currencyFormatter.format(latestPocket.targetAmount)}';
+    final target = latestPocket.targetAmount;
+    if (target != null && target > 0) {
+      return '${getPocketTypeLabel(latestPocket.type)} • Target: ${_currencyFormatter.format(target)}';
+    }
+    return getPocketTypeLabel(latestPocket.type);
   }
-
   IconData get _closeIcon {
     if (_currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1)) {
       return Icons.keyboard_arrow_down_rounded;
@@ -126,6 +129,15 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
               const ModalGrabHandle(padding: EdgeInsets.only(top: 12, bottom: 8)),
               ModalHeader(
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+                leading: _currentTab == 0
+                    ? Container(
+                        width: 44,
+                        height: 44,
+                        margin: const EdgeInsets.only(right: 14),
+                        decoration: BoxDecoration(color: pocketColor.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(14)),
+                        child: Center(child: Icon(getPocketIcon(latestPocket.type), color: pocketColor, size: 24)),
+                      )
+                    : null,
                 title: _getTitle(latestPocket),
                 subtitle: _getSubtitle(latestPocket),
                 closeIcon: _closeIcon,
