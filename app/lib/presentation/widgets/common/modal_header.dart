@@ -64,7 +64,34 @@ class ModalHeader extends StatelessWidget {
               constraints: const BoxConstraints(),
               splashRadius: 20,
               onPressed: onClose ?? () => Navigator.of(context).pop(),
-              icon: Icon(closeIcon, color: closeIconColor, size: closeIconSize),
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                switchInCurve: Curves.easeInOutCubic,
+                switchOutCurve: Curves.easeInOutCubic,
+                transitionBuilder: (child, anim) {
+                  final key = child.key is ValueKey<IconData>
+                      ? (child.key as ValueKey<IconData>).value
+                      : null;
+                  final turnsTween = key == Icons.keyboard_arrow_left_rounded
+                      ? Tween<double>(begin: -0.25, end: 0.0)
+                      : (key == Icons.keyboard_arrow_down_rounded
+                          ? Tween<double>(begin: 0.25, end: 0.0)
+                          : Tween<double>(begin: 0.0, end: 0.0));
+                  return RotationTransition(
+                    turns: anim.drive(turnsTween),
+                    child: FadeTransition(
+                      opacity: anim,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Icon(
+                  closeIcon,
+                  key: ValueKey<IconData>(closeIcon),
+                  color: closeIconColor,
+                  size: closeIconSize,
+                ),
+              ),
             ),
         ],
       ),

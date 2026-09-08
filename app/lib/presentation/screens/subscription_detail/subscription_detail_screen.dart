@@ -6,18 +6,18 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/common_widgets.dart';
-import 'subscription_detail_actions.dart';
 import 'subscription_detail_app_bar.dart';
-import 'subscription_detail_hero_card.dart';
+import 'subscription_detail_content.dart';
+import 'subscription_detail_edit_tab.dart';
 import 'subscription_detail_modal_route.dart';
-import 'subscription_detail_specs_card.dart';
 
 export 'subscription_detail_actions.dart';
 export 'subscription_detail_app_bar.dart';
+export 'subscription_detail_content.dart';
+export 'subscription_detail_edit_tab.dart';
 export 'subscription_detail_hero_card.dart';
 export 'subscription_detail_modal_route.dart';
 export 'subscription_detail_specs_card.dart';
-
 /// Full-screen modal screen for subscription and installment details with
 /// shared-component animations, reactive balance deduction, and gesture drag dismiss.
 class SubscriptionDetailScreen extends StatefulWidget {
@@ -56,11 +56,44 @@ class SubscriptionDetailScreen extends StatefulWidget {
 
 class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
   final _sheetKey = GlobalKey<ExpandableModalSheetState>();
+  late final PageController _pageController;
+  int _currentTab = 0;
+
   static final _currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _goToEditTab() {
+    setState(() => _currentTab = 1);
+    _pageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  void _goToDetailsTab() {
+    setState(() => _currentTab = 0);
+    _pageController.animateToPage(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,58 +115,55 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
         final subIdx = state.subscriptions.indexWhere((s) => s.id == sub.id);
         final effectiveIndex = widget.indexOverride ?? (subIdx >= 0 ? subIdx : null);
 
-        return ExpandableModalSheet(
-          key: _sheetKey,
-          initialChildSize: widget.initialChildSize,
-          minChildSize: 0.40,
-          maxChildSize: 1.0,
-          snapSizes: const [0.85, 1.0],
-          builder: (ctx, scrollController, currentSize) {
-            return Column(
-              children: [
-                SubscriptionDetailAppBar(
-                  subscription: sub,
-                  currencyFormatter: _currencyFormatter,
-                  onDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
-                  onDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+        return PopScope(
+          canPop: _currentTab == 0,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop && _currentTab == 1) {
+              _goToDetailsTab();
+            }
+          },
+          child: ExpandableModalSheet(
+            key: _sheetKey,
+            initialChildSize: widget.initialChildSize,
+            minChildSize: 0.40,
+            maxChildSize: 1.0,
+            snapSizes: const [0.85, 1.0],
+            builder: (ctx, scrollController, currentSize) {
+              return Column(
+                children: [
+                  SubscriptionDetailAppBar(
+                    subscription: sub,
+                    currencyFormatter: _currencyFormatter,
+                    isEditing: _currentTab == 1,
+                    onReturnToDetails: _goToDetailsTab,
+                    onDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
+                    onDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        const SizedBox(height: 8),
-                        SubscriptionDetailHeroCard(
+                        SubscriptionDetailContent(
                           subscription: sub,
                           wallet: wallet,
                           indexOverride: effectiveIndex,
-                        ),
-                        const SizedBox(height: 18),
-                        SubscriptionDetailSpecsCard(
-                          subscription: sub,
-                          wallet: wallet,
                           currencyFormatter: _currencyFormatter,
+                          scrollController: scrollController,
+                          onEdit: _goToEditTab,
                         ),
-                        const SizedBox(height: 16),
+                        SubscriptionDetailEditTab(
+                          subscription: sub,
+                          onSaved: () => Navigator.of(context).maybePop(),
+                          onReturnToDetails: _goToDetailsTab,
+                        ),
                       ],
                     ),
                   ),
-                ),
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 12),
-                    child: SubscriptionDetailActions(
-                      subscription: sub,
-                      wallet: wallet,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         );
       },
     );

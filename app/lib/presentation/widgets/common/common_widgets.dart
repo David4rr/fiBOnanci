@@ -14,3 +14,4 @@ export 'modal_header.dart';
 export 'modal_sheet_scaffold.dart';
 export 'primary_action_button.dart';
 export 'search_filter_chip.dart';
+export 'slide_to_delete_button.dart';

@@ -40,7 +40,14 @@ class SubscriptionDueDaySlider extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('TANGGAL JATUH TEMPO', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, letterSpacing: 0.8)),
+            Expanded(
+              child: Text(
+                'TANGGAL JATUH TEMPO',
+                style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, letterSpacing: 0.8),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(

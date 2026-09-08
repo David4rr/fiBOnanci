@@ -208,5 +208,212 @@ void main() {
       expect(detailCardWidget.indexOverride, equals(deckCardWidget.indexOverride));
       expect(detailCardWidget.subscription.title, equals(deckCardWidget.subscription.title));
     });
+
+    testWidgets('Tapping Edit Cicilan slides left to edit tab and arrow flips to point left to return', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final bloc = FinanceBloc(repository: repo)..add(const LoadFinanceData());
+      addTearDown(bloc.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: const MaterialApp(home: SubscriptionScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Drag to bring iPhone installment card to focus, then tap
+      await tester.drag(find.byType(SubscriptionStackedDeck), const Offset(0, -260));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('iPhone 16 Pro Max Cicilan'));
+      await tester.pumpAndSettle();
+      // Verify Detail Cicilan view is active
+      expect(find.text('Detail Cicilan'), findsOneWidget);
+      expect(find.text('Edit Cicilan'), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+
+      // Verify only 1 SubscriptionDetailScreen exists (no multiple modals)
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+
+      // Tap Edit Cicilan
+      await tester.tap(find.text('Edit Cicilan'));
+      await tester.pumpAndSettle();
+
+      // View slid left to edit tab without spawning a new modal route
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+      expect(find.byType(SubscriptionDetailEditTab), findsOneWidget);
+      expect(find.text('Edit Cicilan'), findsOneWidget);
+      expect(find.text('Rencana cicilan tenor & jatuh tempo'), findsOneWidget);
+      expect(find.text('Simpan Perubahan'), findsOneWidget);
+
+      // Arrow icon has flipped to point left to indicate return to installment details
+      expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
+
+      // Tap the flipped left arrow to return to installment details
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
+      await tester.pumpAndSettle();
+
+      // View slid back to installment details
+      expect(find.text('Detail Cicilan'), findsOneWidget);
+      expect(find.text('iPhone 16 Pro Max Cicilan'), findsNWidgets(2));
+      expect(find.text('Edit Cicilan'), findsOneWidget);
+
+      // Arrow icon has flipped back to point down
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsNothing);
+
+      // Tapping down arrow closes the modal
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SubscriptionDetailScreen), findsNothing);
+    });
+
+    testWidgets('Mark as Paid button morphs to success state and holds before modal dismissal', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final bloc = FinanceBloc(repository: repo)..add(const LoadFinanceData());
+      addTearDown(bloc.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: const MaterialApp(home: SubscriptionScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap Netflix card
+      await tester.tap(find.text('Netflix 4K Ultra'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+      expect(find.text('Tandai Sudah Lunas Bulan Ini'), findsOneWidget);
+
+      // Tap Tandai Sudah Lunas Bulan Ini
+      await tester.tap(find.text('Tandai Sudah Lunas Bulan Ini'));
+      // Pump 100ms: animation has started, morph state is active, modal is NOT closed immediately
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Button has morphed to "Berhasil Dibayar!" with checkmark icon
+      expect(find.text('Berhasil Dibayar!'), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // Modal is still present (not closed immediately!)
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+
+      // Pump 400ms: still within 1000ms delay window, modal is still open
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+
+      // Advance fake async clock past 1000ms delay and settle transition
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+
+      // Modal is now dismissed after the delay
+      expect(find.byType(SubscriptionDetailScreen), findsNothing);
+    });
+
+    testWidgets('SlideToDeleteButton slides from left to right to trigger confirmation dialog', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final bloc = FinanceBloc(repository: repo)..add(const LoadFinanceData());
+      addTearDown(bloc.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: const MaterialApp(home: SubscriptionScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Drag to bring iPhone installment card to focus, then tap
+      await tester.drag(find.byType(SubscriptionStackedDeck), const Offset(0, -260));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('iPhone 16 Pro Max Cicilan'));
+      await tester.pumpAndSettle();
+
+      // Tap Edit Cicilan to slide to edit tab
+      await tester.tap(find.text('Edit Cicilan'));
+      await tester.pumpAndSettle();
+
+      // SlideToDeleteButton is present
+      expect(find.byType(SlideToDeleteButton), findsOneWidget);
+      expect(find.text('Hapus Cicilan Ini'), findsOneWidget);
+
+      // Slide from left to right
+      await tester.drag(find.byType(SlideToDeleteButton), const Offset(320, 0));
+      await tester.pumpAndSettle();
+
+      // Confirmation dialog appears
+      expect(find.text('Hapus Tagihan?'), findsOneWidget);
+      expect(find.text('Batal'), findsOneWidget);
+
+      // Cancel dialog
+      await tester.tap(find.text('Batal'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hapus Tagihan?'), findsNothing);
+      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+    });
+
+    testWidgets('Slide-to-delete in billing details view triggers confirmation dialog and deletes', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final bloc = FinanceBloc(repository: repo)..add(const LoadFinanceData());
+      addTearDown(bloc.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: const MaterialApp(home: SubscriptionScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap Netflix card to open detail view (Tab 0)
+      await tester.tap(find.text('Netflix 4K Ultra'));
+      await tester.pumpAndSettle();
+
+      // SlideToDeleteButton is present in billing details
+      expect(find.byType(SlideToDeleteButton), findsOneWidget);
+      expect(find.text('Hapus'), findsOneWidget);
+
+      // Slide from left to right to trigger delete
+      await tester.drag(find.byType(SlideToDeleteButton), const Offset(320, 0));
+      await tester.pumpAndSettle();
+
+      // Confirmation dialog appears
+      expect(find.text('Hapus Tagihan?'), findsOneWidget);
+
+      // Confirm delete
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
+      await tester.pumpAndSettle();
+
+      // Detail modal closes and Netflix is deleted
+      expect(find.byType(SubscriptionDetailScreen), findsNothing);
+      expect(find.text('Netflix 4K Ultra'), findsNothing);
+    });
   });
 }

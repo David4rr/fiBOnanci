@@ -69,12 +69,16 @@ class SubscriptionTypeToggle extends StatelessWidget {
           children: [
             Icon(icon, size: 15, color: isSelected ? AppColors.neoChartreuse : AppColors.textMuted),
             const SizedBox(width: 6),
-            Text(
-              title,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? AppColors.textWhite : AppColors.textMuted,
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? AppColors.textWhite : AppColors.textMuted,
+                ),
               ),
             ),
           ],

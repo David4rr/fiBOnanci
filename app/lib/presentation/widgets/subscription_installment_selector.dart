@@ -102,10 +102,14 @@ class _SubscriptionInstallmentSelectorState extends State<SubscriptionInstallmen
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'TENGGAT WAKTU CICILAN (WAJIB)',
-                style: AppTypography.badgeLabel.copyWith(color: AppColors.neoCoral, letterSpacing: 0.8),
+              Expanded(
+                child: Text(
+                  'TENGGAT WAKTU CICILAN (WAJIB)',
+                  style: AppTypography.badgeLabel.copyWith(color: AppColors.neoCoral, letterSpacing: 0.8),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(

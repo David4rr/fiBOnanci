@@ -12,6 +12,8 @@ class SubscriptionDetailAppBar extends StatelessWidget {
   final GestureDragUpdateCallback? onDragUpdate;
   final GestureDragEndCallback? onDragEnd;
   final VoidCallback? onDismiss;
+  final bool isEditing;
+  final VoidCallback? onReturnToDetails;
 
   const SubscriptionDetailAppBar({
     super.key,
@@ -20,11 +22,27 @@ class SubscriptionDetailAppBar extends StatelessWidget {
     this.onDragUpdate,
     this.onDragEnd,
     this.onDismiss,
+    this.isEditing = false,
+    this.onReturnToDetails,
   });
 
   @override
   Widget build(BuildContext context) {
     final isInstallment = subscription.isInstallment;
+    final title = isEditing
+        ? (isInstallment ? 'Edit Cicilan' : 'Edit Tagihan Rutin')
+        : (isInstallment ? 'Detail Cicilan' : 'Detail Tagihan');
+    final subtitle = isEditing
+        ? (isInstallment
+            ? 'Rencana cicilan tenor & jatuh tempo'
+            : 'Langganan, tagihan rutin, atau tagihan berkala')
+        : subscription.title;
+    final closeIcon = isEditing
+        ? Icons.keyboard_arrow_left_rounded
+        : Icons.keyboard_arrow_down_rounded;
+    final onClose = isEditing
+        ? (onReturnToDetails ?? onDismiss ?? () => Navigator.of(context).maybePop())
+        : (onDismiss ?? () => Navigator.of(context).maybePop());
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -40,9 +58,10 @@ class SubscriptionDetailAppBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: ModalHeader(
-              title: isInstallment ? 'Detail Cicilan' : 'Detail Tagihan',
-              subtitle: subscription.title,
-              onClose: onDismiss ?? () => Navigator.of(context).maybePop(),
+              title: title,
+              subtitle: subtitle,
+              closeIcon: closeIcon,
+              onClose: onClose,
               padding: EdgeInsets.zero,
             ),
           ),
