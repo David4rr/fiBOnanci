@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../../bloc/finance/finance_bloc.dart';
-import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import 'pocket_transfer_dialog.dart';
 
+export 'pocket_delete_dialog.dart';
 IconData getPocketIcon(String type) => switch (type) {
   'savings' => Icons.savings_outlined,
   'retirement' => Icons.elderly_outlined,
@@ -125,11 +123,15 @@ class PocketDetailHeader extends StatelessWidget {
 class PocketDetailActions extends StatelessWidget {
   final PocketEntry pocket;
   final Color pocketColor;
+  final VoidCallback? onDeposit;
+  final VoidCallback? onWithdraw;
 
   const PocketDetailActions({
     super.key,
     required this.pocket,
     required this.pocketColor,
+    this.onDeposit,
+    this.onWithdraw,
   });
 
   @override
@@ -147,7 +149,7 @@ class PocketDetailActions extends StatelessWidget {
               ),
               icon: const Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
               label: Text('Isi Dana', style: GoogleFonts.plusJakartaSans(color: AppColors.canvasBg, fontWeight: FontWeight.w800, fontSize: 13.5)),
-              onPressed: () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: true),
+              onPressed: onDeposit ?? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: true),
             ),
           ),
         ),
@@ -163,35 +165,11 @@ class PocketDetailActions extends StatelessWidget {
               ),
               icon: Icon(Icons.north_east_rounded, color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, size: 18),
               label: Text('Tarik Dana', style: GoogleFonts.plusJakartaSans(color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, fontWeight: FontWeight.w800, fontSize: 13.5)),
-              onPressed: pocket.currentAmount > 0 ? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: false) : null,
+              onPressed: pocket.currentAmount > 0 ? (onWithdraw ?? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: false)) : null,
             ),
           ),
         ),
       ],
     );
   }
-}
-
-void showPocketDeleteDialog(BuildContext context, PocketEntry pocket) {
-  showDialog(
-    context: context,
-    builder: (dialogCtx) => AlertDialog(
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('Hapus Kantong?', style: AppTypography.sectionTitle),
-      content: Text('Kantong "${pocket.name}" akan dihapus. Riwayat transaksi tetap tersimpan di buku kas.', style: AppTypography.listSubtitle),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('Batal', style: TextStyle(color: AppColors.textMuted))),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          onPressed: () {
-            context.read<FinanceBloc>().add(DeletePocketEvent(pocket.id));
-            Navigator.of(dialogCtx).pop();
-            Navigator.of(context).pop();
-          },
-          child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-      ],
-    ),
-  );
 }

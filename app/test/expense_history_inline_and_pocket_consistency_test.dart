@@ -249,5 +249,95 @@ void main() {
       // Both buttons are 48px high ElevatedButton widgets
       expect(find.byType(ElevatedButton), findsNWidgets(2));
     });
+
+    testWidgets('PocketDetailModal transitions inline via PageView without secondary modal stacking', (tester) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      final repo = DriftFinanceRepository(db);
+      await repo.addPocket(
+        name: 'Dana Liburan',
+        targetAmount: 5000000.0,
+        type: 'goal',
+        colorHex: '#3B82F6',
+        iconName: 'flag',
+      );
+      final pockets = await repo.getPockets();
+      final pocket = pockets.first;
+      final bloc = FinanceBloc(repository: repo);
+      bloc.add(const LoadFinanceData());
+      await expectLater(
+        bloc.stream,
+        emitsThrough(predicate<FinanceState>((s) => s.status == FinanceStatus.success && s.wallets.isNotEmpty)),
+      );
+
+      addTearDown(bloc.close);
+      addTearDown(db.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => PocketDetailModal.show(context, pocket: pocket),
+                  child: const Text('Buka Modal Kantong'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Open PocketDetailModal
+      await tester.tap(find.text('Buka Modal Kantong'));
+      await tester.pumpAndSettle();
+
+      // Verify Tab 0 is displayed: ModalHeader shows pocket name, down arrow
+      expect(find.text('Dana Liburan'), findsWidgets);
+      expect(find.text('Riwayat Mutasi'), findsOneWidget);
+      expect(find.descendant(of: find.byType(ModalHeader), matching: find.byIcon(Icons.keyboard_arrow_down_rounded)), findsOneWidget);
+      expect(find.byType(PageView), findsOneWidget);
+
+      // Count modal routes: exactly 1 modal bottom sheet is open
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+
+      // 2. Tap "Isi Dana"
+      await tester.tap(find.text('Isi Dana'));
+      await tester.pumpAndSettle();
+
+      // Verify STILL ONLY 1 modal sheet is open (NO second modal bottom sheet)
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+
+      // Verify inline transition to Tab 1:
+      // Title changed to "Isi Dana ke Kantong", arrow morphed to left
+      expect(find.text('Isi Dana ke Kantong'), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
+      expect(find.byType(PocketTransferForm), findsOneWidget);
+
+      // 3. Tap left morphing arrow to return to Tab 0
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
+      await tester.pumpAndSettle();
+
+      // Verify returned to Tab 0
+      expect(find.text('Riwayat Mutasi'), findsOneWidget);
+      expect(find.descendant(of: find.byType(ModalHeader), matching: find.byIcon(Icons.keyboard_arrow_down_rounded)), findsOneWidget);
+      expect(find.text('Isi Dana ke Kantong'), findsNothing);
+
+      // 4. Tap "Isi Dana" again, enter amount, and confirm
+      await tester.tap(find.text('Isi Dana'));
+      await tester.pumpAndSettle();
+
+      final amountField = find.widgetWithText(TextField, 'Nominal');
+      await tester.enterText(amountField, '100000');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Konfirmasi'));
+      await tester.pumpAndSettle();
+
+      // After confirm, transitions back to Tab 0 with updated data (no dialog popped out to main screen)
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+      expect(find.text('Riwayat Mutasi'), findsOneWidget);
+    });
   });
 }
