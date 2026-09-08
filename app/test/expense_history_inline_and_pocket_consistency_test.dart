@@ -377,5 +377,74 @@ void main() {
       expect(find.text('Riwayat Mutasi'), findsOneWidget);
       expect(find.text('Setoran ke Dana Liburan Bali'), findsOneWidget);
     });
+
+    testWidgets('PocketDetailModal deletes pocket using SlideToDeleteButton and confirmation dialog', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      final db = AppDatabase(NativeDatabase.memory());
+      final repo = DriftFinanceRepository(db);
+      await repo.addPocket(
+        name: 'Dana Darurat Baru',
+        targetAmount: 10000000.0,
+        type: 'emergency',
+        colorHex: '#10B981',
+        iconName: 'shield',
+      );
+      final pockets = await repo.getPockets();
+      final pocket = pockets.first;
+      final bloc = FinanceBloc(repository: repo);
+      bloc.add(const LoadFinanceData());
+      await expectLater(
+        bloc.stream,
+        emitsThrough(predicate<FinanceState>((s) => s.status == FinanceStatus.success && s.wallets.isNotEmpty)),
+      );
+
+      addTearDown(bloc.close);
+      addTearDown(db.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => PocketDetailModal.show(context, pocket: pocket),
+                  child: const Text('Open Pocket'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Pocket'));
+      await tester.pumpAndSettle();
+
+      // Verify SlideToDeleteButton is present
+      final sliderFinder = find.byType(SlideToDeleteButton);
+      expect(sliderFinder, findsOneWidget);
+      expect(find.text('Hapus Kantong'), findsOneWidget);
+
+      // Slide or tap to trigger delete
+      await tester.tap(sliderFinder);
+      await tester.pumpAndSettle();
+
+      // Verify confirmation dialog
+      expect(find.text('Hapus Kantong?'), findsOneWidget);
+      expect(find.text('Kantong "Dana Darurat Baru" akan dihapus. Riwayat transaksi tetap tersimpan di buku kas.'), findsOneWidget);
+
+      // Confirm delete
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
+      await tester.pumpAndSettle();
+
+      // Verify modal is dismissed
+      expect(find.byType(PocketDetailSheet), findsNothing);
+    });
   });
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/pocket_transaction_tile.dart';
 import 'pocket_detail_views.dart';
 
@@ -97,12 +98,9 @@ class PocketDetailTab extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 24),
-          Center(
-            child: TextButton.icon(
-              onPressed: () => showPocketDeleteDialog(context, pocket),
-              icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
-              label: const Text('Hapus Kantong', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700, fontSize: 13)),
-            ),
+          SlideToDeleteButton(
+            label: 'Hapus Kantong',
+            onSlideComplete: () => showPocketDeleteDialog(context, pocket),
           ),
         ],
       ),
