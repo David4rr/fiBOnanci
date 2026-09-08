@@ -8,6 +8,7 @@ import '../../data/database/app_database.dart';
 import '../widgets/wallet_card.dart';
 import '../widgets/common/common_widgets.dart';
 import 'wallet_detail/wallet_detail_app_bar.dart';
+import 'wallet_detail/wallet_detail_edit_tab.dart';
 import 'wallet_detail/wallet_detail_history_section.dart';
 import 'wallet_detail/wallet_detail_modal_route.dart';
 import 'wallet_detail/wallet_detail_radial_glow.dart';
@@ -16,11 +17,11 @@ import 'wallet_detail/wallet_detail_scroll_view.dart';
 export 'wallet_detail/tactile_hero_card.dart';
 export 'wallet_detail/wallet_detail_actions_and_chart.dart';
 export 'wallet_detail/wallet_detail_app_bar.dart';
+export 'wallet_detail/wallet_detail_edit_tab.dart';
 export 'wallet_detail/wallet_detail_history_section.dart';
 export 'wallet_detail/wallet_detail_modal_route.dart';
 export 'wallet_detail/wallet_detail_radial_glow.dart';
 export 'wallet_detail/wallet_detail_scroll_view.dart';
-
 class WalletDetailScreen extends StatefulWidget {
   final String walletId;
   final NumberFormat currencyFormatter;
@@ -45,14 +46,41 @@ class WalletDetailScreen extends StatefulWidget {
 class _WalletDetailScreenState extends State<WalletDetailScreen> {
   final _sheetKey = GlobalKey<ExpandableModalSheetState>();
   final _searchController = TextEditingController();
+  late final PageController _pageController;
   double _scrollOffset = 0.0;
   WalletTxFilter _selectedFilter = WalletTxFilter.all;
   String _searchQuery = '';
+  int _currentTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+  }
 
   @override
   void dispose() {
+    _pageController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _goToEditTab() {
+    setState(() => _currentTab = 1);
+    _pageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  void _goToDetailsTab() {
+    setState(() => _currentTab = 0);
+    _pageController.animateToPage(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
@@ -98,38 +126,51 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                         wallet: wallet,
                         headerBalanceOpacity: headerBalanceOpacity,
                         currencyFormatter: widget.currencyFormatter,
+                        isEditing: _currentTab == 1,
+                        onReturnToDetails: _goToDetailsTab,
                       ),
                     ),
                     Expanded(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (n) {
-                          if (n.metrics.axis == Axis.vertical) {
-                            final off = n.metrics.pixels;
-                            if ((off - _scrollOffset).abs() > 2) {
-                              setState(() => _scrollOffset = off);
-                            }
-                          }
-                          return false;
-                        },
-                        child: WalletDetailScrollView(
-                          scrollController: scrollController,
-                          wallet: wallet,
-                          cardIndex: cardIndex >= 0 ? cardIndex : 0,
-                          currencyFormatter: widget.currencyFormatter,
-                          cardColor: cardColor,
-                          allWallets: state.wallets,
-                          transactions: state.transactions,
-                          filteredTx: filteredTx,
-                          searchController: _searchController,
-                          searchQuery: _searchQuery,
-                          selectedFilter: _selectedFilter,
-                          onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
-                          onClearSearch: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                          onFilterChanged: (f) => setState(() => _selectedFilter = f),
-                        ),
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          NotificationListener<ScrollNotification>(
+                            onNotification: (n) {
+                              if (n.metrics.axis == Axis.vertical) {
+                                final off = n.metrics.pixels;
+                                if ((off - _scrollOffset).abs() > 2) {
+                                  setState(() => _scrollOffset = off);
+                                }
+                              }
+                              return false;
+                            },
+                            child: WalletDetailScrollView(
+                              scrollController: scrollController,
+                              wallet: wallet,
+                              cardIndex: cardIndex >= 0 ? cardIndex : 0,
+                              currencyFormatter: widget.currencyFormatter,
+                              cardColor: cardColor,
+                              allWallets: state.wallets,
+                              transactions: state.transactions,
+                              filteredTx: filteredTx,
+                              searchController: _searchController,
+                              searchQuery: _searchQuery,
+                              selectedFilter: _selectedFilter,
+                              onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
+                              onClearSearch: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                              onFilterChanged: (f) => setState(() => _selectedFilter = f),
+                              onEditBalance: _goToEditTab,
+                            ),
+                          ),
+                          WalletDetailEditTab(
+                            wallet: wallet,
+                            onReturnToDetails: _goToDetailsTab,
+                          ),
+                        ],
                       ),
                     ),
                   ],

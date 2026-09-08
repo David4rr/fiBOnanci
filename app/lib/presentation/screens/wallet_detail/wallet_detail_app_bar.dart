@@ -11,6 +11,8 @@ class WalletDetailAppBar extends StatelessWidget {
   final double headerBalanceOpacity;
   final NumberFormat currencyFormatter;
   final VoidCallback? onDismiss;
+  final bool isEditing;
+  final VoidCallback? onReturnToDetails;
 
   const WalletDetailAppBar({
     super.key,
@@ -18,10 +20,24 @@ class WalletDetailAppBar extends StatelessWidget {
     required this.headerBalanceOpacity,
     required this.currencyFormatter,
     this.onDismiss,
+    this.isEditing = false,
+    this.onReturnToDetails,
   });
-
   @override
   Widget build(BuildContext context) {
+    final title = isEditing
+        ? 'Penyesuaian Saldo: ${wallet.name}'
+        : 'Detail Rekening';
+    final subtitle = isEditing
+        ? 'Ubah saldo awal & preferensi rekening'
+        : 'Informasi & Mutasi';
+    final closeIcon = isEditing
+        ? Icons.keyboard_arrow_left_rounded
+        : Icons.keyboard_arrow_down_rounded;
+    final onClose = isEditing
+        ? (onReturnToDetails ?? onDismiss ?? () => Navigator.of(context).pop())
+        : (onDismiss ?? () => Navigator.of(context).pop());
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -48,18 +64,18 @@ class WalletDetailAppBar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Detail Rekening',
+                      title,
                       style: AppTypography.modalTitle,
                     ),
                     Row(
                       children: [
                         Flexible(
                           child: Text(
-                            'Informasi & Mutasi',
+                            subtitle,
                             style: AppTypography.modalSubtitle,
                           ),
                         ),
-                        if (headerBalanceOpacity > 0.1) ...[
+                        if (!isEditing && headerBalanceOpacity > 0.1) ...[
                           const SizedBox(width: 8),
                           Opacity(
                             opacity: headerBalanceOpacity,
@@ -92,11 +108,34 @@ class WalletDetailAppBar extends StatelessWidget {
               ),
               IconButton(
                 key: const ValueKey('wallet_detail_dismiss_button'),
-                onPressed: onDismiss ?? () => Navigator.of(context).pop(),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 28,
-                  color: AppColors.textWhite,
+                onPressed: onClose,
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  switchInCurve: Curves.easeInOutCubic,
+                  switchOutCurve: Curves.easeInOutCubic,
+                  transitionBuilder: (child, anim) {
+                    final key = child.key is ValueKey<IconData>
+                        ? (child.key as ValueKey<IconData>).value
+                        : null;
+                    final turnsTween = key == Icons.keyboard_arrow_left_rounded
+                        ? Tween<double>(begin: -0.25, end: 0.0)
+                        : (key == Icons.keyboard_arrow_down_rounded
+                            ? Tween<double>(begin: 0.25, end: 0.0)
+                            : Tween<double>(begin: 0.0, end: 0.0));
+                    return RotationTransition(
+                      turns: anim.drive(turnsTween),
+                      child: FadeTransition(
+                        opacity: anim,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    closeIcon,
+                    key: ValueKey<IconData>(closeIcon),
+                    size: 28,
+                    color: AppColors.textWhite,
+                  ),
                 ),
               ),
             ],
