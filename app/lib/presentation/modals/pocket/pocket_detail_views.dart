@@ -140,8 +140,12 @@ class PocketDetailActions extends StatelessWidget {
           child: SizedBox(
             height: 48,
             child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: pocketColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-              icon: const Icon(Icons.add_rounded, color: AppColors.canvasBg, size: 20),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.neoMint,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              icon: const Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
               label: Text('Isi Dana', style: GoogleFonts.plusJakartaSans(color: AppColors.canvasBg, fontWeight: FontWeight.w800, fontSize: 13.5)),
               onPressed: () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: true),
             ),
@@ -151,10 +155,14 @@ class PocketDetailActions extends StatelessWidget {
         Expanded(
           child: SizedBox(
             height: 48,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder, width: 1.5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-              icon: const Icon(Icons.arrow_upward_rounded, color: AppColors.textWhite, size: 18),
-              label: Text('Tarik Dana', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w700, fontSize: 13.5)),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: pocket.currentAmount > 0 ? AppColors.neoCoral : AppColors.canvasInputSearch,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              icon: Icon(Icons.north_east_rounded, color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, size: 18),
+              label: Text('Tarik Dana', style: GoogleFonts.plusJakartaSans(color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, fontWeight: FontWeight.w800, fontSize: 13.5)),
               onPressed: pocket.currentAmount > 0 ? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: false) : null,
             ),
           ),

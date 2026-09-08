@@ -18,6 +18,7 @@ class StackedCardDeckScrollList extends StatefulWidget {
   final List<WalletEntry> wallets;
   final String? expandedTxId;
   final ValueChanged<String?>? onToggleExpand;
+  final ValueChanged<TransactionEntry>? onManageTransaction;
   final double bottomPadding;
 
   const StackedCardDeckScrollList({
@@ -27,6 +28,7 @@ class StackedCardDeckScrollList extends StatefulWidget {
     required this.wallets,
     this.expandedTxId,
     this.onToggleExpand,
+    this.onManageTransaction,
     this.bottomPadding = 110.0,
   });
 
@@ -53,11 +55,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
     _internalExpandedId = widget.expandedTxId;
     _flingController = AnimationController(vsync: this);
     _flingController.addListener(() {
-      if (_flingAnimation != null) {
-        setState(() {
-          _scrollOffset = _flingAnimation!.value;
-        });
-      }
+      if (_flingAnimation != null) setState(() => _scrollOffset = _flingAnimation!.value);
     });
   }
 
@@ -86,9 +84,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
 
   void _onDragUpdate(DragUpdateDetails details, double maxScroll) {
     if (_flingController.isAnimating) _flingController.stop();
-    setState(() {
-      _scrollOffset = (_scrollOffset - details.primaryDelta!).clamp(0.0, maxScroll);
-    });
+    setState(() => _scrollOffset = (_scrollOffset - details.primaryDelta!).clamp(0.0, maxScroll));
   }
 
   void _onDragEnd(DragEndDetails details, double maxScroll) {
@@ -183,7 +179,9 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                             setState(() => _internalExpandedId = newId);
                           }
                         },
-                        onManage: () => TransactionDetailModal.show(context, transaction: tx),
+                        onManage: widget.onManageTransaction != null
+                            ? () => widget.onManageTransaction!(tx)
+                            : () => TransactionDetailModal.show(context, transaction: tx),
                       ),
                     );
                   }),

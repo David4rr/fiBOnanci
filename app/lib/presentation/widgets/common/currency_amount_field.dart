@@ -14,6 +14,10 @@ class CurrencyAmountField extends StatelessWidget {
   final TextStyle? prefixStyle;
   final double borderRadius;
   final Color fillColor;
+  final String? labelText;
+  final String? hintText;
+  final TextStyle? labelStyle;
+  final String? errorText;
 
   const CurrencyAmountField({
     super.key,
@@ -26,6 +30,10 @@ class CurrencyAmountField extends StatelessWidget {
     this.prefixStyle,
     this.borderRadius = 16,
     this.fillColor = AppColors.canvasInputSearch,
+    this.labelText,
+    this.hintText,
+    this.labelStyle,
+    this.errorText,
   });
 
   @override
@@ -43,6 +51,10 @@ class CurrencyAmountField extends StatelessWidget {
       style: effectiveStyle,
       onChanged: onChanged,
       decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: labelStyle ?? (labelText != null ? AppTypography.listSubtitle : null),
+        hintText: hintText,
+        errorText: errorText,
         prefixText: 'Rp ',
         prefixStyle: effectivePrefixStyle,
         filled: true,

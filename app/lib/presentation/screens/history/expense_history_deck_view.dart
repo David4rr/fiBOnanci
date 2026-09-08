@@ -15,6 +15,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
   final List<TransactionEntry> currentDayTxs;
   final List<TransactionEntry> allTransactions;
   final List<WalletEntry> wallets;
+  final ValueChanged<TransactionEntry>? onManageTransaction;
 
   const ExpenseHistoryDeckView({
     super.key,
@@ -26,8 +27,8 @@ class ExpenseHistoryDeckView extends StatelessWidget {
     required this.currentDayTxs,
     required this.allTransactions,
     required this.wallets,
+    this.onManageTransaction,
   });
-
   @override
   Widget build(BuildContext context) {
     final isToday = currentDayKey.isNotEmpty && DailyDateHelper.formatDayTabLabel(currentDayKey) == 'Hari Ini';
@@ -92,6 +93,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                       transactions: listToDisplay,
                       allTransactions: allTransactions,
                       wallets: wallets,
+                      onManageTransaction: onManageTransaction,
                     ),
             ),
           ),

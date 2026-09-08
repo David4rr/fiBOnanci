@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +10,7 @@ import '../../../core/formatters/rupiah_input_formatter.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/common_widgets.dart';
 
 class PocketTransferDialog {
   static void show(
@@ -24,13 +24,16 @@ class PocketTransferDialog {
     String? selectedWalletId;
     String? errorMessage;
 
-    showDialog(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (dialogCtx) {
+      isScrollControlled: true,
+      backgroundColor: AppColors.canvasCardSurface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (sheetCtx) {
         return BlocProvider.value(
           value: financeBloc,
           child: StatefulBuilder(
-            builder: (dialogCtx, setDialogState) {
+            builder: (ctx, setSheetState) {
               return BlocBuilder<FinanceBloc, FinanceState>(
                 builder: (ctx, state) {
                   final activeWallets = state.wallets.where((w) => !w.isDeleted).toList();
@@ -38,24 +41,22 @@ class PocketTransferDialog {
                       ? selectedWalletId
                       : (activeWallets.isNotEmpty ? activeWallets.first.id : null);
                   selectedWalletId = safeWalletId;
+                  final actionColor = isDeposit ? AppColors.neoMint : AppColors.neoCoral;
 
-                  return AlertDialog(
-                    backgroundColor: AppColors.canvasCardSurface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    title: Text(
-                      isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening',
-                      style: AppTypography.sectionTitle,
-                    ),
-                    content: SingleChildScrollView(
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(20, 12, 20, 24 + MediaQuery.of(sheetCtx).viewInsets.bottom),
+                    child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            isDeposit
+                          const ModalGrabHandle(padding: EdgeInsets.only(bottom: 12)),
+                          ModalHeader(
+                            title: isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening',
+                            subtitle: isDeposit
                                 ? 'Pilih rekening asal untuk memindahkan dana ke ${pocket.name}.'
                                 : 'Pilih rekening tujuan penarikan dari ${pocket.name}.',
-                            style: AppTypography.listSubtitle,
+                            onClose: () => Navigator.of(sheetCtx).pop(),
                           ),
                           const SizedBox(height: 16),
                           if (activeWallets.isNotEmpty) ...[
@@ -86,7 +87,7 @@ class PocketTransferDialog {
                                   }).toList(),
                                   onChanged: (val) {
                                     if (val != null) {
-                                      setDialogState(() {
+                                      setSheetState(() {
                                         selectedWalletId = val;
                                         errorMessage = null;
                                       });
@@ -104,23 +105,14 @@ class PocketTransferDialog {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          TextField(
+                          CurrencyAmountField(
                             controller: amountController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
+                            labelText: 'Nominal',
+                            prefixColor: actionColor,
+                            hintText: '0',
                             onChanged: (_) {
-                              if (errorMessage != null) setDialogState(() => errorMessage = null);
+                              if (errorMessage != null) setSheetState(() => errorMessage = null);
                             },
-                            style: AppTypography.listTitle,
-                            decoration: InputDecoration(
-                              labelText: 'Nominal',
-                              labelStyle: AppTypography.listSubtitle,
-                              hintText: 'Rp 0',
-                              hintStyle: AppTypography.listSubtitle,
-                              filled: true,
-                              fillColor: AppColors.canvasInputSearch,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                            ),
                           ),
                           if (errorMessage != null) ...[
                             const SizedBox(height: 10),
@@ -138,47 +130,46 @@ class PocketTransferDialog {
                               ),
                             ),
                           ],
+                          const SizedBox(height: 20),
+                          PrimaryActionButton(
+                            text: 'Konfirmasi',
+                            backgroundColor: actionColor,
+                            foregroundColor: AppColors.canvasBg,
+                            onPressed: activeWallets.isEmpty
+                                ? null
+                                : () {
+                                    final amount = RupiahInputFormatter.parse(amountController.text);
+                                    if (amount <= 0) {
+                                      setSheetState(() => errorMessage = 'Masukkan nominal lebih dari Rp 0');
+                                      return;
+                                    }
+                                    if (selectedWalletId == null) {
+                                      setSheetState(() => errorMessage = 'Pilih rekening terlebih dahulu');
+                                      return;
+                                    }
+                                    final selectedWallet = activeWallets.firstWhere((w) => w.id == selectedWalletId);
+                                    if (isDeposit && amount > selectedWallet.balance) {
+                                      setSheetState(() => errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${currencyFormatter.format(selectedWallet.balance)})');
+                                      return;
+                                    }
+                                    if (!isDeposit && amount > pocket.currentAmount) {
+                                      setSheetState(() => errorMessage = 'Saldo kantong tidak cukup (${currencyFormatter.format(pocket.currentAmount)})');
+                                      return;
+                                    }
+                                    financeBloc.add(
+                                      TransferPocketFundsEvent(
+                                        pocketId: pocket.id,
+                                        walletId: selectedWalletId!,
+                                        amount: amount,
+                                        isDepositToPocket: isDeposit,
+                                      ),
+                                    );
+                                    Navigator.of(sheetCtx).pop();
+                                  },
+                          ),
                         ],
                       ),
                     ),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('Batal', style: TextStyle(color: AppColors.textMuted))),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoMint, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        onPressed: activeWallets.isEmpty
-                            ? null
-                            : () {
-                                final amount = RupiahInputFormatter.parse(amountController.text);
-                                if (amount <= 0) {
-                                  setDialogState(() => errorMessage = 'Masukkan nominal lebih dari Rp 0');
-                                  return;
-                                }
-                                if (selectedWalletId == null) {
-                                  setDialogState(() => errorMessage = 'Pilih rekening terlebih dahulu');
-                                  return;
-                                }
-                                final selectedWallet = activeWallets.firstWhere((w) => w.id == selectedWalletId);
-                                if (isDeposit && amount > selectedWallet.balance) {
-                                  setDialogState(() => errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${currencyFormatter.format(selectedWallet.balance)})');
-                                  return;
-                                }
-                                if (!isDeposit && amount > pocket.currentAmount) {
-                                  setDialogState(() => errorMessage = 'Saldo kantong tidak cukup (${currencyFormatter.format(pocket.currentAmount)})');
-                                  return;
-                                }
-                                financeBloc.add(
-                                  TransferPocketFundsEvent(
-                                    pocketId: pocket.id,
-                                    walletId: selectedWalletId!,
-                                    amount: amount,
-                                    isDepositToPocket: isDeposit,
-                                  ),
-                                );
-                                Navigator.of(dialogCtx).pop();
-                              },
-                        child: const Text('Konfirmasi', style: TextStyle(color: AppColors.canvasBg, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
                   );
                 },
               );

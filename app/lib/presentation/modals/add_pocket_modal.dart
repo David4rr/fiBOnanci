@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -71,21 +70,19 @@ class AddPocketModal {
                           },
                         ),
                         const SizedBox(height: 12),
-                        PocketTypeSelector.buildTextField(
+                        CurrencyAmountField(
                           controller: targetController,
-                          label: 'Target Tabungan (Opsional)',
-                          hintText: 'Rp 0',
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
+                          labelText: 'Target Tabungan (Opsional)',
+                          hintText: '0',
+                          prefixColor: AppColors.neoChartreuse,
                         ),
                         const SizedBox(height: 12),
-                        PocketTypeSelector.buildTextField(
+                        CurrencyAmountField(
                           controller: initialController,
-                          label: 'Setoran Awal (Opsional)',
-                          hintText: 'Rp 0',
+                          labelText: 'Setoran Awal (Opsional)',
+                          hintText: '0',
                           errorText: initialError,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
+                          prefixColor: AppColors.neoMint,
                           onChanged: (_) {
                             if (initialError != null) setModalState(() => initialError = null);
                           },
