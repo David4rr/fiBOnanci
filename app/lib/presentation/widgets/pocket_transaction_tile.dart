@@ -11,12 +11,14 @@ class PocketTransactionTile extends StatelessWidget {
   final TransactionEntry transaction;
   final List<WalletEntry> wallets;
   final NumberFormat currencyFormatter;
+  final VoidCallback? onTap;
 
   const PocketTransactionTile({
     super.key,
     required this.transaction,
     required this.wallets,
     required this.currencyFormatter,
+    this.onTap,
   });
 
   @override
@@ -33,7 +35,7 @@ class PocketTransactionTile extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => TransactionDetailModal.show(context, transaction: transaction),
+      onTap: onTap ?? () => TransactionDetailModal.show(context, transaction: transaction),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(

@@ -338,6 +338,44 @@ void main() {
       // After confirm, transitions back to Tab 0 with updated data (no dialog popped out to main screen)
       expect(find.byType(PocketDetailSheet), findsOneWidget);
       expect(find.text('Riwayat Mutasi'), findsOneWidget);
+      expect(find.text('Setoran ke Kantong Dana Liburan'), findsOneWidget);
+
+      // 5. Tap the transaction tile inside PocketDetailModal to edit it inline
+      await tester.tap(find.text('Setoran ke Kantong Dana Liburan'));
+      await tester.pumpAndSettle();
+
+      // Verify STILL ONLY 1 modal sheet is open (NO second modal bottom sheet)
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+      expect(find.text('Edit Transaksi'), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
+      expect(find.text('Simpan Perubahan'), findsOneWidget);
+
+      // 6. Tap left arrow to return to Tab 0
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Riwayat Mutasi'), findsOneWidget);
+      expect(find.descendant(of: find.byType(ModalHeader), matching: find.byIcon(Icons.keyboard_arrow_down_rounded)), findsOneWidget);
+      expect(find.text('Edit Transaksi'), findsNothing);
+
+      // 7. Tap transaction tile again, modify notes, and save
+      await tester.tap(find.text('Setoran ke Kantong Dana Liburan'));
+      await tester.pumpAndSettle();
+
+      final notesField = find.widgetWithText(TextField, 'Catatan (Opsional)');
+      await tester.enterText(notesField, 'Setoran ke Dana Liburan Bali');
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Simpan Perubahan'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Simpan Perubahan'));
+      await tester.pumpAndSettle();
+
+      // Verify returned to Tab 0 with updated note
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+      expect(find.text('Riwayat Mutasi'), findsOneWidget);
+      expect(find.text('Setoran ke Dana Liburan Bali'), findsOneWidget);
     });
   });
 }

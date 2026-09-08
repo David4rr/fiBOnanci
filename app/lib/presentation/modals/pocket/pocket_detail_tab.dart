@@ -15,6 +15,7 @@ class PocketDetailTab extends StatelessWidget {
   final NumberFormat currencyFormatter;
   final VoidCallback onDeposit;
   final VoidCallback onWithdraw;
+  final ValueChanged<TransactionEntry>? onEditTransaction;
 
   const PocketDetailTab({
     super.key,
@@ -25,6 +26,7 @@ class PocketDetailTab extends StatelessWidget {
     required this.currencyFormatter,
     required this.onDeposit,
     required this.onWithdraw,
+    this.onEditTransaction,
   });
 
   @override
@@ -89,6 +91,9 @@ class PocketDetailTab extends StatelessWidget {
                 transaction: transactions[index],
                 wallets: wallets,
                 currencyFormatter: currencyFormatter,
+                onTap: onEditTransaction != null
+                    ? () => onEditTransaction!(transactions[index])
+                    : null,
               ),
             ),
           const SizedBox(height: 24),
