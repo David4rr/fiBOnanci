@@ -11,6 +11,7 @@ import '../../widgets/profile_avatar.dart';
 import '../edit_profile_modal.dart';
 import 'profile_card_painters.dart';
 import 'profile_morphing_menu.dart';
+import '../financial_health_modal.dart';
 
 export 'profile_delete_dialog.dart';
 export 'profile_morphing_menu.dart';
@@ -142,17 +143,21 @@ class ProfileHeaderCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                                Text('$healthScore', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()])),
-                                const SizedBox(width: 2),
-                                Text('SKOR', style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                              ]),
-                              const SizedBox(height: 2),
-                              SizedBox(width: 64, height: 24, child: CustomPaint(painter: ProfileWaveChartPainter(scores: [state.healthReport.emergencyRunway.score, state.healthReport.fixedCommitment.score, state.healthReport.savingsMargin.score, state.healthReport.spendPacing.score, healthScore.toDouble()]))),
-                            ],
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onHealthDetails ?? () => FinancialHealthModal.show(context),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                                  Text('$healthScore', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()])),
+                                  const SizedBox(width: 2),
+                                  Text('SKOR', style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                                ]),
+                                const SizedBox(height: 2),
+                                SizedBox(width: 64, height: 24, child: CustomPaint(painter: ProfileWaveChartPainter(scores: [state.healthReport.emergencyRunway.score, state.healthReport.fixedCommitment.score, state.healthReport.savingsMargin.score, state.healthReport.spendPacing.score, healthScore.toDouble()]))),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -175,11 +180,8 @@ class ProfileHeaderCard extends StatelessWidget {
               top: 5,
               right: rightOffset,
               child: ProfileMorphingMenu(
-                profile: profile,
-                totalProfiles: totalProfiles,
-                onEditProfile: onEditProfile,
-                onNewProfile: onNewProfile,
-                onHealthDetails: onHealthDetails,
+                profile: profile, totalProfiles: totalProfiles,
+                onEditProfile: onEditProfile, onNewProfile: onNewProfile, onHealthDetails: onHealthDetails,
               ),
             ),
           ],

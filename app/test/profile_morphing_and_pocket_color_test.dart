@@ -172,6 +172,36 @@ void main() {
       // Verify back on Profile summary view
       expect(find.text('Profil Pengguna'), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+
+      // Tap 3-dot menu again to test Health Finance Details
+      await tester.tap(dotsFinder);
+      await tester.pumpAndSettle();
+      expect(find.text('Health Finance Details'), findsOneWidget);
+
+      // Tap 'Health Finance Details'
+      await tester.tap(find.text('Health Finance Details'));
+      await tester.pumpAndSettle();
+
+      // Verify NO secondary modal bottom sheet was pushed
+      expect(find.byType(ModalBottomSheetRoute), findsNothing);
+
+      // Verify inline transition to Health Details tab
+      expect(find.text('Audit Kesehatan Finansial'), findsOneWidget);
+      expect(find.byType(FinancialHealthTab), findsOneWidget);
+      expect(find.text('4 Pilar Rasio Keuangan'), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_left_rounded), findsOneWidget);
+
+      // Return inline to summary
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
+      await tester.pumpAndSettle();
+      expect(find.text('Profil Pengguna'), findsOneWidget);
+
+      // Tap SKOR directly on ProfileHeaderCard
+      await tester.tap(find.text('SKOR'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ModalBottomSheetRoute), findsNothing);
+      expect(find.text('Audit Kesehatan Finansial'), findsOneWidget);
+      expect(find.byType(FinancialHealthTab), findsOneWidget);
     });
   });
 }

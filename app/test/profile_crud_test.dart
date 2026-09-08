@@ -294,8 +294,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Audit Kesehatan Finansial'), findsOneWidget);
 
-      // Dismiss FinancialHealthModal and verify ProfileModal remains open
-      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded).last);
+      // Return inline from Health Details to Profile Summary
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Profil Pengguna'), findsOneWidget);
       expect(find.text('Audit Kesehatan Finansial'), findsNothing);

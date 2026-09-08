@@ -10,7 +10,13 @@ import '../financial_health_modal.dart';
 import 'profile_delete_dialog.dart';
 export 'profile_morphing_menu.dart';
 
-void showProfileMenuModal(BuildContext context, {required ProfileEntry profile, int totalProfiles = 1}) {
+void showProfileMenuModal(BuildContext context, {
+  required ProfileEntry profile,
+  int totalProfiles = 1,
+  VoidCallback? onHealthDetails,
+  VoidCallback? onEditProfile,
+  VoidCallback? onNewProfile,
+}) {
   showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.canvasBg,
@@ -39,7 +45,7 @@ void showProfileMenuModal(BuildContext context, {required ProfileEntry profile, 
               subtitle: 'Perbarui nama, jabatan, dan avatar',
               onTap: () {
                 Navigator.of(ctx).pop();
-                EditProfileModal.show(context, profile: profile);
+                if (onEditProfile != null) { onEditProfile(); } else { EditProfileModal.show(context, profile: profile); }
               },
             ),
             const SizedBox(height: 8),
@@ -50,7 +56,7 @@ void showProfileMenuModal(BuildContext context, {required ProfileEntry profile, 
               subtitle: 'Tambah akun profil baru di perangkat',
               onTap: () {
                 Navigator.of(ctx).pop();
-                EditProfileModal.show(context);
+                if (onNewProfile != null) { onNewProfile(); } else { EditProfileModal.show(context); }
               },
             ),
             const SizedBox(height: 8),
@@ -61,7 +67,7 @@ void showProfileMenuModal(BuildContext context, {required ProfileEntry profile, 
               subtitle: 'Audit komprehensif 4 pilar kesehatan keuangan',
               onTap: () {
                 Navigator.of(ctx).pop();
-                FinancialHealthModal.show(context);
+                if (onHealthDetails != null) { onHealthDetails(); } else { FinancialHealthModal.show(context); }
               },
             ),
             const SizedBox(height: 8),
