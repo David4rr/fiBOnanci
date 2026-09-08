@@ -138,7 +138,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                       child: WalletCardDeck(
                         wallets: wallets,
                         fmt: currencyFormatter,

@@ -3,6 +3,8 @@ import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/widgets/bottom_nav_dock.dart';
 import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
+import 'package:fibonanci_app/presentation/widgets/trend_spline_chart.dart';
+import 'package:fibonanci_app/presentation/widgets/wallet_card_deck.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
@@ -42,6 +44,14 @@ void main() {
     expect(find.text('TOTAL SALDO RIIL'), findsOneWidget);
     expect(find.text('Tren Arus Kas (Semua Rekening)'), findsOneWidget);
 
+    // Verify a little gap between Tren Arus Kas chart and WalletCardDeck
+    final chartFinder = find.byType(TrendSplineChart);
+    final deckFinder = find.byType(WalletCardDeck);
+    expect(chartFinder, findsOneWidget);
+    expect(deckFinder, findsOneWidget);
+    final chartBottom = tester.getBottomLeft(chartFinder).dy;
+    final deckTop = tester.getTopLeft(deckFinder).dy;
+    expect(deckTop - chartBottom, greaterThanOrEqualTo(14.0));
     // Verify bottom nav bar is STILL VISIBLE and present!
     expect(find.byType(BottomNavDock), findsOneWidget);
     expect(find.text('Wallets'), findsOneWidget);
