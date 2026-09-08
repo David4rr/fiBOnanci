@@ -22,6 +22,9 @@ class WalletDetailScrollView extends StatelessWidget {
   final VoidCallback onClearSearch;
   final ValueChanged<WalletTxFilter> onFilterChanged;
   final VoidCallback? onEditBalance;
+  final VoidCallback? onAddTransaction;
+  final ValueChanged<TransactionEntry>? onEditTransaction;
+
   const WalletDetailScrollView({
     super.key,
     required this.scrollController,
@@ -39,6 +42,8 @@ class WalletDetailScrollView extends StatelessWidget {
     required this.onClearSearch,
     required this.onFilterChanged,
     this.onEditBalance,
+    this.onAddTransaction,
+    this.onEditTransaction,
   });
 
   @override
@@ -69,6 +74,7 @@ class WalletDetailScrollView extends StatelessWidget {
             cardColor: cardColor,
             transactions: transactions,
             onEditBalance: onEditBalance,
+            onAddTransaction: onAddTransaction,
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 14)),
@@ -82,6 +88,7 @@ class WalletDetailScrollView extends StatelessWidget {
           onSearchChanged: onSearchChanged,
           onClearSearch: onClearSearch,
           onFilterChanged: onFilterChanged,
+          onEditTransaction: onEditTransaction,
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],

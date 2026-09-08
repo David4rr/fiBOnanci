@@ -61,6 +61,7 @@ class TransactionDetailComponents {
   static Widget buildActionButtons({
     required BuildContext context,
     required VoidCallback onSave,
+    VoidCallback? onCancel,
   }) {
     return Row(
       children: [
@@ -70,7 +71,7 @@ class TransactionDetailComponents {
             height: 52,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-              onPressed: () => Navigator.pop(context),
+              onPressed: onCancel ?? () => Navigator.pop(context),
               child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -91,7 +92,7 @@ class TransactionDetailComponents {
     );
   }
 
-  static void showDeleteDialog(BuildContext context, String transactionId) {
+  static void showDeleteDialog(BuildContext context, String transactionId, {VoidCallback? onDeleted}) {
     AppConfirmationDialog.show(
       context,
       title: 'Hapus Transaksi?',
@@ -100,7 +101,11 @@ class TransactionDetailComponents {
       confirmColor: AppColors.neoCoral,
       onConfirm: () {
         context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
-        Navigator.pop(context);
+        if (onDeleted != null) {
+          onDeleted();
+        } else {
+          Navigator.pop(context);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: AppColors.neoCoral,

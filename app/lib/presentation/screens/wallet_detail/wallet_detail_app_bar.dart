@@ -13,6 +13,8 @@ class WalletDetailAppBar extends StatelessWidget {
   final VoidCallback? onDismiss;
   final bool isEditing;
   final VoidCallback? onReturnToDetails;
+  final String? customTitle;
+  final String? customSubtitle;
 
   const WalletDetailAppBar({
     super.key,
@@ -22,15 +24,17 @@ class WalletDetailAppBar extends StatelessWidget {
     this.onDismiss,
     this.isEditing = false,
     this.onReturnToDetails,
+    this.customTitle,
+    this.customSubtitle,
   });
   @override
   Widget build(BuildContext context) {
-    final title = isEditing
+    final title = customTitle ?? (isEditing
         ? 'Penyesuaian Saldo: ${wallet.name}'
-        : 'Detail Rekening';
-    final subtitle = isEditing
+        : 'Detail Rekening');
+    final subtitle = customSubtitle ?? (isEditing
         ? 'Ubah saldo awal & preferensi rekening'
-        : 'Informasi & Mutasi';
+        : 'Informasi & Mutasi');
     final closeIcon = isEditing
         ? Icons.keyboard_arrow_left_rounded
         : Icons.keyboard_arrow_down_rounded;
@@ -66,6 +70,8 @@ class WalletDetailAppBar extends StatelessWidget {
                     Text(
                       title,
                       style: AppTypography.modalTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Row(
                       children: [
@@ -73,6 +79,8 @@ class WalletDetailAppBar extends StatelessWidget {
                           child: Text(
                             subtitle,
                             style: AppTypography.modalSubtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (!isEditing && headerBalanceOpacity > 0.1) ...[

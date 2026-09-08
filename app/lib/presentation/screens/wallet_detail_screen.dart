@@ -8,20 +8,20 @@ import '../../data/database/app_database.dart';
 import '../widgets/wallet_card.dart';
 import '../widgets/common/common_widgets.dart';
 import 'wallet_detail/wallet_detail_app_bar.dart';
-import 'wallet_detail/wallet_detail_edit_tab.dart';
 import 'wallet_detail/wallet_detail_history_section.dart';
 import 'wallet_detail/wallet_detail_modal_route.dart';
+import 'wallet_detail/wallet_detail_page_view.dart';
 import 'wallet_detail/wallet_detail_radial_glow.dart';
-import 'wallet_detail/wallet_detail_scroll_view.dart';
-
 export 'wallet_detail/tactile_hero_card.dart';
 export 'wallet_detail/wallet_detail_actions_and_chart.dart';
 export 'wallet_detail/wallet_detail_app_bar.dart';
 export 'wallet_detail/wallet_detail_edit_tab.dart';
 export 'wallet_detail/wallet_detail_history_section.dart';
 export 'wallet_detail/wallet_detail_modal_route.dart';
+export 'wallet_detail/wallet_detail_page_view.dart';
 export 'wallet_detail/wallet_detail_radial_glow.dart';
 export 'wallet_detail/wallet_detail_scroll_view.dart';
+
 class WalletDetailScreen extends StatefulWidget {
   final String walletId;
   final NumberFormat currencyFormatter;
@@ -51,6 +51,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
   WalletTxFilter _selectedFilter = WalletTxFilter.all;
   String _searchQuery = '';
   int _currentTab = 0;
+  TransactionEntry? _selectedTransaction;
 
   @override
   void initState() {
@@ -67,22 +68,26 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
 
   void _goToEditTab() {
     setState(() => _currentTab = 1);
-    _pageController.animateToPage(
-      1,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeInOutCubic,
-    );
+    _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+  }
+
+  void _goToAddTxTab() {
+    setState(() => _currentTab = 2);
+    _pageController.animateToPage(2, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+  }
+
+  void _goToEditTxTab(TransactionEntry tx) {
+    setState(() {
+      _selectedTransaction = tx;
+      _currentTab = 3;
+    });
+    _pageController.animateToPage(3, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
   void _goToDetailsTab() {
     setState(() => _currentTab = 0);
-    _pageController.animateToPage(
-      0,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeInOutCubic,
-    );
+    _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
@@ -126,51 +131,46 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                         wallet: wallet,
                         headerBalanceOpacity: headerBalanceOpacity,
                         currencyFormatter: widget.currencyFormatter,
-                        isEditing: _currentTab == 1,
+                        isEditing: _currentTab != 0,
                         onReturnToDetails: _goToDetailsTab,
+                        customTitle: _currentTab == 1
+                            ? 'Penyesuaian Saldo: ${wallet.name}'
+                            : (_currentTab == 2 ? 'Catat Transaksi' : (_currentTab == 3 ? 'Edit Transaksi' : null)),
+                        customSubtitle: _currentTab == 1
+                            ? 'Ubah saldo awal & preferensi rekening'
+                            : (_currentTab == 2 ? 'Rekening: ${wallet.name}' : (_currentTab == 3 ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi') : null)),
                       ),
                     ),
                     Expanded(
-                      child: PageView(
-                        controller: _pageController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          NotificationListener<ScrollNotification>(
-                            onNotification: (n) {
-                              if (n.metrics.axis == Axis.vertical) {
-                                final off = n.metrics.pixels;
-                                if ((off - _scrollOffset).abs() > 2) {
-                                  setState(() => _scrollOffset = off);
-                                }
-                              }
-                              return false;
-                            },
-                            child: WalletDetailScrollView(
-                              scrollController: scrollController,
-                              wallet: wallet,
-                              cardIndex: cardIndex >= 0 ? cardIndex : 0,
-                              currencyFormatter: widget.currencyFormatter,
-                              cardColor: cardColor,
-                              allWallets: state.wallets,
-                              transactions: state.transactions,
-                              filteredTx: filteredTx,
-                              searchController: _searchController,
-                              searchQuery: _searchQuery,
-                              selectedFilter: _selectedFilter,
-                              onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
-                              onClearSearch: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                              onFilterChanged: (f) => setState(() => _selectedFilter = f),
-                              onEditBalance: _goToEditTab,
-                            ),
-                          ),
-                          WalletDetailEditTab(
-                            wallet: wallet,
-                            onReturnToDetails: _goToDetailsTab,
-                          ),
-                        ],
+                      child: WalletDetailPageView(
+                        pageController: _pageController,
+                        scrollController: scrollController,
+                        wallet: wallet,
+                        cardIndex: cardIndex >= 0 ? cardIndex : 0,
+                        currencyFormatter: widget.currencyFormatter,
+                        cardColor: cardColor,
+                        allWallets: state.wallets,
+                        transactions: state.transactions,
+                        filteredTx: filteredTx,
+                        searchController: _searchController,
+                        searchQuery: _searchQuery,
+                        selectedFilter: _selectedFilter,
+                        onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
+                        onClearSearch: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                        onFilterChanged: (f) => setState(() => _selectedFilter = f),
+                        onScrollOffsetChanged: (off) {
+                          if ((off - _scrollOffset).abs() > 2) {
+                            setState(() => _scrollOffset = off);
+                          }
+                        },
+                        onEditBalance: _goToEditTab,
+                        onAddTransaction: _goToAddTxTab,
+                        onEditTransaction: _goToEditTxTab,
+                        selectedTransaction: _selectedTransaction,
+                        onReturnToDetails: _goToDetailsTab,
                       ),
                     ),
                   ],

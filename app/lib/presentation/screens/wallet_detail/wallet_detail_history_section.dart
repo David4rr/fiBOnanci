@@ -23,6 +23,7 @@ class WalletDetailHistorySection extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onClearSearch;
   final ValueChanged<WalletTxFilter> onFilterChanged;
+  final ValueChanged<TransactionEntry>? onEditTransaction;
 
   const WalletDetailHistorySection({
     super.key,
@@ -35,6 +36,7 @@ class WalletDetailHistorySection extends StatelessWidget {
     required this.onSearchChanged,
     required this.onClearSearch,
     required this.onFilterChanged,
+    this.onEditTransaction,
   });
 
   String _getFilterTypeLabel(WalletTxFilter filter) {
@@ -117,7 +119,7 @@ class WalletDetailHistorySection extends StatelessWidget {
         else
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => WalletDetailTransactionTile(tx: filteredTx[index], walletId: wallet.id, currencyFormatter: currencyFormatter),
+              (context, index) => WalletDetailTransactionTile(tx: filteredTx[index], walletId: wallet.id, currencyFormatter: currencyFormatter, onEditTransaction: onEditTransaction),
               childCount: filteredTx.length,
             ),
           ),

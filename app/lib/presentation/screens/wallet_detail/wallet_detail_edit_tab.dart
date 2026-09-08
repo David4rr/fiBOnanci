@@ -79,14 +79,11 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
     final accNum = _accountNumberController.text.trim();
     final boundPkg = _isCustomPackage ? _customPackageController.text.trim() : _selectedPackage;
 
-    context.read<FinanceBloc>().add(
-      UpdateWalletBalanceEvent(
-        walletId: widget.wallet.id,
-        newBalance: newBal > 0 ? newBal : widget.wallet.balance,
-        accountNumber: accNum,
-      ),
-    );
-
+    context.read<FinanceBloc>().add(UpdateWalletBalanceEvent(
+      walletId: widget.wallet.id,
+      newBalance: newBal > 0 ? newBal : widget.wallet.balance,
+      accountNumber: accNum,
+    ));
     final repo = context.read<FinanceBloc>().repository;
     if (boundPkg != null && boundPkg.isNotEmpty) {
       repo.bindWalletToPackage(walletId: widget.wallet.id, packageName: boundPkg).then((_) {
@@ -99,17 +96,6 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
     }
 
     widget.onReturnToDetails();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.neoMint,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text(
-          'Saldo rekening ${widget.wallet.name} berhasil diperbarui!',
-          style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
   }
 
   @override
@@ -117,11 +103,13 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
     return BottomSheet(
       onClosing: widget.onReturnToDetails,
       enableDrag: false,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.canvasCardSurface,
       builder: (context) {
         return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 48 + MediaQuery.of(context).viewInsets.bottom),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CurrencyAmountField(controller: _controller),
           const SizedBox(height: 12),

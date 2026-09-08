@@ -14,6 +14,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
   final Color cardColor;
   final List<TransactionEntry> transactions;
   final VoidCallback? onEditBalance;
+  final VoidCallback? onAddTransaction;
 
   const WalletDetailActionsAndChart({
     super.key,
@@ -21,6 +22,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
     required this.cardColor,
     required this.transactions,
     this.onEditBalance,
+    this.onAddTransaction,
   });
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: PressableScale(
-                  onTap: () => TransactionModal.show(context, initialWalletId: wallet.id),
+                  onTap: onAddTransaction ?? () => TransactionModal.show(context, initialWalletId: wallet.id),
                   child: Container(
                     height: 44,
                     decoration: BoxDecoration(

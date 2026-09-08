@@ -11,12 +11,14 @@ class WalletDetailTransactionTile extends StatelessWidget {
   final TransactionEntry tx;
   final String walletId;
   final NumberFormat currencyFormatter;
+  final ValueChanged<TransactionEntry>? onEditTransaction;
 
   const WalletDetailTransactionTile({
     super.key,
     required this.tx,
     required this.walletId,
     required this.currencyFormatter,
+    this.onEditTransaction,
   });
 
   @override
@@ -42,7 +44,7 @@ class WalletDetailTransactionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4.5),
       child: PressableScale(
-        onTap: () => TransactionDetailModal.show(context, transaction: tx),
+        onTap: () => onEditTransaction != null ? onEditTransaction!(tx) : TransactionDetailModal.show(context, transaction: tx),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
