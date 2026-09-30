@@ -40,12 +40,12 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 240),
       reverseDuration: const Duration(milliseconds: 180),
     );
     _expandAnimation = CurvedAnimation(
       parent: _animController,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutBack,
       reverseCurve: Curves.easeInCubic,
     );
   }
@@ -97,25 +97,35 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _closeMenu(),
-                child: const ColoredBox(color: Colors.transparent),
+                child: AnimatedBuilder(
+                  animation: _animController,
+                  builder: (context, _) => ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.35 * _animController.value),
+                  ),
+                ),
               ),
             ),
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
-              targetAnchor: Alignment.topRight,
+              targetAnchor: Alignment.bottomRight,
               followerAnchor: Alignment.topRight,
-              offset: const Offset(0, 0),
+              offset: const Offset(0, 6),
               child: AnimatedBuilder(
                 animation: _expandAnimation,
-                builder: (context, child) => FadeTransition(
-                  opacity: _expandAnimation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.35, end: 1.0).animate(_expandAnimation),
-                    alignment: Alignment.topRight,
-                    child: child,
-                  ),
-                ),
+                builder: (context, child) {
+                  final progress = _animController.value;
+                  final scale = 0.84 + 0.16 * _expandAnimation.value;
+                  final opacity = (progress / 0.65).clamp(0.0, 1.0);
+                  return Opacity(
+                    opacity: opacity,
+                    child: Transform.scale(
+                      scale: scale,
+                      alignment: Alignment.topRight,
+                      child: child,
+                    ),
+                  );
+                },
                 child: ProfileMorphingMenuOverlay(
                   profile: widget.profile,
                   totalProfiles: widget.totalProfiles,

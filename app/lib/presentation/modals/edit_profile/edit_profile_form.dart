@@ -36,6 +36,7 @@ class EditProfileForm extends StatelessWidget {
   final TextEditingController incomeTargetController;
   final String selectedCurrency;
   final ValueChanged<String> onCurrencyChanged;
+  final List<String>? existingUsernames;
 
   const EditProfileForm({
     super.key,
@@ -48,6 +49,7 @@ class EditProfileForm extends StatelessWidget {
     required this.incomeTargetController,
     required this.selectedCurrency,
     required this.onCurrencyChanged,
+    this.existingUsernames,
   });
 
   @override
@@ -57,12 +59,20 @@ class EditProfileForm extends StatelessWidget {
       children: [
         EditProfileInputField(
           controller: usernameController,
-          label: 'Username',
-          hintText: 'e.g. David',
+          label: 'Username / Handle',
+          hintText: 'e.g. david_arrozaqi',
           prefixIcon: Icons.alternate_email_rounded,
           validator: (val) {
             if (val == null || val.trim().isEmpty) return 'Username wajib diisi';
-            if (val.trim().length < 2) return 'Username minimal 2 karakter';
+            final clean = val.trim().replaceAll('@', '');
+            if (clean.length < 2) return 'Username minimal 2 karakter';
+            if (!RegExp(r'^[a-zA-Z0-9_.]+$').hasMatch(clean)) {
+              return 'Hanya huruf, angka, titik, dan garis bawah (_)';
+            }
+            if (existingUsernames != null &&
+                existingUsernames!.any((u) => u.toLowerCase() == clean.toLowerCase())) {
+              return 'Username @$clean sudah digunakan';
+            }
             return null;
           },
         ),

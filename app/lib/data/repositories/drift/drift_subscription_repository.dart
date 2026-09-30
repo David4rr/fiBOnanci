@@ -1,11 +1,14 @@
 part of '../finance_repository.dart';
 
 mixin DriftSubscriptionRepository on DriftRepoBase {
-  Stream<List<SubscriptionEntry>> watchActiveSubscriptions() =>
-      db.watchActiveSubscriptions();
+  Stream<List<SubscriptionEntry>> watchActiveSubscriptions({String? profileId}) =>
+      db.watchActiveSubscriptions(profileId: profileId);
 
-  Future<List<SubscriptionEntry>> getSubscriptions() =>
-      (db.select(db.subscriptions)..where((t) => t.isDeleted.equals(false) & t.status.equals('active'))).get();
+  Future<List<SubscriptionEntry>> getSubscriptions({String? profileId}) {
+    final q = db.select(db.subscriptions)
+      ..where((t) => t.isDeleted.equals(false) & t.status.equals('active') & db.profileFilter(t.profileId, profileId));
+    return q.get();
+  }
 
   Future<void> addSubscription({
     required String title,
@@ -18,12 +21,16 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     bool isInstallment = false,
     int? totalCycles,
     DateTime? deadlineDate,
-  }) {
+    String? profileId,
+  }) async {
     final now = DateTime.now().toUtc();
-    return db.into(db.subscriptions).insert(
+    final wallet = await (db.select(db.wallets)..where((t) => t.id.equals(walletId))).getSingleOrNull();
+    final effProfileId = profileId ?? wallet?.profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
+    await db.into(db.subscriptions).insert(
       SubscriptionsCompanion(
         id: drift.Value(uuid.v4()),
         walletId: drift.Value(walletId),
+        profileId: drift.Value(effProfileId),
         categoryId: drift.Value(categoryId),
         title: drift.Value(title),
         cost: drift.Value(cost),

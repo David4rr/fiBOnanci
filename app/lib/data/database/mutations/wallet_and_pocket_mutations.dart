@@ -48,6 +48,7 @@ extension WalletAndPocketMutations on AppDatabase {
       await into(transactions).insert(
         TransactionsCompanion(
           id: Value(const Uuid().v4()),
+          profileId: Value(pocket.profileId ?? wallet.profileId),
           walletId: Value(walletId),
           categoryId: const Value('11111111-1111-4111-8111-111111111111'),
           amount: Value(amount),
@@ -95,6 +96,7 @@ extension WalletAndPocketMutations on AppDatabase {
       await logTransactionWithBalanceMutation(
         tx: TransactionsCompanion(
           id: Value(uuid.v4()),
+          profileId: Value(sub.profileId),
           walletId: Value(sub.walletId),
           categoryId: Value(sub.categoryId),
           amount: Value(sub.cost),

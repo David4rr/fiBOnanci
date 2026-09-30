@@ -10,11 +10,13 @@ import 'health/financial_health_tab.dart';
 import 'profile/profile_actions.dart';
 import 'profile/profile_edit_tab.dart';
 import 'profile/profile_general_data_card.dart';
+import 'profile/profile_card_carousel.dart';
 import 'profile/profile_header_card.dart';
 
 export 'health/financial_health_tab.dart';
 export 'profile/profile_actions.dart';
 export 'profile/profile_edit_tab.dart';
+export 'profile/profile_card_carousel.dart';
 export 'profile/profile_header_card.dart';
 export 'profile/profile_menu_modal.dart';
 export 'profile/profile_morphing_menu.dart';
@@ -134,17 +136,17 @@ class _ProfileModalState extends State<ProfileModal> {
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
                           children: [
-                            ProfileHeaderCard(
-                              profile: profile,
-                              totalProfiles: profiles.length,
-                              walletCount: widget.walletCount,
-                              txCount: widget.txCount,
+                            ProfileCardCarousel(
+                              profiles: profiles,
+                              currentProfileId: profile.id,
+                              walletCount: state.wallets.length,
+                              txCount: state.transactions.length,
                               onEditProfile: () => _goToEdit(profile),
                               onNewProfile: () => _goToEdit(null),
                               onHealthDetails: _goToHealthDetails,
                             ),
                             const SizedBox(height: 16),
-                            ProfileGeneralDataCard(profile: profile, walletCount: widget.walletCount, txCount: widget.txCount),
+                            ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
                             ProfileActions(profile: profile, profiles: profiles),
                           ],
                         ),

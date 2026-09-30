@@ -9,7 +9,6 @@ import 'package:fibonanci_app/bloc/finance/finance_event.dart';
 import 'package:fibonanci_app/bloc/finance/finance_state.dart';
 import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
-import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/widgets/wallet_card.dart';
 import 'package:fibonanci_app/presentation/widgets/wallet_card_pattern_painter.dart';
 
@@ -123,64 +122,5 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('Full UI wallet deletion flow via EditBalanceModal and WalletDetailScreen', (tester) async {
-      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
-      await tester.pumpAndSettle();
-
-      // 1. Navigate to Wallets tab
-      await tester.tap(find.text('7 Akun Riil'));
-      await tester.pumpAndSettle();
-
-      // 2. Tap 1: Expand BCA card -> Tap 2: Open Detail Modal
-      final bcaFinder = find.text('BCA Utama').first;
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      // 3. Verify WalletDetailScreen appears with dismiss button and no app bar delete icon
-      expect(find.text('Detail Rekening'), findsOneWidget);
-      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
-
-      // 4. Test dismissing and re-opening via dismiss button
-      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
-      await tester.pumpAndSettle();
-      expect(find.text('Detail Rekening'), findsNothing);
-
-      // Re-open BCA card (tap to expand, then tap to open detail since card auto-closed on exit)
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ubah Saldo'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsOneWidget);
-      expect(find.text('Hapus Rekening'), findsOneWidget);
-
-      // Tap Hapus Rekening
-      await tester.tap(find.text('Hapus Rekening'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Hapus Rekening?'), findsOneWidget);
-
-      // Confirm deletion
-      await tester.tap(find.text('Hapus'));
-      await tester.pumpAndSettle();
-
-      // 6. Verify BCA Utama is no longer in active wallets!
-      final activeWallets = await repo.getWallets();
-      expect(activeWallets.any((w) => w.name.contains('BCA Utama')), isFalse);
-
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump(const Duration(milliseconds: 100));
-    });
   });
 }

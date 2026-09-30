@@ -5,14 +5,14 @@ extension TransactionMutations on AppDatabase {
     required TransactionsCompanion tx,
   }) {
     return transaction(() async {
-      await into(transactions).insert(tx);
-
       final walletId = tx.walletId.value;
       final amount = tx.amount.value;
       final type = tx.type.value;
-
       final wallet = await (select(wallets)..where((t) => t.id.equals(walletId))).getSingle();
-
+      final toInsert = (tx.profileId.present && tx.profileId.value != null)
+          ? tx
+          : tx.copyWith(profileId: Value(wallet.profileId));
+      await into(transactions).insert(toInsert);
       if (type == 'expense') {
         await (update(wallets)..where((t) => t.id.equals(walletId))).write(
           WalletsCompanion(
@@ -173,6 +173,7 @@ extension TransactionMutations on AppDatabase {
       // 3. Update transaction row
       await (update(transactions)..where((t) => t.id.equals(txId))).write(
         TransactionsCompanion(
+          profileId: Value(targetWallet.profileId),
           walletId: Value(newWalletId),
           categoryId: Value(newCategoryId),
           amount: Value(newAmount),

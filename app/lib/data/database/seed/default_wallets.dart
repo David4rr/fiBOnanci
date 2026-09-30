@@ -9,9 +9,9 @@ class DefaultWalletSeedData {
   const DefaultWalletSeedData({required this.wallets, required this.rules});
 }
 
-DefaultWalletSeedData getDefaultWalletsSeed(DateTime now) {
+DefaultWalletSeedData getDefaultWalletsSeed(DateTime now, {String? profileId}) {
   const uuid = Uuid();
-  final defaultWallets = [
+  final rawWallets = [
     WalletsCompanion(
       id: Value(uuid.v4()),
       name: const Value('BCA Utama'),
@@ -83,8 +83,9 @@ DefaultWalletSeedData getDefaultWalletsSeed(DateTime now) {
       updatedAt: Value(now),
     ),
   ];
+  final defaultWallets = rawWallets.map((w) => w.copyWith(profileId: Value(profileId))).toList();
 
-  final defaultRules = [
+  final rawRules = [
     NotificationRulesCompanion(
       id: Value(uuid.v4()),
       packageName: const Value('com.bca'),
@@ -142,6 +143,7 @@ DefaultWalletSeedData getDefaultWalletsSeed(DateTime now) {
       updatedAt: Value(now),
     ),
   ];
+  final defaultRules = rawRules.map((r) => r.copyWith(profileId: Value(profileId))).toList();
 
   return DefaultWalletSeedData(wallets: defaultWallets, rules: defaultRules);
 }

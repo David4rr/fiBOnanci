@@ -94,7 +94,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
 
   void _onSave() {
     if (!_formKey.currentState!.validate()) return;
-    final username = _usernameController.text.trim();
+    final username = _usernameController.text.trim().replaceAll('@', '');
     final fullName = _fullNameController.text.trim();
     final email = _emailController.text.trim().isEmpty ? null : _emailController.text.trim();
     final phone = _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim();
@@ -125,6 +125,11 @@ class _EditProfileModalState extends State<EditProfileModal> {
 
   @override
   Widget build(BuildContext context) {
+    final profiles = context.watch<FinanceBloc>().state.profiles;
+    final existingUsernames = profiles
+        .where((p) => p.id != widget.initialProfile?.id)
+        .map((p) => p.username)
+        .toList();
     return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
       child: Form(
@@ -164,6 +169,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
                       incomeTargetController: _incomeTargetController,
                       selectedCurrency: _selectedCurrency,
                       onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
+                      existingUsernames: existingUsernames,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(

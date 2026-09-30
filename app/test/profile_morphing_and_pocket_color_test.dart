@@ -13,6 +13,7 @@ import 'package:fibonanci_app/presentation/modals/profile_modal.dart';
 import 'package:fibonanci_app/presentation/screens/wallet/wallet_pockets_view.dart';
 import 'package:fibonanci_app/presentation/widgets/bento_folder_card.dart';
 import 'package:fibonanci_app/presentation/widgets/pocket_card_theme.dart';
+import 'package:fibonanci_app/presentation/widgets/profile_avatar.dart';
 
 void main() {
   group('Pocket Color & Profile Modal Morphing Tests', () {
@@ -145,13 +146,17 @@ void main() {
       // Verify morphing menu opened via OverlayPortal (NOT ModalBottomSheetRoute)
       expect(find.byType(ModalBottomSheetRoute), findsNothing);
       expect(find.text('Menu Profil'), findsOneWidget);
-      expect(find.text('Edit Profile'), findsOneWidget);
+      expect(find.text('Edit Profile'), findsNothing);
       expect(find.text('New Profile'), findsOneWidget);
       expect(find.text('Health Finance Details'), findsOneWidget);
       expect(find.text('Share Profile'), findsOneWidget);
 
-      // Tap 'Edit Profile' from the morphing menu
-      await tester.tap(find.text('Edit Profile'));
+      // Close morphing menu
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      // Tap profile avatar on ProfileHeaderCard to enter Edit Profile tab inline
+      await tester.tap(find.byType(ProfileAvatar));
       await tester.pumpAndSettle();
 
       // Verify NO secondary modal route was pushed

@@ -1,9 +1,11 @@
 part of '../finance_repository.dart';
 
 mixin DriftPocketRepository on DriftRepoBase {
-  Stream<List<PocketEntry>> watchPockets() => db.watchActivePockets();
+  Stream<List<PocketEntry>> watchPockets({String? profileId}) =>
+      db.watchActivePockets(profileId: profileId);
 
-  Future<List<PocketEntry>> getPockets() => db.getActivePockets();
+  Future<List<PocketEntry>> getPockets({String? profileId}) =>
+      db.getActivePockets(profileId: profileId);
 
   Future<void> addPocket({
     required String name,
@@ -15,12 +17,15 @@ mixin DriftPocketRepository on DriftRepoBase {
     DateTime? targetDate,
     String? linkedWalletId,
     String? notes,
+    String? profileId,
   }) async {
     final now = DateTime.now().toUtc();
     final pocketId = uuid.v4();
+    final effProfileId = profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
     await db.createPocket(
       PocketsCompanion(
         id: drift.Value(pocketId),
+        profileId: drift.Value(effProfileId),
         name: drift.Value(name),
         type: drift.Value(type),
         targetAmount: drift.Value(targetAmount),

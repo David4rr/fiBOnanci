@@ -32,12 +32,11 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 260,
-      margin: const EdgeInsets.only(top: 2),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      width: 256,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF2E3244), width: 1.2),
         boxShadow: [
           BoxShadow(
@@ -77,27 +76,21 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          ProfileMorphingMenuItem(
-            icon: Icons.edit_outlined,
-            title: 'Edit Profile',
-            subtitle: 'Perbarui nama, jabatan, avatar',
-            onTap: () => onAction(onEditProfile ?? () => EditProfileModal.show(context, profile: profile)),
-          ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           ProfileMorphingMenuItem(
             icon: Icons.person_add_alt_1_outlined,
             title: 'New Profile',
             subtitle: 'Tambah akun profil baru',
             onTap: () => onAction(onNewProfile ?? () => EditProfileModal.show(context)),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ProfileMorphingMenuItem(
             icon: Icons.favorite_outline_rounded,
             title: 'Health Finance Details',
             subtitle: 'Audit komprehensif keuangan',
             onTap: () => onAction(onHealthDetails ?? () => FinancialHealthModal.show(context)),
           ),
+          const SizedBox(height: 8),
           ProfileMorphingMenuItem(
             icon: Icons.share_outlined,
             title: 'Share Profile',
@@ -105,7 +98,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
             onTap: () => onAction(onShareProfile),
           ),
           if (totalProfiles > 1) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             ProfileMorphingMenuItem(
               icon: Icons.delete_outline_rounded,
               title: 'Hapus Profil',
@@ -168,6 +161,7 @@ class ProfileMorphingMenuItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: titleColor ?? Colors.white)),
+                  const SizedBox(height: 2),
                   Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w500, color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),

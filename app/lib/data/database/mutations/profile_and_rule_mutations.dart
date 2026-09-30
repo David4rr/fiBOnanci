@@ -11,6 +11,21 @@ extension ProfileAndRuleMutations on AppDatabase {
           updatedAt: Value(now),
         ),
       );
+      await (update(wallets)..where((t) => t.profileId.equals(profileId))).write(
+        WalletsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
+      await (update(transactions)..where((t) => t.profileId.equals(profileId))).write(
+        TransactionsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
+      await (update(subscriptions)..where((t) => t.profileId.equals(profileId))).write(
+        SubscriptionsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
+      await (update(pockets)..where((t) => t.profileId.equals(profileId))).write(
+        PocketsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
+      await (update(notificationRules)..where((t) => t.profileId.equals(profileId))).write(
+        NotificationRulesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
       final remaining = await (select(profiles)
             ..where((t) => t.isDeleted.equals(false))
             ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
@@ -53,8 +68,11 @@ extension ProfileAndRuleMutations on AppDatabase {
     required String walletId,
     required String packageName,
     bool isEnabled = true,
+    String? profileId,
   }) async {
     final now = DateTime.now().toUtc();
+    final wallet = await (select(wallets)..where((t) => t.id.equals(walletId))).getSingleOrNull();
+    final effProfileId = profileId ?? wallet?.profileId;
     final existing = await (select(notificationRules)
           ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isDeleted.equals(false))
           ..limit(1))
@@ -64,6 +82,7 @@ extension ProfileAndRuleMutations on AppDatabase {
       await (update(notificationRules)..where((t) => t.id.equals(existing.id))).write(
         NotificationRulesCompanion(
           walletId: Value(walletId),
+          profileId: Value(effProfileId),
           isEnabled: Value(isEnabled),
           updatedAt: Value(now),
           isSynced: const Value(false),
@@ -75,6 +94,7 @@ extension ProfileAndRuleMutations on AppDatabase {
           id: Value(const Uuid().v4()),
           packageName: Value(packageName),
           walletId: Value(walletId),
+          profileId: Value(effProfileId),
           isEnabled: Value(isEnabled),
           createdAt: Value(now),
           updatedAt: Value(now),

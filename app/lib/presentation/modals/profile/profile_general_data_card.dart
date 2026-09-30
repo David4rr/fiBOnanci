@@ -66,7 +66,6 @@ class ProfileGeneralDataCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasIncome = profile.monthlyIncomeTarget != null && profile.monthlyIncomeTarget! > 0;
-    final hasEmail = profile.email?.isNotEmpty == true;
     final hasPhone = profile.phone?.isNotEmpty == true;
     final hasOcc = profile.occupation?.isNotEmpty == true;
     final hasBio = profile.bio?.isNotEmpty == true;
@@ -94,8 +93,6 @@ class ProfileGeneralDataCard extends StatelessWidget {
           child: Column(
             children: [
               buildDataRow(label: 'Profesi / Pekerjaan', value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'Email', value: hasEmail ? profile.email! : '—', isMuted: !hasEmail),
               Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
               buildDataRow(label: 'No. Handphone', value: hasPhone ? profile.phone! : '—', isMuted: !hasPhone),
               if (hasBio) ...[

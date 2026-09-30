@@ -269,6 +269,7 @@ void main() {
       expect(find.byType(ProfileModal), findsOneWidget);
       expect(find.text('Profil Pengguna'), findsOneWidget);
       expect(find.text('David Arrozaqi'), findsOneWidget);
+      expect(find.text('david@fibonanci.app'), findsOneWidget);
       expect(find.text('@David'), findsOneWidget);
       expect(find.text('+ Profil Baru'), findsNothing);
       expect(find.byIcon(Icons.person_outline_rounded), findsNothing);
@@ -285,7 +286,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.more_horiz_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Menu Profil'), findsOneWidget);
-      expect(find.text('Edit Profile'), findsOneWidget);
+      expect(find.text('Edit Profile'), findsNothing);
       expect(find.text('New Profile'), findsOneWidget);
       expect(find.text('Health Finance Details'), findsOneWidget);
 

@@ -19,6 +19,14 @@ mixin DriftProfileRepository on DriftRepoBase {
     double? monthlyIncomeTarget,
     bool setActive = false,
   }) async {
+    final cleanUsername = username.trim().replaceAll('@', '');
+    final allProfiles = await db.getProfiles();
+    final isDuplicate = allProfiles.any(
+      (p) => !p.isDeleted && p.username.toLowerCase() == cleanUsername.toLowerCase(),
+    );
+    if (isDuplicate) {
+      throw ArgumentError('Username @$cleanUsername sudah digunakan');
+    }
     final now = DateTime.now().toUtc();
     final profileId = uuid.v4();
     if (setActive) {
@@ -36,7 +44,7 @@ mixin DriftProfileRepository on DriftRepoBase {
     await db.createProfile(
       ProfilesCompanion(
         id: drift.Value(profileId),
-        username: drift.Value(username),
+        username: drift.Value(cleanUsername),
         fullName: drift.Value(fullName),
         email: drift.Value(email),
         phone: drift.Value(phone),
@@ -65,12 +73,20 @@ mixin DriftProfileRepository on DriftRepoBase {
     String? bio,
     String currency = 'IDR',
     double? monthlyIncomeTarget,
-  }) {
+  }) async {
+    final cleanUsername = username.trim().replaceAll('@', '');
+    final allProfiles = await db.getProfiles();
+    final isDuplicate = allProfiles.any(
+      (p) => !p.isDeleted && p.id != profileId && p.username.toLowerCase() == cleanUsername.toLowerCase(),
+    );
+    if (isDuplicate) {
+      throw ArgumentError('Username @$cleanUsername sudah digunakan');
+    }
     final now = DateTime.now().toUtc();
     return db.updateProfile(
       ProfilesCompanion(
         id: drift.Value(profileId),
-        username: drift.Value(username),
+        username: drift.Value(cleanUsername),
         fullName: drift.Value(fullName),
         email: drift.Value(email),
         phone: drift.Value(phone),

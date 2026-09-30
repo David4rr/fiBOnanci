@@ -1,15 +1,17 @@
 part of '../finance_repository.dart';
 
 mixin DriftTransactionRepository on DriftRepoBase {
-  Stream<List<TransactionEntry>> watchRecentTransactions({int limit = 50}) =>
-      db.watchRecentTransactions(limit: limit);
+  Stream<List<TransactionEntry>> watchRecentTransactions({String? profileId, int limit = 50}) =>
+      db.watchRecentTransactions(profileId: profileId, limit: limit);
 
-  Future<List<TransactionEntry>> getTransactions({int limit = 50}) =>
-      (db.select(db.transactions)
-            ..where((t) => t.isDeleted.equals(false))
-            ..orderBy([(t) => drift.OrderingTerm.desc(t.transactionDate)])
-            ..limit(limit))
-          .get();
+  Future<List<TransactionEntry>> getTransactions({String? profileId, int limit = 50}) {
+    final q = db.select(db.transactions)
+      ..where((t) => t.isDeleted.equals(false) & db.profileFilter(t.profileId, profileId));
+    return (q
+          ..orderBy([(t) => drift.OrderingTerm.desc(t.transactionDate)])
+          ..limit(limit))
+        .get();
+  }
 
   Future<void> addTransaction({
     required String walletId,
@@ -21,12 +23,16 @@ mixin DriftTransactionRepository on DriftRepoBase {
     DateTime? transactionDate,
     String source = 'manual',
     String? externalRef,
-  }) {
+    String? profileId,
+  }) async {
     final now = DateTime.now().toUtc();
+    final wallet = await (db.select(db.wallets)..where((t) => t.id.equals(walletId))).getSingleOrNull();
+    final effProfileId = profileId ?? wallet?.profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
     return db.logTransactionWithBalanceMutation(
       tx: TransactionsCompanion(
         id: drift.Value(uuid.v4()),
         walletId: drift.Value(walletId),
+        profileId: drift.Value(effProfileId),
         categoryId: drift.Value(categoryId),
         amount: drift.Value(amount),
         type: drift.Value(type),

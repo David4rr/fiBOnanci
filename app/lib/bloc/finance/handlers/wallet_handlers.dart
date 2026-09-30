@@ -23,6 +23,7 @@ extension WalletBlocHandlers on FinanceBloc {
         colorHex: event.colorHex,
         iconName: event.iconName,
         boundPackageName: event.boundPackageName,
+        profileId: state.profile.id,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah rekening: $e'));
@@ -43,6 +44,7 @@ extension WalletBlocHandlers on FinanceBloc {
         walletId: event.walletId,
         packageName: event.packageName,
         isEnabled: event.isEnabled,
+        profileId: state.profile.id,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menghubungkan aplikasi: $e'));

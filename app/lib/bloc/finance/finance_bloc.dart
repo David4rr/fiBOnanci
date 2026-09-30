@@ -117,31 +117,42 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<_PocketsUpdated>((event, emit) => emit(state.copyWith(pockets: event.pockets)));
     on<_ProfilesUpdated>((event, emit) {
       final active = event.profiles.where((p) => p.isActive).firstOrNull ?? event.profiles.firstOrNull;
+      final prevId = state.activeProfile?.id;
       emit(state.copyWith(profiles: event.profiles, activeProfile: active));
+      if (active != null && active.id != prevId) {
+        _initStreamListeners(active.id);
+      }
     });
 
     _initStreamListeners();
   }
 
-  void _initStreamListeners() {
-    _walletsSubscription = repository.watchWallets().listen((w) => add(_WalletsUpdated(w)));
-    _categoriesSubscription = repository.watchCategories().listen((c) => add(_CategoriesUpdated(c)));
-    _transactionsSubscription = repository.watchRecentTransactions(limit: 50).listen((t) => add(_TransactionsUpdated(t)));
-    _subscriptionsSubscription = repository.watchActiveSubscriptions().listen((s) => add(_SubscriptionsUpdated(s)));
-    _pocketsSubscription = repository.watchPockets().listen((p) => add(_PocketsUpdated(p)));
-    _profilesSubscription = repository.watchProfiles().listen((pr) => add(_ProfilesUpdated(pr)));
+  void _initStreamListeners([String? profileId]) {
+    _walletsSubscription?.cancel();
+    _transactionsSubscription?.cancel();
+    _subscriptionsSubscription?.cancel();
+    _pocketsSubscription?.cancel();
+
+    _walletsSubscription = repository.watchWallets(profileId: profileId).listen((w) => add(_WalletsUpdated(w)));
+    _categoriesSubscription ??= repository.watchCategories().listen((c) => add(_CategoriesUpdated(c)));
+    _transactionsSubscription = repository.watchRecentTransactions(profileId: profileId, limit: 50).listen((t) => add(_TransactionsUpdated(t)));
+    _subscriptionsSubscription = repository.watchActiveSubscriptions(profileId: profileId).listen((s) => add(_SubscriptionsUpdated(s)));
+    _pocketsSubscription = repository.watchPockets(profileId: profileId).listen((p) => add(_PocketsUpdated(p)));
+    _profilesSubscription ??= repository.watchProfiles().listen((pr) => add(_ProfilesUpdated(pr)));
   }
 
   Future<void> _onLoadFinanceData(LoadFinanceData event, Emitter<FinanceState> emit) async {
     emit(state.copyWith(status: FinanceStatus.loading));
     try {
-      final wallets = await repository.getWallets();
-      final categories = await repository.getCategories();
-      final subscriptions = await repository.getSubscriptions();
-      final transactions = await repository.getTransactions(limit: 50);
-      final pockets = await repository.getPockets();
       final profiles = await repository.getProfiles();
       final activeProfile = profiles.where((p) => p.isActive).firstOrNull ?? profiles.firstOrNull;
+      final pId = activeProfile?.id;
+      _initStreamListeners(pId);
+      final wallets = await repository.getWallets(profileId: pId);
+      final categories = await repository.getCategories();
+      final subscriptions = await repository.getSubscriptions(profileId: pId);
+      final transactions = await repository.getTransactions(profileId: pId, limit: 50);
+      final pockets = await repository.getPockets(profileId: pId);
 
       final metrics = SafeToSpendService.calculate(
         wallets: wallets,

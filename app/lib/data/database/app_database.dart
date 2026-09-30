@@ -15,6 +15,7 @@ part 'database_queries.dart';
 part 'mutations/transaction_mutations.dart';
 part 'mutations/wallet_and_pocket_mutations.dart';
 part 'mutations/profile_and_rule_mutations.dart';
+part 'database_repair.dart';
 
 @DriftDatabase(tables: [
   Wallets,
@@ -29,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +50,13 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(subscriptions, subscriptions.totalCycles);
         await m.addColumn(subscriptions, subscriptions.paidCycles);
         await m.addColumn(subscriptions, subscriptions.deadlineDate);
+      }
+      if (from < 6) {
+        await m.addColumn(wallets, wallets.profileId);
+        await m.addColumn(transactions, transactions.profileId);
+        await m.addColumn(subscriptions, subscriptions.profileId);
+        await m.addColumn(pockets, pockets.profileId);
+        await m.addColumn(notificationRules, notificationRules.profileId);
       }
     },
     beforeOpen: (details) async {
@@ -89,6 +97,17 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(subscriptions, subscriptions.paidCycles);
         await m.addColumn(subscriptions, subscriptions.deadlineDate);
       }
+      final walletCols = await customSelect("PRAGMA table_info(wallets)").get();
+      final hasProfileId = walletCols.any((c) => c.data['name'] == 'profile_id');
+      if (!hasProfileId) {
+        final m = createMigrator();
+        await m.addColumn(wallets, wallets.profileId);
+        await m.addColumn(transactions, transactions.profileId);
+        await m.addColumn(subscriptions, subscriptions.profileId);
+        await m.addColumn(pockets, pockets.profileId);
+        await m.addColumn(notificationRules, notificationRules.profileId);
+      }
+      await repairAndMigrateProfiles();
     },
   );
 

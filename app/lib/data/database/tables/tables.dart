@@ -12,8 +12,23 @@ mixin SyncableTable on Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('ProfileEntry')
+class Profiles extends Table with SyncableTable {
+  TextColumn get username => text().withLength(min: 1, max: 64).withDefault(const Constant('David'))();
+  TextColumn get fullName => text().withLength(min: 1, max: 128).withDefault(const Constant('David Arrozaqi'))();
+  TextColumn get email => text().nullable()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get avatarPath => text().nullable()();
+  TextColumn get occupation => text().nullable()();
+  TextColumn get bio => text().nullable()();
+  TextColumn get currency => text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
+  RealColumn get monthlyIncomeTarget => real().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}
+
 @DataClassName('WalletEntry')
 class Wallets extends Table with SyncableTable {
+  TextColumn get profileId => text().nullable().references(Profiles, #id)();
   TextColumn get name => text().withLength(min: 1, max: 64)();
   TextColumn get type => text()(); // bank, ewallet, cash, investment, other
   TextColumn get currency => text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
@@ -33,6 +48,7 @@ class Categories extends Table with SyncableTable {
 
 @DataClassName('TransactionEntry')
 class Transactions extends Table with SyncableTable {
+  TextColumn get profileId => text().nullable().references(Profiles, #id)();
   @ReferenceName('transactions')
   TextColumn get walletId => text().references(Wallets, #id)();
   TextColumn get categoryId => text().references(Categories, #id)();
@@ -48,6 +64,7 @@ class Transactions extends Table with SyncableTable {
 
 @DataClassName('SubscriptionEntry')
 class Subscriptions extends Table with SyncableTable {
+  TextColumn get profileId => text().nullable().references(Profiles, #id)();
   TextColumn get walletId => text().references(Wallets, #id)();
   TextColumn get categoryId => text().references(Categories, #id)();
   TextColumn get title => text().withLength(min: 1, max: 128)();
@@ -65,6 +82,7 @@ class Subscriptions extends Table with SyncableTable {
 
 @DataClassName('NotificationRuleEntry')
 class NotificationRules extends Table with SyncableTable {
+  TextColumn get profileId => text().nullable().references(Profiles, #id)();
   TextColumn get packageName => text()();
   TextColumn get walletId => text().references(Wallets, #id)();
   BoolColumn get isEnabled => boolean().withDefault(const Constant(true))();
@@ -74,6 +92,7 @@ class NotificationRules extends Table with SyncableTable {
 
 @DataClassName('PocketEntry')
 class Pockets extends Table with SyncableTable {
+  TextColumn get profileId => text().nullable().references(Profiles, #id)();
   TextColumn get name => text().withLength(min: 1, max: 64)();
   TextColumn get type => text().withDefault(const Constant('savings'))(); // emergency, retirement, savings, goal, other
   RealColumn get targetAmount => real().nullable()();
@@ -83,18 +102,4 @@ class Pockets extends Table with SyncableTable {
   DateTimeColumn get targetDate => dateTime().nullable()();
   TextColumn get linkedWalletId => text().nullable().references(Wallets, #id)();
   TextColumn get notes => text().nullable()();
-}
-
-@DataClassName('ProfileEntry')
-class Profiles extends Table with SyncableTable {
-  TextColumn get username => text().withLength(min: 1, max: 64).withDefault(const Constant('David'))();
-  TextColumn get fullName => text().withLength(min: 1, max: 128).withDefault(const Constant('David Arrozaqi'))();
-  TextColumn get email => text().nullable()();
-  TextColumn get phone => text().nullable()();
-  TextColumn get avatarPath => text().nullable()();
-  TextColumn get occupation => text().nullable()();
-  TextColumn get bio => text().nullable()();
-  TextColumn get currency => text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
-  RealColumn get monthlyIncomeTarget => real().nullable()();
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 }

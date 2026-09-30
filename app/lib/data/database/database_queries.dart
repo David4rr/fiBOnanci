@@ -1,41 +1,42 @@
 part of 'app_database.dart';
 
 extension DatabaseQueries on AppDatabase {
-  Stream<List<WalletEntry>> watchActiveWallets() {
-    return (select(wallets)..where((tbl) => tbl.isDeleted.equals(false))).watch();
+  Expression<bool> profileFilter(GeneratedColumn<String> col, String? profileId) {
+    if (profileId == null) return const Constant(true);
+    return profileId == 'default_profile_1' ? (col.equals(profileId) | col.isNull()) : col.equals(profileId);
+  }
+
+  Stream<List<WalletEntry>> watchActiveWallets({String? profileId}) {
+    final q = select(wallets)..where((t) => t.isDeleted.equals(false) & profileFilter(t.profileId, profileId));
+    return q.watch();
   }
 
   Stream<List<CategoryEntry>> watchActiveCategories() {
     return (select(categories)..where((tbl) => tbl.isDeleted.equals(false))).watch();
   }
 
-  Stream<List<TransactionEntry>> watchRecentTransactions({int limit = 30}) {
-    return (select(transactions)
-          ..where((tbl) => tbl.isDeleted.equals(false))
+  Stream<List<TransactionEntry>> watchRecentTransactions({String? profileId, int limit = 30}) {
+    final q = select(transactions)..where((t) => t.isDeleted.equals(false) & profileFilter(t.profileId, profileId));
+    return (q
           ..orderBy([(t) => OrderingTerm.desc(t.transactionDate)])
           ..limit(limit))
         .watch();
   }
 
-  Stream<List<SubscriptionEntry>> watchActiveSubscriptions() {
-    return (select(subscriptions)
-          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.status.isNotValue('cancelled'))
-          ..orderBy([(t) => OrderingTerm.asc(t.dueDay)]))
-        .watch();
+  Stream<List<SubscriptionEntry>> watchActiveSubscriptions({String? profileId}) {
+    final q = select(subscriptions)
+      ..where((t) => t.isDeleted.equals(false) & t.status.isNotValue('cancelled') & profileFilter(t.profileId, profileId));
+    return (q..orderBy([(t) => OrderingTerm.asc(t.dueDay)])).watch();
   }
 
-  Stream<List<PocketEntry>> watchActivePockets() {
-    return (select(pockets)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .watch();
+  Stream<List<PocketEntry>> watchActivePockets({String? profileId}) {
+    final q = select(pockets)..where((t) => t.isDeleted.equals(false) & profileFilter(t.profileId, profileId));
+    return (q..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).watch();
   }
 
-  Future<List<PocketEntry>> getActivePockets() {
-    return (select(pockets)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .get();
+  Future<List<PocketEntry>> getActivePockets({String? profileId}) {
+    final q = select(pockets)..where((t) => t.isDeleted.equals(false) & profileFilter(t.profileId, profileId));
+    return (q..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).get();
   }
 
   Future<void> createPocket(PocketsCompanion pocket) {
@@ -84,11 +85,9 @@ extension DatabaseQueries on AppDatabase {
     return (update(profiles)..where((t) => t.id.equals(profile.id.value))).write(profile);
   }
 
-  Stream<List<NotificationRuleEntry>> watchNotificationRules() {
-    return (select(notificationRules)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .watch();
+  Stream<List<NotificationRuleEntry>> watchNotificationRules({String? profileId}) {
+    final q = select(notificationRules)..where((t) => t.isDeleted.equals(false) & profileFilter(t.profileId, profileId));
+    return (q..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 
   Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName) {

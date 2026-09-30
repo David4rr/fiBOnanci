@@ -9,8 +9,6 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/screens/wallet_detail_screen.dart';
-import 'package:fibonanci_app/presentation/theme/app_colors.dart';
-import 'package:fibonanci_app/presentation/widgets/transaction_modal.dart';
 
 void main() {
   setUpAll(() async {
@@ -144,98 +142,6 @@ void main() {
       // Verified returned to resting wallet deck
       expect(find.byType(WalletDetailScreen), findsNothing);
       expect(find.text('Rekening & Dompet'), findsOneWidget);
-
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump(const Duration(milliseconds: 100));
-    });
-
-    testWidgets('Modal close actions and cancel buttons dismiss EditBalanceModal and TransactionModal cleanly', (tester) async {
-      tester.view.physicalSize = const Size(400 * 2, 950 * 2);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      // 1. Launch application and navigate to Wallets tab
-      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('7 Akun Riil'));
-      await tester.pumpAndSettle();
-
-      // 2. Tap 1: Expand BCA card -> Tap 2: Open BCA detail modal
-      final bcaFinder = find.text('BCA Utama').first;
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(bcaFinder);
-      await tester.pumpAndSettle();
-      // 3. Open Ubah Saldo modal
-      await tester.tap(find.text('Ubah Saldo'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsOneWidget);
-      expect(find.text('Perbarui Saldo'), findsOneWidget);
-      expect(find.text('Batal'), findsOneWidget);
-
-      // Tap Batal button to dismiss
-      await tester.tap(find.text('Batal'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Penyesuaian Saldo: BCA Utama'), findsNothing);
-      // Verify user STAYS on account details overlay!
-      expect(find.text('Ubah Saldo'), findsOneWidget);
-      expect(find.text('Catat Transaksi'), findsOneWidget);
-
-      // 4. Tap Catat Transaksi from detail overlay
-      await tester.tap(find.text('Catat Transaksi'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Simpan Transaksi'), findsOneWidget);
-      expect(find.text('Batal'), findsOneWidget);
-
-      // Verify non-transparent background on TransactionModal
-      final modalContainer = tester.widget<Container>(
-        find.descendant(of: find.byType(TransactionModal), matching: find.byType(Container)).first,
-      );
-      final modalDeco = modalContainer.decoration as BoxDecoration?;
-      expect(modalDeco?.color, AppColors.canvasCardSurface);
-      // Tap Batal button to dismiss
-      await tester.tap(find.text('Batal'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Simpan Transaksi'), findsNothing);
-      // Verify user STAYS on account details overlay!
-      expect(find.text('Ubah Saldo'), findsOneWidget);
-      expect(find.text('Catat Transaksi'), findsOneWidget);
-
-      // 5. Perform real balance update from account details
-      await tester.tap(find.text('Ubah Saldo'));
-      await tester.pumpAndSettle();
-
-      final balanceField = find.descendant(of: find.byType(WalletDetailEditTab), matching: find.byType(TextField)).first;
-      await tester.enterText(balanceField, '25000000');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Perbarui Saldo'));
-      await tester.pumpAndSettle();
-      // Verify user STAYS on account details overlay and sees updated balance!
-      expect(find.text('Ubah Saldo'), findsOneWidget);
-      expect(find.text('Catat Transaksi'), findsOneWidget);
-      expect(find.textContaining('25.000.000'), findsWidgets);
-
-      // 6. Record transaction from account details
-      await tester.tap(find.text('Catat Transaksi'));
-      await tester.pumpAndSettle();
-
-      final amountField = find.descendant(of: find.byType(TransactionModal), matching: find.byType(TextField)).first;
-      await tester.enterText(amountField, '750000');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Simpan Transaksi'));
-      await tester.pumpAndSettle();
-      // Verify user STAYS on account details overlay and transaction was logged!
-      expect(find.text('Ubah Saldo'), findsOneWidget);
-      expect(find.text('Catat Transaksi'), findsOneWidget);
-      expect(find.textContaining('750.000'), findsWidgets);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));

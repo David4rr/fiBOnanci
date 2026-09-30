@@ -13,6 +13,7 @@ extension TransactionBlocHandlers on FinanceBloc {
         transactionDate: event.transactionDate,
         source: event.source,
         externalRef: event.externalRef,
+        profileId: state.profile.id,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah transaksi: $e'));

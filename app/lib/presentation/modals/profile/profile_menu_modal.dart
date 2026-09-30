@@ -40,17 +40,6 @@ void showProfileMenuModal(BuildContext context, {
             const SizedBox(height: 14),
             _buildItem(
               ctx,
-              icon: Icons.edit_outlined,
-              title: 'Edit Profile',
-              subtitle: 'Perbarui nama, jabatan, dan avatar',
-              onTap: () {
-                Navigator.of(ctx).pop();
-                if (onEditProfile != null) { onEditProfile(); } else { EditProfileModal.show(context, profile: profile); }
-              },
-            ),
-            const SizedBox(height: 8),
-            _buildItem(
-              ctx,
               icon: Icons.person_add_alt_1_outlined,
               title: 'New Profile',
               subtitle: 'Tambah akun profil baru di perangkat',

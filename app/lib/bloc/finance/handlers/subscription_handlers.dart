@@ -14,6 +14,7 @@ extension SubscriptionBlocHandlers on FinanceBloc {
         isInstallment: event.isInstallment,
         totalCycles: event.totalCycles,
         deadlineDate: event.deadlineDate,
+        profileId: state.profile.id,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah langganan: $e'));

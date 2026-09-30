@@ -4,20 +4,20 @@ extension DatabaseSeeder on AppDatabase {
   Future<void> _seedInitialData() async {
     final now = DateTime.now().toUtc();
 
+    await _seedDefaultProfile();
+
     final categoriesSeed = getDefaultCategoriesSeed(now);
     for (final cat in categoriesSeed) {
       await into(categories).insertOnConflictUpdate(cat);
     }
 
-    final walletSeed = getDefaultWalletsSeed(now);
+    final walletSeed = getDefaultWalletsSeed(now, profileId: 'default_profile_1');
     for (final wallet in walletSeed.wallets) {
       await into(wallets).insert(wallet);
     }
     for (final rule in walletSeed.rules) {
       await into(notificationRules).insert(rule);
     }
-
-    await _seedDefaultProfile();
   }
 
   Future<void> _seedDefaultProfile() async {

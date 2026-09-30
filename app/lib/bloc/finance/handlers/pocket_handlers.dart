@@ -13,6 +13,7 @@ extension PocketBlocHandlers on FinanceBloc {
         targetDate: event.targetDate,
         linkedWalletId: event.linkedWalletId,
         notes: event.notes,
+        profileId: state.profile.id,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah kantong: $e'));

@@ -1,15 +1,15 @@
 import '../database/app_database.dart';
 
 abstract class FinanceRepository {
-  Stream<List<WalletEntry>> watchWallets();
+  Stream<List<WalletEntry>> watchWallets({String? profileId});
   Stream<List<CategoryEntry>> watchCategories();
-  Stream<List<TransactionEntry>> watchRecentTransactions({int limit = 50});
-  Stream<List<SubscriptionEntry>> watchActiveSubscriptions();
+  Stream<List<TransactionEntry>> watchRecentTransactions({String? profileId, int limit = 50});
+  Stream<List<SubscriptionEntry>> watchActiveSubscriptions({String? profileId});
 
-  Future<List<WalletEntry>> getWallets();
+  Future<List<WalletEntry>> getWallets({String? profileId});
   Future<List<CategoryEntry>> getCategories();
-  Future<List<SubscriptionEntry>> getSubscriptions();
-  Future<List<TransactionEntry>> getTransactions({int limit = 50});
+  Future<List<SubscriptionEntry>> getSubscriptions({String? profileId});
+  Future<List<TransactionEntry>> getTransactions({String? profileId, int limit = 50});
 
   Future<void> addTransaction({
     required String walletId,
@@ -21,6 +21,7 @@ abstract class FinanceRepository {
     DateTime? transactionDate,
     String source = 'manual',
     String? externalRef,
+    String? profileId,
   });
 
   Future<void> updateTransaction({
@@ -46,6 +47,7 @@ abstract class FinanceRepository {
     bool isInstallment = false,
     int? totalCycles,
     DateTime? deadlineDate,
+    String? profileId,
   });
 
   Future<void> updateSubscription({
@@ -78,21 +80,23 @@ abstract class FinanceRepository {
     required String colorHex,
     required String iconName,
     String? boundPackageName,
+    String? profileId,
   });
   Future<void> deleteWallet(String walletId);
 
-  Stream<List<NotificationRuleEntry>> watchNotificationRules();
-  Future<List<NotificationRuleEntry>> getNotificationRules();
+  Stream<List<NotificationRuleEntry>> watchNotificationRules({String? profileId});
+  Future<List<NotificationRuleEntry>> getNotificationRules({String? profileId});
   Future<List<NotificationRuleEntry>> getNotificationRulesForWallet(String walletId);
   Future<void> bindWalletToPackage({
     required String walletId,
     required String packageName,
     bool isEnabled = true,
+    String? profileId,
   });
   Future<void> unbindPackage(String packageName);
 
-  Stream<List<PocketEntry>> watchPockets();
-  Future<List<PocketEntry>> getPockets();
+  Stream<List<PocketEntry>> watchPockets({String? profileId});
+  Future<List<PocketEntry>> getPockets({String? profileId});
 
   Future<void> addPocket({
     required String name,
@@ -104,6 +108,7 @@ abstract class FinanceRepository {
     DateTime? targetDate,
     String? linkedWalletId,
     String? notes,
+    String? profileId,
   });
 
   Future<void> updatePocket({

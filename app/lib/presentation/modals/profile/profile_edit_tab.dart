@@ -65,7 +65,7 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
 
   void _onSave() {
     if (!_formKey.currentState!.validate()) return;
-    final username = _usernameController.text.trim();
+    final username = _usernameController.text.trim().replaceAll('@', '');
     final fullName = _fullNameController.text.trim();
     final email = _emailController.text.trim().isEmpty ? null : _emailController.text.trim();
     final phone = _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim();
@@ -96,6 +96,11 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
 
   @override
   Widget build(BuildContext context) {
+    final profiles = context.watch<FinanceBloc>().state.profiles;
+    final existingUsernames = profiles
+        .where((p) => p.id != widget.initialProfile?.id)
+        .map((p) => p.username)
+        .toList();
     return Form(
       key: _formKey,
       child: ListView(
@@ -124,6 +129,7 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
             incomeTargetController: _incomeTargetController,
             selectedCurrency: _selectedCurrency,
             onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
+            existingUsernames: existingUsernames,
           ),
           const SizedBox(height: 24),
           SizedBox(
