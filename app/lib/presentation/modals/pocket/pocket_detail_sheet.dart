@@ -50,26 +50,17 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
   }
 
   void _goToTransfer({required bool isDeposit}) {
-    setState(() {
-      _isDeposit = isDeposit;
-      _currentTab = 1;
-    });
+    setState(() { _isDeposit = isDeposit; _currentTab = 1; });
     _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
   void _goToEditTx(TransactionEntry tx) {
-    setState(() {
-      _selectedTransaction = tx;
-      _currentTab = 2;
-    });
+    setState(() { _selectedTransaction = tx; _currentTab = 2; });
     _pageController.animateToPage(2, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
   void _goToDetails() {
-    setState(() {
-      _currentTab = 0;
-      _selectedTransaction = null;
-    });
+    setState(() { _currentTab = 0; _selectedTransaction = null; });
     _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
@@ -95,12 +86,9 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
     }
     return getPocketTypeLabel(latestPocket.type);
   }
-  IconData get _closeIcon {
-    if (_currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1)) {
-      return Icons.keyboard_arrow_down_rounded;
-    }
-    return Icons.keyboard_arrow_left_rounded;
-  }
+  IconData get _closeIcon => (_currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1))
+      ? Icons.keyboard_arrow_down_rounded
+      : Icons.keyboard_arrow_left_rounded;
 
   void _handleClose() {
     if (_currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1)) {
@@ -122,13 +110,20 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
           return n.contains(nameLower) || (n.contains('kantong') && tx.walletId == latestPocket.linkedWalletId);
         }).toList();
 
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.88,
-          child: Column(
-            children: [
-              const ModalGrabHandle(padding: EdgeInsets.only(top: 12, bottom: 8)),
-              ModalHeader(
-                padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+        final canPop = _currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1);
+        return PopScope(
+          canPop: canPop,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _goToDetails();
+          },
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.88,
+            child: Column(
+              children: [
+                if (_currentTab == 0)
+                  const ModalGrabHandle(padding: EdgeInsets.only(top: 12, bottom: 8)),
+                ModalHeader(
+                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
                 leading: _currentTab == 0
                     ? Container(
                         width: 44,
@@ -163,10 +158,11 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
                       child: SingleChildScrollView(
                         padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
                         child: PocketTransferForm(
+                          key: ValueKey('transfer_${_isDeposit}_${latestPocket.id}'),
                           pocket: latestPocket,
                           isDeposit: _isDeposit,
-                          onSuccess: () => widget.initialTab == 1 ? Navigator.of(context).pop() : _goToDetails(),
-                          onCancel: () => widget.initialTab == 1 ? Navigator.of(context).pop() : _goToDetails(),
+                          onSuccess: _handleClose,
+                          onCancel: _handleClose,
                         ),
                       ),
                     ),
@@ -185,6 +181,7 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
                 ),
               ),
             ],
+          ),
           ),
         );
       },

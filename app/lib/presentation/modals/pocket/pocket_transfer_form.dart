@@ -35,6 +35,14 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
   final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   String? _selectedWalletId;
   String? _errorMessage;
+  @override
+  void didUpdateWidget(PocketTransferForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isDeposit != widget.isDeposit || oldWidget.pocket.id != widget.pocket.id) {
+      _amountController.clear();
+      _errorMessage = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -47,12 +55,12 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
     return BlocBuilder<FinanceBloc, FinanceState>(
       builder: (context, state) {
         final activeWallets = state.wallets.where((w) => !w.isDeleted).toList();
-        final safeWalletId = activeWallets.any((w) => w.id == _selectedWalletId)
-            ? _selectedWalletId
+        final linked = widget.pocket.linkedWalletId;
+        final defaultId = (linked != null && activeWallets.any((w) => w.id == linked))
+            ? linked
             : (activeWallets.isNotEmpty ? activeWallets.first.id : null);
-        _selectedWalletId = safeWalletId;
+        _selectedWalletId = activeWallets.any((w) => w.id == _selectedWalletId) ? _selectedWalletId : defaultId;
         final actionColor = widget.isDeposit ? AppColors.neoMint : AppColors.neoCoral;
-
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,34 +70,19 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
               const SizedBox(height: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.canvasInputSearch,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.canvasBorder),
-                ),
+                decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.canvasBorder)),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedWalletId,
                     isExpanded: true,
                     dropdownColor: AppColors.canvasCardSurface,
                     icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
-                    items: activeWallets.map((w) {
-                      return DropdownMenuItem<String>(
-                        value: w.id,
-                        child: Text(
-                          '${w.name} (${_currencyFormatter.format(w.balance)})',
-                          style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
+                    items: activeWallets.map((w) => DropdownMenuItem<String>(
+                      value: w.id,
+                      child: Text('${w.name} (${_currencyFormatter.format(w.balance)})', style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                    )).toList(),
                     onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedWalletId = val;
-                          _errorMessage = null;
-                        });
-                      }
+                      if (val != null) setState(() { _selectedWalletId = val; _errorMessage = null; });
                     },
                   ),
                 ),
@@ -103,6 +96,30 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
               ),
               const SizedBox(height: 16),
             ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(widget.isDeposit ? 'Nominal Setoran' : 'Nominal Penarikan', style: AppTypography.listSubtitle),
+                if (!widget.isDeposit)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      _amountController.text = RupiahInputFormatter.format(widget.pocket.currentAmount);
+                      if (_errorMessage != null) setState(() => _errorMessage = null);
+                    },
+                    child: Text(
+                      'Tarik Semua (${_currencyFormatter.format(widget.pocket.currentAmount)})',
+                      style: GoogleFonts.plusJakartaSans(color: actionColor, fontSize: 11.5, fontWeight: FontWeight.w700),
+                    ),
+                  )
+                else
+                  Text(
+                    'Saldo: ${_currencyFormatter.format(widget.pocket.currentAmount)}',
+                    style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
             CurrencyAmountField(
               controller: _amountController,
               labelText: 'Nominal',
@@ -137,31 +154,23 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
                   ? null
                   : () {
                       final amount = RupiahInputFormatter.parse(_amountController.text);
-                      if (amount <= 0) {
-                        setState(() => _errorMessage = 'Masukkan nominal lebih dari Rp 0');
-                        return;
-                      }
-                      if (_selectedWalletId == null) {
-                        setState(() => _errorMessage = 'Pilih rekening terlebih dahulu');
-                        return;
-                      }
+                      if (amount <= 0) return setState(() => _errorMessage = 'Masukkan nominal lebih dari Rp 0');
+                      if (_selectedWalletId == null) return setState(() => _errorMessage = 'Pilih rekening terlebih dahulu');
                       final selectedWallet = activeWallets.firstWhere((w) => w.id == _selectedWalletId);
                       if (widget.isDeposit && amount > selectedWallet.balance) {
-                        setState(() => _errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${_currencyFormatter.format(selectedWallet.balance)})');
-                        return;
+                        return setState(() => _errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${_currencyFormatter.format(selectedWallet.balance)})');
                       }
                       if (!widget.isDeposit && amount > widget.pocket.currentAmount) {
-                        setState(() => _errorMessage = 'Saldo kantong tidak cukup (${_currencyFormatter.format(widget.pocket.currentAmount)})');
-                        return;
+                        return setState(() => _errorMessage = 'Saldo kantong tidak cukup (${_currencyFormatter.format(widget.pocket.currentAmount)})');
                       }
-                      context.read<FinanceBloc>().add(
-                        TransferPocketFundsEvent(
-                          pocketId: widget.pocket.id,
-                          walletId: _selectedWalletId!,
-                          amount: amount,
-                          isDepositToPocket: widget.isDeposit,
-                        ),
-                      );
+                      context.read<FinanceBloc>().add(TransferPocketFundsEvent(
+                        pocketId: widget.pocket.id,
+                        walletId: _selectedWalletId!,
+                        amount: amount,
+                        isDepositToPocket: widget.isDeposit,
+                      ));
+                      _amountController.clear();
+                      _errorMessage = null;
                       widget.onSuccess();
                     },
             ),

@@ -29,6 +29,7 @@ class PocketDetailModal {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
+      clipBehavior: Clip.antiAlias,
       builder: (ctx) {
         return BlocProvider.value(
           value: financeBloc,

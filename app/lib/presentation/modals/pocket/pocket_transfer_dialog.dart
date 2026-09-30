@@ -22,6 +22,7 @@ class PocketTransferDialog {
       isScrollControlled: true,
       backgroundColor: AppColors.canvasCardSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      clipBehavior: Clip.antiAlias,
       builder: (sheetCtx) {
         return BlocProvider.value(
           value: financeBloc,
@@ -42,6 +43,7 @@ class PocketTransferDialog {
                   ),
                   const SizedBox(height: 16),
                   PocketTransferForm(
+                    key: ValueKey('transfer_${isDeposit}_${pocket.id}'),
                     pocket: pocket,
                     isDeposit: isDeposit,
                     onSuccess: () => Navigator.of(sheetCtx).pop(),

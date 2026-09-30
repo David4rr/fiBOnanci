@@ -377,6 +377,101 @@ void main() {
       expect(find.text('Riwayat Mutasi'), findsOneWidget);
       expect(find.text('Setoran ke Dana Liburan Bali'), findsOneWidget);
     });
+    testWidgets('Isi Dana and Tarik Dana provide isolated form state, hidden grab handle on sub-tab, and Tarik Semua autofill', (tester) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      final repo = DriftFinanceRepository(db);
+      await repo.addPocket(
+        name: 'Dana Liburan',
+        targetAmount: 5000000.0,
+        type: 'goal',
+        colorHex: '#3B82F6',
+        iconName: 'flag',
+        initialAmount: 250000.0,
+      );
+      final pockets = await repo.getPockets();
+      final pocket = pockets.first;
+      final bloc = FinanceBloc(repository: repo);
+      bloc.add(const LoadFinanceData());
+      await expectLater(
+        bloc.stream,
+        emitsThrough(predicate<FinanceState>((s) => s.status == FinanceStatus.success && s.wallets.isNotEmpty)),
+      );
+
+      addTearDown(bloc.close);
+      addTearDown(db.close);
+
+      await tester.pumpWidget(
+        BlocProvider<FinanceBloc>.value(
+          value: bloc,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => PocketDetailModal.show(context, pocket: pocket),
+                  child: const Text('Buka Modal'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buka Modal'));
+      await tester.pumpAndSettle();
+
+      // Tab 0 has ModalGrabHandle
+      expect(find.byType(ModalGrabHandle), findsOneWidget);
+
+      // 1. Tap Isi Dana -> ModalGrabHandle must be hidden on Tab 1
+      await tester.tap(find.text('Isi Dana'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ModalGrabHandle), findsNothing);
+      expect(find.text('Isi Dana ke Kantong'), findsOneWidget);
+      expect(find.text('Nominal Setoran'), findsOneWidget);
+      expect(find.textContaining('Saldo: Rp'), findsOneWidget);
+
+      // Enter amount in Isi Dana
+      final amountField = find.widgetWithText(TextField, 'Nominal');
+      await tester.enterText(amountField, '75000');
+      await tester.pumpAndSettle();
+
+      // Return to Tab 0
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ModalGrabHandle), findsOneWidget);
+
+      // 2. Tap Tarik Dana -> Form must be clean and NOT retain '75000'
+      await tester.tap(find.text('Tarik Dana'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ModalGrabHandle), findsNothing);
+      expect(find.text('Tarik Dana ke Rekening'), findsOneWidget);
+      expect(find.text('Nominal Penarikan'), findsOneWidget);
+      expect(find.textContaining('Tarik Semua'), findsOneWidget);
+
+      // Field should NOT contain 75000
+      final currentController = tester.widget<TextField>(find.widgetWithText(TextField, 'Nominal')).controller;
+      expect(currentController?.text ?? '', isNot('75.000'));
+
+      // 3. Tap "Tarik Semua" -> should autofill pocket's currentAmount (250.000)
+      await tester.tap(find.textContaining('Tarik Semua'));
+      await tester.pumpAndSettle();
+
+      expect(currentController?.text, '250.000');
+
+      // Confirm withdrawal
+      await tester.tap(find.text('Konfirmasi'));
+      await tester.pumpAndSettle();
+
+      // Returned to Tab 0 with updated data
+      expect(find.byType(PocketDetailSheet), findsOneWidget);
+      expect(find.byType(ModalGrabHandle), findsOneWidget);
+      expect(find.text('Penarikan dari Kantong Dana Liburan'), findsOneWidget);
+    });
+
 
     testWidgets('PocketDetailModal deletes pocket using SlideToDeleteButton immediately without confirmation dialog', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);

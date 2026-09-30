@@ -122,6 +122,9 @@ class PocketDetailActions extends StatelessWidget {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: pocket.currentAmount > 0 ? AppColors.neoCoral : AppColors.canvasInputSearch,
+                disabledBackgroundColor: AppColors.canvasInputSearch,
+                disabledForegroundColor: AppColors.textMuted,
+                side: pocket.currentAmount > 0 ? null : const BorderSide(color: AppColors.canvasBorder, width: 0.8),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),
