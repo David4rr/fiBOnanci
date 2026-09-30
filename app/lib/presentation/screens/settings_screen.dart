@@ -49,7 +49,8 @@ class SettingsScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         Hero(
-                          tag: 'profile_avatar_hero',
+                          tag: 'profile_avatar_hero_${profile.id}',
+                          flightShuttleBuilder: profileAvatarFlightShuttle,
                           child: Material(
                             type: MaterialType.transparency,
                             child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 52, iconSize: 26),
@@ -101,10 +102,7 @@ class SettingsScreen extends StatelessWidget {
                           height: 48,
                           decoration: BoxDecoration(color: tierColor.withValues(alpha: 0.15), shape: BoxShape.circle, border: Border.all(color: tierColor, width: 2)),
                           child: Center(
-                            child: Text(
-                              '${report.overallScore}',
-                              style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w900, fontSize: 16, fontFeatures: const [FontFeature.tabularFigures()]),
-                            ),
+                            child: Text('${report.overallScore}', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w900, fontSize: 16, fontFeatures: const [FontFeature.tabularFigures()])),
                           ),
                         ),
                         const SizedBox(width: 16),

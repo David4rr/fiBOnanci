@@ -81,6 +81,7 @@ class ProfileHeaderCard extends StatelessWidget {
                               onTap: onEditProfile ?? () => EditProfileModal.show(context, profile: profile),
                               child: Hero(
                                 tag: 'profile_avatar_hero_${profile.id}',
+                                flightShuttleBuilder: profileAvatarFlightShuttle,
                                 child: Material(
                                   type: MaterialType.transparency,
                                   child: Container(

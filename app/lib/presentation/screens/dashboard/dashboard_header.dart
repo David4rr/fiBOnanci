@@ -7,6 +7,7 @@ import '../../theme/app_typography.dart';
 import '../../widgets/profile_avatar.dart';
 
 class DashboardHeader extends StatelessWidget {
+  final String? profileId;
   final String username;
   final String? avatarPath;
   final int walletCount;
@@ -14,6 +15,7 @@ class DashboardHeader extends StatelessWidget {
 
   const DashboardHeader({
     super.key,
+    this.profileId,
     required this.username,
     this.avatarPath,
     required this.walletCount,
@@ -84,7 +86,10 @@ class DashboardHeader extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => ProfileModal.show(context, walletCount: walletCount, txCount: txCount),
                 child: Hero(
-                  tag: 'profile_avatar_hero',
+                  tag: profileId != null && profileId!.isNotEmpty
+                      ? 'profile_avatar_hero_$profileId'
+                      : 'profile_avatar_hero',
+                  flightShuttleBuilder: profileAvatarFlightShuttle,
                   child: Material(
                     type: MaterialType.transparency,
                     child: ProfileAvatar(avatarPath: avatarPath, name: username, size: 42),

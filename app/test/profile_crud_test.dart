@@ -261,10 +261,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      final dashboardHero = tester.widget<Hero>(find.byType(Hero).first);
+      expect(dashboardHero.tag, 'profile_avatar_hero_${bloc.state.profile.id}');
+
       // Tap on avatar
       await tester.tap(find.byType(ProfileAvatar));
       await tester.pumpAndSettle();
 
+      final modalHero = tester.widget<Hero>(
+        find.descendant(of: find.byType(ProfileHeaderCard), matching: find.byType(Hero)).first,
+      );
+      expect(modalHero.tag, dashboardHero.tag);
       // Verify ProfileModal is opened
       expect(find.byType(ProfileModal), findsOneWidget);
       expect(find.text('Profil Pengguna'), findsOneWidget);

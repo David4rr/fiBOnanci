@@ -100,6 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DashboardHeader(
+                  profileId: state.profile.id,
                   username: state.profile.username,
                   avatarPath: state.profile.avatarPath,
                   walletCount: wallets.length,
@@ -112,10 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   walletFilter: _walletFilter,
                   wallets: wallets,
                   onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                  onClearSearch: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
+                  onClearSearch: () { _searchController.clear(); setState(() => _searchQuery = ''); },
                   onFilterApplied: (type, walletId) => setState(() {
                     _typeFilter = type;
                     _walletFilter = walletId;

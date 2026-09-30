@@ -117,15 +117,8 @@ class ProfileAvatar extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: border ??
-                Border.all(
-                  color: AppColors.canvasBorder,
-                  width: 1.5,
-                ),
-            image: DecorationImage(
-              image: FileImage(file),
-              fit: BoxFit.cover,
-            ),
+            border: border ?? Border.all(color: AppColors.canvasBorder, width: 1.5),
+            image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
           ),
         );
       }
@@ -142,19 +135,9 @@ class ProfileAvatar extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: preset.bgTint,
-          border: border ??
-              Border.all(
-                color: preset.color.withValues(alpha: 0.5),
-                width: 1.5,
-              ),
+          border: border ?? Border.all(color: preset.color.withValues(alpha: 0.5), width: 1.5),
         ),
-        child: Center(
-          child: Icon(
-            preset.icon,
-            color: preset.color,
-            size: iconSize,
-          ),
-        ),
+        child: Center(child: Icon(preset.icon, color: preset.color, size: iconSize)),
       );
     }
 
@@ -167,25 +150,35 @@ class ProfileAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: const Color(0xFF1E212D),
-        border: border ??
-            Border.all(
-              color: AppColors.canvasBorder,
-              width: 1.5,
-            ),
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: GoogleFonts.plusJakartaSans(
-            color: AppColors.neoChartreuse,
-            fontWeight: FontWeight.w700,
-            fontSize: size * 0.38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFF1E212D),
+          border: border ?? Border.all(color: AppColors.canvasBorder, width: 1.5),
+        ),
+        child: Center(
+          child: Text(
+            initials,
+            style: GoogleFonts.plusJakartaSans(color: AppColors.neoChartreuse, fontWeight: FontWeight.w700, fontSize: size * 0.38),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
+
+/// Reusable smooth flight shuttle for profile avatar shared element transitions.
+Widget profileAvatarFlightShuttle(
+  BuildContext flightContext,
+  Animation<double> animation,
+  HeroFlightDirection flightDirection,
+  BuildContext fromHeroContext,
+  BuildContext toHeroContext,
+) {
+  final Hero toHero = toHeroContext.widget as Hero;
+  return Material(
+    type: MaterialType.transparency,
+    child: FittedBox(
+      fit: BoxFit.contain,
+      child: toHero.child,
+    ),
+  );
 }
