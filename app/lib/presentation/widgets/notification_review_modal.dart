@@ -49,8 +49,9 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
     _notesController = TextEditingController(text: widget.parsed.counterparty);
     _type = widget.parsed.type;
 
-    final repo = context.read<FinanceBloc>().repository;
-    repo.getNotificationRules().then((rules) {
+    final bloc = context.read<FinanceBloc>();
+    final repo = bloc.repository;
+    repo.getNotificationRules(profileId: bloc.state.profile.id).then((rules) {
       final match = rules.where((r) => r.packageName == widget.rawPackage && r.isEnabled).firstOrNull;
       if (match != null && mounted) setState(() => _selectedWalletId = match.walletId);
     });

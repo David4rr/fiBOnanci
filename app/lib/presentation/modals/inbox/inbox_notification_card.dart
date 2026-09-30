@@ -8,6 +8,8 @@ class InboxNotificationCard extends StatelessWidget {
   final double amount;
   final String counterparty;
   final String? walletName;
+  final String? profileName;
+  final VoidCallback? onSwitchWallet;
   final String text;
   final Color cardAccent;
 
@@ -18,6 +20,8 @@ class InboxNotificationCard extends StatelessWidget {
     required this.amount,
     required this.counterparty,
     this.walletName,
+    this.profileName,
+    this.onSwitchWallet,
     required this.text,
     required this.cardAccent,
   });
@@ -112,16 +116,56 @@ class InboxNotificationCard extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              if (counterparty.isNotEmpty && walletName != null)
+                              if (counterparty.isNotEmpty && (walletName != null || profileName != null))
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 6),
                                   child: Text('•', style: TextStyle(fontSize: 10, color: AppColors.textSubtle.withValues(alpha: 0.8))),
                                 ),
-                              if (walletName != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.04), borderRadius: BorderRadius.circular(4)),
-                                  child: Text(walletName!, style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+                              if (walletName != null || profileName != null)
+                                Flexible(
+                                  child: GestureDetector(
+                                    key: const ValueKey('inbox_switch_wallet_button'),
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: onSwitchWallet,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: onSwitchWallet != null
+                                            ? AppColors.neoChartreuse.withValues(alpha: 0.08)
+                                            : Colors.white.withValues(alpha: 0.04),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: onSwitchWallet != null
+                                            ? Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.25), width: 0.8)
+                                            : null,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (profileName != null) ...[
+                                            Flexible(
+                                              child: Text(
+                                                profileName!,
+                                                style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.neoChartreuse),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const Text(' · ', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                          ],
+                                          Flexible(
+                                            child: Text(
+                                              walletName ?? 'Pilih Dompet',
+                                              style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.textWhite.withValues(alpha: 0.9)),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (onSwitchWallet != null) ...[
+                                            const SizedBox(width: 3),
+                                            Icon(Icons.swap_horiz_rounded, size: 11, color: AppColors.neoChartreuse),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
                             ],
                           ),

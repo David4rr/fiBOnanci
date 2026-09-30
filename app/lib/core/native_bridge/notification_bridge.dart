@@ -151,6 +151,12 @@ class NotificationBridge {
 
     _syncBalanceSnapshotIfPresent(text, db, targetWallet.id);
 
+    String? profileName;
+    if (targetWallet.profileId != null) {
+      final prof = await (db.select(db.profiles)..where((t) => t.id.equals(targetWallet.profileId!))).getSingleOrNull();
+      profileName = prof?.fullName ?? prof?.username;
+    }
+
     final inboxItem = Map<String, dynamic>.from(raw);
     inboxItem['transactionId'] = txId;
     inboxItem['amount'] = parsed.amount;
@@ -158,11 +164,13 @@ class NotificationBridge {
     inboxItem['counterparty'] = parsed.counterparty;
     inboxItem['walletName'] = targetWallet.name;
     inboxItem['walletId'] = targetWallet.id;
+    inboxItem['profileId'] = targetWallet.profileId;
+    inboxItem['profileName'] = profileName;
 
     NotificationInbox.addPending(inboxItem);
-    onAutoLogged?.call('${targetWallet.name}: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
+    final prefix = profileName != null ? '[$profileName] ${targetWallet.name}' : targetWallet.name;
+    onAutoLogged?.call('$prefix: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
   }
-
   static void _syncBalanceSnapshotIfPresent(String text, AppDatabase db, String walletId) async {
     final reg = RegExp(r'Saldo\s+saat\s+ini\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false);
     final match = reg.firstMatch(text);

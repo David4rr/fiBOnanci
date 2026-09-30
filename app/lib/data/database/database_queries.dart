@@ -90,7 +90,17 @@ extension DatabaseQueries on AppDatabase {
     return (q..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 
-  Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName) {
+  Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName, {String? profileId}) {
+    if (profileId != null) {
+      return (select(notificationRules)
+            ..where((tbl) =>
+                tbl.packageName.equals(packageName) &
+                tbl.profileId.equals(profileId) &
+                tbl.isEnabled.equals(true) &
+                tbl.isDeleted.equals(false))
+            ..limit(1))
+          .getSingleOrNull();
+    }
     return (select(notificationRules)
           ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false))
           ..limit(1))
