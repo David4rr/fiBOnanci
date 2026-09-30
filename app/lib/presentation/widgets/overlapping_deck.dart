@@ -76,10 +76,8 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
   double _getMaxScroll(int count, String? expandedId, double viewportHeight) {
     if (count <= 1) return 0.0;
     final totalNatural = (count - 1) * _cardStep +
-        (expandedId != null ? _expandDisplacement : 0.0) +
-        (expandedId != null ? _expandedCardHeight : _collapsedCardHeight);
-    final availableHeight = viewportHeight - widget.bottomPadding;
-    return math.max(0.0, totalNatural - availableHeight);
+        (expandedId != null ? _expandDisplacement + _expandedCardHeight : _collapsedCardHeight);
+    return math.max(0.0, totalNatural - (viewportHeight - widget.bottomPadding));
   }
 
   void _onDragUpdate(DragUpdateDetails details, double maxScroll) {
@@ -99,13 +97,9 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
     }
   }
 
-  double _getNaturalTop(int index, String? expandedId, List<TransactionEntry> list) {
-    double y = 0.0;
-    for (int j = 0; j < index; j++) {
-      final isPrevExpanded = list[j].id == expandedId;
-      y += isPrevExpanded ? _cardStep + _expandDisplacement : _cardStep;
-    }
-    return y;
+  double _getNaturalTop(int index, int expandedIdx) {
+    if (expandedIdx >= 0 && index > expandedIdx) return index * _cardStep + _expandDisplacement;
+    return index * _cardStep;
   }
 
   @override
@@ -119,6 +113,14 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxScroll = _getMaxScroll(list.length, currentExpandedId, constraints.maxHeight);
+        final expandedIdx = currentExpandedId != null ? list.indexWhere((t) => t.id == currentExpandedId) : -1;
+        final firstVis = (((_scrollOffset - _expandedCardHeight) / _cardStep).floor() - 2).clamp(0, list.length - 1);
+        final lastVis = (((_scrollOffset + constraints.maxHeight) / _cardStep).ceil() + 2).clamp(0, list.length - 1);
+        final renderedIndices = <int>{
+          for (int i = 0; i <= math.min(_maxDockedHeaders, list.length - 1); i++) i,
+          for (int i = firstVis; i <= lastVis; i++) i,
+          if (expandedIdx >= 0 && expandedIdx < list.length) expandedIdx,
+        }.toList()..sort();
 
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -129,7 +131,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                for (int i = 0; i < list.length; i++) ...[
+                for (final i in renderedIndices) ...[
                   Builder(builder: (context) {
                     final tx = list[i];
                     final isExpanded = currentExpandedId == tx.id;
@@ -149,12 +151,13 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                             type: tx.type,
                           )
                         : null;
-                    final double naturalTop = _getNaturalTop(i, currentExpandedId, list);
+                    final double naturalTop = _getNaturalTop(i, expandedIdx);
                     final double screenY = naturalTop - _scrollOffset;
                     final double dockY = math.min(i, _maxDockedHeaders) * _dockStep;
                     final double computedTop = math.max(screenY, dockY);
 
                     return AnimatedPositioned(
+                      key: ValueKey(tx.id),
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOutCubic,
                       top: computedTop,
@@ -173,15 +176,11 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                         subtitle: '${wallet.name} • ${DateFormat('dd MMM yyyy, HH:mm').format(tx.transactionDate)}',
                         onTap: () {
                           final newId = isExpanded ? null : tx.id;
-                          if (widget.onToggleExpand != null) {
-                            widget.onToggleExpand!(newId);
-                          } else {
-                            setState(() => _internalExpandedId = newId);
-                          }
+                          widget.onToggleExpand != null ? widget.onToggleExpand!(newId) : setState(() => _internalExpandedId = newId);
                         },
-                        onManage: widget.onManageTransaction != null
-                            ? () => widget.onManageTransaction!(tx)
-                            : () => TransactionDetailModal.show(context, transaction: tx),
+                        onManage: () => widget.onManageTransaction != null
+                            ? widget.onManageTransaction!(tx)
+                            : TransactionDetailModal.show(context, transaction: tx),
                       ),
                     );
                   }),

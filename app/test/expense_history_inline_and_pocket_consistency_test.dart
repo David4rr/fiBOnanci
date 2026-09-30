@@ -378,7 +378,7 @@ void main() {
       expect(find.text('Setoran ke Dana Liburan Bali'), findsOneWidget);
     });
 
-    testWidgets('PocketDetailModal deletes pocket using SlideToDeleteButton and confirmation dialog', (tester) async {
+    testWidgets('PocketDetailModal deletes pocket using SlideToDeleteButton immediately without confirmation dialog', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -435,16 +435,13 @@ void main() {
       await tester.tap(sliderFinder);
       await tester.pumpAndSettle();
 
-      // Verify confirmation dialog
-      expect(find.text('Hapus Kantong?'), findsOneWidget);
-      expect(find.text('Kantong "Dana Darurat Baru" akan dihapus. Riwayat transaksi tetap tersimpan di buku kas.'), findsOneWidget);
-
-      // Confirm delete
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
-      await tester.pumpAndSettle();
-
-      // Verify modal is dismissed
+      // Verify no confirmation dialog and modal is immediately dismissed
+      expect(find.text('Hapus Kantong?'), findsNothing);
       expect(find.byType(PocketDetailSheet), findsNothing);
+
+      // Verify pocket is deleted from repository
+      final remainingPockets = await repo.getPockets();
+      expect(remainingPockets.isEmpty, isTrue);
     });
   });
 }

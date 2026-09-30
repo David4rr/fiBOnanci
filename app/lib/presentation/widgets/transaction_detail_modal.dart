@@ -176,7 +176,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
             const SizedBox(height: 14),
             SlideToDeleteButton(
               label: 'Hapus Transaksi',
-              onSlideComplete: () => TransactionDetailComponents.showDeleteDialog(
+              onSlideComplete: () => TransactionDetailComponents.executeDelete(
                 context,
                 widget.transaction.id,
                 onDeleted: widget.onDeleted,

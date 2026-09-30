@@ -5,7 +5,6 @@ import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'common/common_widgets.dart';
 
 export 'subscription_due_day_slider.dart';
 
@@ -95,15 +94,26 @@ class SubscriptionAutoDeductSwitch extends StatelessWidget {
   }
 }
 
-void showSubscriptionDeleteDialog(BuildContext context, String subscriptionId) {
-  AppConfirmationDialog.show(
-    context,
-    title: 'Hapus Tagihan?',
-    content: 'Tagihan ini akan dihapus dari daftar monitoring komitmen bulanan.',
-    confirmText: 'Hapus',
-    confirmColor: AppColors.neoCoral,
-    onConfirm: () {
-      context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
-    },
+void executeDeleteSubscription(BuildContext context, String subscriptionId, {VoidCallback? onDeleted}) {
+  final messenger = ScaffoldMessenger.of(context);
+  final navigator = Navigator.of(context);
+  context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
+  if (onDeleted != null) {
+    onDeleted();
+  } else {
+    navigator.maybePop();
+  }
+  messenger.showSnackBar(
+    const SnackBar(
+      backgroundColor: AppColors.neoCoral,
+      content: Text(
+        'Tagihan berhasil dihapus.',
+        style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
+      ),
+    ),
   );
+}
+
+void showSubscriptionDeleteDialog(BuildContext context, String subscriptionId) {
+  executeDeleteSubscription(context, subscriptionId);
 }

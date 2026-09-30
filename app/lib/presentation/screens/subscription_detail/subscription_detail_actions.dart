@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../bloc/finance/finance_bloc.dart';
-import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/subscription_modal.dart';
@@ -71,18 +68,6 @@ class SubscriptionDetailActions extends StatelessWidget {
   }
 
   void _handleDelete(BuildContext context) {
-    final financeBloc = context.read<FinanceBloc>();
-    final navigator = Navigator.of(context);
-    AppConfirmationDialog.show(
-      context,
-      title: 'Hapus Tagihan?',
-      content: 'Tagihan ini akan dihapus dari daftar monitoring komitmen bulanan.',
-      confirmText: 'Hapus',
-      confirmColor: AppColors.neoCoral,
-      onConfirm: () {
-        financeBloc.add(DeleteSubscriptionEvent(subscription.id));
-        navigator.maybePop();
-      },
-    );
+    executeDeleteSubscription(context, subscription.id);
   }
 }

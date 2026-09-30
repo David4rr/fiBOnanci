@@ -95,7 +95,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('Slide-to-delete in edit tab triggers confirmation dialog and deletes wallet', (tester) async {
+    testWidgets('Slide-to-delete in edit tab deletes wallet immediately without confirmation dialog', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 950 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -128,12 +128,8 @@ void main() {
       await tester.drag(sliderFinder, const Offset(300, 0));
       await tester.pumpAndSettle();
 
-      // Confirmation dialog appears
-      expect(find.text('Hapus Rekening?'), findsOneWidget);
-
-      // Confirm deletion
-      await tester.tap(find.text('Hapus'));
-      await tester.pumpAndSettle();
+      // Deletes immediately without confirmation dialog
+      expect(find.text('Hapus Rekening?'), findsNothing);
 
       // Verify wallet was deleted
       final activeWallets = await repo.getWallets();
@@ -273,11 +269,8 @@ void main() {
       await tester.drag(sliderFinder, const Offset(300, 0));
       await tester.pumpAndSettle();
 
-      // Confirmation dialog appears
-      expect(find.text('Hapus Transaksi?'), findsOneWidget);
-      await tester.tap(find.text('Hapus'));
-      await tester.pumpAndSettle();
-
+      // Immediately deleted without confirmation dialog
+      expect(find.text('Hapus Transaksi?'), findsNothing);
       // Returns to details view and transaction is deleted
       expect(find.text('Detail Rekening'), findsOneWidget);
       expect(find.text('Belanja Mingguan'), findsNothing);

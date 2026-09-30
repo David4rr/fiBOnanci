@@ -1,4 +1,5 @@
 import 'package:fibonanci_app/presentation/modals/all_transactions_modal.dart';
+import 'package:fibonanci_app/presentation/widgets/overlapping_deck.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
@@ -517,5 +518,67 @@ void main() {
     expect(boxDeco.borderRadius, BorderRadius.zero);
 
     await db.close();
+  });
+
+  testWidgets('StackedCardDeckScrollList performs viewport windowing and culls offscreen cards for 1000 transactions', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400 * 2, 800 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final dummyWallets = <WalletEntry>[
+      WalletEntry(
+        id: 'w1', name: 'Dompet Utama', type: 'cash', currency: 'IDR', iconName: 'account_balance_wallet',
+        balance: 10000000, colorHex: '#4E7D96',
+        createdAt: DateTime.now(), updatedAt: DateTime.now(), isSynced: false, isDeleted: false,
+      ),
+    ];
+
+    final now = DateTime.now();
+    final thousandTxs = List<TransactionEntry>.generate(
+      1000,
+      (i) => TransactionEntry(
+        id: 'tx_$i',
+        walletId: 'w1',
+        categoryId: 'c1',
+        source: 'manual',
+        amount: (i + 1) * 10000.0,
+        type: 'expense',
+        notes: 'Transaksi #$i',
+        transactionDate: now.subtract(Duration(minutes: i)),
+        createdAt: now,
+        updatedAt: now,
+        isSynced: false,
+        isDeleted: false,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            height: 800,
+            child: StackedCardDeckScrollList(
+              transactions: thousandTxs,
+              wallets: dummyWallets,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify only visible cards (around 15-25 cards) are rendered, NOT all 1000!
+    final renderedItems = find.byType(OverlappingDeckItem);
+    final renderedCount = tester.widgetList(renderedItems).length;
+    expect(renderedCount, lessThan(30));
+    expect(renderedCount, greaterThanOrEqualTo(5));
+
+    // First card (tx_0) is rendered
+    expect(find.text('Transaksi #0'), findsOneWidget);
+    // Deep card (tx_500) is culled and NOT rendered
+    expect(find.text('Transaksi #500'), findsNothing);
   });
 }

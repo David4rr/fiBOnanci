@@ -153,7 +153,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
           const SizedBox(height: 14),
           SlideToDeleteButton(
             label: _isInstallment ? 'Hapus Cicilan Ini' : 'Hapus Langganan Ini',
-            onSlideComplete: () => showSubscriptionDeleteDialog(context, widget.subscription.id),
+            onSlideComplete: () => executeDeleteSubscription(context, widget.subscription.id),
           ),
         ],
       ),

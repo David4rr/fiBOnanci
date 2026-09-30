@@ -5,21 +5,21 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/common/common_widgets.dart';
+
+void executeDeletePocket(BuildContext context, PocketEntry pocket) {
+  context.read<FinanceBloc>().add(DeletePocketEvent(pocket.id));
+  Navigator.of(context).pop();
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: AppColors.neoCoral,
+      content: Text(
+        'Kantong "${pocket.name}" berhasil dihapus.',
+        style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
+      ),
+    ),
+  );
+}
 
 void showPocketDeleteDialog(BuildContext context, PocketEntry pocket) {
-  AppConfirmationDialog.show(
-    context,
-    title: 'Hapus Kantong?',
-    content: 'Kantong "${pocket.name}" akan dihapus. Riwayat transaksi tetap tersimpan di buku kas.',
-    confirmText: 'Hapus',
-    cancelText: 'Batal',
-    confirmColor: AppColors.neoCoral,
-    confirmTextColor: AppColors.textDarkPrimary,
-  ).then((confirmed) {
-    if (confirmed == true && context.mounted) {
-      context.read<FinanceBloc>().add(DeletePocketEvent(pocket.id));
-      Navigator.of(context).pop();
-    }
-  });
+  executeDeletePocket(context, pocket);
 }

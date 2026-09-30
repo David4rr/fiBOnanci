@@ -325,7 +325,7 @@ void main() {
       expect(find.byType(SubscriptionDetailScreen), findsNothing);
     });
 
-    testWidgets('SlideToDeleteButton slides from left to right to trigger confirmation dialog', (tester) async {
+    testWidgets('SlideToDeleteButton slides from left to right to delete installment immediately without confirmation dialog', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -361,19 +361,12 @@ void main() {
       await tester.drag(find.byType(SlideToDeleteButton), const Offset(320, 0));
       await tester.pumpAndSettle();
 
-      // Confirmation dialog appears
-      expect(find.text('Hapus Tagihan?'), findsOneWidget);
-      expect(find.text('Batal'), findsOneWidget);
-
-      // Cancel dialog
-      await tester.tap(find.text('Batal'));
-      await tester.pumpAndSettle();
-
+      // Deletes immediately without dialog and closes modal
       expect(find.text('Hapus Tagihan?'), findsNothing);
-      expect(find.byType(SubscriptionDetailScreen), findsOneWidget);
+      expect(find.byType(SubscriptionDetailScreen), findsNothing);
     });
 
-    testWidgets('Slide-to-delete in billing details view triggers confirmation dialog and deletes', (tester) async {
+    testWidgets('Slide-to-delete in billing details view deletes subscription immediately without confirmation dialog', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -404,14 +397,8 @@ void main() {
       await tester.drag(find.byType(SlideToDeleteButton), const Offset(320, 0));
       await tester.pumpAndSettle();
 
-      // Confirmation dialog appears
-      expect(find.text('Hapus Tagihan?'), findsOneWidget);
-
-      // Confirm delete
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
-      await tester.pumpAndSettle();
-
-      // Detail modal closes and Netflix is deleted
+      // Detail modal closes and Netflix is deleted immediately without dialog
+      expect(find.text('Hapus Tagihan?'), findsNothing);
       expect(find.byType(SubscriptionDetailScreen), findsNothing);
       expect(find.text('Netflix 4K Ultra'), findsNothing);
     });

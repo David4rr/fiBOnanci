@@ -91,6 +91,20 @@ class TransactionDetailComponents {
       ],
     );
   }
+  static void executeDelete(BuildContext context, String transactionId, {VoidCallback? onDeleted}) {
+    context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
+    if (onDeleted != null) {
+      onDeleted();
+    } else {
+      Navigator.pop(context);
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: AppColors.neoCoral,
+        content: Text('Transaksi dihapus & saldo dompet dikembalikan semula!', style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
 
   static void showDeleteDialog(BuildContext context, String transactionId, {VoidCallback? onDeleted}) {
     AppConfirmationDialog.show(
@@ -99,20 +113,7 @@ class TransactionDetailComponents {
       content: 'Transaksi ini akan dihapus permanen dan saldo dompet akan dikembalikan.',
       confirmText: 'Hapus',
       confirmColor: AppColors.neoCoral,
-      onConfirm: () {
-        context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
-        if (onDeleted != null) {
-          onDeleted();
-        } else {
-          Navigator.pop(context);
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.neoCoral,
-            content: Text('Transaksi dihapus & saldo dompet dikembalikan semula!', style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
-          ),
-        );
-      },
+      onConfirm: () => executeDelete(context, transactionId, onDeleted: onDeleted),
     );
   }
 }
