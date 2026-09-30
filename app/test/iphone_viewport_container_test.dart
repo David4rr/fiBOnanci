@@ -16,10 +16,7 @@ void main() {
     testWidgets('Constrains width to 430pt and centers child on wide screens', (tester) async {
       tester.view.physicalSize = const Size(1000 * 2, 800 * 2);
       tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      addTearDown(() { tester.view.resetPhysicalSize(); tester.view.resetDevicePixelRatio(); });
 
       late double capturedInnerWidth;
       late Size capturedChildRenderSize;
@@ -58,10 +55,7 @@ void main() {
     testWidgets('Passes through natural width on standard phone screens (<= 430pt)', (tester) async {
       tester.view.physicalSize = const Size(390 * 2, 844 * 2);
       tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      addTearDown(() { tester.view.resetPhysicalSize(); tester.view.resetDevicePixelRatio(); });
 
       late double capturedInnerWidth;
       late Size capturedChildRenderSize;
@@ -97,6 +91,38 @@ void main() {
       expect(childTopLeft.dx, 0.0);
     });
 
+    testWidgets('Passes through natural width on phones with Small display settings (> 430pt)', (tester) async {
+      tester.view.physicalSize = const Size(480 * 2, 1060 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      late double capturedInnerWidth;
+      const innerKey = ValueKey('inner_wide_phone_container');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: IPhoneViewportContainer(
+              child: Builder(
+                builder: (context) {
+                  capturedInnerWidth = MediaQuery.sizeOf(context).width;
+                  return Container(key: innerKey, color: Colors.purple);
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // On phone screen with small display size (480pt), width remains full natural 480pt
+      expect(capturedInnerWidth, 480.0);
+      final childFinder = find.byKey(innerKey);
+      final childTopLeft = tester.getTopLeft(childFinder);
+      expect(childTopLeft.dx, 0.0);
+    });
     testWidgets('Clears horizontal safe area padding when stretched to avoid landscape notch distortion', (tester) async {
       tester.view.physicalSize = const Size(900 * 2, 600 * 2);
       tester.view.devicePixelRatio = 2.0;

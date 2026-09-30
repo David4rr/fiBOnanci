@@ -29,11 +29,22 @@ class IPhoneViewportContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.maybeOf(context);
     final currentWidth = mediaQuery?.size.width ?? double.infinity;
-    final isStretched = currentWidth > maxWidth;
-    final clampedWidth = isStretched ? maxWidth : currentWidth;
 
+    // Physical mobile phones in portrait orientation (shortestSide < 600dp)
+    // use their natural full screen width, preventing unwanted pillarboxing
+    // when users configure "Small display size" / high DPI in Android settings.
+    final isPortraitPhone = mediaQuery != null &&
+        mediaQuery.size.width <= mediaQuery.size.height &&
+        mediaQuery.size.shortestSide < 600.0;
+    final isStretched = !isPortraitPhone && currentWidth > maxWidth;
+
+    if (!isStretched) {
+      return child;
+    }
+
+    final clampedWidth = maxWidth;
     Widget content = child;
-    if (mediaQuery != null && isStretched) {
+    if (mediaQuery != null) {
       content = MediaQuery(
         data: mediaQuery.copyWith(
           size: Size(clampedWidth, mediaQuery.size.height),
