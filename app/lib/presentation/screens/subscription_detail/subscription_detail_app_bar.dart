@@ -51,10 +51,13 @@ class SubscriptionDetailAppBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 8, bottom: 4),
-            child: Center(child: ModalGrabHandle()),
-          ),
+          if (!isEditing)
+            const Padding(
+              padding: EdgeInsets.only(top: 8, bottom: 4),
+              child: Center(child: ModalGrabHandle()),
+            )
+          else
+            const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: ModalHeader(

@@ -8,6 +8,7 @@ import '../../widgets/common/common_widgets.dart';
 class ExpenseHistoryAppBar extends StatelessWidget {
   final double totalFiltered;
   final NumberFormat currencyFormatter;
+  final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
   final GestureDragEndCallback? onDragEnd;
   final VoidCallback? onDismiss;
@@ -20,6 +21,7 @@ class ExpenseHistoryAppBar extends StatelessWidget {
     super.key,
     required this.totalFiltered,
     required this.currencyFormatter,
+    this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
     this.onDismiss,
@@ -33,15 +35,17 @@ class ExpenseHistoryAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
+      onVerticalDragStart: onDragStart,
       onVerticalDragUpdate: onDragUpdate,
       onVerticalDragEnd: onDragEnd,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 8, bottom: 4),
-            child: Center(child: ModalGrabHandle()),
-          ),
+          if (!isEditing)
+            const Padding(
+              padding: EdgeInsets.only(top: 8, bottom: 4),
+              child: Center(child: ModalGrabHandle()),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: Row(

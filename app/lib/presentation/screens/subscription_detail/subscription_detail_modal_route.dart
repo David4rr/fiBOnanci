@@ -13,7 +13,7 @@ class SubscriptionDetailModalRoute {
     required SubscriptionEntry subscription,
     required WalletEntry wallet,
     int? indexOverride,
-    double initialChildSize = 1.0,
+    double initialChildSize = 0.94,
   }) {
     final financeBloc = context.read<FinanceBloc>();
 

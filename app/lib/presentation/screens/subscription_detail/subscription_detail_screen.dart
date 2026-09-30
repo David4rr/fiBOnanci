@@ -31,7 +31,7 @@ class SubscriptionDetailScreen extends StatefulWidget {
     required this.subscriptionId,
     required this.initialWallet,
     this.indexOverride,
-    this.initialChildSize = 1.0,
+    this.initialChildSize = 0.94,
   });
 
   static Future<void> show(
@@ -39,7 +39,7 @@ class SubscriptionDetailScreen extends StatefulWidget {
     required SubscriptionEntry subscription,
     required WalletEntry wallet,
     int? indexOverride,
-    double initialChildSize = 1.0,
+    double initialChildSize = 0.94,
   }) {
     return SubscriptionDetailModalRoute.show(
       context,
@@ -125,9 +125,9 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
           child: ExpandableModalSheet(
             key: _sheetKey,
             initialChildSize: widget.initialChildSize,
-            minChildSize: 0.40,
+            minChildSize: 0.25,
             maxChildSize: 1.0,
-            snapSizes: const [0.85, 1.0],
+            snapSizes: [widget.initialChildSize, 1.0],
             builder: (ctx, scrollController, currentSize) {
               return Column(
                 children: [

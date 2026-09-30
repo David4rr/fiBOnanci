@@ -34,6 +34,7 @@ class TransactionDetailModal extends StatefulWidget {
         useSafeArea: true,
         backgroundColor: AppColors.canvasCardSurface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        clipBehavior: Clip.antiAlias,
         builder: (_) => TransactionDetailModal(transaction: transaction),
       );
 
@@ -109,8 +110,12 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
       _categoryId = matchingCats.isNotEmpty ? matchingCats.first.id : '';
     }
 
-    return ColoredBox(
-      color: AppColors.canvasCardSurface,
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: widget.isInline ? Colors.transparent : AppColors.canvasCardSurface,
+        borderRadius: widget.isInline ? BorderRadius.zero : const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       child: Padding(
         padding: widget.isInline ? EdgeInsets.fromLTRB(20, 16, 20, 48 + bottomInset) : EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
         child: SingleChildScrollView(

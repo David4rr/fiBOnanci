@@ -20,13 +20,13 @@ class ExpenseHistoryScreen extends StatefulWidget {
   final double initialChildSize;
 
   const ExpenseHistoryScreen({
-    super.key, required this.allTransactions, required this.wallets, this.initialChildSize = 1.0,
+    super.key, required this.allTransactions, required this.wallets, this.initialChildSize = 0.94,
   });
   static Future<void> show(
     BuildContext context, {
     required List<TransactionEntry> allTransactions,
     required List<WalletEntry> wallets,
-    double initialChildSize = 1.0,
+    double initialChildSize = 0.94,
     Widget Function(BuildContext)? builder,
   }) {
     return Navigator.of(context).push<void>(
@@ -116,9 +116,9 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
     return ExpandableModalSheet(
       key: _sheetKey,
       initialChildSize: widget.initialChildSize,
-      minChildSize: 0.40,
+      minChildSize: 0.25,
       maxChildSize: 1.0,
-      snapSizes: const [0.85, 1.0],
+      snapSizes: [widget.initialChildSize, 1.0],
       builder: (ctx, scrollController, currentSize) {
         return Column(
           children: [
@@ -131,8 +131,9 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
               customSubtitle: _currentTab != 0
                   ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi')
                   : null,
-              onDragUpdate: _currentTab == 0 ? (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d) : null,
-              onDragEnd: _currentTab == 0 ? (d) => _sheetKey.currentState?.handleHeaderDragEnd(d) : null,
+              onDragStart: (d) => _sheetKey.currentState?.handleHeaderDragStart(d),
+              onDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
+              onDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
             ),
             Expanded(
               child: PageView(
@@ -172,6 +173,8 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
                         allTransactions: widget.allTransactions,
                         wallets: widget.wallets,
                         onManageTransaction: _goToEditTx,
+                        onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
+                        onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
                       ),
                     ],
                   ),

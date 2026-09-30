@@ -122,7 +122,7 @@ class EditProfileAvatarPicker {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF17181F),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),

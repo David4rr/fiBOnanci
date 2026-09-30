@@ -21,7 +21,7 @@ void showProfileMenuModal(BuildContext context, {
     context: context,
     backgroundColor: AppColors.canvasBg,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (ctx) => SafeArea(
       child: Padding(

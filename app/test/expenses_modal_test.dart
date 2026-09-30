@@ -581,4 +581,93 @@ void main() {
     // Deep card (tx_500) is culled and NOT rendered
     expect(find.text('Transaksi #500'), findsNothing);
   });
+
+  testWidgets('StackedCardDeckScrollList forwards downward drags to onDownwardDrag when scrolled at top', (WidgetTester tester) async {
+    final dummyWallets = <WalletEntry>[
+      WalletEntry(
+        id: 'w1', name: 'Dompet Utama', type: 'cash', currency: 'IDR', iconName: 'account_balance_wallet',
+        balance: 10000000, colorHex: '#4E7D96',
+        createdAt: DateTime.now(), updatedAt: DateTime.now(), isSynced: false, isDeleted: false,
+      ),
+    ];
+    final now = DateTime.now();
+    final dummyTxs = [
+      TransactionEntry(
+        id: 'tx_1', walletId: 'w1', categoryId: 'c1', source: 'manual', amount: 50000.0,
+        type: 'expense', notes: 'Kopi', transactionDate: now, createdAt: now, updatedAt: now, isSynced: false, isDeleted: false,
+      ),
+    ];
+
+    bool downwardDragged = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            height: 600,
+            child: StackedCardDeckScrollList(
+              transactions: dummyTxs,
+              wallets: dummyWallets,
+              onDownwardDrag: (details) => downwardDragged = true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Drag down on card list
+    await tester.drag(find.text('Kopi'), const Offset(0, 150));
+    await tester.pumpAndSettle();
+    expect(downwardDragged, isTrue);
+  });
+
+  testWidgets('ExpenseHistoryScreen dismisses when dragged down', (tester) async {
+    tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final dummyWallets = <WalletEntry>[
+      WalletEntry(
+        id: 'w1', name: 'Dompet Utama', type: 'cash', currency: 'IDR', iconName: 'account_balance_wallet',
+        balance: 10000000, colorHex: '#4E7D96',
+        createdAt: DateTime.now(), updatedAt: DateTime.now(), isSynced: false, isDeleted: false,
+      ),
+    ];
+    final now = DateTime.now();
+    final dummyTxs = [
+      TransactionEntry(
+        id: 'tx_1', walletId: 'w1', categoryId: 'c1', source: 'manual', amount: 50000.0,
+        type: 'expense', notes: 'Kopi Kenangan', transactionDate: now, createdAt: now, updatedAt: now, isSynced: false, isDeleted: false,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () => ExpenseHistoryScreen.show(ctx, allTransactions: dummyTxs, wallets: dummyWallets),
+              child: const Text('Open History'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open History'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Riwayat\nPengeluaran'), findsOneWidget);
+
+    // Drag down on header by 80px -> dismisses!
+    await tester.drag(find.text('Riwayat\nPengeluaran'), const Offset(0, 80));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Riwayat\nPengeluaran'), findsNothing);
+    expect(find.text('Open History'), findsOneWidget);
+  });
 }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -58,7 +59,23 @@ class _ProfileModalState extends State<ProfileModal> {
   late final PageController _pageController;
   int _currentTab = 0;
   ProfileEntry? _editingProfile;
+  double _dragOffset = 0.0;
 
+  void _onHeaderDragUpdate(DragUpdateDetails details) {
+    if (_currentTab != 0) return;
+    final delta = details.primaryDelta ?? 0.0;
+    if (delta > 0 || _dragOffset > 0) setState(() => _dragOffset = math.max(0.0, _dragOffset + delta));
+  }
+
+  void _onHeaderDragEnd(DragEndDetails details) {
+    if (_currentTab != 0) return;
+    final velocity = details.primaryVelocity ?? 0.0;
+    if (velocity > 180.0 || _dragOffset > 60.0) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _dragOffset = 0.0);
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -71,32 +88,21 @@ class _ProfileModalState extends State<ProfileModal> {
     super.dispose();
   }
 
-  void _goToEdit(ProfileEntry? targetProfile) {
-    setState(() { _editingProfile = targetProfile; _currentTab = 1; });
+  void _goToEdit(ProfileEntry? target) {
+    setState(() { _editingProfile = target; _currentTab = 1; });
     _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
-
   void _goToHealthDetails() {
     setState(() { _currentTab = 2; _editingProfile = null; });
     _pageController.animateToPage(2, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
-
   void _goToSummary() {
     setState(() { _currentTab = 0; _editingProfile = null; });
     _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
-  String get _headerTitle {
-    if (_currentTab == 1) return _editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru';
-    if (_currentTab == 2) return 'Audit Kesehatan Finansial';
-    return 'Profil Pengguna';
-  }
-
-  String get _headerSubtitle {
-    if (_currentTab == 1) return _editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat';
-    if (_currentTab == 2) return 'Berdasarkan rasio arus kas, aset, & tagihan riil';
-    return 'Ringkasan identitas & performa finansial';
-  }
+  String get _headerTitle => _currentTab == 1 ? (_editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru') : (_currentTab == 2 ? 'Audit Kesehatan Finansial' : 'Profil Pengguna');
+  String get _headerSubtitle => _currentTab == 1 ? (_editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat') : (_currentTab == 2 ? 'Berdasarkan rasio arus kas, aset, & tagihan riil' : 'Ringkasan identitas & performa finansial');
 
   @override
   Widget build(BuildContext context) {
@@ -113,20 +119,35 @@ class _ProfileModalState extends State<ProfileModal> {
           child: Scaffold(
             backgroundColor: AppColors.canvasBg,
             body: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle())),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-                    child: ModalHeader(
-                      title: _headerTitle,
-                      subtitle: _headerSubtitle,
-                      closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
-                      padding: EdgeInsets.zero,
-                      onClose: () => _currentTab == 0 ? Navigator.of(context).pop() : _goToSummary(),
+              child: Transform.translate(
+                offset: Offset(0, _dragOffset),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragUpdate: _onHeaderDragUpdate,
+                      onVerticalDragEnd: _onHeaderDragEnd,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_currentTab == 0)
+                            const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle()))
+                          else
+                            const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                            child: ModalHeader(
+                              title: _headerTitle,
+                              subtitle: _headerSubtitle,
+                              closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
+                              padding: EdgeInsets.zero,
+                              onClose: () => _currentTab == 0 ? Navigator.of(context).pop() : _goToSummary(),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   Expanded(
                     child: PageView(
                       controller: _pageController,
@@ -162,6 +183,7 @@ class _ProfileModalState extends State<ProfileModal> {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),

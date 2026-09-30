@@ -19,17 +19,14 @@ class StackedCardDeckScrollList extends StatefulWidget {
   final String? expandedTxId;
   final ValueChanged<String?>? onToggleExpand;
   final ValueChanged<TransactionEntry>? onManageTransaction;
+  final GestureDragUpdateCallback? onDownwardDrag;
+  final GestureDragEndCallback? onDownwardDragEnd;
   final double bottomPadding;
 
   const StackedCardDeckScrollList({
-    super.key,
-    required this.transactions,
-    this.allTransactions,
-    required this.wallets,
-    this.expandedTxId,
-    this.onToggleExpand,
-    this.onManageTransaction,
-    this.bottomPadding = 110.0,
+    super.key, required this.transactions, this.allTransactions, required this.wallets,
+    this.expandedTxId, this.onToggleExpand, this.onManageTransaction,
+    this.onDownwardDrag, this.onDownwardDragEnd, this.bottomPadding = 110.0,
   });
 
   @override
@@ -38,15 +35,12 @@ class StackedCardDeckScrollList extends StatefulWidget {
 
 class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> with SingleTickerProviderStateMixin {
   double _scrollOffset = 0.0;
+  bool _isDraggingDownward = false;
   String? _internalExpandedId;
   late AnimationController _flingController;
   Animation<double>? _flingAnimation;
-
-  static const double _cardStep = 85.0;
-  static const double _collapsedCardHeight = 190.0;
-  static const double _expandedCardHeight = 295.0;
-  static const double _expandDisplacement = 190.0;
-  static const double _dockStep = 14.0;
+  static const double _cardStep = 85.0, _collapsedCardHeight = 190.0, _expandedCardHeight = 295.0;
+  static const double _expandDisplacement = 190.0, _dockStep = 14.0;
   static const int _maxDockedHeaders = 4;
 
   @override
@@ -82,11 +76,26 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
 
   void _onDragUpdate(DragUpdateDetails details, double maxScroll) {
     if (_flingController.isAnimating) _flingController.stop();
-    setState(() => _scrollOffset = (_scrollOffset - details.primaryDelta!).clamp(0.0, maxScroll));
+    final delta = details.primaryDelta!;
+    if ((_scrollOffset <= 0.0 && delta > 0) || _isDraggingDownward) {
+      _isDraggingDownward = true;
+      widget.onDownwardDrag?.call(details);
+      return;
+    }
+    setState(() => _scrollOffset = (_scrollOffset - delta).clamp(0.0, maxScroll));
   }
 
   void _onDragEnd(DragEndDetails details, double maxScroll) {
+    if (_isDraggingDownward) {
+      _isDraggingDownward = false;
+      widget.onDownwardDragEnd?.call(details);
+      return;
+    }
     final velocity = details.primaryVelocity ?? 0.0;
+    if (_scrollOffset <= 0.0 && velocity > 0) {
+      widget.onDownwardDragEnd?.call(details);
+      return;
+    }
     if (velocity.abs() > 100) {
       final double target = (_scrollOffset - velocity * 0.22).clamp(0.0, maxScroll);
       _flingAnimation = Tween<double>(begin: _scrollOffset, end: target).animate(
@@ -126,6 +135,9 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
           behavior: HitTestBehavior.translucent,
           onVerticalDragUpdate: (details) => _onDragUpdate(details, maxScroll),
           onVerticalDragEnd: (details) => _onDragEnd(details, maxScroll),
+          onVerticalDragCancel: () {
+            if (_isDraggingDownward) { _isDraggingDownward = false; widget.onDownwardDragEnd?.call(DragEndDetails(primaryVelocity: 0.0)); }
+          },
           child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, widget.bottomPadding),
             child: Stack(
@@ -144,12 +156,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                     final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
 
                     final weeklySpending = isExpanded
-                        ? CashflowAnalyticsService.computeWeeklySpending(
-                            sourceTransactions,
-                            referenceDate: tx.transactionDate,
-                            categoryId: tx.categoryId,
-                            type: tx.type,
-                          )
+                        ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, categoryId: tx.categoryId, type: tx.type)
                         : null;
                     final double naturalTop = _getNaturalTop(i, expandedIdx);
                     final double screenY = naturalTop - _scrollOffset;
@@ -174,13 +181,8 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                         transactionDate: tx.transactionDate,
                         weeklySpending: weeklySpending,
                         subtitle: '${wallet.name} • ${DateFormat('dd MMM yyyy, HH:mm').format(tx.transactionDate)}',
-                        onTap: () {
-                          final newId = isExpanded ? null : tx.id;
-                          widget.onToggleExpand != null ? widget.onToggleExpand!(newId) : setState(() => _internalExpandedId = newId);
-                        },
-                        onManage: () => widget.onManageTransaction != null
-                            ? widget.onManageTransaction!(tx)
-                            : TransactionDetailModal.show(context, transaction: tx),
+                        onTap: () => widget.onToggleExpand != null ? widget.onToggleExpand!(isExpanded ? null : tx.id) : setState(() => _internalExpandedId = isExpanded ? null : tx.id),
+                        onManage: () => widget.onManageTransaction != null ? widget.onManageTransaction!(tx) : TransactionDetailModal.show(context, transaction: tx),
                       ),
                     );
                   }),

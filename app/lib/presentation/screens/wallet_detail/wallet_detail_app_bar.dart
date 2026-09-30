@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-
+import '../../widgets/common/common_widgets.dart';
 class WalletDetailAppBar extends StatelessWidget {
   final WalletEntry wallet;
   final double headerBalanceOpacity;
@@ -45,19 +45,11 @@ class WalletDetailAppBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 4),
-          child: Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+        if (!isEditing)
+          const Padding(
+            padding: EdgeInsets.only(top: 8, bottom: 4),
+            child: Center(child: ModalGrabHandle()),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Row(

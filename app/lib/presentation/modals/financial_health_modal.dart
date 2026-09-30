@@ -18,7 +18,7 @@ class FinancialHealthModal {
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.canvasBg,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => BlocProvider.value(
         value: bloc,
         child: BlocBuilder<FinanceBloc, FinanceState>(
@@ -34,11 +34,11 @@ class FinancialHealthModal {
                 return Container(
                   decoration: const BoxDecoration(
                     color: AppColors.canvasBg,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                   ),
                   child: Column(
                     children: [
-                      const ModalGrabHandle(width: 44, padding: EdgeInsets.only(top: 16, bottom: 8)),
+                      const ModalGrabHandle(padding: EdgeInsets.only(top: 16, bottom: 8)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                         child: ModalHeader(

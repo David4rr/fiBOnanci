@@ -13,22 +13,18 @@ export 'transaction_modal_selectors.dart';
 
 class TransactionModal extends StatefulWidget {
   final String? initialWalletId;
-  final VoidCallback? onClose;
-  final VoidCallback? onSaved;
+  final VoidCallback? onClose, onSaved;
   final bool isInline;
 
   const TransactionModal({
-    super.key,
-    this.initialWalletId,
-    this.onClose,
-    this.onSaved,
-    this.isInline = false,
+    super.key, this.initialWalletId, this.onClose, this.onSaved, this.isInline = false,
   });
   static Future<void> show(BuildContext context, {String? initialWalletId}) => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: AppColors.canvasCardSurface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        clipBehavior: Clip.antiAlias,
         builder: (ctx) => TransactionModal(initialWalletId: initialWalletId),
       );
 
@@ -95,6 +91,7 @@ class _TransactionModalState extends State<TransactionModal> {
     }
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
         borderRadius: widget.isInline ? BorderRadius.zero : const BorderRadius.vertical(top: Radius.circular(28)),

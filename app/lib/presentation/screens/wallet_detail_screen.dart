@@ -31,13 +31,13 @@ class WalletDetailScreen extends StatefulWidget {
     super.key,
     required this.walletId,
     required this.currencyFormatter,
-    this.initialChildSize = 1.0,
+    this.initialChildSize = 0.94,
   });
 
-  static Future<void> show(BuildContext context, {required WalletEntry wallet, double initialChildSize = 1.0}) =>
+  static Future<void> show(BuildContext context, {required WalletEntry wallet, double initialChildSize = 0.94}) =>
       WalletDetailModalRoute.show(context, wallet: wallet, initialChildSize: initialChildSize);
 
-  static Future<void> push(BuildContext context, {required WalletEntry wallet, double initialChildSize = 1.0}) =>
+  static Future<void> push(BuildContext context, {required WalletEntry wallet, double initialChildSize = 0.94}) =>
       WalletDetailModalRoute.show(context, wallet: wallet, initialChildSize: initialChildSize);
   @override
   State<WalletDetailScreen> createState() => _WalletDetailScreenState();
@@ -114,9 +114,9 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
         return ExpandableModalSheet(
           key: _sheetKey,
           initialChildSize: widget.initialChildSize,
-          minChildSize: 0.40,
+          minChildSize: 0.25,
           maxChildSize: 1.0,
-          snapSizes: const [0.85, 1.0],
+          snapSizes: [widget.initialChildSize, 1.0],
           builder: (ctx, scrollController, currentSize) {
             return Stack(
               children: [
@@ -125,6 +125,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                   children: [
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
+                      onVerticalDragStart: (d) => _sheetKey.currentState?.handleHeaderDragStart(d),
                       onVerticalDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
                       onVerticalDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
                       child: WalletDetailAppBar(

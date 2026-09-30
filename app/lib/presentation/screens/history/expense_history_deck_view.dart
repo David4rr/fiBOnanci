@@ -16,18 +16,14 @@ class ExpenseHistoryDeckView extends StatelessWidget {
   final List<TransactionEntry> allTransactions;
   final List<WalletEntry> wallets;
   final ValueChanged<TransactionEntry>? onManageTransaction;
+  final GestureDragUpdateCallback? onDownwardDrag;
+  final GestureDragEndCallback? onDownwardDragEnd;
 
   const ExpenseHistoryDeckView({
-    super.key,
-    required this.isFiltering,
-    required this.searchQuery,
-    required this.filtered,
-    required this.sortedDays,
-    required this.currentDayKey,
-    required this.currentDayTxs,
-    required this.allTransactions,
-    required this.wallets,
-    this.onManageTransaction,
+    super.key, required this.isFiltering, required this.searchQuery, required this.filtered,
+    required this.sortedDays, required this.currentDayKey, required this.currentDayTxs,
+    required this.allTransactions, required this.wallets, this.onManageTransaction,
+    this.onDownwardDrag, this.onDownwardDragEnd,
   });
   @override
   Widget build(BuildContext context) {
@@ -79,14 +75,19 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                 return Material(color: Colors.transparent, child: toHeroContext.widget);
               },
               child: listToDisplay.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.receipt_long_outlined, size: 48, color: AppColors.textSubtle),
-                          const SizedBox(height: 12),
-                          Text('Tidak Ada Transaksi di Tanggal Ini', style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
-                        ],
+                  ? GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragUpdate: onDownwardDrag,
+                      onVerticalDragEnd: onDownwardDragEnd,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long_outlined, size: 48, color: AppColors.textSubtle),
+                            const SizedBox(height: 12),
+                            Text('Tidak Ada Transaksi di Tanggal Ini', style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
+                          ],
+                        ),
                       ),
                     )
                   : StackedCardDeckScrollList(
@@ -94,6 +95,8 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                       allTransactions: allTransactions,
                       wallets: wallets,
                       onManageTransaction: onManageTransaction,
+                      onDownwardDrag: onDownwardDrag,
+                      onDownwardDragEnd: onDownwardDragEnd,
                     ),
             ),
           ),

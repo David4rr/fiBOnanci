@@ -236,5 +236,140 @@ void main() {
       expect(find.text('Draggable Content'), findsNothing);
       expect(find.text('Open Modal'), findsOneWidget);
     });
+
+    testWidgets('Dismisses immediately on moderate downward drag when opened at initialChildSize 0.94', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final sheetKey = GlobalKey<ExpandableModalSheetState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        opaque: false,
+                        barrierDismissible: true,
+                        barrierColor: Colors.black.withValues(alpha: 0.65),
+                        pageBuilder: (ctx, _, _) => ExpandableModalSheet(
+                          key: sheetKey,
+                          initialChildSize: 0.94,
+                          minChildSize: 0.25,
+                          maxChildSize: 1.0,
+                          snapSizes: const [0.94, 1.0],
+                          builder: (c, scrollController, currentSize) {
+                            return ListView(
+                              controller: scrollController,
+                              children: [
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onVerticalDragUpdate: (d) => sheetKey.currentState?.handleHeaderDragUpdate(d),
+                                  onVerticalDragEnd: (d) => sheetKey.currentState?.handleHeaderDragEnd(d),
+                                  child: const SizedBox(height: 100, child: Text('Detail 0.94 Header')),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Open 0.94 Modal'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open 0.94 Modal'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Detail 0.94 Header'), findsOneWidget);
+      expect(sheetKey.currentState?.currentSize, closeTo(0.94, 0.02));
+
+      // Drag down moderately (only 80px) from 0.94 -> dismisses!
+      await tester.drag(find.text('Detail 0.94 Header'), const Offset(0, 80));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Detail 0.94 Header'), findsNothing);
+      expect(find.text('Open 0.94 Modal'), findsOneWidget);
+    });
+
+    testWidgets('Dismisses on downward drag even when scrollController is not attached to any scrollable', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final sheetKey = GlobalKey<ExpandableModalSheetState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        opaque: false,
+                        barrierDismissible: true,
+                        barrierColor: Colors.black.withValues(alpha: 0.65),
+                        pageBuilder: (ctx, _, _) => ExpandableModalSheet(
+                          key: sheetKey,
+                          initialChildSize: 0.94,
+                          minChildSize: 0.25,
+                          maxChildSize: 1.0,
+                          snapSizes: const [0.94, 1.0],
+                          builder: (c, scrollController, currentSize) {
+                            return Column(
+                              children: [
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onVerticalDragUpdate: (d) => sheetKey.currentState?.handleHeaderDragUpdate(d),
+                                  onVerticalDragEnd: (d) => sheetKey.currentState?.handleHeaderDragEnd(d),
+                                  child: const SizedBox(height: 100, child: Text('Unattached Header')),
+                                ),
+                                const Expanded(child: Text('Custom non-scrollable body')),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Open Unattached Modal'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Unattached Modal'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Unattached Header'), findsOneWidget);
+
+      // Drag down on unattached header (80px) -> dismisses!
+      await tester.drag(find.text('Unattached Header'), const Offset(0, 80));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Unattached Header'), findsNothing);
+      expect(find.text('Open Unattached Modal'), findsOneWidget);
+    });
   });
 }

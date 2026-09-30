@@ -208,5 +208,51 @@ void main() {
       expect(find.text('Audit Kesehatan Finansial'), findsOneWidget);
       expect(find.byType(FinancialHealthTab), findsOneWidget);
     });
+
+    testWidgets('ProfileModal dismisses when dragging down on header/grab handle', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final db = AppDatabase(NativeDatabase.memory());
+      final repo = DriftFinanceRepository(db);
+      final bloc = FinanceBloc(repository: repo);
+      addTearDown(() async {
+        await bloc.close();
+        await db.close();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider.value(
+            value: bloc,
+            child: Builder(
+              builder: (ctx) => Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => ProfileModal.show(ctx, walletCount: 1, txCount: 1),
+                  child: const Text('Open Profile'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Profile'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Profil Pengguna'), findsOneWidget);
+
+      // Drag down on header
+      await tester.drag(find.text('Profil Pengguna'), const Offset(0, 100));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Profil Pengguna'), findsNothing);
+      expect(find.text('Open Profile'), findsOneWidget);
+    });
   });
 }

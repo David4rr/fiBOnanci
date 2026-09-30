@@ -147,7 +147,7 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0C0D11),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
