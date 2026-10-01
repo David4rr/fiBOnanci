@@ -19,6 +19,8 @@ export 'inbox/inbox_empty_view.dart';
 export 'inbox/inbox_header_ribbon.dart';
 export 'inbox/inbox_notification_card.dart';
 export 'inbox/inbox_simulation_picker.dart';
+export 'inbox/inbox_wallet_chip.dart';
+export 'inbox/inbox_stacked_deck.dart';
 export 'inbox/inbox_wallet_reassign_sheet.dart';
 export 'inbox/spring_swipeable_card.dart';
 class PendingInboxModal {
@@ -36,6 +38,7 @@ class PendingInboxModal {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
       builder: (ctx) => _PendingInboxSheet(initialPending: initialPending, database: db),
     );
   }
@@ -159,12 +162,6 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
           InboxHeaderRibbon(
             pendingCount: _pending.length,
             onSimulate: () => InboxSimulationPicker.show(context, _injectNotification),
-            onRejectFirst: () {
-              if (_pending.isNotEmpty) _rejectItem(_pending.first);
-            },
-            onConfirmFirst: () {
-              if (_pending.isNotEmpty) _confirmItem(_pending.first);
-            },
           ),
           if (_pending.isEmpty)
             InboxEmptyView(onSimulationTap: () => InboxSimulationPicker.show(context, _injectNotification))

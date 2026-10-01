@@ -8,7 +8,7 @@ import 'package:fibonanci_app/core/native_bridge/notification_bridge.dart';
 import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
-
+import 'package:fibonanci_app/presentation/modals/pending_inbox_modal.dart';
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID', null);
@@ -29,7 +29,7 @@ void main() {
       await db.close();
     });
 
-    testWidgets('Auto-logs notification on launch, displays in inbox, and "Benar" (Correct) confirms transaction', (tester) async {
+    testWidgets('Auto-logs notification on launch, displays in inbox, and swiping right confirms transaction', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -76,11 +76,8 @@ void main() {
 
       expect(find.text('Kotak Masuk Notifikasi'), findsOneWidget);
       expect(find.textContaining('Pembayaran QR sebesar Rp 35.000'), findsOneWidget);
-      expect(find.text('Benar'), findsOneWidget);
-      expect(find.text('Salah'), findsOneWidget);
-
-      // 5. Tap 'Benar' (Correct) to confirm
-      await tester.tap(find.text('Benar'));
+      // 5. Swipe card right to confirm
+      await tester.drag(find.text('Pembayaran QR sebesar Rp 35.000 di Kopi Kenangan berhasil.'), const Offset(500, 0));
       await tester.pumpAndSettle();
 
       // 6. Verify item is removed from inbox and empty state appears
@@ -96,7 +93,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('Auto-logs notification, and "Salah" (Incorrect) deletes history entry and reverses balance', (tester) async {
+    testWidgets('Auto-logs notification, and swiping left deletes history entry and reverses balance', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -147,11 +144,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Kotak Masuk Notifikasi'), findsOneWidget);
-      expect(find.text('Salah'), findsOneWidget);
-      expect(find.text('Benar'), findsOneWidget);
-
-      // 4. Tap 'Salah' (Incorrect) to reject and delete
-      await tester.tap(find.text('Salah'));
+      // 4. Swipe card left to reject and delete
+      await tester.drag(find.text('Transfer keluar Rp 200.000 ke Budi Santoso berhasil.'), const Offset(-500, 0));
       await tester.pumpAndSettle();
 
       // 5. Verify item removed from inbox and empty state displayed
@@ -482,6 +476,108 @@ void main() {
 
       final updatedWallet = await (db.select(db.wallets)..where((w) => w.id.equals(wallet.id))).getSingle();
       expect(updatedWallet.balance, initialBal);
+    });
+
+    testWidgets('Stacked deck renders multiple cards with diverse lengths without overflow', (tester) async {
+      tester.view.physicalSize = const Size(360 * 2, 800 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final multiNotifications = [
+        {
+          'package': 'com.bca',
+          'title': 'BCA mobile',
+          'text': 'Pendek.',
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        },
+        {
+          'package': 'com.bankmandiri.livin',
+          'title': 'Livin by Mandiri',
+          'text': 'Transaksi pembayaran QRIS di PT SUMBER ALFARIA TRIJAYA TBK sebesar Rp 1.250.000 berhasil dengan nomor referensi 99887766.',
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        },
+        {
+          'package': 'id.co.bri.brimo',
+          'title': 'BRImo',
+          'text': 'Transfer masuk dari BAPAK ACHMAD SOEBARJO sebesar Rp 50.000.000 ke rekening 1234567890 berhasil.',
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        },
+      ];
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? multiNotifications : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(InboxStackedDeck), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    testWidgets('Dragging card reveals solid opaque background action slot with Benar', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final rawNotification = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Pembayaran QR sebesar Rp 85.000 di Excelso berhasil.',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [rawNotification] : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      final cardFinder = find.text('Pembayaran QR sebesar Rp 85.000 di Excelso berhasil.');
+      expect(cardFinder, findsOneWidget);
+
+      // Start drag to the right
+      final gesture = await tester.startGesture(tester.getCenter(cardFinder));
+
+      // Move past touch slop to win horizontal gesture arena
+      await gesture.moveBy(const Offset(25, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+
+      // Solid opaque background action slot is revealed underneath with 'Benar'
+      expect(find.text('Benar'), findsOneWidget);
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+
+      // Move past 50% threshold (200px) and release
+      await gesture.moveBy(const Offset(150, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(NotificationBridge.pendingCount, 0);
+      expect(find.text('Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
     });
   });
 }

@@ -5,18 +5,17 @@ import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
-import '../modals/all_transactions_modal.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 import '../widgets/dashboard_bento_grid.dart';
-import '../widgets/overlapping_deck.dart';
-import '../widgets/subscription_modal.dart';
+import 'dashboard/dashboard_empty_wallet_view.dart';
 import 'dashboard/dashboard_header.dart';
+import 'dashboard/dashboard_history_section.dart';
 import 'dashboard/dashboard_search_bar.dart';
 import 'subscription_screen.dart';
-import 'wallet_screen.dart';
 
+export 'dashboard/dashboard_empty_wallet_view.dart';
 export 'dashboard/dashboard_header.dart';
+export 'dashboard/dashboard_history_section.dart';
 export 'dashboard/dashboard_search_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -49,8 +48,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _onNavigateToWallets() {
     if (widget.onNavigateToWallets != null) {
       widget.onNavigateToWallets!();
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
     }
   }
 
@@ -60,7 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => SubscriptionScreen(onAddSubscription: () => AddSubscriptionModal.show(context))),
+        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
       );
     }
   }
@@ -106,85 +103,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   walletCount: wallets.length,
                   txCount: allTransactions.length,
                 ),
-                DashboardSearchBar(
-                  searchController: _searchController,
-                  searchQuery: _searchQuery,
-                  typeFilter: _typeFilter,
-                  walletFilter: _walletFilter,
-                  wallets: wallets,
-                  onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                  onClearSearch: () { _searchController.clear(); setState(() => _searchQuery = ''); },
-                  onFilterApplied: (type, walletId) => setState(() {
-                    _typeFilter = type;
-                    _walletFilter = walletId;
-                  }),
-                  onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
-                  onClearWalletFilter: () => setState(() => _walletFilter = null),
-                ),
-                DashboardBentoGrid(
-                  metrics: metrics,
-                  wallets: wallets,
-                  subscriptions: subscriptions,
-                  currencyFormatter: _currencyFormatter,
-                  onNavigateToWallets: _onNavigateToWallets,
-                  onNavigateToSubscriptions: _onNavigateToSubscriptions,
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _searchQuery.isNotEmpty
-                              ? 'Hasil Pencarian (${filteredTransactions.length})'
-                              : 'Riwayat Transaksi',
-                          style: AppTypography.sectionTitle,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => AllTransactionsModal.show(context, allTransactions: allTransactions, wallets: wallets),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          child: Text(
-                            'Lihat Semua',
-                            style: AppTypography.cardMetricLabel.copyWith(
-                              color: AppColors.neoChartreuse,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                if (wallets.isEmpty)
+                  const DashboardEmptyWalletView()
+                else ...[
+                  DashboardSearchBar(
+                    searchController: _searchController,
+                    searchQuery: _searchQuery,
+                    typeFilter: _typeFilter,
+                    walletFilter: _walletFilter,
+                    wallets: wallets,
+                    onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                    onClearSearch: () { _searchController.clear(); setState(() => _searchQuery = ''); },
+                    onFilterApplied: (type, walletId) => setState(() {
+                      _typeFilter = type;
+                      _walletFilter = walletId;
+                    }),
+                    onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
+                    onClearWalletFilter: () => setState(() => _walletFilter = null),
                   ),
-                ),
-                Expanded(
-                  child: Hero(
-                    tag: 'expense_history_card_history',
-                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-                      return Material(color: Colors.transparent, child: toHeroContext.widget);
-                    },
-                    child: filteredTransactions.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(isFiltering ? Icons.search_off_rounded : Icons.receipt_long_outlined, size: 42, color: AppColors.textSubtle),
-                                const SizedBox(height: 10),
-                                Text(isFiltering ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi hari ini', style: AppTypography.listSubtitle),
-                              ],
-                            ),
-                          )
-                        : StackedCardDeckScrollList(
-                            transactions: filteredTransactions,
-                            allTransactions: allTransactions,
-                            wallets: wallets,
-                          ),
+                  DashboardBentoGrid(
+                    metrics: metrics,
+                    wallets: wallets,
+                    subscriptions: subscriptions,
+                    currencyFormatter: _currencyFormatter,
+                    onNavigateToWallets: _onNavigateToWallets,
+                    onNavigateToSubscriptions: _onNavigateToSubscriptions,
                   ),
-                ),
+                  DashboardHistorySection(
+                    searchQuery: _searchQuery,
+                    isFiltering: isFiltering,
+                    filteredTransactions: filteredTransactions,
+                    allTransactions: allTransactions,
+                    wallets: wallets,
+                  ),
+                ],
               ],
             );
           },

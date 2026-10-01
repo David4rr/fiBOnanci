@@ -102,17 +102,38 @@ class WalletDetailHistorySection extends StatelessWidget {
         if (filteredTx.isEmpty)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(color: AppColors.canvasCardSurface, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.canvasBorder)),
-                child: Column(
-                  children: [
-                    Icon(searchQuery.isNotEmpty ? Icons.search_off_rounded : Icons.receipt_long_outlined, size: 36, color: AppColors.textSubtle),
-                    const SizedBox(height: 10),
-                    Text(searchQuery.isNotEmpty ? 'Tidak ada transaksi yang cocok' : 'Belum ada mutasi transaksi', style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
-                  ],
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 36),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        searchQuery.isNotEmpty ? Icons.search_off_rounded : Icons.receipt_long_outlined,
+                        size: 20,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    searchQuery.isNotEmpty ? 'Tidak ada transaksi yang cocok' : 'Belum ada mutasi transaksi',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           )

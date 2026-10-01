@@ -107,49 +107,70 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
                 if (_selectedSegment == 0) ...[
-                  SliverToBoxAdapter(
-                    child: WalletTotalBalanceCard(
-                      totalRealBalance: totalRealBalance,
-                      currencyFormatter: currencyFormatter,
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: WalletCashflowSummary(
-                        monthlyIncome: monthlyCashflow.income,
-                        monthlyExpense: monthlyCashflow.expense,
+                  if (wallets.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: WalletTotalBalanceCard(
+                        totalRealBalance: totalRealBalance,
                         currencyFormatter: currencyFormatter,
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: TrendSplineChart(
-                        incomeValues: incomeSeries,
-                        expenseValues: expenseSeries,
-                        labels: dateLabels,
-                        headline: 'Tren Arus Kas (Semua Rekening)',
-                        subtitle: '30 Hari Terakhir',
-                        height: 110,
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        child: WalletCashflowSummary(
+                          monthlyIncome: monthlyCashflow.income,
+                          monthlyExpense: monthlyCashflow.expense,
+                          currencyFormatter: currencyFormatter,
+                        ),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: WalletCardDeck(
-                        wallets: wallets,
-                        fmt: currencyFormatter,
-                        onSelectWallet: (wallet) {
-                          widget.onDetailViewChanged?.call(true);
-                          return WalletDetailScreen.push(context, wallet: wallet)
-                              .then((_) => widget.onDetailViewChanged?.call(false));
-                        },
+                    if (totalRealBalance > 0 || state.transactions.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          child: TrendSplineChart(
+                            incomeValues: incomeSeries,
+                            expenseValues: expenseSeries,
+                            labels: dateLabels,
+                            headline: 'Tren Arus Kas (Semua Rekening)',
+                            subtitle: '30 Hari Terakhir',
+                            height: 110,
+                          ),
+                        ),
+                      ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: WalletCardDeck(
+                          wallets: wallets,
+                          fmt: currencyFormatter,
+                          onSelectWallet: (wallet) {
+                            widget.onDetailViewChanged?.call(true);
+                            return WalletDetailScreen.push(context, wallet: wallet)
+                                .then((_) => widget.onDetailViewChanged?.call(false));
+                          },
+                        ),
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                          child: WalletCardDeck(
+                            wallets: wallets,
+                            fmt: currencyFormatter,
+                            onSelectWallet: (wallet) {
+                              widget.onDetailViewChanged?.call(true);
+                              return WalletDetailScreen.push(context, wallet: wallet)
+                                  .then((_) => widget.onDetailViewChanged?.call(false));
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ] else ...[
                   WalletPocketsView(
                     pockets: pockets,
@@ -158,7 +179,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     currencyFormatter: currencyFormatter,
                   ),
                 ],
-                const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                if ((_selectedSegment == 0 && wallets.isNotEmpty) || (_selectedSegment == 1 && pockets.isNotEmpty))
+                  const SliverToBoxAdapter(child: SizedBox(height: 140)),
               ],
             ),
           );

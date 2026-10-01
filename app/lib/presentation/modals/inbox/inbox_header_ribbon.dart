@@ -6,15 +6,11 @@ import '../../theme/app_typography.dart';
 class InboxHeaderRibbon extends StatelessWidget {
   final int pendingCount;
   final VoidCallback onSimulate;
-  final VoidCallback onRejectFirst;
-  final VoidCallback onConfirmFirst;
 
   const InboxHeaderRibbon({
     super.key,
     required this.pendingCount,
     required this.onSimulate,
-    required this.onRejectFirst,
-    required this.onConfirmFirst,
   });
 
   @override
@@ -103,68 +99,19 @@ class InboxHeaderRibbon extends StatelessWidget {
           ],
         ),
         if (pendingCount > 0)
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 14),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.025),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 12),
+            child: Text(
+              'Geser kanan untuk terima, kiri untuk tolak',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textMuted,
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: onRejectFirst,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.arrow_back_rounded, size: 13, color: AppColors.neoCoral),
-                            const SizedBox(width: 5),
-                            Flexible(
-                              child: Text('Salah', style: GoogleFonts.plusJakartaSans(color: AppColors.neoCoral, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.2)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('•', style: TextStyle(color: Colors.white.withValues(alpha: 0.2), fontSize: 11)),
-                ),
-                Flexible(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: onConfirmFirst,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text('Benar', style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.2)),
-                            ),
-                            const SizedBox(width: 5),
-                            const Icon(Icons.arrow_forward_rounded, size: 13, color: AppColors.neoMint),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          )
+        else
+          const SizedBox(height: 12),
       ],
     );
   }

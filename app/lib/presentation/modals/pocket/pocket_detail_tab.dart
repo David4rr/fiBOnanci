@@ -66,20 +66,28 @@ class PocketDetailTab extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (transactions.isEmpty)
-            Container(
-              width: double.infinity,
+            Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppColors.canvasInputSearch,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.canvasBorder),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.receipt_long_outlined, size: 32, color: AppColors.textSubtle),
-                  const SizedBox(height: 8),
-                  Text('Belum ada riwayat mutasi', style: AppTypography.listSubtitle),
-                ],
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.04),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.receipt_long_outlined, size: 20, color: AppColors.textSubtle),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text('Belum ada riwayat mutasi', style: AppTypography.listSubtitle, textAlign: TextAlign.center),
+                  ],
+                ),
               ),
             )
           else

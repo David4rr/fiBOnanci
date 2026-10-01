@@ -4,11 +4,10 @@ import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../modals/pocket_detail_modal.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../widgets/bento_folder_card.dart';
 import '../../widgets/pocket_stock_chart_card.dart';
 import '../../widgets/pocket_card_theme.dart';
+import '../../widgets/common/common_widgets.dart';
 
 class WalletPocketsView extends StatelessWidget {
   final List<PocketEntry> pockets;
@@ -27,74 +26,19 @@ class WalletPocketsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (pockets.isEmpty) {
-      return SliverList(
-        delegate: SliverChildListDelegate([
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: PocketStockChartCard(
-              currentTotal: totalPocketsAmount,
-              pocketsCount: pockets.length,
-              transactions: transactions,
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 80),
+            child: CardlessEmptyView(
+              icon: Icons.savings_outlined,
+              title: 'Belum Ada Kantong Tabungan',
+              description: 'Pisahkan dana untuk Tabungan, Dana Darurat, atau Impianmu agar aman dari belanja harian.',
+              hint: 'Ketuk tombol + di bawah untuk membuat',
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: Container(
-              padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(
-                color: AppColors.canvasCardSurface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.canvasBorder),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.savings_outlined, color: AppColors.neoChartreuse, size: 30),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Belum Ada Kantong Tabungan', style: AppTypography.sectionTitle),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pisahkan dana untuk Tabungan Pensiun/Masa Tua, Dana Darurat, atau Impianmu agar aman dari belanja harian.',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.listSubtitle,
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.neoChartreuse.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add_circle_outline, color: AppColors.neoChartreuse, size: 16),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Ketuk tombol + di bawah untuk membuat',
-                            style: GoogleFonts.plusJakartaSans(color: AppColors.neoChartreuse, fontWeight: FontWeight.w700, fontSize: 12.0),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ]),
+        ),
       );
     }
 

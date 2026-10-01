@@ -84,15 +84,20 @@ class OverlappingDeckItem extends StatelessWidget {
                     ),
                     child: Center(child: Icon(iconData, color: const Color(0xFF0C0D11), size: 20)),
                   ),
-                  const Spacer(),
-                  Text(
-                    currencyFormatter.format(amount.abs()),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF0C0D11),
-                      letterSpacing: -0.6,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      currencyFormatter.format(amount.abs()),
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0C0D11),
+                        letterSpacing: -0.6,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
                 ],

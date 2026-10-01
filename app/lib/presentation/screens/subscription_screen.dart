@@ -8,6 +8,7 @@ import '../theme/app_typography.dart';
 import '../widgets/subscription_stacked_deck.dart';
 import 'subscription/subscription_card_detail_sheet.dart';
 import 'subscription/subscription_summary_banner.dart';
+import '../widgets/common/common_widgets.dart';
 
 export 'subscription/subscription_card_detail_sheet.dart';
 export 'subscription/subscription_summary_banner.dart';
@@ -85,24 +86,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
                 if (subscriptions.isEmpty)
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 68,
-                              height: 68,
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF13151D), border: Border.all(color: AppColors.canvasBorder, width: 1.5)),
-                              child: const Icon(Icons.receipt_long_outlined, color: AppColors.neoCoral, size: 32),
-                            ),
-                            const SizedBox(height: 18),
-                            Text('Belum Ada Tagihan Rutin', style: AppTypography.heroGreeting.copyWith(fontSize: 20)),
-                            const SizedBox(height: 8),
-                            Text('Daftarkan langganan Netflix, Spotify, listrik PLN, dll agar tercatat rapi.', textAlign: TextAlign.center, style: AppTypography.listSubtitle),
-                          ],
+                        padding: EdgeInsets.fromLTRB(24, 0, 24, 80),
+                        child: CardlessEmptyView(
+                          icon: Icons.receipt_long_outlined,
+                          title: 'Belum Ada Tagihan Rutin',
+                          description: 'Daftarkan langganan Netflix, Spotify, atau cicilan agar jatuh tempo tercatat rapi.',
+                          hint: 'Ketuk tombol + di bawah untuk menambahkan',
                         ),
                       ),
                     ),
@@ -130,10 +122,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     child: filtered.isEmpty
                         ? Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 40),
-                              child: Text(
-                                _searchQuery.isNotEmpty ? 'Tidak ada tagihan yang cocok dengan "$_searchQuery"' : 'Tidak ada tagihan dalam filter ini',
-                                style: AppTypography.listSubtitle,
+                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                              child: CardlessEmptyView(
+                                icon: Icons.search_off_rounded,
+                                title: 'Tagihan Tidak Ditemukan',
+                                description: _searchQuery.isNotEmpty
+                                    ? 'Tidak ada tagihan yang cocok dengan "$_searchQuery".'
+                                    : 'Tidak ada tagihan dalam filter ini.',
                               ),
                             ),
                           )

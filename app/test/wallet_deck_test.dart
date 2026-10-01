@@ -131,4 +131,37 @@ void main() {
     expect(find.text('BCA Utama'), findsOneWidget);
     await db.close();
   });
+
+  testWidgets('Tapping + button on Rekening Utama directly opens AddWalletModal without options sheet', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final db = AppDatabase(NativeDatabase.memory());
+    await db.select(db.wallets).get();
+    final repo = DriftFinanceRepository(db);
+
+    await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+    await tester.pumpAndSettle();
+
+    // Navigate to Wallets tab
+    await tester.tap(find.byIcon(Icons.account_balance_wallet_outlined).last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rekening & Dompet'), findsOneWidget);
+
+    // Tap "+" center action button on bottom nav dock
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+
+    // Directly opens Tambah Rekening Baru (AddWalletModal) without intermediate options sheet!
+    expect(find.text('Tambah Rekening Baru'), findsOneWidget);
+    expect(find.textContaining('Nama Rekening'), findsOneWidget);
+    expect(find.text('Kantong Tabungan Baru'), findsNothing);
+
+    await db.close();
+  });
 }

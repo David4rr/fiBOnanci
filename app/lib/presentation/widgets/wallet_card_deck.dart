@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 import 'wallet_card.dart';
+import 'common/common_widgets.dart';
 
 /// Clean tactile stacked card deck view with fluid spring physics and uniform peeking.
 class WalletCardDeck extends StatefulWidget {
@@ -83,16 +82,11 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
     final fmt = widget.fmt;
 
     if (wallets.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: AppColors.canvasCardSurface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.canvasBorder),
-        ),
-        child: Center(
-          child: Text('Belum ada rekening. Ketuk + untuk menambahkan.', textAlign: TextAlign.center, style: AppTypography.listSubtitle),
-        ),
+      return const CardlessEmptyView(
+        icon: Icons.account_balance_wallet_outlined,
+        title: 'Belum Ada Rekening',
+        description: 'Belum ada rekening atau dompet digital yang terhubung.',
+        hint: 'Ketuk tombol + di bawah untuk menambahkan',
       );
     }
 

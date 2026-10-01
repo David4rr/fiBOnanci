@@ -8,6 +8,7 @@ class SpringSwipeableCard extends StatefulWidget {
   final Color accentColor;
   final VoidCallback onConfirmed;
   final VoidCallback onRejected;
+  final ValueChanged<double>? onDragOffsetChanged;
 
   const SpringSwipeableCard({
     super.key,
@@ -15,6 +16,7 @@ class SpringSwipeableCard extends StatefulWidget {
     required this.accentColor,
     required this.onConfirmed,
     required this.onRejected,
+    this.onDragOffsetChanged,
   });
 
   @override
@@ -31,6 +33,7 @@ class _SpringSwipeableCardState extends State<SpringSwipeableCard> with SingleTi
     _controller = AnimationController.unbounded(vsync: this);
     _controller.addListener(() {
       setState(() => _dragOffset = _controller.value);
+      widget.onDragOffsetChanged?.call(_dragOffset);
     });
   }
 
@@ -46,6 +49,7 @@ class _SpringSwipeableCardState extends State<SpringSwipeableCard> with SingleTi
       _dragOffset += details.primaryDelta ?? 0.0;
       _controller.value = _dragOffset;
     });
+    widget.onDragOffsetChanged?.call(_dragOffset);
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
@@ -86,82 +90,58 @@ class _SpringSwipeableCardState extends State<SpringSwipeableCard> with SingleTi
     });
   }
 
+  Widget _buildActionSlot(bool isRight) {
+    final color = isRight ? AppColors.neoMint : AppColors.neoCoral;
+    final bg = isRight ? const Color(0xFF10231C) : const Color(0xFF261317);
+    final icon = isRight ? Icons.check_rounded : Icons.delete_outline_rounded;
+    final text = isRight ? 'Benar' : 'Salah';
+
+    final badge = Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.20),
+        border: Border.all(color: color.withValues(alpha: 0.50), width: 1.5),
+      ),
+      child: Icon(icon, color: color, size: 20),
+    );
+    final label = Text(
+      text,
+      style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3),
+    );
+
+    return Positioned.fill(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: color.withValues(alpha: 0.45), width: 1.5),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 22),
+          alignment: isRight ? Alignment.centerLeft : Alignment.centerRight,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: isRight ? [badge, const SizedBox(width: 12), label] : [label, const SizedBox(width: 12), badge],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDraggingRight = _dragOffset > 0;
-    final isDraggingLeft = _dragOffset < 0;
-    final threshold = MediaQuery.sizeOf(context).width * 0.50;
-    final progress = (_dragOffset.abs() / threshold).clamp(0.0, 1.0);
+    final isRight = _dragOffset > 1.0;
+    final isLeft = _dragOffset < -1.0;
 
     return GestureDetector(
       onHorizontalDragUpdate: _onHorizontalDragUpdate,
       onHorizontalDragEnd: _onHorizontalDragEnd,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Stack(
-                children: [
-                  if (isDraggingRight)
-                    Positioned.fill(
-                      child: Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: AppColors.neoMint.withValues(alpha: 0.12 * progress),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: AppColors.neoMint.withValues(alpha: 0.35 * progress)),
-                        ),
-                        child: Opacity(
-                          opacity: (progress * 1.2).clamp(0.0, 1.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neoMint.withValues(alpha: 0.2)),
-                                child: const Icon(Icons.check_rounded, color: AppColors.neoMint, size: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Benar', style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (isDraggingLeft)
-                    Positioned.fill(
-                      child: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: AppColors.neoCoral.withValues(alpha: 0.12 * progress),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: AppColors.neoCoral.withValues(alpha: 0.35 * progress)),
-                        ),
-                        child: Opacity(
-                          opacity: (progress * 1.2).clamp(0.0, 1.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text('Salah', style: GoogleFonts.plusJakartaSans(color: AppColors.neoCoral, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2)),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neoCoral.withValues(alpha: 0.2)),
-                                child: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 16),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          if (isRight || isLeft) _buildActionSlot(isRight),
           Transform.translate(
             offset: Offset(_dragOffset, 0),
             child: widget.child,

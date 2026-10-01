@@ -26,6 +26,8 @@ class WalletDetailActionsAndChart extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final hasActivity = wallet.balance > 0 ||
+        transactions.any((t) => t.walletId == wallet.id || t.destinationWalletId == wallet.id);
     return Column(
       children: [
         Padding(
@@ -95,19 +97,21 @@ class WalletDetailActionsAndChart extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: TrendSplineChart(
-            incomeValues: CashflowAnalyticsService.compute30DaySeries(transactions, type: 'income', walletId: wallet.id),
-            expenseValues: CashflowAnalyticsService.compute30DaySeries(transactions, type: 'expense', walletId: wallet.id),
-            labels: CashflowAnalyticsService.compute30DayLabels(),
-            lineColor: cardColor,
-            headline: 'Tren Mutasi ${wallet.name}',
-            subtitle: '30 Hari Terakhir',
-            height: 100,
+        if (hasActivity) ...[
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TrendSplineChart(
+              incomeValues: CashflowAnalyticsService.compute30DaySeries(transactions, type: 'income', walletId: wallet.id),
+              expenseValues: CashflowAnalyticsService.compute30DaySeries(transactions, type: 'expense', walletId: wallet.id),
+              labels: CashflowAnalyticsService.compute30DayLabels(),
+              lineColor: cardColor,
+              headline: 'Tren Mutasi ${wallet.name}',
+              subtitle: '30 Hari Terakhir',
+              height: 100,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

@@ -10,11 +10,8 @@ import '../widgets/transaction_modal.dart';
 import 'dashboard_screen.dart';
 import 'settings_screen.dart';
 import 'subscription_screen.dart';
-import 'wallet_add_options_sheet.dart';
 import 'wallet_screen.dart';
 
-export 'settings_screen.dart';
-export 'wallet_add_options_sheet.dart';
 
 class MainShell extends StatefulWidget {
   final AppDatabase db;
@@ -77,7 +74,7 @@ class _MainShellState extends State<MainShell> {
         if (_walletSegment == 1) {
           WalletScreen.showAddPocketModal(context);
         } else {
-          WalletAddOptionsSheet.show(context);
+          WalletScreen.showAddWalletModal(context);
         }
         break;
       default:
