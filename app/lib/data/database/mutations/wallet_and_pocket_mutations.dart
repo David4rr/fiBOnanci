@@ -146,4 +146,44 @@ extension WalletAndPocketMutations on AppDatabase {
       );
     });
   }
+
+  Future<void> deletePocket(String pocketId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      final pocket = await (select(pockets)..where((t) => t.id.equals(pocketId))).getSingleOrNull();
+      if (pocket == null) return;
+
+      if (pocket.currentAmount > 0) {
+        final activeWallets = await (select(wallets)..where((w) => w.isDeleted.equals(false))).get();
+        final targetWallet = activeWallets.where((w) => w.id == pocket.linkedWalletId).firstOrNull ??
+            activeWallets.where((w) => w.profileId == pocket.profileId).firstOrNull ??
+            activeWallets.firstOrNull;
+        if (targetWallet != null) {
+          await (update(wallets)..where((w) => w.id.equals(targetWallet.id))).write(
+            WalletsCompanion(balance: Value(targetWallet.balance + pocket.currentAmount), updatedAt: Value(now), isSynced: const Value(false)),
+          );
+          await into(transactions).insert(
+            TransactionsCompanion(
+              id: Value(const Uuid().v4()),
+              profileId: Value(pocket.profileId ?? targetWallet.profileId),
+              walletId: Value(targetWallet.id),
+              categoryId: const Value('11111111-1111-4111-8111-111111111111'),
+              amount: Value(pocket.currentAmount),
+              type: const Value('income'),
+              notes: Value('Penarikan dari Kantong ${pocket.name} (Penutupan)'),
+              externalRef: Value('pocket_close_${pocket.id}'),
+              transactionDate: Value(now),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+              isSynced: const Value(false),
+            ),
+          );
+        }
+      }
+
+      await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
+        PocketsCompanion(currentAmount: const Value(0.0), isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+    });
+  }
 }

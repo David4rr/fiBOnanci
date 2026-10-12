@@ -8,7 +8,6 @@ import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
 import 'health/financial_health_tab.dart';
-import 'profile/profile_actions.dart';
 import 'profile/profile_edit_tab.dart';
 import 'profile/profile_general_data_card.dart';
 import 'profile/profile_card_carousel.dart';
@@ -16,7 +15,6 @@ import 'profile/profile_header_card.dart';
 import 'report/financial_report_tab.dart';
 
 export 'health/financial_health_tab.dart';
-export 'profile/profile_actions.dart';
 export 'profile/profile_edit_tab.dart';
 export 'profile/profile_card_carousel.dart';
 export 'profile/profile_header_card.dart';
@@ -172,7 +170,6 @@ class _ProfileModalState extends State<ProfileModal> {
                             ),
                             const SizedBox(height: 16),
                             ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
-                            ProfileActions(profile: profile, profiles: profiles),
                           ],
                         ),
                         ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),

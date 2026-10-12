@@ -70,14 +70,18 @@ void main() {
     expect(withdrawnBca.balance, initialBcaBalance - 1500000.0);
     expect(withdrawnPocket.currentAmount, 1500000.0);
 
-    // 4. Soft delete pocket
+    // 4. Soft delete pocket — remaining 1,500,000 is automatically refunded to BCA Utama!
     await repository.deletePocket(pocket.id);
     pockets = await repository.getPockets();
     expect(pockets.isEmpty, isTrue);
 
-    // Verify row still exists in raw DB with isDeleted = true
+    final refundedBca = await (db.select(db.wallets)..where((w) => w.id.equals(bca.id))).getSingle();
+    expect(refundedBca.balance, initialBcaBalance);
+
+    // Verify row still exists in raw DB with isDeleted = true and currentAmount = 0
     final rawPockets = await db.select(db.pockets).get();
     expect(rawPockets.length, 1);
     expect(rawPockets.first.isDeleted, isTrue);
+    expect(rawPockets.first.currentAmount, 0.0);
   });
 }

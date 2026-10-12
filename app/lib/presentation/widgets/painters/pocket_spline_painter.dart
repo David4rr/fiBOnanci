@@ -50,12 +50,15 @@ class PocketSplinePainter extends CustomPainter {
 
   List<Offset> _calcPoints(List<double> vals, int n, double dx, double minVal, double maxVal, double topPad, double plotH, double totalWidth) {
     final List<Offset> points = [];
+    final double baseMin = math.min(0.0, minVal);
     final bool isFlat = (maxVal - minVal) == 0;
-    final double range = isFlat ? 1.0 : (maxVal - minVal);
+    final double range = (maxVal - baseMin) <= 0 ? 1.0 : (maxVal - baseMin);
 
     for (int i = 0; i < n; i++) {
       final v = vals[i];
-      final norm = isFlat ? 0.5 : ((v - minVal) / range).clamp(0.0, 1.0);
+      final double norm = v <= 0
+          ? 0.0
+          : (isFlat ? 0.65 : ((v - baseMin) / range).clamp(0.0, 1.0));
       final x = n > 1 ? i * dx : totalWidth / 2;
       final baseTargetY = topPad + (1.0 - norm) * plotH;
       final y = plotH + topPad - ((plotH + topPad - baseTargetY) * progress);

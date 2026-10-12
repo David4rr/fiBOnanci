@@ -9,9 +9,7 @@ import '../modals/add_pocket_modal.dart';
 import '../modals/add_wallet_modal.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import '../widgets/trend_spline_chart.dart';
 import '../widgets/wallet_card_deck.dart';
-import '../widgets/wallet_cashflow_summary.dart';
 import 'wallet/wallet_pockets_view.dart';
 import 'wallet/wallet_segmented_toggle.dart';
 import 'wallet/wallet_total_balance_card.dart';
@@ -111,33 +109,15 @@ class _WalletScreenState extends State<WalletScreen> {
                     SliverToBoxAdapter(
                       child: WalletTotalBalanceCard(
                         totalRealBalance: totalRealBalance,
+                        monthlyIncome: monthlyCashflow.income,
+                        monthlyExpense: monthlyCashflow.expense,
+                        incomeSeries: incomeSeries,
+                        expenseSeries: expenseSeries,
+                        dateLabels: dateLabels,
+                        showChart: totalRealBalance > 0 || state.transactions.isNotEmpty,
                         currencyFormatter: currencyFormatter,
                       ),
                     ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                        child: WalletCashflowSummary(
-                          monthlyIncome: monthlyCashflow.income,
-                          monthlyExpense: monthlyCashflow.expense,
-                          currencyFormatter: currencyFormatter,
-                        ),
-                      ),
-                    ),
-                    if (totalRealBalance > 0 || state.transactions.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                          child: TrendSplineChart(
-                            incomeValues: incomeSeries,
-                            expenseValues: expenseSeries,
-                            labels: dateLabels,
-                            headline: 'Tren Arus Kas (Semua Rekening)',
-                            subtitle: '30 Hari Terakhir',
-                            height: 110,
-                          ),
-                        ),
-                      ),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),

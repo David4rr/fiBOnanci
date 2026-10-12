@@ -47,14 +47,6 @@ extension DatabaseQueries on AppDatabase {
     return (update(pockets)..where((t) => t.id.equals(pocket.id.value))).write(pocket);
   }
 
-  Future<void> deletePocket(String pocketId) {
-    return (update(pockets)..where((t) => t.id.equals(pocketId))).write(
-      PocketsCompanion(
-        isDeleted: const Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
 
   Stream<List<ProfileEntry>> watchProfiles() {
     return (select(profiles)

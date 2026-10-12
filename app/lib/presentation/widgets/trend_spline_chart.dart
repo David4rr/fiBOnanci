@@ -17,6 +17,7 @@ class TrendSplineChart extends StatefulWidget {
   final String? headline;
   final String? subtitle;
   final double height;
+  final bool embedded;
 
   const TrendSplineChart({
     super.key,
@@ -28,8 +29,8 @@ class TrendSplineChart extends StatefulWidget {
     this.headline,
     this.subtitle,
     this.height = 130,
+    this.embedded = false,
   });
-
   bool get isDual => incomeValues != null && expenseValues != null;
 
   @override
@@ -57,47 +58,44 @@ class _TrendSplineChartState extends State<TrendSplineChart> {
         ? math.max(widget.incomeValues!.length, widget.expenseValues!.length)
         : (widget.values?.length ?? 0);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: BoxDecoration(
-        color: AppColors.canvasCardSurface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.canvasBorder, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (widget.headline != null)
-                Expanded(
-                  child: Text(
-                    widget.headline!,
-                    style: AppTypography.listTitle.copyWith(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite),
-                    overflow: TextOverflow.ellipsis,
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (widget.headline != null)
+              Expanded(
+                child: Text(
+                  widget.headline!,
+                  style: AppTypography.listTitle.copyWith(
+                    fontSize: widget.embedded ? 11 : 13,
+                    fontWeight: widget.embedded ? FontWeight.w600 : FontWeight.w700,
+                    color: widget.embedded ? AppColors.textMuted : AppColors.textWhite,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              const SizedBox(width: 8),
-              if (_touchedIndex != null && _touchedIndex! < count)
-                _buildScrubbingBadge(_touchedIndex!)
-              else if (widget.isDual)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildLegendDot(AppColors.neoMint, 'Masuk'),
-                    const SizedBox(width: 10),
-                    _buildLegendDot(AppColors.neoCoral, 'Keluar'),
-                  ],
-                )
-              else if (widget.subtitle != null)
-                Text(widget.subtitle!, style: AppTypography.badgeLabel.copyWith(color: widget.lineColor, fontSize: 10)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
+              ),
+            const SizedBox(width: 8),
+            if (_touchedIndex != null && _touchedIndex! < count)
+              _buildScrubbingBadge(_touchedIndex!)
+            else if (widget.isDual && !widget.embedded)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildLegendDot(AppColors.neoMint, 'Masuk'),
+                  const SizedBox(width: 10),
+                  _buildLegendDot(AppColors.neoCoral, 'Keluar'),
+                ],
+              )
+            else if (widget.subtitle != null)
+              Text(widget.subtitle!, style: AppTypography.badgeLabel.copyWith(color: widget.embedded ? AppColors.textMuted : widget.lineColor, fontSize: 10)),
+          ],
+        ),
+        SizedBox(height: widget.embedded ? 8 : 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
               final chartWidth = constraints.maxWidth;
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -129,8 +127,17 @@ class _TrendSplineChartState extends State<TrendSplineChart> {
               );
             },
           ),
-        ],
+      ],
+    );
+    if (widget.embedded) return content;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      decoration: BoxDecoration(
+        color: AppColors.canvasCardSurface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.canvasBorder, width: 1),
       ),
+      child: content,
     );
   }
 

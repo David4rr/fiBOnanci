@@ -7,13 +7,16 @@ import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 
 void executeDeletePocket(BuildContext context, PocketEntry pocket) {
+  final hasBalance = pocket.currentAmount > 0;
   context.read<FinanceBloc>().add(DeletePocketEvent(pocket.id));
   Navigator.of(context).pop();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       backgroundColor: AppColors.neoCoral,
       content: Text(
-        'Kantong "${pocket.name}" berhasil dihapus.',
+        hasBalance
+            ? 'Kantong "${pocket.name}" dihapus & saldo dikembalikan ke rekening.'
+            : 'Kantong "${pocket.name}" berhasil dihapus.',
         style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
       ),
     ),

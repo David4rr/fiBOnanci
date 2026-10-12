@@ -8,7 +8,6 @@ import '../modals/financial_health_modal.dart';
 import '../modals/profile_modal.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import '../widgets/notification_simulator_modal.dart';
 import '../widgets/profile_avatar.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -134,38 +133,6 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
               },
-            ),
-            const SizedBox(height: 14),
-            GestureDetector(
-              onTap: () => NotificationSimulatorModal.show(context),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(color: AppColors.neoChartreuse.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.35))),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(color: AppColors.neoChartreuse, borderRadius: BorderRadius.circular(14)),
-                      child: const Icon(Icons.flash_on, color: AppColors.textDarkPrimary, size: 26),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('SIMULATOR NOTIFIKASI BANK', style: AppTypography.badgeLabel.copyWith(color: AppColors.neoChartreuse)),
-                          const SizedBox(height: 2),
-                          Text('Tes Parsing Otomatis', style: AppTypography.listTitle),
-                          const SizedBox(height: 2),
-                          Text('Uji coba BCA, blu, Mandiri, Jago, SeaBank, OVO', style: AppTypography.listSubtitle),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right, color: AppColors.neoChartreuse),
-                  ],
-                ),
-              ),
             ),
             const SizedBox(height: 20),
             Text('STATUS SISTEM OFFLINE', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),

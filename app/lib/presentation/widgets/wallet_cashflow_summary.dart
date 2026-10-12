@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 
-/// Two-column monthly income & expense summary cards.
+/// Compact minimalist monthly income & expense summary strip.
 class WalletCashflowSummary extends StatelessWidget {
   final double monthlyIncome;
   final double monthlyExpense;
@@ -18,93 +18,58 @@ class WalletCashflowSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Monthly Income Card (Mint)
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: AppColors.canvasCardSurface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.canvasBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.neoMint.withValues(alpha: 0.15),
-                      ),
-                      child: const Icon(Icons.arrow_downward, color: AppColors.neoMint, size: 13),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'MASUK (BLN INI)',
-                        style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 9),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  currencyFormatter.format(monthlyIncome),
-                  style: AppTypography.listAmount.copyWith(color: AppColors.neoMint, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+        _buildCompactFlowRow(
+          label: 'Masuk',
+          amount: '+${currencyFormatter.format(monthlyIncome)}',
+          color: AppColors.neoMint,
+        ),
+        const SizedBox(height: 5),
+        _buildCompactFlowRow(
+          label: 'Keluar',
+          amount: '-${currencyFormatter.format(monthlyExpense)}',
+          color: AppColors.neoCoral,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactFlowRow({
+    required String label,
+    required String amount,
+    required Color color,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textMuted,
           ),
         ),
-        const SizedBox(width: 10),
-
-        // Monthly Expense Card (Coral)
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: AppColors.canvasCardSurface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.canvasBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.neoCoral.withValues(alpha: 0.15),
-                      ),
-                      child: const Icon(Icons.arrow_upward, color: AppColors.neoCoral, size: 13),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'KELUAR (BLN INI)',
-                        style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 9),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  currencyFormatter.format(monthlyExpense),
-                  style: AppTypography.listAmount.copyWith(color: AppColors.neoCoral, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            amount,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: color,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ),
