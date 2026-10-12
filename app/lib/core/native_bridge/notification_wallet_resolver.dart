@@ -94,8 +94,11 @@ class NotificationWalletResolver {
   }
 
   static WalletEntry? _matchProvider(String pkg, String lowText, List<WalletEntry> list) {
-    if (pkg.contains('seabank') || pkg.contains('bke') || pkg.contains('digitalbank') || pkg.contains('sea.bank') || lowText.contains('seabank')) {
-      return list.where((w) => w.name.toLowerCase().contains('seabank')).firstOrNull;
+    if (pkg.contains('seabank') || pkg.contains('bke') || pkg.contains('digitalbank') || pkg.contains('sea.bank') || lowText.contains('seabank') || lowText.contains('sea bank')) {
+      return list.where((w) {
+        final n = w.name.toLowerCase();
+        return n.contains('seabank') || n.contains('sea bank') || n.replaceAll(' ', '').contains('seabank');
+      }).firstOrNull;
     } else if (pkg.contains('bcadigital') || pkg.contains('blu') || lowText.contains('blu')) {
       return list.where((w) => w.name.toLowerCase().contains('blu')).firstOrNull;
     } else if (pkg.contains('bca') || lowText.contains('bca')) {

@@ -13,6 +13,7 @@ class BottomNavDock extends StatelessWidget {
   final ValueChanged<int> onTapIndex;
   final VoidCallback? onAddAction;
   final VoidCallback? onCenterAction;
+  final VoidCallback? onAddLongPress;
 
   const BottomNavDock({
     super.key,
@@ -20,6 +21,7 @@ class BottomNavDock extends StatelessWidget {
     required this.onTapIndex,
     this.onAddAction,
     this.onCenterAction,
+    this.onAddLongPress,
   }) : assert(
           onAddAction != null || onCenterAction != null,
           'Either onAddAction or onCenterAction must be provided',
@@ -102,7 +104,7 @@ class BottomNavDock extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  AddActionButton(onPressed: _action),
+                  AddActionButton(onPressed: _action, onLongPress: onAddLongPress),
                 ],
               ),
             ),

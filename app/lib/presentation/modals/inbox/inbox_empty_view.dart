@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/native_bridge/notification_bridge.dart';
 import '../../theme/app_colors.dart';
 
 class InboxEmptyView extends StatelessWidget {
@@ -81,6 +82,19 @@ class InboxEmptyView extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: () => NotificationBridge.openPermissionSettings(),
+              icon: const Icon(Icons.settings_suggest_rounded, size: 16, color: AppColors.textMuted),
+              label: Text(
+                'Buka Setelan Akses Notifikasi Android',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.textMuted,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

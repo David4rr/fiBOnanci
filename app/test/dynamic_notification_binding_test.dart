@@ -1,4 +1,6 @@
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -6,7 +8,8 @@ import 'package:fibonanci_app/core/notification_parser/bank_presets.dart';
 import 'package:fibonanci_app/core/notification_parser/notification_parser.dart';
 import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
-
+import 'package:fibonanci_app/presentation/modals/wallet/installed_app_picker_modal.dart';
+import 'package:fibonanci_app/presentation/modals/wallet/wallet_binding_selector.dart';
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID', null);
@@ -149,6 +152,78 @@ void main() {
       final newRule = await db.getNotificationRuleForPackage('id.krom.bank');
       expect(newRule, isNotNull);
       expect(newRule!.walletId, wallet.id);
+    });
+
+    testWidgets('Tapping Cari App button opens InstalledAppPickerModal and picks package', (tester) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (call) async {
+          if (call.method == 'getInstalledBankApps') {
+            return [
+              {'packageName': 'id.krom.bank', 'appName': 'Krom Bank'},
+              {'packageName': 'id.co.bankbkemobile.digitalbank', 'appName': 'SeaBank'},
+            ];
+          }
+          return null;
+        },
+      );
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+          const MethodChannel('com.fibonanci.app/notification_service'),
+          null,
+        );
+      });
+
+      final controller = TextEditingController();
+      String? pickedPkg;
+      bool customFlag = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WalletBindingSelector(
+              selectedPackage: null,
+              isCustomPackage: false,
+              customPackageController: controller,
+              onPackageChanged: (pkg, custom) {
+                pickedPkg = pkg;
+                customFlag = custom;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cari App'), findsOneWidget);
+      expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+
+      // Tap Cari App to open modal
+      await tester.tap(find.text('Cari App'));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(InstalledAppPickerModal), findsOneWidget);
+      expect(find.text('Pilih Aplikasi'), findsOneWidget);
+
+      // Search for Krom
+      await tester.enterText(find.byType(TextField), 'Krom');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Krom Bank'), findsOneWidget);
+      expect(find.text('id.krom.bank'), findsOneWidget);
+
+      // Tap Krom Bank in the list
+      await tester.tap(find.text('Krom Bank'));
+      await tester.pumpAndSettle();
+
+      // Modal closed, package selected
+      expect(find.byType(InstalledAppPickerModal), findsNothing);
+      expect(controller.text, 'id.krom.bank');
+      expect(pickedPkg, 'id.krom.bank');
+      expect(customFlag, isTrue);
     });
   });
 }

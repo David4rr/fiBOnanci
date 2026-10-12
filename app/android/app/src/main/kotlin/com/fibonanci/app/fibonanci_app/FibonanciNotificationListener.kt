@@ -105,9 +105,19 @@ class FibonanciNotificationListener : NotificationListenerService() {
         if (!isAllowed) return
 
         val extras = sbn.notification.extras ?: return
-        val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
-        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
-
+        val title = (extras.getCharSequence(Notification.EXTRA_TITLE)
+            ?: extras.getCharSequence(Notification.EXTRA_TITLE_BIG))?.toString()?.trim() ?: ""
+        val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.trim()
+        val normalText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.trim()
+        val subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString()?.trim()
+        val infoText = extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString()?.trim()
+        val text = when {
+            !bigText.isNullOrEmpty() -> bigText
+            !normalText.isNullOrEmpty() -> normalText
+            !subText.isNullOrEmpty() -> subText
+            !infoText.isNullOrEmpty() -> infoText
+            else -> ""
+        }
         if (title.isEmpty() && text.isEmpty()) return
         Log.d("FibonanciNL", "MATCHED notification from: $pkg | title: $title | text: $text")
 

@@ -30,13 +30,19 @@ void main() {
     expect(find.text('Riwayat Transaksi'), findsOneWidget);
     expect(find.byIcon(Icons.add_rounded), findsOneWidget);
 
-    // Tap center circular action button -> opens TransactionModal!
+    // Tap circular action button -> opens Speed-Dial FAB (Input Manual, Voice, Foto)
     await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Input Manual'), findsOneWidget);
+    expect(find.text('Voice'), findsOneWidget);
+    expect(find.text('Foto'), findsOneWidget);
+
+    // Tap Input Manual -> opens TransactionModal!
+    await tester.tap(find.text('Input Manual'));
     await tester.pumpAndSettle();
     expect(find.text('Catat Transaksi'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
     await tester.pumpAndSettle();
-
     // 2. Tap Tagihan icon on floating bottom dock
     await tester.tap(find.byIcon(Icons.receipt_long_outlined).last);
     await tester.pumpAndSettle();

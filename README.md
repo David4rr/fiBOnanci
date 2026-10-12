@@ -5,7 +5,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Drift](https://img.shields.io/badge/Database-Drift%20(SQLite)-003B57)](https://drift.simonbinder.eu)
-[![Tests](https://img.shields.io/badge/Tests-37%2F37%20Passed-7DF24E)](https://github.com)
+[![Tests](https://img.shields.io/badge/Tests-221%2F221%20Passed-7DF24E)](https://github.com)
 [![Platform](https://img.shields.io/badge/Platform-Android%20(API%2026%2B)-3DDC84?logo=android&logoColor=white)](https://android.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -61,6 +61,11 @@ Intercepts incoming financial push notifications in real-time via Android native
 - **Translucent Acrylic Bottom Nav Dock:** Floating dual-pod capsule with geometric `PodClipper`, lightweight `BackdropFilter` (sigma 16), and semi-transparent obsidian glass fill.
 - **30-Day Dual-Series Spline Charts:** Native cubic Bezier line charts rendered via `CustomPainter` plotting income (green) and expense (red) curves over a 30-day timeline with shared scale normalization.
 
+### 5. Savings Pockets (`Kantong Tabungan`), Installments & 4-Pillar Financial Health
+- **Savings Pockets (`Pockets`):** Goal-based and emergency vaults with atomic wallet-to-pocket transfers, isolated per-pocket mutation history, and stock-market-style spline trend charts (`1M`, `1B`, `1T`, `Semua`).
+- **Installment & Subscription Tracker:** Supports both recurring bills (`monthly`, `yearly`, `weekly`) and fixed-tenor installment plans (`3x`, `6x`, `12x`, `Custom`) with cycle progress tracking and automatic completion rollover.
+- **4-Pillar Financial Health Audit (`FinancialHealthService`):** Pure Dart engine scoring Emergency Runway, Fixed Commitment Ratio, Net Savings Margin, and Spend Pacing.
+- **Multi-Profile Workspace (`Profiles`):** Independent financial workspaces (e.g., Personal, Business) with a 3D interactive profile card carousel.
 ---
 
 ## Technical Stack
@@ -72,9 +77,9 @@ Intercepts incoming financial push notifications in real-time via Android native
 | **State Management** | **flutter_bloc** | Unidirectional data flow and reactive stream processing |
 | **Native Integration** | **Kotlin `NotificationListenerService`** | Background notification ingestion bridge |
 | **Typography** | **Plus Jakarta Sans** | Google Fonts with strict `FontFeature.tabularFigures()` |
-| **Cloud Sync API** | **Golang (Go 1.22+)** | Lightweight `/api/v1/sync` batch sync engine (LWW) |
-| **Cloud Database** | **Supabase (PostgreSQL 15+)** | Managed remote PostgreSQL storage |
-| **Push Notifications** | **FCM + `flutter_local_notifications`** | Dual-tier push engine (offline alarms + cloud reminders) |
+| **Cloud Sync API (Planned)** | **Golang (Go 1.22+)** | Lightweight `/api/v1/sync` batch sync engine (LWW) |
+| **Cloud Database (Planned)** | **Supabase (PostgreSQL 15+)** | Managed remote PostgreSQL storage |
+| **Push Notifications (Planned)** | **FCM + `flutter_local_notifications`** | Dual-tier push engine (offline alarms + cloud reminders) |
 
 ---
 
@@ -98,7 +103,7 @@ fiBOnanci/
 │   │       ├── screens/              # Dashboard, Wallets, Subscriptions, MainShell
 │   │       ├── theme/                # AppColors, AppTypography, AppTheme
 │   │       └── widgets/              # FolderTabCard, BottomNavDock, TrendSplineChart
-│   ├── test/                         # Unit, BLoC & Widget test suites (37 tests)
+│   ├── test/                         # Unit, BLoC & Widget test suites (43 files, 221 tests)
 │   └── android/                      # Native Android project with Kotlin service
 └── README.md
 ```
@@ -134,7 +139,7 @@ fiBOnanci/
    ```bash
    flutter test
    ```
-   *Expected output: All 37 tests passed!*
+   *Expected output: All 221 tests passed!*
 
 5. **Launch on Android device or emulator:**
    ```bash
@@ -149,21 +154,14 @@ fiBOnanci/
 
 ## Testing & Quality Assurance
 
-The codebase maintains strict automated test coverage across all domain algorithms, parsing pipelines, and UI interactions:
+The codebase maintains strict automated test coverage across **43 test files (221 passing tests)** spanning all domain algorithms, Drift v6 database migrations, parsing pipelines, and UI interactions:
 
-| Test Suite | Description | Test Count |
+| Test Category | Key Suites | Coverage |
 | :--- | :--- | :--- |
-| `notification_parser_test.dart` | Indonesian bank & e-wallet push parsing and security guards (OTP rejection) | 16 tests |
-| `safe_to_spend_test.dart` | Mathematical verification of Safe-to-Spend and flexible spending sources | 4 tests |
-| `finance_bloc_test.dart` | BLoC reactive mutations, state transitions, and in-memory Safe-to-Spend recalculation | 3 tests |
-| `database_test.dart` | Drift SQLite seeds, atomic balance debits/credits, and inter-wallet transfers | 3 tests |
-| `wallet_deck_test.dart` | Stacked card deck navigation, 30-day dual charts, in-place lift, and balance edits | 2 tests |
-| `safe_to_spend_selection_widget_test.dart` | Dashboard Safe-to-Spend modal interaction and live source account filtering | 1 test |
-| `full_feature_flow_test.dart` | End-to-end integration flow across transactions, subscriptions, and balances | 1 test |
-| `history_tap_test.dart` | Transaction detail modal and wallet reassignment verification | 1 test |
-| `design_system_test.dart` | Component-level verification of `FolderTabCard` and `OverlappingDeckItem` | 2 tests |
-| `widget_test.dart` | App smoke test and screen navigation dock verification | 1 test |
-
+| **Domain & Math Engines** | `safe_to_spend_test.dart`, `cashflow_analytics_service_test.dart`, `financial_health_service_test.dart`, `rupiah_input_formatter_test.dart` | Safe-to-Spend math, 30-day cashflow & pocket trend series, 4-pillar health scoring, IDR formatting |
+| **Notification Ingestion** | `notification_parser_test.dart`, `dynamic_notification_binding_test.dart`, `notification_account_routing_test.dart`, `pending_notification_inbox_test.dart` | 11+ Indonesian banks/e-wallets regex parsing, OTP/PIN hard-drop, SHA-256 deduplication, inbox swipe review |
+| **Database & BLoC State** | `database_test.dart`, `pockets_database_test.dart`, `finance_bloc_test.dart`, `multi_profile_workspace_test.dart`, `profile_crud_test.dart`, `profile_handle_and_repair_test.dart` | Drift SQLite v6 schema, atomic balance reversals, pocket transfers, multi-profile isolation & auto-repair |
+| **Tactile UI & Card Decks** | `wallet_deck_test.dart`, `wallet_fullscreen_details_test.dart`, `subscription_screen_test.dart`, `installment_and_slider_redesign_test.dart`, `expandable_modal_sheet_test.dart`, `empty_views_and_chart_visibility_test.dart` | 20 Swiss-modernist card themes, Hero transitions, installment tenor controls, cardless empty views, floating dock |
 Run the full suite with:
 ```bash
 flutter test

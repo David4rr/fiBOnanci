@@ -5,8 +5,9 @@ import '../theme/app_colors.dart';
 /// Concept 2: Interactive 3D Tilt & Slingshot (Physics & Gesture Toy).
 class AddActionButton extends StatefulWidget {
   final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
 
-  const AddActionButton({super.key, required this.onPressed});
+  const AddActionButton({super.key, required this.onPressed, this.onLongPress});
 
   @override
   State<AddActionButton> createState() => _AddActionButtonState();
@@ -26,34 +27,13 @@ class _AddActionButtonState extends State<AddActionButton>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 550),
-    );
-
-    _elasticCurve = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    );
-
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 550));
+    _elasticCurve = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.88, end: 1.10)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-        weight: 35,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.10, end: 0.98)
-            .chain(CurveTween(curve: Curves.easeInOutCubic)),
-        weight: 35,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 0.98, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-        weight: 30,
-      ),
+      TweenSequenceItem(tween: Tween(begin: 0.88, end: 1.10).chain(CurveTween(curve: Curves.easeOutCubic)), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 1.10, end: 0.98).chain(CurveTween(curve: Curves.easeInOutCubic)), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 0.98, end: 1.0).chain(CurveTween(curve: Curves.easeOutCubic)), weight: 30),
     ]).animate(_controller);
-
     _rotationAnimation = Tween<double>(begin: 0.0, end: 0.25).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
@@ -77,7 +57,6 @@ class _AddActionButtonState extends State<AddActionButton>
       _isPressed = false;
       _slingshotStart = _tiltOffset;
     });
-
     _controller.forward(from: 0.0);
     HapticFeedback.mediumImpact();
     widget.onPressed();

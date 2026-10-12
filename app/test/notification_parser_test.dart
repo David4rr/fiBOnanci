@@ -128,6 +128,42 @@ void main() {
       expect(res.counterparty, 'ShopeePay');
     });
 
+    test('SeaBank real Play Store package (id.co.bankbkemobile.digitalbank) parses transfer', () {
+      final res = NotificationParser.parse(
+        packageName: 'id.co.bankbkemobile.digitalbank',
+        title: 'SeaBank',
+        body: 'Berhasil transfer Rp 200.000 ke BCA John Doe.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 200000.0);
+      expect(res.type, 'expense');
+      expect(res.counterparty, 'BCA John Doe');
+    });
+
+    test('SeaBank QRIS payment parses amount and merchant', () {
+      final res = NotificationParser.parse(
+        packageName: 'id.co.bankbkemobile.digitalbank',
+        title: 'Pembayaran Berhasil',
+        body: 'Pembayaran QRIS sebesar Rp 25.000 di Kopi Kenangan berhasil.',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 25000.0);
+      expect(res.type, 'expense');
+      expect(res.counterparty, 'Kopi Kenangan');
+    });
+
+    test('SeaBank Top Up e-wallet parses amount and provider', () {
+      final res = NotificationParser.parse(
+        packageName: 'id.co.bankbkemobile.digitalbank',
+        title: 'SeaBank',
+        body: 'Berhasil top up ShopeePay sebesar Rp 50.000',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 50000.0);
+      expect(res.type, 'expense');
+      expect(res.counterparty, 'Top Up ShopeePay');
+    });
+
     // 6. OVO
     test('OVO payment parses amount and merchant', () {
       final res = NotificationParser.parse(

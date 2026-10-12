@@ -12,10 +12,12 @@ class MainActivity : FlutterActivity() {
 
     private val METHOD_CHANNEL = "com.fibonanci.app/notification_service"
     private val EVENT_CHANNEL = "com.fibonanci.app/live_notifications"
+    private val SMART_INPUT_CHANNEL = "com.fibonanci.app/smart_input"
+    private lateinit var smartInputHelper: SmartInputHelper
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
+        smartInputHelper = SmartInputHelper(this)
         // 1. MethodChannel for Permission & Pending Queue
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -74,5 +76,52 @@ class MainActivity : FlutterActivity() {
                 }
             }
         )
+
+        // 3. MethodChannel for On-Device Voice & Photo OCR Smart Input
+        val smartChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SMART_INPUT_CHANNEL)
+        smartInputHelper.attachChannel(smartChannel)
+        smartChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startListening" -> {
+                    val locale = call.argument<String>("locale") ?: "id-ID"
+                    smartInputHelper.startHeadlessListening(locale, result)
+                }
+                "stopListening" -> {
+                    smartInputHelper.stopHeadlessListening(result)
+                }
+                "cancelListening" -> {
+                    smartInputHelper.cancelHeadlessListening(result)
+                }
+                "recognizeImageText" -> {
+                    val path = call.argument<String>("path")
+                    if (path.isNullOrBlank()) {
+                        result.success(null)
+                    } else {
+                        smartInputHelper.recognizeImageText(path, result)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (::smartInputHelper.isInitialized &&
+            smartInputHelper.onRequestPermissionsResult(requestCode, grantResults)
+        ) {
+            return
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onDestroy() {
+        if (::smartInputHelper.isInitialized) {
+            smartInputHelper.dispose()
+        }
+        super.onDestroy()
     }
 }

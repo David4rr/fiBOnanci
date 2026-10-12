@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-
+import 'installed_app_picker_modal.dart';
 class WalletBindingSelector extends StatelessWidget {
   final String? selectedPackage;
   final bool isCustomPackage;
@@ -22,9 +23,46 @@ class WalletBindingSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Hubungkan Notifikasi Aplikasi (Opsional)',
-          style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Hubungkan Notifikasi Aplikasi (Opsional)',
+                style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () async {
+                final picked = await InstalledAppPickerModal.show(context);
+                if (picked != null) {
+                  customPackageController.text = picked;
+                  onPackageChanged(picked, true);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.search_rounded, size: 14, color: AppColors.neoCyan),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Cari App',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.neoCyan,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         Container(
@@ -68,7 +106,7 @@ class WalletBindingSelector extends StatelessWidget {
                     children: [
                       Icon(Icons.edit_note, size: 18, color: AppColors.neoCyan),
                       SizedBox(width: 8),
-                      Text('Input Package Name Lainnya...', style: TextStyle(color: AppColors.neoCyan)),
+                      Text('Cari / Input Package Lain...', style: TextStyle(color: AppColors.neoCyan)),
                     ],
                   ),
                 ),
@@ -93,6 +131,17 @@ class WalletBindingSelector extends StatelessWidget {
               hintStyle: AppTypography.listSubtitle,
               filled: true,
               fillColor: AppColors.canvasInputSearch,
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.apps_rounded, size: 18, color: AppColors.neoCyan),
+                tooltip: 'Pilih dari Aplikasi Terpasang',
+                onPressed: () async {
+                  final picked = await InstalledAppPickerModal.show(context);
+                  if (picked != null) {
+                    customPackageController.text = picked;
+                    onPackageChanged(picked, true);
+                  }
+                },
+              ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
             ),
           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
@@ -13,21 +15,24 @@ export 'transaction_modal_selectors.dart';
 
 class TransactionModal extends StatefulWidget {
   final String? initialWalletId;
+  final SmartInputSource? initialInputSource;
+  final SmartTransactionDraft? initialDraft;
   final VoidCallback? onClose, onSaved;
   final bool isInline;
 
   const TransactionModal({
-    super.key, this.initialWalletId, this.onClose, this.onSaved, this.isInline = false,
+    super.key, this.initialWalletId, this.initialInputSource, this.initialDraft, this.onClose, this.onSaved, this.isInline = false,
   });
-  static Future<void> show(BuildContext context, {String? initialWalletId}) => showModalBottomSheet<void>(
+
+  static Future<void> show(BuildContext context, {String? initialWalletId, SmartInputSource? initialInputSource, SmartTransactionDraft? initialDraft}) =>
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: AppColors.canvasCardSurface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
         clipBehavior: Clip.antiAlias,
-        builder: (ctx) => TransactionModal(initialWalletId: initialWalletId),
+        builder: (ctx) => TransactionModal(initialWalletId: initialWalletId, initialInputSource: initialInputSource, initialDraft: initialDraft),
       );
-
   @override
   State<TransactionModal> createState() => _TransactionModalState();
 }
@@ -53,6 +58,12 @@ class _TransactionModalState extends State<TransactionModal> {
     }
     final initialCats = state.categories.where((c) => c.type == _type).toList();
     if (initialCats.isNotEmpty) _selectedCategoryId = initialCats.first.id;
+    if (widget.initialDraft != null) _applyDraft(widget.initialDraft!);
+    if (widget.initialInputSource != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _triggerSmartInput(widget.initialInputSource!);
+      });
+    }
   }
 
   @override
@@ -62,23 +73,37 @@ class _TransactionModalState extends State<TransactionModal> {
     super.dispose();
   }
 
+  void _applyDraft(SmartTransactionDraft draft) {
+    _type = draft.type;
+    if (draft.amount != null && draft.amount! > 0) {
+      _amountController.text = NumberFormat.decimalPattern('id_ID').format(draft.amount!.round());
+    }
+    _selectedWalletId = draft.walletId ?? _selectedWalletId;
+    _selectedDestinationWalletId = draft.destinationWalletId ?? _selectedDestinationWalletId;
+    _selectedCategoryId = draft.categoryId ?? _selectedCategoryId;
+    if (draft.notes != null && draft.notes!.isNotEmpty) _notesController.text = draft.notes!;
+  }
+
+  Future<void> _triggerSmartInput(SmartInputSource source) async {
+    final state = context.read<FinanceBloc>().state;
+    final draft = await executeSmartTransactionCapture(
+      context, source: source, wallets: state.wallets, categories: state.categories, preferredWalletId: _selectedWalletId,
+    );
+    if (!mounted || draft == null || !draft.hasMeaningfulData) return;
+    setState(() => _applyDraft(draft));
+    HapticFeedback.mediumImpact();
+  }
+
   void _onSave() {
     final amount = RupiahInputFormatter.parse(_amountController.text);
     if (amount <= 0 || _selectedWalletId == null || (_type != 'transfer' && _selectedCategoryId == null)) return;
     context.read<FinanceBloc>().add(AddTransactionEvent(
-      walletId: _selectedWalletId!,
+      walletId: _selectedWalletId!, amount: amount, type: _type, transactionDate: DateTime.now(),
       categoryId: _type == 'transfer' ? '11111111-1111-4111-8111-111111111111' : _selectedCategoryId!,
-      amount: amount,
-      type: _type,
       destinationWalletId: _type == 'transfer' ? _selectedDestinationWalletId : null,
       notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
-      transactionDate: DateTime.now(),
     ));
-    if (widget.onSaved != null) {
-      widget.onSaved!();
-    } else {
-      Navigator.pop(context);
-    }
+    if (widget.onSaved != null) { widget.onSaved!(); } else { Navigator.pop(context); }
   }
 
   @override
@@ -97,99 +122,66 @@ class _TransactionModalState extends State<TransactionModal> {
         borderRadius: widget.isInline ? BorderRadius.zero : const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Padding(
-        padding: widget.isInline
-            ? EdgeInsets.fromLTRB(20, 16, 20, 48 + bottomInset)
-            : EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
-      child: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!widget.isInline) ...[
-              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
-              ModalHeader(
-                title: 'Catat Transaksi',
-                subtitle: _type == 'expense' ? 'Pengeluaran kas atau mutasi keluar' : (_type == 'income' ? 'Pemasukan gaji atau dana masuk' : 'Transfer antar rekening & dompet'),
-                titleStyle: AppTypography.modalTitle,
-                subtitleStyle: AppTypography.modalSubtitle,
-                onClose: widget.onClose ?? () => Navigator.pop(context),
-              ),
-            ],
-            TransactionTypeToggle(
-              selectedType: _type,
-              onTypeChanged: (t) => setState(() {
-                _type = t;
-                final cats = state.categories.where((c) => c.type == t).toList();
-                _selectedCategoryId = cats.isNotEmpty ? cats.first.id : null;
-              }),
-            ),
-            const SizedBox(height: 16),
-            CurrencyAmountField(controller: _amountController),
-            const SizedBox(height: 12),
-            TransactionDropdownContainer(
-              child: DropdownButton<String>(
-                value: _selectedWalletId,
-                isExpanded: true,
-                dropdownColor: AppColors.canvasCardSurface,
-                hint: Text(_type == 'transfer' ? 'Pilih Rekening Asal' : 'Pilih Rekening', style: AppTypography.listSubtitle),
-                items: state.wallets.map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
-                onChanged: (val) => setState(() => _selectedWalletId = val),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TransactionDropdownContainer(
-              child: _type == 'transfer'
-                  ? DropdownButton<String>(
-                      value: _selectedDestinationWalletId,
-                      isExpanded: true,
-                      dropdownColor: AppColors.canvasCardSurface,
-                      hint: Text('Pilih Rekening Tujuan', style: AppTypography.listSubtitle),
-                      items: state.wallets.where((w) => w.id != _selectedWalletId).map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
-                      onChanged: (val) => setState(() => _selectedDestinationWalletId = val),
-                    )
-                  : DropdownButton<String>(
-                      value: _selectedCategoryId,
-                      isExpanded: true,
-                      dropdownColor: AppColors.canvasCardSurface,
-                      hint: Text('Pilih Kategori', style: AppTypography.listSubtitle),
-                      items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
-                      onChanged: (val) => setState(() => _selectedCategoryId = val),
-                    ),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _notesController,
-              hintText: 'Catatan (Opsional)',
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: SizedBox(
-                    height: 52,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                      onPressed: widget.onClose ?? () => Navigator.pop(context),
-                      child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: PrimaryActionButton(
-                    text: 'Simpan Transaksi',
-                    onPressed: _onSave,
-                  ),
+        padding: widget.isInline ? EdgeInsets.fromLTRB(20, 16, 20, 48 + bottomInset) : EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!widget.isInline) ...[
+                const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+                ModalHeader(
+                  title: 'Catat Transaksi',
+                  subtitle: _type == 'expense' ? 'Pengeluaran kas atau mutasi keluar' : (_type == 'income' ? 'Pemasukan gaji atau dana masuk' : 'Transfer antar rekening & dompet'),
+                  titleStyle: AppTypography.modalTitle,
+                  subtitleStyle: AppTypography.modalSubtitle,
+                  onClose: widget.onClose ?? () => Navigator.pop(context),
                 ),
               ],
-            ),
-          ],
+              TransactionTypeToggle(
+                selectedType: _type,
+                onTypeChanged: (t) => setState(() {
+                  _type = t;
+                  final cats = state.categories.where((c) => c.type == t).toList();
+                  _selectedCategoryId = cats.isNotEmpty ? cats.first.id : null;
+                }),
+              ),
+              const SizedBox(height: 16),
+              CurrencyAmountField(controller: _amountController),
+              const SizedBox(height: 12),
+              TransactionDropdownContainer(
+                child: DropdownButton<String>(
+                  value: _selectedWalletId, isExpanded: true, dropdownColor: AppColors.canvasCardSurface,
+                  hint: Text(_type == 'transfer' ? 'Pilih Rekening Asal' : 'Pilih Rekening', style: AppTypography.listSubtitle),
+                  items: state.wallets.map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
+                  onChanged: (val) => setState(() => _selectedWalletId = val),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TransactionDropdownContainer(
+                child: _type == 'transfer'
+                    ? DropdownButton<String>(
+                        value: _selectedDestinationWalletId, isExpanded: true, dropdownColor: AppColors.canvasCardSurface,
+                        hint: Text('Pilih Rekening Tujuan', style: AppTypography.listSubtitle),
+                        items: state.wallets.where((w) => w.id != _selectedWalletId).map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
+                        onChanged: (val) => setState(() => _selectedDestinationWalletId = val),
+                      )
+                    : DropdownButton<String>(
+                        value: _selectedCategoryId, isExpanded: true, dropdownColor: AppColors.canvasCardSurface,
+                        hint: Text('Pilih Kategori', style: AppTypography.listSubtitle),
+                        items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
+                        onChanged: (val) => setState(() => _selectedCategoryId = val),
+                      ),
+              ),
+              const SizedBox(height: 12),
+              AppTextField(controller: _notesController, hintText: 'Catatan (Opsional)'),
+              const SizedBox(height: 24),
+              TransactionActionFooter(onCancel: widget.onClose ?? () => Navigator.pop(context), onSave: _onSave),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

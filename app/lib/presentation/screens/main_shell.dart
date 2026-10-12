@@ -6,7 +6,7 @@ import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
 import '../widgets/bottom_nav_dock.dart';
 import '../widgets/subscription_modal.dart';
-import '../widgets/transaction_modal.dart';
+import '../widgets/quick_transaction_input_sheet.dart';
 import 'dashboard_screen.dart';
 import 'settings_screen.dart';
 import 'subscription_screen.dart';
@@ -65,7 +65,7 @@ class _MainShellState extends State<MainShell> {
   void _onAddAction() {
     switch (_currentIndex) {
       case 0:
-        TransactionModal.show(context);
+        QuickTransactionInputSheet.show(context);
         break;
       case 1:
         AddSubscriptionModal.show(context);
@@ -78,7 +78,7 @@ class _MainShellState extends State<MainShell> {
         }
         break;
       default:
-        TransactionModal.show(context);
+        QuickTransactionInputSheet.show(context);
     }
   }
 
@@ -117,6 +117,7 @@ class _MainShellState extends State<MainShell> {
                 currentIndex: _currentIndex,
                 onTapIndex: (index) => setState(() => _currentIndex = index),
                 onAddAction: _onAddAction,
+                onAddLongPress: () => QuickTransactionInputSheet.show(context),
               ),
             ),
           ),

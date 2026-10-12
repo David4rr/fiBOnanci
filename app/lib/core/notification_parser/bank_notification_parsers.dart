@@ -14,7 +14,13 @@ class BankNotificationParsers {
   }
 
   static ParsedNotificationResult? parseProvider(String pkg, String title, String body) {
-    if (pkg.contains('seabank')) return _parseSeaBank(title, body);
+    if (pkg.contains('seabank') ||
+        pkg.contains('bke') ||
+        pkg.contains('digitalbank') ||
+        pkg.contains('sea.bank') ||
+        title.toLowerCase().contains('seabank')) {
+      return _parseSeaBank(title, body);
+    }
     if (pkg.contains('bcadigital') || pkg.contains('blu')) return _parseBlu(title, body);
     if (pkg.contains('bca')) return _parseBca(title, body);
     if (pkg.contains('mandiri')) return _parseMandiri(title, body);
@@ -29,20 +35,49 @@ class BankNotificationParsers {
   }
 
   static ParsedNotificationResult? _parseSeaBank(String title, String body) {
-    final dm = RegExp(r'Kamu\s+menerima\s+dana\s+sebesar\s+(?:Rp\.?|IDR)\s*([0-9.,]+)\s+dari\s+(.+?)(?:\s+pada|$)', caseSensitive: false).firstMatch(body);
+    return _matchSeaBankPatterns(body) ?? _matchSeaBankPatterns('$title $body');
+  }
+
+  static ParsedNotificationResult? _matchSeaBankPatterns(String text) {
+    final qris = RegExp(
+      r'(?:Pembayaran\s+QRIS|Pembayaran|Bayar\s+QRIS)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:di|ke)\s+([^.]+?)(?:\s+berhasil|\s+pada|$|\.)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (qris != null) return ParsedNotificationResult(amount: parseIdr(qris.group(1)!), type: 'expense', counterparty: qris.group(2)!.trim());
+
+    final dm = RegExp(
+      r'(?:Kamu|Anda)\s+menerima\s+(?:dana|transfer)(?:\s+sebesar)?\s+(?:Rp\.?|IDR)\s*([0-9.,]+)\s+dari\s+(.+?)(?:\s+pada|$|\.)',
+      caseSensitive: false,
+    ).firstMatch(text);
     if (dm != null) return ParsedNotificationResult(amount: parseIdr(dm.group(1)!), type: 'income', counterparty: dm.group(2)!.trim());
 
-    final va = RegExp(r'Kamu\s+telah\s+melakukan\s+transfer\s+(?:virtual\s+account\s+)?sebesar\s+(?:Rp\.?|IDR)\s*([0-9.,]+)\s+kepada\s+(.+?)(?:\s+pada|$)', caseSensitive: false).firstMatch(body);
-    if (va != null) return ParsedNotificationResult(amount: parseIdr(va.group(1)!), type: 'expense', counterparty: va.group(2)!.trim());
-
-    final inM = RegExp(r'Kamu\s+menerima\s+transfer\s+(?:saldo\s+)?senilai\s+(?:Rp\.?|IDR)\s*([0-9.,]+)(?:\s+ke\s+rekening\s+([0-9]+))?', caseSensitive: false).firstMatch(body);
+    final inM = RegExp(
+      r'(?:Kamu|Anda)\s+menerima\s+transfer\s+(?:saldo\s+)?senilai\s+(?:Rp\.?|IDR)\s*([0-9.,]+)(?:\s+ke\s+rekening\s+([0-9]+))?',
+      caseSensitive: false,
+    ).firstMatch(text);
     if (inM != null) {
       final rek = inM.group(2);
       return ParsedNotificationResult(amount: parseIdr(inM.group(1)!), type: 'income', counterparty: rek != null ? 'Transfer Masuk (Rek. $rek)' : 'Transfer Masuk SeaBank');
     }
 
-    final outM = RegExp(r'Berhasil\s+transfer\s+(?:Rp\.?|IDR)\s*([0-9.,]+)\s+ke\s+([^.]+)', caseSensitive: false).firstMatch(body);
+    final va = RegExp(
+      r'(?:Kamu|Anda)\s+telah\s+(?:melakukan\s+transfer|membayar)\s+(?:virtual\s+account\s+)?(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:kepada|ke)\s+(.+?)(?:\s+pada|$|\.)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (va != null) return ParsedNotificationResult(amount: parseIdr(va.group(1)!), type: 'expense', counterparty: va.group(2)!.trim());
+
+    final outM = RegExp(
+      r'(?:Berhasil\s+transfer|Transfer\s+berhasil)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+ke\s+([^.]+?)(?:\s+pada|$|\.)',
+      caseSensitive: false,
+    ).firstMatch(text);
     if (outM != null) return ParsedNotificationResult(amount: parseIdr(outM.group(1)!), type: 'expense', counterparty: outM.group(2)!.trim());
+
+    final topup = RegExp(
+      r'(?:Berhasil\s+top\s+up|Kamu\s+telah\s+melakukan\s+top\s+up|Top\s+up\s+berhasil)\s+(?:saldo\s+)?(.+?)\s+sebesar\s+(?:Rp\.?|IDR)\s*([0-9.,]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (topup != null) return ParsedNotificationResult(amount: parseIdr(topup.group(2)!), type: 'expense', counterparty: 'Top Up ${topup.group(1)!.trim()}');
+
     return null;
   }
 
