@@ -15,36 +15,19 @@ extension WalletAndPocketMutations on AppDatabase {
 
       if (isDepositToPocket) {
         await (update(wallets)..where((t) => t.id.equals(walletId))).write(
-          WalletsCompanion(
-            balance: Value(wallet.balance - amount),
-            updatedAt: Value(now),
-            isSynced: const Value(false),
-          ),
+          WalletsCompanion(balance: Value(wallet.balance - amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
         await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
-          PocketsCompanion(
-            currentAmount: Value(pocket.currentAmount + amount),
-            updatedAt: Value(now),
-            isSynced: const Value(false),
-          ),
+          PocketsCompanion(currentAmount: Value(pocket.currentAmount + amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
       } else {
         await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
-          PocketsCompanion(
-            currentAmount: Value(pocket.currentAmount - amount),
-            updatedAt: Value(now),
-            isSynced: const Value(false),
-          ),
+          PocketsCompanion(currentAmount: Value(pocket.currentAmount - amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
         await (update(wallets)..where((t) => t.id.equals(walletId))).write(
-          WalletsCompanion(
-            balance: Value(wallet.balance + amount),
-            updatedAt: Value(now),
-            isSynced: const Value(false),
-          ),
+          WalletsCompanion(balance: Value(wallet.balance + amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
       }
-
       await into(transactions).insert(
         TransactionsCompanion(
           id: Value(const Uuid().v4()),
@@ -53,12 +36,7 @@ extension WalletAndPocketMutations on AppDatabase {
           categoryId: const Value('11111111-1111-4111-8111-111111111111'),
           amount: Value(amount),
           type: Value(isDepositToPocket ? 'transfer' : 'income'),
-          notes: Value(
-            notes ??
-                (isDepositToPocket
-                    ? 'Setoran ke Kantong ${pocket.name}'
-                    : 'Penarikan dari Kantong ${pocket.name}'),
-          ),
+          notes: Value(notes ?? (isDepositToPocket ? 'Setoran ke Kantong ${pocket.name}' : 'Penarikan dari Kantong ${pocket.name}')),
           externalRef: Value('pocket_${pocket.id}'),
           transactionDate: Value(now),
           createdAt: Value(now),
@@ -107,6 +85,7 @@ extension WalletAndPocketMutations on AppDatabase {
           amount: Value(effectiveCost),
           type: const Value('expense'),
           notes: Value(txNotes),
+          externalRef: Value('sub_${sub.id}'),
           transactionDate: Value(now),
           source: const Value('subscription_recurring'),
           createdAt: Value(now),
@@ -116,18 +95,34 @@ extension WalletAndPocketMutations on AppDatabase {
     });
   }
 
+  Future<void> deleteSubscription(String subscriptionId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      final sub = await (select(subscriptions)..where((t) => t.id.equals(subscriptionId))).getSingleOrNull();
+      await (update(subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
+        SubscriptionsCompanion(isDeleted: const Value(true), status: const Value('cancelled'), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      if (sub == null) return;
+      final activeTxs = await (select(transactions)..where((t) => t.isDeleted.equals(false))).get();
+      for (final tx in activeTxs) {
+        final n = tx.notes ?? '';
+        final isLinked = tx.externalRef == 'sub_${sub.id}' ||
+            (tx.source == 'subscription_recurring' &&
+                (n == 'Pembayaran Tagihan: ${sub.title}' ||
+                    n.startsWith('Pembayaran Tagihan: ${sub.title} (') ||
+                    (n.startsWith('Pembayaran Cicilan (') && n.contains(': ${sub.title}'))));
+        if (isLinked) await deleteTransactionWithBalanceReversal(tx.id);
+      }
+    });
+  }
+
   Future<void> updateWalletBalance(
     String walletId,
     double newBalance, {
     Value<String?> accountNumber = const Value.absent(),
   }) async {
     await (update(wallets)..where((t) => t.id.equals(walletId))).write(
-      WalletsCompanion(
-        balance: Value(newBalance),
-        accountNumber: accountNumber,
-        updatedAt: Value(DateTime.now().toUtc()),
-        isSynced: const Value(false),
-      ),
+      WalletsCompanion(balance: Value(newBalance), accountNumber: accountNumber, updatedAt: Value(DateTime.now().toUtc()), isSynced: const Value(false)),
     );
   }
 
@@ -135,19 +130,10 @@ extension WalletAndPocketMutations on AppDatabase {
     return transaction(() async {
       final now = DateTime.now().toUtc();
       await (update(wallets)..where((t) => t.id.equals(walletId))).write(
-        WalletsCompanion(
-          isDeleted: const Value(true),
-          updatedAt: Value(now),
-          isSynced: const Value(false),
-        ),
+        WalletsCompanion(isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
       );
       await (update(notificationRules)..where((t) => t.walletId.equals(walletId))).write(
-        NotificationRulesCompanion(
-          isEnabled: const Value(false),
-          isDeleted: const Value(true),
-          updatedAt: Value(now),
-          isSynced: const Value(false),
-        ),
+        NotificationRulesCompanion(isEnabled: const Value(false), isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
       );
     });
   }

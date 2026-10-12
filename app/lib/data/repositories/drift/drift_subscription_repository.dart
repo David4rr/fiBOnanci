@@ -83,15 +83,8 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     );
   }
 
-  Future<void> deleteSubscription(String subscriptionId) async {
-    final now = DateTime.now().toUtc();
-    await (db.update(db.subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
-      SubscriptionsCompanion(
-        isDeleted: const drift.Value(true),
-        status: const drift.Value('cancelled'),
-        updatedAt: drift.Value(now),
-      ),
-    );
+  Future<void> deleteSubscription(String subscriptionId) {
+    return db.deleteSubscription(subscriptionId);
   }
 
   Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount}) {

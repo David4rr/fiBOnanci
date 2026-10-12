@@ -88,6 +88,16 @@ extension TransactionMutations on AppDatabase {
         }
       }
       await _adjustLinkedPocket(tx, now, isRevert: true);
+      if (tx.externalRef != null && tx.externalRef!.startsWith('sub_')) {
+        final subId = tx.externalRef!.substring(4);
+        final sub = await (select(subscriptions)..where((s) => s.id.equals(subId) & s.isDeleted.equals(false))).getSingleOrNull();
+        if (sub != null) {
+          final nextPaid = (sub.paidCycles - 1).clamp(0, 9999);
+          await (update(subscriptions)..where((s) => s.id.equals(sub.id))).write(
+            SubscriptionsCompanion(paidCycles: Value(nextPaid), lastPaidDate: const Value(null), status: const Value('active'), updatedAt: Value(now), isSynced: const Value(false)),
+          );
+        }
+      }
     });
   }
 

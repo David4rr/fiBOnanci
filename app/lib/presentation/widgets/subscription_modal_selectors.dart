@@ -107,7 +107,7 @@ void executeDeleteSubscription(BuildContext context, String subscriptionId, {Voi
     const SnackBar(
       backgroundColor: AppColors.neoCoral,
       content: Text(
-        'Tagihan berhasil dihapus.',
+        'Tagihan berhasil dihapus & pembayaran dikembalikan ke saldo rekening.',
         style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
       ),
     ),

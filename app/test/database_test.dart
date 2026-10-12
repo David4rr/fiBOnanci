@@ -176,4 +176,32 @@ void main() {
     expect(bcaNow.balance, 1000000.0);
     expect(ovoNow.balance, 200000.0);
   });
+
+  test('Paying subscription with discount deducts actualAmount and deleting subscription refunds wallet balance', () async {
+    final repo = DriftFinanceRepository(db);
+    final wallets = await db.select(db.wallets).get();
+    final bca = wallets.firstWhere((w) => w.name == 'BCA Utama');
+    await db.updateWalletBalance(bca.id, 1000000.0);
+
+    await repo.addSubscription(
+      title: 'Spotify Family',
+      cost: 100000.0,
+      dueDay: 15,
+      walletId: bca.id,
+      categoryId: '11111111-1111-4111-8111-111111111111',
+    );
+    final sub = (await repo.getSubscriptions()).firstWhere((s) => s.title == 'Spotify Family');
+
+    // Pay with 20% discount (actualAmount: 80000)
+    await repo.markSubscriptionAsPaid(sub.id, actualAmount: 80000.0);
+    var bcaNow = await (db.select(db.wallets)..where((w) => w.id.equals(bca.id))).getSingle();
+    expect(bcaNow.balance, 920000.0);
+
+    // Delete subscription -> refunds 80,000 back to BCA Utama and soft-deletes payment tx
+    await repo.deleteSubscription(sub.id);
+    bcaNow = await (db.select(db.wallets)..where((w) => w.id.equals(bca.id))).getSingle();
+    expect(bcaNow.balance, 1000000.0);
+    final remainingTxs = await repo.getTransactions();
+    expect(remainingTxs.where((t) => (t.notes ?? '').contains('Spotify Family')), isEmpty);
+  });
 }
