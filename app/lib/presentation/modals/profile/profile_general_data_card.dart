@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 
@@ -16,12 +15,6 @@ class ProfileGeneralDataCard extends StatelessWidget {
     required this.walletCount,
     required this.txCount,
   });
-
-  static final _currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   static Widget buildDataRow({
     IconData? icon,
@@ -104,7 +97,7 @@ class ProfileGeneralDataCard extends StatelessWidget {
               Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
               buildDataRow(
                 label: 'Target Pemasukan',
-                value: hasIncome ? _currencyFormatter.format(profile.monthlyIncomeTarget) : '—',
+                value: hasIncome ? AppCurrency.forCode(profile.currency).format(profile.monthlyIncomeTarget) : '—',
                 isMuted: !hasIncome,
               ),
               Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),

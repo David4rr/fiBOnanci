@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/folder_tab_card.dart';
@@ -24,7 +25,7 @@ class ProfileHeaderCard extends StatelessWidget {
   final ProfileEntry profile;
   final int totalProfiles;
   final int? walletCount, txCount;
-  final VoidCallback? onEditProfile, onNewProfile, onHealthDetails, onFinancialReport;
+  final VoidCallback? onEditProfile, onNewProfile, onHealthDetails, onFinancialReport, onSettings;
 
   const ProfileHeaderCard({
     super.key,
@@ -36,6 +37,7 @@ class ProfileHeaderCard extends StatelessWidget {
     this.onNewProfile,
     this.onHealthDetails,
     this.onFinancialReport,
+    this.onSettings,
   });
 
   @override
@@ -47,7 +49,9 @@ class ProfileHeaderCard extends StatelessWidget {
     final wallets = walletCount ?? state.wallets.length;
     final txs = txCount ?? state.transactions.length;
     final subs = state.subscriptions.length;
-    final burnFormatted = NumberFormat('#,###', 'id_ID').format(metrics.safeToSpendDaily.toInt());
+    final sym = state.profile.currency == 'IDR' ? '' : AppCurrency.symbolFor(state.profile.currency);
+    final convertedBurn = AppCurrency.fromBaseIdr(metrics.safeToSpendDaily, state.profile.currency);
+    final burnFormatted = '$sym${NumberFormat('#,###', 'id_ID').format(convertedBurn.round())}';
 
     const clipper = FolderTabClipper(tabWidthFactor: 0.58, cornerRadius: 24.0, stepDepth: 18.0);
     return LayoutBuilder(
@@ -157,6 +161,7 @@ class ProfileHeaderCard extends StatelessWidget {
                 onNewProfile: onNewProfile,
                 onHealthDetails: onHealthDetails,
                 onFinancialReport: onFinancialReport,
+                onSettings: onSettings,
               ),
             ),
           ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../../core/formatters/app_currency.dart';
 import '../../../domain/services/financial_report_service.dart';
 import '../../theme/app_colors.dart';
 import 'category_donut_chart.dart';
@@ -11,12 +10,10 @@ class FinancialReportBreakdownCards extends StatelessWidget {
 
   const FinancialReportBreakdownCards({super.key, required this.data});
 
-  static final _fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
   @override
   Widget build(BuildContext context) {
+    final fmt = AppCurrency.of(context);
     final wallets = data.walletBreakdown;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -35,13 +32,13 @@ class FinancialReportBreakdownCards extends StatelessWidget {
                 style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted, letterSpacing: 0.6),
               ),
               const SizedBox(height: 12),
-              _buildAssetRow('Total Kekayaan Bersih', _fmt.format(data.totalNetWorth), AppColors.textWhite, isBold: true),
+              _buildAssetRow('Total Kekayaan Bersih', fmt.format(data.totalNetWorth), AppColors.textWhite, isBold: true),
               Divider(color: Colors.white.withValues(alpha: 0.06), height: 20),
-              _buildAssetRow('Saldo Rekening Aktif', _fmt.format(data.totalWalletBalance), AppColors.textWhite),
+              _buildAssetRow('Saldo Rekening Aktif', fmt.format(data.totalWalletBalance), AppColors.textWhite),
               const SizedBox(height: 8),
-              _buildAssetRow('Dana Kantong Tabungan', _fmt.format(data.totalPocketBalance), AppColors.textMuted),
+              _buildAssetRow('Dana Kantong Tabungan', fmt.format(data.totalPocketBalance), AppColors.textMuted),
               const SizedBox(height: 8),
-              _buildAssetRow('Komitmen Tagihan Bulanan', _fmt.format(data.monthlyCommittedBills), AppColors.neoCoral),
+              _buildAssetRow('Komitmen Tagihan Bulanan', fmt.format(data.monthlyCommittedBills), AppColors.neoCoral),
             ],
           ),
         ),
@@ -67,7 +64,7 @@ class FinancialReportBreakdownCards extends StatelessWidget {
                   child: Center(child: Text('Belum ada rekening aktif', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted))),
                 )
               else
-                ...wallets.map(_buildWalletRow),
+                ...wallets.map((w) => _buildWalletRow(w, fmt.format(w.balance), fmt.format(w.income), fmt.format(w.expense))),
             ],
           ),
         ),
@@ -100,7 +97,7 @@ class FinancialReportBreakdownCards extends StatelessWidget {
     );
   }
 
-  Widget _buildWalletRow(WalletReportItem w) {
+  Widget _buildWalletRow(WalletReportItem w, String balStr, String inStr, String outStr) {
     final dotColor = CategoryDonutChart.resolveSliceColor(w.colorHex, false, 1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -113,16 +110,16 @@ class FinancialReportBreakdownCards extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(w.name, style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textWhite)),
-                Text(_fmt.format(w.balance), style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColors.textMuted, fontFeatures: const [FontFeature.tabularFigures()])),
+                Text(balStr, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColors.textMuted, fontFeatures: const [FontFeature.tabularFigures()])),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('+${_fmt.format(w.income)}', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoMint, fontFeatures: const [FontFeature.tabularFigures()])),
+              Text('+$inStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoMint, fontFeatures: const [FontFeature.tabularFigures()])),
               const SizedBox(height: 2),
-              Text('-${_fmt.format(w.expense)}', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoCoral, fontFeatures: const [FontFeature.tabularFigures()])),
+              Text('-$outStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoCoral, fontFeatures: const [FontFeature.tabularFigures()])),
             ],
           ),
         ],

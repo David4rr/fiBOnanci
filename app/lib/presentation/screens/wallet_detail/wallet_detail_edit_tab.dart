@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
-import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../../data/database/app_database.dart';
@@ -41,7 +41,7 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: RupiahInputFormatter.format(widget.wallet.balance));
+    _controller = TextEditingController(text: AppCurrency.formatInputOf(context, widget.wallet.balance));
     _accountNumberController = TextEditingController(text: widget.wallet.accountNumber ?? '');
     _customPackageController = TextEditingController();
   }
@@ -75,7 +75,7 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
   }
 
   void _saveWallet() {
-    final newBal = RupiahInputFormatter.parse(_controller.text);
+    final newBal = AppCurrency.parseInputOf(context, _controller.text);
     final accNum = _accountNumberController.text.trim();
     final boundPkg = _isCustomPackage ? _customPackageController.text.trim() : _selectedPackage;
 

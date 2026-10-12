@@ -14,8 +14,7 @@ class ProfileCardCarousel extends StatefulWidget {
   final int? txCount;
   final VoidCallback? onEditProfile;
   final VoidCallback? onNewProfile;
-  final VoidCallback? onHealthDetails;
-  final VoidCallback? onFinancialReport;
+  final VoidCallback? onHealthDetails, onFinancialReport, onSettings;
 
   const ProfileCardCarousel({
     super.key,
@@ -27,6 +26,7 @@ class ProfileCardCarousel extends StatefulWidget {
     this.onNewProfile,
     this.onHealthDetails,
     this.onFinancialReport,
+    this.onSettings,
   });
 
   @override
@@ -91,6 +91,7 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
         onNewProfile: widget.onNewProfile,
         onHealthDetails: widget.onHealthDetails,
         onFinancialReport: widget.onFinancialReport,
+        onSettings: widget.onSettings,
       );
     }
 
@@ -117,6 +118,7 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
                 onNewProfile: widget.onNewProfile,
                 onHealthDetails: widget.onHealthDetails,
                 onFinancialReport: widget.onFinancialReport,
+                onSettings: widget.onSettings,
               );
             },
           ),

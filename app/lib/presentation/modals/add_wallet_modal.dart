@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../core/formatters/rupiah_input_formatter.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -54,8 +55,8 @@ class AddWalletModal {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()],
                       style: AppTypography.listTitle,
                       decoration: InputDecoration(
-                        hintText: 'Saldo Awal (Rp)',
-                        prefixText: 'Rp ',
+                        hintText: 'Saldo Awal (${AppCurrency.symbolOf(modalContext, listen: false).trim()})',
+                        prefixText: AppCurrency.symbolOf(modalContext, listen: false),
                         filled: true,
                         fillColor: AppColors.canvasInputSearch,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -104,7 +105,7 @@ class AddWalletModal {
                               onPressed: () {
                                 final name = nameController.text.trim();
                                 if (name.isEmpty) return;
-                                final balance = RupiahInputFormatter.parse(balanceController.text);
+                                final balance = AppCurrency.parseInputOf(context, balanceController.text);
                                 final accNum = accountNumberController.text.trim();
                                 final boundPkg = isCustomPackage ? customPackageController.text.trim() : selectedPackage;
 

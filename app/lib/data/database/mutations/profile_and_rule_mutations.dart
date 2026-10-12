@@ -104,4 +104,57 @@ extension ProfileAndRuleMutations on AppDatabase {
       );
     }
   }
+
+  Future<void> createCategory({
+    required String name,
+    required String type,
+    required String iconName,
+    required String colorHex,
+  }) {
+    final now = DateTime.now().toUtc();
+    return into(categories).insert(
+      CategoriesCompanion(
+        id: Value(const Uuid().v4()),
+        name: Value(name.trim()),
+        type: Value(type),
+        iconName: Value(iconName),
+        colorHex: Value(colorHex),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+        isDeleted: const Value(false),
+      ),
+    );
+  }
+
+  Future<void> softDeleteCategory(String categoryId) {
+    final now = DateTime.now().toUtc();
+    return (update(categories)..where((t) => t.id.equals(categoryId))).write(
+      CategoriesCompanion(
+        isDeleted: const Value(true),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ),
+    );
+  }
+
+  Future<void> clearProfileTransactions(String profileId) {
+    return transaction(() async {
+      final now = DateTime.now().toUtc();
+      await (update(transactions)..where((t) => profileFilter(t.profileId, profileId) & t.isDeleted.equals(false))).write(
+        TransactionsCompanion(
+          isDeleted: const Value(true),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
+      await (update(wallets)..where((t) => profileFilter(t.profileId, profileId) & t.isDeleted.equals(false))).write(
+        WalletsCompanion(
+          balance: const Value(0.0),
+          updatedAt: Value(now),
+          isSynced: const Value(false),
+        ),
+      );
+    });
+  }
 }

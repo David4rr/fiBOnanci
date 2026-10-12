@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_state.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'subscription_detail_app_bar.dart';
@@ -58,13 +57,6 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
   final _sheetKey = GlobalKey<ExpandableModalSheetState>();
   late final PageController _pageController;
   int _currentTab = 0;
-
-  static final _currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
-
   @override
   void initState() {
     super.initState();
@@ -99,6 +91,7 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
       builder: (context, state) {
+        final currencyFormatter = AppCurrency.forCode(state.profile.currency);
         final subMatches = state.subscriptions.where((s) => s.id == widget.subscriptionId);
         if (subMatches.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -133,7 +126,7 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
                 children: [
                   SubscriptionDetailAppBar(
                     subscription: sub,
-                    currencyFormatter: _currencyFormatter,
+                    currencyFormatter: currencyFormatter,
                     isEditing: _currentTab == 1,
                     onReturnToDetails: _goToDetailsTab,
                     onDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
@@ -148,7 +141,7 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
                           subscription: sub,
                           wallet: wallet,
                           indexOverride: effectiveIndex,
-                          currencyFormatter: _currencyFormatter,
+                          currencyFormatter: currencyFormatter,
                           scrollController: scrollController,
                           onEdit: _goToEditTab,
                         ),

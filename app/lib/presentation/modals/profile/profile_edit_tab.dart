@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
-import '../../../core/formatters/rupiah_input_formatter.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../edit_profile/edit_profile_avatar_picker.dart';
@@ -28,9 +27,8 @@ class ProfileEditTab extends StatefulWidget {
 class _ProfileEditTabState extends State<ProfileEditTab> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _usernameController, _fullNameController, _emailController;
-  late TextEditingController _phoneController, _occupationController, _bioController, _incomeTargetController;
+  late TextEditingController _phoneController, _occupationController, _bioController;
   String? _selectedAvatar;
-  late String _selectedCurrency;
   bool get isEditing => widget.initialProfile != null;
 
   @override
@@ -38,20 +36,17 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
     super.initState();
     final p = widget.initialProfile;
     _selectedAvatar = (p?.avatarPath != null && !p!.avatarPath!.startsWith('preset:') && p.avatarPath!.isNotEmpty) ? p.avatarPath : null;
-    _selectedCurrency = p?.currency ?? 'IDR';
     _usernameController = TextEditingController(text: p?.username ?? '');
     _fullNameController = TextEditingController(text: p?.fullName ?? '');
     _emailController = TextEditingController(text: p?.email ?? '');
     _phoneController = TextEditingController(text: p?.phone ?? '');
     _occupationController = TextEditingController(text: p?.occupation ?? '');
     _bioController = TextEditingController(text: p?.bio ?? '');
-    final target = p?.monthlyIncomeTarget;
-    _incomeTargetController = TextEditingController(text: target != null && target > 0 ? RupiahInputFormatter.format(target) : '');
   }
 
   @override
   void dispose() {
-    for (final c in [_usernameController, _fullNameController, _emailController, _phoneController, _occupationController, _bioController, _incomeTargetController]) {
+    for (final c in [_usernameController, _fullNameController, _emailController, _phoneController, _occupationController, _bioController]) {
       c.dispose();
     }
     super.dispose();
@@ -71,23 +66,21 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
     final phone = _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim();
     final occupation = _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim();
     final bio = _bioController.text.trim().isEmpty ? null : _bioController.text.trim();
-    final rawIncome = RupiahInputFormatter.parse(_incomeTargetController.text.trim());
-    final monthlyIncomeTarget = rawIncome > 0 ? rawIncome : null;
-
     final bloc = context.read<FinanceBloc>();
     if (isEditing) {
+      final prev = widget.initialProfile!;
       bloc.add(UpdateProfileEvent(
-        profileId: widget.initialProfile!.id,
+        profileId: prev.id,
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
-        currency: _selectedCurrency, monthlyIncomeTarget: monthlyIncomeTarget,
+        currency: prev.currency, monthlyIncomeTarget: prev.monthlyIncomeTarget,
       ));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil diperbarui!'), backgroundColor: AppColors.neoMint, behavior: SnackBarBehavior.floating));
     } else {
       bloc.add(AddProfileEvent(
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
-        currency: _selectedCurrency, monthlyIncomeTarget: monthlyIncomeTarget, setActive: true,
+        setActive: true,
       ));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil dibuat!'), backgroundColor: AppColors.neoChartreuse, behavior: SnackBarBehavior.floating));
     }
@@ -126,9 +119,6 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
             phoneController: _phoneController,
             occupationController: _occupationController,
             bioController: _bioController,
-            incomeTargetController: _incomeTargetController,
-            selectedCurrency: _selectedCurrency,
-            onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
             existingUsernames: existingUsernames,
           ),
           const SizedBox(height: 24),

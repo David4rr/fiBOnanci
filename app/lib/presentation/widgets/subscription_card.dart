@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import 'billing_card_layout.dart';
 import 'installment_card_layout.dart';
@@ -50,8 +49,7 @@ class SubscriptionCard extends StatelessWidget {
       index: effectiveIdx,
       wallet: wallet,
     );
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
+    final currencyFormatter = AppCurrency.of(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,

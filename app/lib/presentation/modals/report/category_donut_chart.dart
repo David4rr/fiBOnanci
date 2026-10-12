@@ -1,8 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../../core/formatters/app_currency.dart';
 import '../../theme/app_colors.dart';
 
 class UnifiedDonutSlice {
@@ -34,8 +33,6 @@ class CategoryDonutChart extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelectIndex,
   });
-
-  static final _fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   static const _incomePalette = [AppColors.neoMint, AppColors.neoCyan, AppColors.neoChartreuse];
   static const _expensePalette = [AppColors.neoCoral, Color(0xFFF59E0B), AppColors.neoPurple, Color(0xFFEC4899), Color(0xFFEF4444)];
 
@@ -79,6 +76,7 @@ class CategoryDonutChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fmt = AppCurrency.of(context);
     final totalFlow = totalIncome + totalExpense;
     final activeIdx = (selectedIndex != null && selectedIndex! < slices.length) ? selectedIndex : null;
     final selected = activeIdx != null ? slices[activeIdx] : null;
@@ -120,9 +118,8 @@ class CategoryDonutChart extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         selected != null
-                            ? '${selected.isIncome ? "+" : "-"}${_fmt.format(selected.amount)}'
-                            : '${netCashflow > 0 ? "+" : ""}${_fmt.format(netCashflow)}',
-                        maxLines: 1,
+                            ? '${selected.isIncome ? "+" : "-"}${fmt.format(selected.amount)}'
+                            : '${netCashflow > 0 ? "+" : ""}${fmt.format(netCashflow)}',
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(

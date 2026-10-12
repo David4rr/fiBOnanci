@@ -17,6 +17,7 @@ class FinancialHealthService {
     required MonthlyCashflow monthlyCashflow,
     required SafeToSpendMetrics safeToSpend,
     DateTime? referenceDate,
+    double? monthlyIncomeTarget,
   }) {
     double totalLiquidAssets = 0.0;
     for (final w in wallets) {
@@ -43,7 +44,9 @@ class FinancialHealthService {
 
     double monthlyIncomeBenchmark = monthlyCashflow.income;
     if (monthlyIncomeBenchmark <= 0) {
-      monthlyIncomeBenchmark = monthlyExpenseBenchmark > 0 ? monthlyExpenseBenchmark : 1000000.0;
+      monthlyIncomeBenchmark = (monthlyIncomeTarget != null && monthlyIncomeTarget > 0)
+          ? monthlyIncomeTarget
+          : (monthlyExpenseBenchmark > 0 ? monthlyExpenseBenchmark : 1000000.0);
     }
 
     // PILAR 1: EMERGENCY RUNWAY (30%)

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../widgets/common/common_widgets.dart';
@@ -65,9 +64,6 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   int? _selectedDayIndex;
   int _currentTab = 0;
   TransactionEntry? _selectedTransaction;
-
-  static final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
   @override
   void initState() {
     super.initState();
@@ -99,6 +95,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = AppCurrency.of(context);
     final filtered = CashflowAnalyticsService.filterTransactions(
       transactions: widget.allTransactions, wallets: widget.wallets,
       query: _searchQuery, typeFilter: _typeFilter, walletFilter: _walletFilter,
@@ -124,7 +121,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
           children: [
             ExpenseHistoryAppBar(
               totalFiltered: totalFiltered,
-              currencyFormatter: _currencyFormatter,
+              currencyFormatter: currencyFormatter,
               isEditing: _currentTab != 0,
               onReturnToHistory: _goToHistory,
               customTitle: _currentTab != 0 ? 'Edit Transaksi' : null,

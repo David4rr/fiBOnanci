@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import 'edit_profile/edit_profile_avatar_picker.dart';
@@ -48,10 +47,8 @@ class _EditProfileModalState extends State<EditProfileModal> {
   late TextEditingController _phoneController;
   late TextEditingController _occupationController;
   late TextEditingController _bioController;
-  late TextEditingController _incomeTargetController;
 
   String? _selectedAvatar;
-  late String _selectedCurrency;
   final bool _setActive = true;
   bool get isEditing => widget.initialProfile != null;
 
@@ -60,7 +57,6 @@ class _EditProfileModalState extends State<EditProfileModal> {
     super.initState();
     final p = widget.initialProfile;
     _selectedAvatar = (p?.avatarPath != null && !p!.avatarPath!.startsWith('preset:') && p.avatarPath!.isNotEmpty) ? p.avatarPath : null;
-    _selectedCurrency = p?.currency ?? 'IDR';
 
     _usernameController = TextEditingController(text: p?.username ?? '');
     _fullNameController = TextEditingController(text: p?.fullName ?? '');
@@ -68,11 +64,6 @@ class _EditProfileModalState extends State<EditProfileModal> {
     _phoneController = TextEditingController(text: p?.phone ?? '');
     _occupationController = TextEditingController(text: p?.occupation ?? '');
     _bioController = TextEditingController(text: p?.bio ?? '');
-
-    final target = p?.monthlyIncomeTarget;
-    _incomeTargetController = TextEditingController(
-      text: target != null && target > 0 ? RupiahInputFormatter.format(target) : '',
-    );
   }
 
   @override
@@ -83,7 +74,6 @@ class _EditProfileModalState extends State<EditProfileModal> {
     _phoneController.dispose();
     _occupationController.dispose();
     _bioController.dispose();
-    _incomeTargetController.dispose();
     super.dispose();
   }
 
@@ -100,23 +90,22 @@ class _EditProfileModalState extends State<EditProfileModal> {
     final phone = _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim();
     final occupation = _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim();
     final bio = _bioController.text.trim().isEmpty ? null : _bioController.text.trim();
-    final rawIncome = RupiahInputFormatter.parse(_incomeTargetController.text.trim());
-    final monthlyIncomeTarget = rawIncome > 0 ? rawIncome : null;
 
     final bloc = context.read<FinanceBloc>();
     if (isEditing) {
+      final prev = widget.initialProfile!;
       bloc.add(UpdateProfileEvent(
-        profileId: widget.initialProfile!.id,
+        profileId: prev.id,
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
-        currency: _selectedCurrency, monthlyIncomeTarget: monthlyIncomeTarget,
+        currency: prev.currency, monthlyIncomeTarget: prev.monthlyIncomeTarget,
       ));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil diperbarui!'), backgroundColor: AppColors.neoMint, behavior: SnackBarBehavior.floating));
     } else {
       bloc.add(AddProfileEvent(
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
-        currency: _selectedCurrency, monthlyIncomeTarget: monthlyIncomeTarget, setActive: _setActive,
+        setActive: _setActive,
       ));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil dibuat!'), backgroundColor: AppColors.neoChartreuse, behavior: SnackBarBehavior.floating));
     }
@@ -166,9 +155,6 @@ class _EditProfileModalState extends State<EditProfileModal> {
                       phoneController: _phoneController,
                       occupationController: _occupationController,
                       bioController: _bioController,
-                      incomeTargetController: _incomeTargetController,
-                      selectedCurrency: _selectedCurrency,
-                      onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
                       existingUsernames: existingUsernames,
                     ),
                     const SizedBox(height: 24),

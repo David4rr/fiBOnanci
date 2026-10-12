@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
+import '../../core/formatters/app_currency.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
@@ -47,7 +46,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
     final sub = widget.subscription;
     if (sub != null) {
       _titleController = TextEditingController(text: sub.title);
-      _costController = TextEditingController(text: NumberFormat.decimalPattern('id_ID').format(sub.cost.round()));
+      _costController = TextEditingController(text: AppCurrency.formatInputOf(context, sub.cost));
       _dueDay = sub.dueDay;
       _autoDeduct = sub.autoDeduct;
       _isInstallment = sub.isInstallment;
@@ -81,7 +80,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
 
   void _saveSubscription(BuildContext context) {
     final title = _titleController.text.trim();
-    final cost = RupiahInputFormatter.parse(_costController.text);
+    final cost = AppCurrency.parseInputOf(context, _costController.text);
     if (title.isEmpty || cost <= 0 || _selectedWalletId == null || _selectedCategoryId == null) return;
 
     final bloc = context.read<FinanceBloc>();

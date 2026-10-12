@@ -50,10 +50,13 @@ extension ProfileBlocHandlers on FinanceBloc {
       final transactions = await repository.getTransactions(profileId: pId, limit: 50);
       final subscriptions = await repository.getSubscriptions(profileId: pId);
       final pockets = await repository.getPockets(profileId: pId);
-      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions);
+      final cycleDay = pId != null ? (_profileCycleDays[pId] ?? 1) : 1;
+      final stsWallets = pId != null ? _profileStsWallets[pId] : null;
+      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions, selectedWalletIds: stsWallets, cycleDay: cycleDay);
       emit(state.copyWith(
         activeProfile: active, profiles: profiles, wallets: wallets,
-        transactions: transactions, subscriptions: subscriptions, pockets: pockets, metrics: metrics,
+        transactions: transactions, subscriptions: subscriptions, pockets: pockets,
+        budgetCycleDay: cycleDay, safeToSpendWalletIds: stsWallets, clearSafeToSpendWallets: stsWallets == null, metrics: metrics,
       ));
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menghapus profil: $e'));
@@ -68,12 +71,15 @@ extension ProfileBlocHandlers on FinanceBloc {
       final transactions = await repository.getTransactions(profileId: event.profileId, limit: 50);
       final subscriptions = await repository.getSubscriptions(profileId: event.profileId);
       final pockets = await repository.getPockets(profileId: event.profileId);
-      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions);
+      final cycleDay = _profileCycleDays[event.profileId] ?? 1;
+      final stsWallets = _profileStsWallets[event.profileId];
+      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions, selectedWalletIds: stsWallets, cycleDay: cycleDay);
       final profiles = await repository.getProfiles();
       final active = profiles.where((p) => p.id == event.profileId).firstOrNull ?? state.activeProfile;
       emit(state.copyWith(
         activeProfile: active, profiles: profiles, wallets: wallets,
-        transactions: transactions, subscriptions: subscriptions, pockets: pockets, metrics: metrics,
+        transactions: transactions, subscriptions: subscriptions, pockets: pockets,
+        budgetCycleDay: cycleDay, safeToSpendWalletIds: stsWallets, clearSafeToSpendWallets: stsWallets == null, metrics: metrics,
       ));
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal mengganti profil aktif: $e'));

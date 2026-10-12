@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
@@ -53,7 +53,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   @override
   void initState() {
     super.initState();
-    _amountController = TextEditingController(text: RupiahInputFormatter.format(widget.transaction.amount));
+    _amountController = TextEditingController(text: AppCurrency.formatInputOf(context, widget.transaction.amount));
     _notesController = TextEditingController(text: widget.transaction.notes ?? '');
     _type = widget.transaction.type;
     _walletId = widget.transaction.walletId;
@@ -69,7 +69,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   }
 
   void _saveChanges(BuildContext context) {
-    final newAmount = RupiahInputFormatter.parse(_amountController.text);
+    final newAmount = AppCurrency.parseInputOf(context, _amountController.text);
     if (newAmount <= 0) return;
     if (_type == 'transfer' && _walletId == _destinationWalletId) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rekening asal dan tujuan tidak boleh sama!')));

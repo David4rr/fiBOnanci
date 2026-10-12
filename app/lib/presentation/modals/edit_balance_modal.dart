@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notification_parser/bank_presets.dart';
 import '../../data/database/app_database.dart';
@@ -19,7 +19,7 @@ export 'wallet/wallet_delete_dialog.dart';
 
 class EditBalanceModal {
   static void show(BuildContext context, WalletEntry wallet) {
-    final controller = TextEditingController(text: RupiahInputFormatter.format(wallet.balance));
+    final controller = TextEditingController(text: AppCurrency.formatInputOf(context, wallet.balance));
     final accountNumberController = TextEditingController(text: wallet.accountNumber ?? '');
     final customPackageController = TextEditingController();
     String? selectedPackage;
@@ -104,7 +104,7 @@ class EditBalanceModal {
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
                               onPressed: () {
-                                final newBal = RupiahInputFormatter.parse(controller.text);
+                                final newBal = AppCurrency.parseInputOf(context, controller.text);
                                 final accNum = accountNumberController.text.trim();
                                 final boundPkg = isCustomPackage ? customPackageController.text.trim() : selectedPackage;
 

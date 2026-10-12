@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
-import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -45,7 +43,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
     final sub = widget.subscription;
     _titleController = TextEditingController(text: sub.title);
     _costController = TextEditingController(
-      text: NumberFormat.decimalPattern('id_ID').format(sub.cost.round()),
+      text: AppCurrency.formatInputOf(context, sub.cost),
     );
     _dueDay = sub.dueDay;
     _autoDeduct = sub.autoDeduct;
@@ -64,7 +62,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
 
   void _saveSubscription(BuildContext context) {
     final title = _titleController.text.trim();
-    final cost = RupiahInputFormatter.parse(_costController.text);
+    final cost = AppCurrency.parseInputOf(context, _costController.text);
     if (title.isEmpty || cost <= 0 || _selectedWalletId == null || _selectedCategoryId == null) {
       return;
     }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/database/app_database.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import 'finance_event.dart';
@@ -11,6 +12,7 @@ part 'handlers/subscription_handlers.dart';
 part 'handlers/wallet_handlers.dart';
 part 'handlers/pocket_handlers.dart';
 part 'handlers/profile_handlers.dart';
+part 'handlers/settings_handlers.dart';
 
 class _WalletsUpdated extends FinanceEvent {
   final List<WalletEntry> wallets;
@@ -44,14 +46,14 @@ class _ProfilesUpdated extends FinanceEvent {
 
 class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository repository;
-
+  final Map<String, int> _profileCycleDays = {};
+  final Map<String, Set<String>?> _profileStsWallets = {};
   StreamSubscription? _walletsSubscription;
   StreamSubscription? _categoriesSubscription;
   StreamSubscription? _transactionsSubscription;
   StreamSubscription? _subscriptionsSubscription;
   StreamSubscription? _pocketsSubscription;
   StreamSubscription? _profilesSubscription;
-
   FinanceBloc({required this.repository}) : super(FinanceState()) {
     on<LoadFinanceData>(_onLoadFinanceData);
     on<AddTransactionEvent>(handleAddTransaction);
@@ -74,18 +76,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<UpdateProfileEvent>(handleUpdateProfile);
     on<DeleteProfileEvent>(handleDeleteProfile);
     on<SetActiveProfileEvent>(handleSetActiveProfile);
-    on<SetSafeToSpendWalletsEvent>((event, emit) {
-      final metrics = SafeToSpendService.calculate(
-        wallets: state.wallets,
-        subscriptions: state.subscriptions,
-        selectedWalletIds: event.walletIds,
-      );
-      emit(state.copyWith(
-        safeToSpendWalletIds: event.walletIds,
-        clearSafeToSpendWallets: event.walletIds == null,
-        metrics: metrics,
-      ));
-    });
+    on<SetSafeToSpendWalletsEvent>(handleSetSafeToSpendWallets);
+    on<SetBudgetCycleDayEvent>(handleSetBudgetCycleDay);
+    on<ToggleBalanceVisibilityEvent>(handleToggleBalanceVisibility);
+    on<AddCategoryEvent>(handleAddCategory);
+    on<DeleteCategoryEvent>(handleDeleteCategory);
+    on<ClearProfileTransactionsEvent>(handleClearProfileTransactions);
+    on<SetExchangeRateEvent>(handleSetExchangeRate);
+    on<SyncExchangeRatesEvent>(handleSyncExchangeRates);
 
     on<_WalletsUpdated>((event, emit) {
       Set<String>? safeWallets = state.safeToSpendWalletIds;
@@ -97,6 +95,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         wallets: event.wallets,
         subscriptions: state.subscriptions,
         selectedWalletIds: safeWallets,
+        cycleDay: state.budgetCycleDay,
       );
       emit(state.copyWith(
         wallets: event.wallets,
@@ -111,6 +110,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         wallets: state.wallets,
         subscriptions: event.subscriptions,
         selectedWalletIds: state.safeToSpendWalletIds,
+        cycleDay: state.budgetCycleDay,
       );
       emit(state.copyWith(subscriptions: event.subscriptions, metrics: metrics));
     });
@@ -158,6 +158,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         wallets: wallets,
         subscriptions: subscriptions,
         selectedWalletIds: state.safeToSpendWalletIds,
+        cycleDay: state.budgetCycleDay,
       );
 
       emit(state.copyWith(

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_state.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -33,7 +32,6 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
   late int _currentTab;
   late bool _isDeposit;
   TransactionEntry? _selectedTransaction;
-  final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   @override
   void initState() {
@@ -82,7 +80,7 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
     }
     final target = latestPocket.targetAmount;
     if (target != null && target > 0) {
-      return '${getPocketTypeLabel(latestPocket.type)} • Target: ${_currencyFormatter.format(target)}';
+      return '${getPocketTypeLabel(latestPocket.type)} • Target: ${AppCurrency.read(context).format(target)}';
     }
     return getPocketTypeLabel(latestPocket.type);
   }
@@ -148,7 +146,7 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
                       pocketColor: pocketColor,
                       transactions: pocketTxs,
                       wallets: state.wallets,
-                      currencyFormatter: _currencyFormatter,
+                      currencyFormatter: AppCurrency.forCode(state.profile.currency),
                       onDeposit: () => _goToTransfer(isDeposit: true),
                       onWithdraw: () => _goToTransfer(isDeposit: false),
                       onEditTransaction: _goToEditTx,

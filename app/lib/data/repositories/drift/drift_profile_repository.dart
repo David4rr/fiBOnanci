@@ -104,4 +104,22 @@ mixin DriftProfileRepository on DriftRepoBase {
   Future<void> deleteProfile(String profileId) => db.deleteProfile(profileId);
 
   Future<void> setActiveProfile(String profileId) => db.setActiveProfile(profileId);
+
+  Future<void> addCategory({
+    required String name,
+    required String type,
+    String iconName = 'category',
+    String colorHex = '#D4F442',
+  }) =>
+      db.createCategory(
+        name: name,
+        type: type,
+        iconName: iconName,
+        colorHex: colorHex,
+      );
+
+  Future<void> deleteCategory(String categoryId) => db.softDeleteCategory(categoryId);
+
+  Future<void> clearProfileTransactions(String profileId) =>
+      db.clearProfileTransactions(profileId);
 }

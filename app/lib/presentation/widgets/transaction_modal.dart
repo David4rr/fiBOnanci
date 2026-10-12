@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
+import '../../core/formatters/app_currency.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
@@ -95,7 +95,7 @@ class _TransactionModalState extends State<TransactionModal> {
   }
 
   void _onSave() {
-    final amount = RupiahInputFormatter.parse(_amountController.text);
+    final amount = AppCurrency.parseInputOf(context, _amountController.text);
     if (amount <= 0 || _selectedWalletId == null || (_type != 'transfer' && _selectedCategoryId == null)) return;
     context.read<FinanceBloc>().add(AddTransactionEvent(
       walletId: _selectedWalletId!, amount: amount, type: _type, transactionDate: DateTime.now(),

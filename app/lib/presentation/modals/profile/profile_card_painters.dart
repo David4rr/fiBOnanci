@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../theme/app_colors.dart';
-
 class ProfileWaveChartPainter extends CustomPainter {
   final List<double> scores;
   final Color strokeColor;
@@ -98,12 +98,6 @@ class ProfileFinancialTimelinePill extends StatelessWidget {
     required this.safeToSpend,
   });
 
-  String _formatCompact(double val) {
-    if (val >= 1000000) return 'Rp ${(val / 1000000).toStringAsFixed(1)} Jt';
-    if (val >= 1000) return 'Rp ${(val / 1000).toStringAsFixed(0)} Rb';
-    return 'Rp ${val.toStringAsFixed(0)}';
-  }
-
   Widget _buildTrackSegment(int leadingDots, bool hasSolidBar, int trailingDots) {
     const ink = Color(0xFF0C0D11);
     return SizedBox(
@@ -143,14 +137,15 @@ class ProfileFinancialTimelinePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final code = AppCurrency.codeOf(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(color: AppColors.neoChartreuse, borderRadius: BorderRadius.circular(22)),
       child: Row(
         children: [
-          _buildCol('SALDO RIIL', _formatCompact(realBalance), _buildTrackSegment(4, true, 0)),
-          _buildCol('TAGIHAN', _formatCompact(pendingBills), _buildTrackSegment(2, true, 2)),
-          _buildCol('SISA AMAN', _formatCompact(safeToSpend), _buildTrackSegment(0, true, 4)),
+          _buildCol('SALDO RIIL', AppCurrency.formatCompact(realBalance, code), _buildTrackSegment(4, true, 0)),
+          _buildCol('TAGIHAN', AppCurrency.formatCompact(pendingBills, code), _buildTrackSegment(2, true, 2)),
+          _buildCol('SISA AMAN', AppCurrency.formatCompact(safeToSpend, code), _buildTrackSegment(0, true, 4)),
         ],
       ),
     );

@@ -1,7 +1,7 @@
 export 'profile_modal.dart';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
@@ -77,7 +77,7 @@ class WalletsListModal {
                       const SizedBox(width: 12),
                       Text(w.name, style: AppTypography.listTitle),
                       const Spacer(),
-                      Text('Rp ${w.balance.toStringAsFixed(0)}', style: AppTypography.listAmount),
+                      Text(AppCurrency.read(ctx).format(w.balance), style: AppTypography.listAmount),
                     ],
                   ),
                 ),
@@ -93,7 +93,7 @@ class WalletsListModal {
 
 class DailyPaceModal {
   static void show(BuildContext context, SafeToSpendMetrics metrics) {
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormatter = AppCurrency.read(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.canvasCardSurface,

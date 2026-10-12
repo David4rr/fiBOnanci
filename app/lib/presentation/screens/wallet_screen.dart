@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../modals/add_pocket_modal.dart';
 import '../modals/add_wallet_modal.dart';
@@ -49,12 +48,11 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
     return Scaffold(
       backgroundColor: AppColors.canvasBg,
       body: BlocBuilder<FinanceBloc, FinanceState>(
         builder: (context, state) {
+          final currencyFormatter = AppCurrency.forCode(state.profile.currency);
           final wallets = state.wallets;
           final pockets = state.pockets;
 

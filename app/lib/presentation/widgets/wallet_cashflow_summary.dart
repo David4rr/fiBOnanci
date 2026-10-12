@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_colors.dart';
+import 'common/peekable_balance_text.dart';
 
 /// Compact minimalist monthly income & expense summary strip.
 class WalletCashflowSummary extends StatelessWidget {
@@ -61,10 +62,9 @@ class WalletCashflowSummary extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
-            amount,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          child: PeekableBalanceText(
+            text: amount,
+            iconSize: 12,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,

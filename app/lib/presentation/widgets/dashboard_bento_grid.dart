@@ -17,6 +17,7 @@ class DashboardBentoGrid extends StatelessWidget {
   final NumberFormat currencyFormatter;
   final VoidCallback onNavigateToWallets;
   final VoidCallback onNavigateToSubscriptions;
+  final bool isBalanceHidden;
 
   const DashboardBentoGrid({
     super.key,
@@ -26,7 +27,10 @@ class DashboardBentoGrid extends StatelessWidget {
     required this.currencyFormatter,
     required this.onNavigateToWallets,
     required this.onNavigateToSubscriptions,
+    this.isBalanceHidden = false,
   });
+
+  String _fmt(double amount) => currencyFormatter.format(amount);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,8 @@ class DashboardBentoGrid extends StatelessWidget {
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoChartreuse,
                   iconData: Icons.shield_outlined,
-                  title: currencyFormatter.format(metrics.safeToSpendMonthly),
+                  title: _fmt(metrics.safeToSpendMonthly),
+                  isBalanceHidden: isBalanceHidden,
                   subtitle: metrics.isAllWallets
                       ? 'Safe to Spend'
                       : 'Safe to Spend (${metrics.selectedWalletsCount} Akun)',
@@ -56,7 +61,8 @@ class DashboardBentoGrid extends StatelessWidget {
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoMint,
                   iconData: Icons.account_balance_wallet_outlined,
-                  title: currencyFormatter.format(metrics.totalRealBalance),
+                  title: _fmt(metrics.totalRealBalance),
+                  isBalanceHidden: isBalanceHidden,
                   subtitle: '${wallets.length} Akun Riil',
                   trailingIcon: const Icon(Icons.chevron_right, color: AppColors.textDarkSecondary, size: 14),
                   onTap: onNavigateToWallets,
@@ -73,7 +79,8 @@ class DashboardBentoGrid extends StatelessWidget {
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoCoral,
                   iconData: Icons.receipt_long_outlined,
-                  title: currencyFormatter.format(metrics.pendingBills),
+                  title: _fmt(metrics.pendingBills),
+                  isBalanceHidden: isBalanceHidden,
                   subtitle: '${subscriptions.length} Tagihan Bln Ini',
                   trailingIcon: const Icon(Icons.chevron_right, color: AppColors.textDarkSecondary, size: 14),
                   onTap: onNavigateToSubscriptions,
@@ -86,7 +93,8 @@ class DashboardBentoGrid extends StatelessWidget {
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoCyan,
                   iconData: Icons.pie_chart_outline,
-                  title: currencyFormatter.format(metrics.safeToSpendDaily),
+                  title: _fmt(metrics.safeToSpendDaily),
+                  isBalanceHidden: isBalanceHidden,
                   subtitle: 'Alokasi/Hari (${metrics.daysRemainingInMonth}hr)',
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
                   onTap: () => DailyPaceModal.show(context, metrics),

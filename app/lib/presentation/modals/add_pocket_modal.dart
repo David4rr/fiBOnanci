@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../bloc/finance/finance_state.dart';
-import '../../core/formatters/rupiah_input_formatter.dart';
-import '../widgets/common/common_widgets.dart';
+import '../../core/formatters/app_currency.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/common_widgets.dart';
 import 'pocket/pocket_type_selector.dart';
 
 export 'pocket/pocket_type_selector.dart';
@@ -19,8 +17,7 @@ class AddPocketModal {
     final nameController = TextEditingController();
     final targetController = TextEditingController();
     final initialController = TextEditingController();
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
+    final currencyFormatter = AppCurrency.read(context);
     String selectedType = 'savings';
     String? selectedWalletId;
     String? nameError;
@@ -135,12 +132,12 @@ class AddPocketModal {
                                       setModalState(() => nameError = 'Nama kantong wajib diisi');
                                       return;
                                     }
-                                    final target = RupiahInputFormatter.parse(targetController.text);
-                                    final initial = RupiahInputFormatter.parse(initialController.text);
+                                    final target = AppCurrency.parseInputOf(context, targetController.text);
+                                    final initial = AppCurrency.parseInputOf(context, initialController.text);
                                     if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
                                       final wallet = activeWallets.firstWhere((w) => w.id == selectedWalletId, orElse: () => activeWallets.first);
                                       if (initial > wallet.balance) {
-                                        setModalState(() => initialError = 'Saldo tidak cukup (Maks Rp ${wallet.balance.toStringAsFixed(0)})');
+                                        setModalState(() => initialError = 'Saldo tidak cukup (Maks ${currencyFormatter.format(wallet.balance)})');
                                         return;
                                       }
                                     }

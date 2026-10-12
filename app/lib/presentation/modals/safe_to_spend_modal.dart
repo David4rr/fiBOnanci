@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
@@ -24,7 +24,7 @@ class SafeToSpendModal {
             final metrics = state.metrics;
             final selectedIds = state.safeToSpendWalletIds ?? <String>{};
             final isAll = state.safeToSpendWalletIds == null || state.safeToSpendWalletIds!.isEmpty;
-            final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+            final currencyFormatter = AppCurrency.forCode(state.profile.currency);
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(

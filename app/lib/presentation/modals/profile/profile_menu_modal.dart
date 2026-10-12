@@ -7,7 +7,6 @@ import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../edit_profile_modal.dart';
 import '../financial_health_modal.dart';
-import 'profile_delete_dialog.dart';
 export 'profile_morphing_menu.dart';
 
 void showProfileMenuModal(BuildContext context, {
@@ -76,21 +75,6 @@ void showProfileMenuModal(BuildContext context, {
                 );
               },
             ),
-            if (totalProfiles > 1) ...[
-              const SizedBox(height: 8),
-              _buildItem(
-                ctx,
-                icon: Icons.delete_outline_rounded,
-                title: 'Hapus Profil',
-                subtitle: 'Hapus akun profil ini dari perangkat',
-                iconColor: AppColors.neoCoral,
-                titleColor: AppColors.neoCoral,
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  showProfileDeleteDialog(context, profile, totalProfiles);
-                },
-              ),
-            ],
           ],
         ),
       ),

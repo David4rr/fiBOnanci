@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
-import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -32,9 +31,9 @@ class PocketTransferForm extends StatefulWidget {
 
 class _PocketTransferFormState extends State<PocketTransferForm> {
   final _amountController = TextEditingController();
-  final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   String? _selectedWalletId;
   String? _errorMessage;
+  NumberFormat get _currencyFormatter => AppCurrency.of(context);
   @override
   void didUpdateWidget(PocketTransferForm oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -104,7 +103,7 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
-                      _amountController.text = RupiahInputFormatter.format(widget.pocket.currentAmount);
+                      _amountController.text = AppCurrency.formatInputOf(context, widget.pocket.currentAmount);
                       if (_errorMessage != null) setState(() => _errorMessage = null);
                     },
                     child: Text(
@@ -153,15 +152,16 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
               onPressed: activeWallets.isEmpty
                   ? null
                   : () {
-                      final amount = RupiahInputFormatter.parse(_amountController.text);
-                      if (amount <= 0) return setState(() => _errorMessage = 'Masukkan nominal lebih dari Rp 0');
+                      final fmt = AppCurrency.read(context);
+                      final amount = AppCurrency.parseInputOf(context, _amountController.text);
+                      if (amount <= 0) return setState(() => _errorMessage = 'Masukkan nominal lebih dari ${fmt.format(0)}');
                       if (_selectedWalletId == null) return setState(() => _errorMessage = 'Pilih rekening terlebih dahulu');
                       final selectedWallet = activeWallets.firstWhere((w) => w.id == _selectedWalletId);
                       if (widget.isDeposit && amount > selectedWallet.balance) {
-                        return setState(() => _errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${_currencyFormatter.format(selectedWallet.balance)})');
+                        return setState(() => _errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${fmt.format(selectedWallet.balance)})');
                       }
                       if (!widget.isDeposit && amount > widget.pocket.currentAmount) {
-                        return setState(() => _errorMessage = 'Saldo kantong tidak cukup (${_currencyFormatter.format(widget.pocket.currentAmount)})');
+                        return setState(() => _errorMessage = 'Saldo kantong tidak cukup (${fmt.format(widget.pocket.currentAmount)})');
                       }
                       context.read<FinanceBloc>().add(TransferPocketFundsEvent(
                         pocketId: widget.pocket.id,

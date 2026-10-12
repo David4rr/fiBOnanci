@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/formatters/rupiah_input_formatter.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'edit_profile_input_field.dart';
 
@@ -33,9 +32,6 @@ class EditProfileForm extends StatelessWidget {
   final TextEditingController phoneController;
   final TextEditingController occupationController;
   final TextEditingController bioController;
-  final TextEditingController incomeTargetController;
-  final String selectedCurrency;
-  final ValueChanged<String> onCurrencyChanged;
   final List<String>? existingUsernames;
 
   const EditProfileForm({
@@ -46,9 +42,6 @@ class EditProfileForm extends StatelessWidget {
     required this.phoneController,
     required this.occupationController,
     required this.bioController,
-    required this.incomeTargetController,
-    required this.selectedCurrency,
-    required this.onCurrencyChanged,
     this.existingUsernames,
   });
 
@@ -114,20 +107,6 @@ class EditProfileForm extends StatelessWidget {
           hintText: 'e.g. Membangun kebebasan finansial',
           prefixIcon: Icons.notes_rounded,
           maxLines: 2,
-        ),
-        const SizedBox(height: 12),
-        EditProfileCurrencySelector(
-          selectedCurrency: selectedCurrency,
-          onCurrencyChanged: onCurrencyChanged,
-        ),
-        const SizedBox(height: 12),
-        EditProfileInputField(
-          controller: incomeTargetController,
-          label: 'Target Pemasukan Bulanan',
-          hintText: 'Rp 15.000.000',
-          prefixIcon: Icons.savings_outlined,
-          keyboardType: TextInputType.number,
-          inputFormatters: [RupiahInputFormatter()],
         ),
       ],
     );

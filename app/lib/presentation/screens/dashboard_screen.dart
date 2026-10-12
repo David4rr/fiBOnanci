@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/formatters/app_currency.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/dashboard_bento_grid.dart';
@@ -34,7 +33,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _searchController = TextEditingController();
-  static final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   String _searchQuery = '';
   String _typeFilter = 'all';
   String? _walletFilter;
@@ -125,7 +123,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     metrics: metrics,
                     wallets: wallets,
                     subscriptions: subscriptions,
-                    currencyFormatter: _currencyFormatter,
+                    currencyFormatter: AppCurrency.forCode(state.profile.currency),
+                    isBalanceHidden: state.isBalanceHidden,
                     onNavigateToWallets: _onNavigateToWallets,
                     onNavigateToSubscriptions: _onNavigateToSubscriptions,
                   ),

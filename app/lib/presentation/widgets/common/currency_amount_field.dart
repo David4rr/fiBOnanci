@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/formatters/app_currency.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -55,7 +56,7 @@ class CurrencyAmountField extends StatelessWidget {
         labelStyle: labelStyle ?? (labelText != null ? AppTypography.listSubtitle : null),
         hintText: hintText,
         errorText: errorText,
-        prefixText: 'Rp ',
+        prefixText: AppCurrency.symbolOf(context),
         prefixStyle: effectivePrefixStyle,
         filled: true,
         fillColor: fillColor,

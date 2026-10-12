@@ -165,4 +165,13 @@ abstract class FinanceRepository {
 
   Future<void> deleteProfile(String profileId);
   Future<void> setActiveProfile(String profileId);
+
+  Future<void> addCategory({
+    required String name,
+    required String type,
+    String iconName = 'category',
+    String colorHex = '#D4F442',
+  });
+  Future<void> deleteCategory(String categoryId);
+  Future<void> clearProfileTransactions(String profileId);
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart' hide TextDirection;
-
+import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../theme/app_colors.dart';
@@ -35,8 +34,6 @@ class _PocketStockChartCardState extends State<PocketStockChartCard> with Single
   int? _scrubbedIndex;
   late AnimationController _animController;
   late Animation<double> _animProgress;
-
-  static final _currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   static const _filters = ['1M', '1B', '1T', 'Semua'];
 
   @override
@@ -119,10 +116,10 @@ class _PocketStockChartCardState extends State<PocketStockChartCard> with Single
 
     final delta = trend.delta;
     final pct = trend.percentChange;
+    final fmt = AppCurrency.of(context);
     final String deltaSign = delta >= 0 ? '+' : '';
-    final String deltaFormatted = '$deltaSign${_currencyFormatter.format(delta)}';
+    final String deltaFormatted = '$deltaSign${fmt.format(delta)}';
     final String pctFormatted = '$deltaSign${pct.toStringAsFixed(1)}%';
-
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       decoration: BoxDecoration(

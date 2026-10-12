@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../../core/formatters/app_currency.dart';
 import '../../../domain/services/financial_report_service.dart';
 import '../../theme/app_colors.dart';
 import 'category_donut_chart.dart';
@@ -17,7 +16,6 @@ class FinancialReportSummaryCard extends StatefulWidget {
 
 class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard> {
   int? _selectedSliceIndex;
-  static final _fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   List<UnifiedDonutSlice> _buildUnifiedSlices() {
     final data = widget.data;
@@ -45,9 +43,9 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
 
   @override
   Widget build(BuildContext context) {
+    final fmt = AppCurrency.of(context);
     final data = widget.data;
     final slices = _buildUnifiedSlices();
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       decoration: BoxDecoration(
@@ -74,16 +72,16 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildMinimalMetric('Pemasukan', '+${_fmt.format(data.totalIncome)}', AppColors.neoMint)),
+              Expanded(child: _buildMinimalMetric('Pemasukan', '+${fmt.format(data.totalIncome)}', AppColors.neoMint)),
               Container(width: 1, height: 28, color: Colors.white.withValues(alpha: 0.06)),
-              Expanded(child: _buildMinimalMetric('Pengeluaran', '-${_fmt.format(data.totalExpense)}', AppColors.neoCoral)),
+              Expanded(child: _buildMinimalMetric('Pengeluaran', '-${fmt.format(data.totalExpense)}', AppColors.neoCoral)),
             ],
           ),
           if (slices.isNotEmpty) ...[
             const SizedBox(height: 16),
             Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
             const SizedBox(height: 8),
-            ...List.generate(slices.length, (i) => _buildSliceRow(slices[i], i)),
+            ...List.generate(slices.length, (i) => _buildSliceRow(slices[i], i, fmt.format(slices[i].amount))),
           ],
         ],
       ),
@@ -112,7 +110,7 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
     );
   }
 
-  Widget _buildSliceRow(UnifiedDonutSlice item, int index) {
+  Widget _buildSliceRow(UnifiedDonutSlice item, int index, String formattedAmt) {
     final isSelected = _selectedSliceIndex == index;
     final sign = item.isIncome ? '+' : '-';
     final amountColor = item.isIncome ? AppColors.neoMint : AppColors.textWhite;
@@ -141,7 +139,7 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
               ),
             ),
             Text(
-              '$sign${_fmt.format(item.amount)}',
+              '$sign$formattedAmt',
               style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600, color: amountColor, fontFeatures: const [FontFeature.tabularFigures()]),
             ),
             const SizedBox(width: 8),

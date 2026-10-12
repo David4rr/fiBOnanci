@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/peekable_balance_text.dart';
 import '../../widgets/trend_spline_chart.dart';
 import '../../widgets/wallet_cashflow_summary.dart';
 
@@ -60,8 +61,8 @@ class WalletTotalBalanceCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        currencyFormatter.format(totalRealBalance),
+                      PeekableBalanceText(
+                        text: currencyFormatter.format(totalRealBalance),
                         style: GoogleFonts.plusJakartaSans(
                           color: AppColors.neoChartreuse,
                           fontSize: 21,
@@ -69,7 +70,6 @@ class WalletTotalBalanceCard extends StatelessWidget {
                           letterSpacing: -0.5,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

@@ -13,6 +13,7 @@ import 'profile/profile_general_data_card.dart';
 import 'profile/profile_card_carousel.dart';
 import 'profile/profile_header_card.dart';
 import 'report/financial_report_tab.dart';
+import 'settings/profile_settings_tab.dart';
 
 export 'health/financial_health_tab.dart';
 export 'profile/profile_edit_tab.dart';
@@ -21,6 +22,7 @@ export 'profile/profile_header_card.dart';
 export 'profile/profile_menu_modal.dart';
 export 'profile/profile_morphing_menu.dart';
 export 'report/financial_report_tab.dart';
+export 'settings/profile_settings_tab.dart';
 class ProfileModal extends StatefulWidget {
   final int walletCount;
   final int txCount;
@@ -58,8 +60,8 @@ class _ProfileModalState extends State<ProfileModal> {
   late final PageController _pageController;
   int _currentTab = 0;
   ProfileEntry? _editingProfile;
+  SettingsSubRoute? _settingsRoute;
   double _dragOffset = 0.0;
-
   void _onHeaderDragUpdate(DragUpdateDetails details) {
     if (_currentTab != 0) return;
     final delta = details.primaryDelta ?? 0.0;
@@ -88,21 +90,33 @@ class _ProfileModalState extends State<ProfileModal> {
   }
 
   void _goToTab(int tab, [ProfileEntry? target]) {
-    setState(() { _editingProfile = target; _currentTab = tab; });
+    setState(() { _editingProfile = target; _settingsRoute = null; _currentTab = tab; });
     _pageController.animateToPage(tab, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
   void _goToSummary() => _goToTab(0);
+
+  void _handleBack() {
+    if (_currentTab == 4 && _settingsRoute != null) {
+      setState(() => _settingsRoute = null);
+    } else if (_currentTab != 0) {
+      _goToSummary();
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
 
   String get _headerTitle => switch (_currentTab) {
     1 => _editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru',
     2 => 'Audit Kesehatan Finansial',
     3 => 'Laporan Keuangan',
+    4 => _settingsRoute?.title ?? 'Pengaturan',
     _ => 'Profil Pengguna',
   };
   String get _headerSubtitle => switch (_currentTab) {
     1 => _editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat',
     2 => 'Berdasarkan rasio arus kas, aset, & tagihan riil',
     3 => 'Analisis arus kas, kategori, & distribusi rekening',
+    4 => _settingsRoute?.subtitle ?? 'Preferensi finansial, kategori, otomasi, & data lokal',
     _ => 'Ringkasan identitas & performa finansial',
   };
   @override
@@ -115,7 +129,7 @@ class _ProfileModalState extends State<ProfileModal> {
         return PopScope(
           canPop: _currentTab == 0,
           onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) _goToSummary();
+            if (!didPop) _handleBack();
           },
           child: Scaffold(
             backgroundColor: AppColors.canvasBg,
@@ -129,44 +143,32 @@ class _ProfileModalState extends State<ProfileModal> {
                       behavior: HitTestBehavior.opaque,
                       onVerticalDragUpdate: _onHeaderDragUpdate,
                       onVerticalDragEnd: _onHeaderDragEnd,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_currentTab == 0)
-                            const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle()))
-                          else
-                            const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-                            child: ModalHeader(
-                              title: _headerTitle,
-                              subtitle: _headerSubtitle,
-                              closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
-                              padding: EdgeInsets.zero,
-                              onClose: () => _currentTab == 0 ? Navigator.of(context).pop() : _goToSummary(),
-                            ),
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        if (_currentTab == 0)
+                          const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle()))
+                        else
+                          const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                          child: ModalHeader(
+                            title: _headerTitle, subtitle: _headerSubtitle, padding: EdgeInsets.zero,
+                            closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
+                            onClose: _handleBack,
                           ),
-                        ],
-                      ),
+                        ),
+                      ]),
                     ),
                   Expanded(
                     child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
+                      controller: _pageController, physics: const NeverScrollableScrollPhysics(),
                       children: [
                         ListView(
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+                          physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
                           children: [
                             ProfileCardCarousel(
-                              profiles: profiles,
-                              currentProfileId: profile.id,
-                              walletCount: state.wallets.length,
-                              txCount: state.transactions.length,
-                              onEditProfile: () => _goToTab(1, profile),
-                              onNewProfile: () => _goToTab(1),
-                              onHealthDetails: () => _goToTab(2),
-                              onFinancialReport: () => _goToTab(3),
+                              profiles: profiles, currentProfileId: profile.id, walletCount: state.wallets.length, txCount: state.transactions.length,
+                              onEditProfile: () => _goToTab(1, profile), onNewProfile: () => _goToTab(1),
+                              onHealthDetails: () => _goToTab(2), onFinancialReport: () => _goToTab(3), onSettings: () => _goToTab(4),
                             ),
                             const SizedBox(height: 16),
                             ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
@@ -175,11 +177,11 @@ class _ProfileModalState extends State<ProfileModal> {
                         ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
                         FinancialHealthTab(report: state.healthReport),
                         FinancialReportTab(state: state),
+                        ProfileSettingsTab(state: state, activeRoute: _settingsRoute, onNavigate: (route) => setState(() => _settingsRoute = route)),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ]),
               ),
             ),
           ),

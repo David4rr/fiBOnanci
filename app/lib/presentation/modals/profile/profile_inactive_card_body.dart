@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 
@@ -48,11 +47,7 @@ class ProfileInactiveCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final targetFormatted = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    ).format(profile.monthlyIncomeTarget ?? 0);
+    final targetFormatted = AppCurrency.forCode(profile.currency).format(profile.monthlyIncomeTarget ?? 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

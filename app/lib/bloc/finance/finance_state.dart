@@ -18,6 +18,9 @@ class FinanceState {
   final MonthlyCashflow monthlyCashflow;
   final FinancialHealthReport healthReport;
   final Set<String>? safeToSpendWalletIds; // null = all wallets
+  final int budgetCycleDay;
+  final bool isBalanceHidden;
+  final int exchangeRateVersion;
   final String? errorMessage;
 
   FinanceState({
@@ -30,31 +33,29 @@ class FinanceState {
     this.profiles = const [],
     this.activeProfile,
     this.safeToSpendWalletIds,
+    this.budgetCycleDay = 1,
+    this.isBalanceHidden = false,
+    this.exchangeRateVersion = 0,
     SafeToSpendMetrics? metrics,
     MonthlyCashflow? monthlyCashflow,
     FinancialHealthReport? healthReport,
     this.errorMessage,
   })  : metrics = metrics ??
             SafeToSpendService.calculate(
-              wallets: wallets,
-              subscriptions: subscriptions,
-              selectedWalletIds: safeToSpendWalletIds,
+              wallets: wallets, subscriptions: subscriptions,
+              selectedWalletIds: safeToSpendWalletIds, cycleDay: budgetCycleDay,
             ),
-        monthlyCashflow = monthlyCashflow ??
-            CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
+        monthlyCashflow = monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
         healthReport = healthReport ??
             FinancialHealthService.evaluate(
-              wallets: wallets,
-              pockets: pockets,
-              subscriptions: subscriptions,
-              monthlyCashflow: monthlyCashflow ??
-                  CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
+              wallets: wallets, pockets: pockets, subscriptions: subscriptions,
+              monthlyCashflow: monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(transactions),
               safeToSpend: metrics ??
                   SafeToSpendService.calculate(
-                    wallets: wallets,
-                    subscriptions: subscriptions,
-                    selectedWalletIds: safeToSpendWalletIds,
+                    wallets: wallets, subscriptions: subscriptions,
+                    selectedWalletIds: safeToSpendWalletIds, cycleDay: budgetCycleDay,
                   ),
+              monthlyIncomeTarget: (activeProfile ?? profiles.where((p) => p.isActive).firstOrNull)?.monthlyIncomeTarget,
             );
 
   static final ProfileEntry _defaultFallback = ProfileEntry(
@@ -95,6 +96,9 @@ class FinanceState {
     SafeToSpendMetrics? metrics,
     MonthlyCashflow? monthlyCashflow,
     FinancialHealthReport? healthReport,
+    int? budgetCycleDay,
+    bool? isBalanceHidden,
+    int? exchangeRateVersion,
     String? errorMessage,
   }) {
     final nextWallets = wallets ?? this.wallets;
@@ -108,6 +112,10 @@ class FinanceState {
     final nextWalletIds = clearSafeToSpendWallets
         ? null
         : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
+    final nextCycleDay = budgetCycleDay ?? this.budgetCycleDay;
+    final nextHidden = isBalanceHidden ?? this.isBalanceHidden;
+    final nextRateVer = exchangeRateVersion ?? this.exchangeRateVersion;
+    final resolvedProfile = nextActiveProfile ?? nextProfiles.where((p) => p.isActive).firstOrNull;
 
     return FinanceState(
       status: status ?? this.status,
@@ -119,28 +127,26 @@ class FinanceState {
       profiles: nextProfiles,
       activeProfile: nextActiveProfile,
       safeToSpendWalletIds: nextWalletIds,
+      budgetCycleDay: nextCycleDay,
+      isBalanceHidden: nextHidden,
+      exchangeRateVersion: nextRateVer,
       metrics: metrics ??
           SafeToSpendService.calculate(
-            wallets: nextWallets,
-            subscriptions: nextSubs,
-            selectedWalletIds: nextWalletIds,
+            wallets: nextWallets, subscriptions: nextSubs,
+            selectedWalletIds: nextWalletIds, cycleDay: nextCycleDay,
           ),
-      monthlyCashflow: monthlyCashflow ??
-          CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
+      monthlyCashflow: monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
       errorMessage: errorMessage ?? this.errorMessage,
       healthReport: healthReport ??
           FinancialHealthService.evaluate(
-            wallets: nextWallets,
-            pockets: nextPockets,
-            subscriptions: nextSubs,
-            monthlyCashflow: monthlyCashflow ??
-                CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
+            wallets: nextWallets, pockets: nextPockets, subscriptions: nextSubs,
+            monthlyCashflow: monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
             safeToSpend: metrics ??
                 SafeToSpendService.calculate(
-                  wallets: nextWallets,
-                  subscriptions: nextSubs,
-                  selectedWalletIds: nextWalletIds,
+                  wallets: nextWallets, subscriptions: nextSubs,
+                  selectedWalletIds: nextWalletIds, cycleDay: nextCycleDay,
                 ),
+            monthlyIncomeTarget: resolvedProfile?.monthlyIncomeTarget,
           ),
     );
   }
@@ -155,6 +161,9 @@ class FinanceState {
           metrics == other.metrics &&
           monthlyCashflow == other.monthlyCashflow &&
           setEquals(safeToSpendWalletIds, other.safeToSpendWalletIds) &&
+          budgetCycleDay == other.budgetCycleDay &&
+          isBalanceHidden == other.isBalanceHidden &&
+          exchangeRateVersion == other.exchangeRateVersion &&
           listEquals(wallets, other.wallets) &&
           listEquals(categories, other.categories) &&
           listEquals(transactions, other.transactions) &&
@@ -175,6 +184,9 @@ class FinanceState {
         pockets.length,
         profiles.length,
         activeProfile?.id,
+        budgetCycleDay,
+        isBalanceHidden,
+        exchangeRateVersion,
         healthReport.overallScore,
       );
 }

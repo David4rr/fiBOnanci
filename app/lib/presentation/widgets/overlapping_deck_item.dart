@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
+import '../../core/formatters/app_currency.dart';
 import 'overlapping_deck_expanded_insight.dart';
 
 export 'mini_weekly_bar_chart.dart';
@@ -38,14 +37,9 @@ class OverlappingDeckItem extends StatelessWidget {
     this.onTap,
     this.onManage,
   });
-
-  static final NumberFormat _expenseFormatter = NumberFormat.currency(locale: 'id_ID', symbol: '-Rp ', decimalDigits: 0);
-  static final NumberFormat _incomeFormatter = NumberFormat.currency(locale: 'id_ID', symbol: '+Rp ', decimalDigits: 0);
-
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = isExpense ? _expenseFormatter : _incomeFormatter;
-
+    final currencyFormatter = AppCurrency.of(context, signPrefix: isExpense ? '-' : '+');
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,

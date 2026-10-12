@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/formatters/app_currency.dart';
 import '../../theme/app_colors.dart';
 import 'inbox_wallet_chip.dart';
 
@@ -38,8 +38,7 @@ class InboxNotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome = type == 'income';
-    final formattedAmount = RupiahInputFormatter.format(amount);
-
+    final formattedAmount = AppCurrency.of(context).format(amount);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
@@ -91,7 +90,7 @@ class InboxNotificationCard extends StatelessWidget {
           const SizedBox(height: 12),
           if (amount > 0)
             Text(
-              isIncome ? '+Rp $formattedAmount' : '-Rp $formattedAmount',
+              isIncome ? '+$formattedAmount' : '-$formattedAmount',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.plusJakartaSans(

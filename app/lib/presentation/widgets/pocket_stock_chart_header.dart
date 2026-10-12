@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import '../../core/formatters/app_currency.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/peekable_balance_text.dart';
 
 class PocketStockChartHeader extends StatelessWidget {
   final double displayBalance;
@@ -16,12 +17,6 @@ class PocketStockChartHeader extends StatelessWidget {
   final String selectedFilter;
   final List<String> filters;
   final ValueChanged<String> onFilterChanged;
-
-  static final _currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
 
   const PocketStockChartHeader({
     super.key,
@@ -57,8 +52,8 @@ class PocketStockChartHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                _currencyFormatter.format(displayBalance),
+              PeekableBalanceText(
+                text: AppCurrency.of(context).format(displayBalance),
                 style: GoogleFonts.plusJakartaSans(
                   color: themeColor,
                   fontSize: 22,
@@ -66,7 +61,6 @@ class PocketStockChartHeader extends StatelessWidget {
                   letterSpacing: -0.5,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               if (scrubbedIndex != null)

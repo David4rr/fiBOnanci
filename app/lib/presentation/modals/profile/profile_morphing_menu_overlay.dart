@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
-import 'profile_delete_dialog.dart';
 import '../edit_profile_modal.dart';
 import '../financial_health_modal.dart';
 
@@ -16,6 +15,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
   final VoidCallback? onNewProfile;
   final VoidCallback? onHealthDetails;
   final VoidCallback? onFinancialReport;
+  final VoidCallback? onSettings;
   final VoidCallback onShareProfile;
 
   const ProfileMorphingMenuOverlay({
@@ -28,6 +28,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
     this.onNewProfile,
     this.onHealthDetails,
     this.onFinancialReport,
+    this.onSettings,
     required this.onShareProfile,
   });
 
@@ -102,6 +103,16 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
               onTap: () => onAction(onFinancialReport),
             ),
           ],
+          if (onSettings != null) ...[
+            const SizedBox(height: 8),
+            ProfileMorphingMenuItem(
+              key: const Key('profile_settings_button'),
+              icon: Icons.tune_rounded,
+              title: 'Pengaturan',
+              subtitle: 'Mata uang, kategori, & data lokal',
+              onTap: () => onAction(onSettings),
+            ),
+          ],
           const SizedBox(height: 8),
           ProfileMorphingMenuItem(
             icon: Icons.share_outlined,
@@ -109,17 +120,6 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
             subtitle: 'Bagikan kartu profil finansial',
             onTap: () => onAction(onShareProfile),
           ),
-          if (totalProfiles > 1) ...[
-            const SizedBox(height: 8),
-            ProfileMorphingMenuItem(
-              icon: Icons.delete_outline_rounded,
-              title: 'Hapus Profil',
-              subtitle: 'Hapus akun profil ini',
-              iconColor: AppColors.neoCoral,
-              titleColor: AppColors.neoCoral,
-              onTap: () => onAction(() => showProfileDeleteDialog(context, profile, totalProfiles)),
-            ),
-          ],
         ],
       ),
     );

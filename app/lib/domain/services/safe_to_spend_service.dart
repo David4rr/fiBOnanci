@@ -89,6 +89,7 @@ class SafeToSpendService {
     required List<SubscriptionEntry> subscriptions,
     Set<String>? selectedWalletIds,
     DateTime? referenceDate,
+    int cycleDay = 1,
   }) {
     final now = referenceDate ?? DateTime.now();
 
@@ -134,9 +135,20 @@ class SafeToSpendService {
     // 3. Compute Monthly Safe-to-Spend
     final safeToSpendMonthly = totalBalance - pendingBills;
 
-    // 4. Days remaining in current month
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
-    final daysRemaining = (lastDayOfMonth - now.day) + 1;
+    // 4. Days remaining in current budget cycle
+    final int daysRemaining;
+    if (cycleDay <= 1) {
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+      daysRemaining = (lastDayOfMonth - now.day) + 1;
+    } else {
+      final today = DateTime(now.year, now.month, now.day);
+      final curMax = DateTime(now.year, now.month + 1, 0).day;
+      final curCut = cycleDay > curMax ? curMax : cycleDay;
+      final nxtMax = DateTime(now.year, now.month + 2, 0).day;
+      final nxtCut = cycleDay > nxtMax ? nxtMax : cycleDay;
+      final nextCutoff = now.day < curCut ? DateTime(now.year, now.month, curCut) : DateTime(now.year, now.month + 1, nxtCut);
+      daysRemaining = nextCutoff.difference(today).inDays;
+    }
     final divisor = daysRemaining > 0 ? daysRemaining : 1;
 
     // 5. Compute Daily Safe-to-Spend Allowance

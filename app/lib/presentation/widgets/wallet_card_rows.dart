@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import 'common/peekable_balance_text.dart';
 import 'modernist_card_theme.dart';
 import 'wallet_card_atm_components.dart';
 
@@ -65,8 +66,10 @@ class WalletCardRows {
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
-            fmt.format(balance),
+          child: PeekableBalanceText(
+            text: fmt.format(balance),
+            mainAxisAlignment: MainAxisAlignment.end,
+            textAlign: TextAlign.right,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14.5,
               fontWeight: FontWeight.w800,
@@ -74,9 +77,6 @@ class WalletCardRows {
               letterSpacing: -0.5,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.right,
           ),
         ),
       ],
@@ -99,8 +99,8 @@ class WalletCardRows {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  fmt.format(balance),
+                child: PeekableBalanceText(
+                  text: fmt.format(balance),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 23,
                     fontWeight: FontWeight.w800,

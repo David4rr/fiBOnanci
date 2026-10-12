@@ -12,8 +12,7 @@ class ProfileMorphingMenu extends StatefulWidget {
   final int totalProfiles;
   final VoidCallback? onEditProfile;
   final VoidCallback? onNewProfile;
-  final VoidCallback? onHealthDetails;
-  final VoidCallback? onFinancialReport;
+  final VoidCallback? onHealthDetails, onFinancialReport, onSettings;
 
   const ProfileMorphingMenu({
     super.key,
@@ -23,6 +22,7 @@ class ProfileMorphingMenu extends StatefulWidget {
     this.onNewProfile,
     this.onHealthDetails,
     this.onFinancialReport,
+    this.onSettings,
   });
   @override
   State<ProfileMorphingMenu> createState() => _ProfileMorphingMenuState();
@@ -136,6 +136,7 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
                   onNewProfile: widget.onNewProfile,
                   onHealthDetails: widget.onHealthDetails,
                   onFinancialReport: widget.onFinancialReport,
+                  onSettings: widget.onSettings,
                   onShareProfile: _shareProfile,
                 ),
               ),

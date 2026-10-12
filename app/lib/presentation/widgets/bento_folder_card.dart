@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'folder_tab_card.dart';
+import 'common/peekable_balance_text.dart';
 
 /// Reusable Bento Folder Card with signature asymmetric folder tab clipping,
 /// circular icon badge, metric value, subtitle label, and optional progress bar.
@@ -26,6 +27,7 @@ class BentoFolderCard extends StatelessWidget {
   final Color? subtitleColor;
   final Color? iconColor;
   final Color? iconBgColor;
+  final bool? isBalanceHidden;
 
   const BentoFolderCard({
     super.key,
@@ -46,6 +48,7 @@ class BentoFolderCard extends StatelessWidget {
     this.subtitleColor,
     this.iconColor,
     this.iconBgColor,
+    this.isBalanceHidden,
   });
 
   @override
@@ -106,13 +109,12 @@ class BentoFolderCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
+              PeekableBalanceText(
+                text: title,
+                isHidden: isBalanceHidden,
                 style: AppTypography.cardMetricValue.copyWith(
                   color: primaryText,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Row(
