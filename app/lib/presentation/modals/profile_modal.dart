@@ -13,6 +13,7 @@ import 'profile/profile_edit_tab.dart';
 import 'profile/profile_general_data_card.dart';
 import 'profile/profile_card_carousel.dart';
 import 'profile/profile_header_card.dart';
+import 'report/financial_report_tab.dart';
 
 export 'health/financial_health_tab.dart';
 export 'profile/profile_actions.dart';
@@ -21,7 +22,7 @@ export 'profile/profile_card_carousel.dart';
 export 'profile/profile_header_card.dart';
 export 'profile/profile_menu_modal.dart';
 export 'profile/profile_morphing_menu.dart';
-
+export 'report/financial_report_tab.dart';
 class ProfileModal extends StatefulWidget {
   final int walletCount;
   final int txCount;
@@ -88,22 +89,24 @@ class _ProfileModalState extends State<ProfileModal> {
     super.dispose();
   }
 
-  void _goToEdit(ProfileEntry? target) {
-    setState(() { _editingProfile = target; _currentTab = 1; });
-    _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+  void _goToTab(int tab, [ProfileEntry? target]) {
+    setState(() { _editingProfile = target; _currentTab = tab; });
+    _pageController.animateToPage(tab, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
-  void _goToHealthDetails() {
-    setState(() { _currentTab = 2; _editingProfile = null; });
-    _pageController.animateToPage(2, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
-  }
-  void _goToSummary() {
-    setState(() { _currentTab = 0; _editingProfile = null; });
-    _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
-  }
+  void _goToSummary() => _goToTab(0);
 
-  String get _headerTitle => _currentTab == 1 ? (_editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru') : (_currentTab == 2 ? 'Audit Kesehatan Finansial' : 'Profil Pengguna');
-  String get _headerSubtitle => _currentTab == 1 ? (_editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat') : (_currentTab == 2 ? 'Berdasarkan rasio arus kas, aset, & tagihan riil' : 'Ringkasan identitas & performa finansial');
-
+  String get _headerTitle => switch (_currentTab) {
+    1 => _editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru',
+    2 => 'Audit Kesehatan Finansial',
+    3 => 'Laporan Keuangan',
+    _ => 'Profil Pengguna',
+  };
+  String get _headerSubtitle => switch (_currentTab) {
+    1 => _editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat',
+    2 => 'Berdasarkan rasio arus kas, aset, & tagihan riil',
+    3 => 'Analisis arus kas, kategori, & distribusi rekening',
+    _ => 'Ringkasan identitas & performa finansial',
+  };
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
@@ -162,23 +165,19 @@ class _ProfileModalState extends State<ProfileModal> {
                               currentProfileId: profile.id,
                               walletCount: state.wallets.length,
                               txCount: state.transactions.length,
-                              onEditProfile: () => _goToEdit(profile),
-                              onNewProfile: () => _goToEdit(null),
-                              onHealthDetails: _goToHealthDetails,
+                              onEditProfile: () => _goToTab(1, profile),
+                              onNewProfile: () => _goToTab(1),
+                              onHealthDetails: () => _goToTab(2),
+                              onFinancialReport: () => _goToTab(3),
                             ),
                             const SizedBox(height: 16),
                             ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
                             ProfileActions(profile: profile, profiles: profiles),
                           ],
                         ),
-                        ProfileEditTab(
-                          key: ValueKey(_editingProfile?.id ?? 'new_profile'),
-                          initialProfile: _editingProfile,
-                          onSaved: _goToSummary,
-                        ),
-                        FinancialHealthTab(
-                          report: state.healthReport,
-                        ),
+                        ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
+                        FinancialHealthTab(report: state.healthReport),
+                        FinancialReportTab(state: state),
                       ],
                     ),
                   ),

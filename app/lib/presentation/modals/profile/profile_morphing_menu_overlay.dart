@@ -15,6 +15,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
   final VoidCallback? onEditProfile;
   final VoidCallback? onNewProfile;
   final VoidCallback? onHealthDetails;
+  final VoidCallback? onFinancialReport;
   final VoidCallback onShareProfile;
 
   const ProfileMorphingMenuOverlay({
@@ -26,6 +27,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
     this.onEditProfile,
     this.onNewProfile,
     this.onHealthDetails,
+    this.onFinancialReport,
     required this.onShareProfile,
   });
 
@@ -90,6 +92,16 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
             subtitle: 'Audit komprehensif keuangan',
             onTap: () => onAction(onHealthDetails ?? () => FinancialHealthModal.show(context)),
           ),
+          if (onFinancialReport != null) ...[
+            const SizedBox(height: 8),
+            ProfileMorphingMenuItem(
+              key: const Key('profile_financial_report_button'),
+              icon: Icons.pie_chart_outline_rounded,
+              title: 'Laporan Keuangan',
+              subtitle: 'Ringkasan arus kas & kategori',
+              onTap: () => onAction(onFinancialReport),
+            ),
+          ],
           const SizedBox(height: 8),
           ProfileMorphingMenuItem(
             icon: Icons.share_outlined,

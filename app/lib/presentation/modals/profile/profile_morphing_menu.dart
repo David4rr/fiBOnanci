@@ -13,6 +13,7 @@ class ProfileMorphingMenu extends StatefulWidget {
   final VoidCallback? onEditProfile;
   final VoidCallback? onNewProfile;
   final VoidCallback? onHealthDetails;
+  final VoidCallback? onFinancialReport;
 
   const ProfileMorphingMenu({
     super.key,
@@ -21,8 +22,8 @@ class ProfileMorphingMenu extends StatefulWidget {
     this.onEditProfile,
     this.onNewProfile,
     this.onHealthDetails,
+    this.onFinancialReport,
   });
-
   @override
   State<ProfileMorphingMenu> createState() => _ProfileMorphingMenuState();
 }
@@ -134,6 +135,7 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
                   onEditProfile: widget.onEditProfile,
                   onNewProfile: widget.onNewProfile,
                   onHealthDetails: widget.onHealthDetails,
+                  onFinancialReport: widget.onFinancialReport,
                   onShareProfile: _shareProfile,
                 ),
               ),
@@ -141,6 +143,7 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
           ],
         ),
         child: GestureDetector(
+          key: const Key('profile_morphing_menu_trigger'),
           behavior: HitTestBehavior.opaque,
           onTap: () {
             HapticFeedback.selectionClick();

@@ -24,7 +24,7 @@ class ProfileHeaderCard extends StatelessWidget {
   final ProfileEntry profile;
   final int totalProfiles;
   final int? walletCount, txCount;
-  final VoidCallback? onEditProfile, onNewProfile, onHealthDetails;
+  final VoidCallback? onEditProfile, onNewProfile, onHealthDetails, onFinancialReport;
 
   const ProfileHeaderCard({
     super.key,
@@ -35,6 +35,7 @@ class ProfileHeaderCard extends StatelessWidget {
     this.onEditProfile,
     this.onNewProfile,
     this.onHealthDetails,
+    this.onFinancialReport,
   });
 
   @override
@@ -155,6 +156,7 @@ class ProfileHeaderCard extends StatelessWidget {
                 onEditProfile: onEditProfile,
                 onNewProfile: onNewProfile,
                 onHealthDetails: onHealthDetails,
+                onFinancialReport: onFinancialReport,
               ),
             ),
           ],
