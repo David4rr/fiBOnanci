@@ -58,7 +58,7 @@ class ProfileModal extends StatefulWidget {
 
 class _ProfileModalState extends State<ProfileModal> {
   late final PageController _pageController;
-  int _currentTab = 0;
+  int _currentTab = 0, _subTab = 4;
   ProfileEntry? _editingProfile;
   SettingsSubRoute? _settingsRoute;
   double _dragOffset = 0.0;
@@ -90,8 +90,11 @@ class _ProfileModalState extends State<ProfileModal> {
   }
 
   void _goToTab(int tab, [ProfileEntry? target]) {
-    setState(() { _editingProfile = target; _settingsRoute = null; _currentTab = tab; });
-    _pageController.animateToPage(tab, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+    setState(() {
+      if (tab != 0) _subTab = tab;
+      _editingProfile = target; _settingsRoute = null; _currentTab = tab;
+    });
+    _pageController.animateToPage(tab == 0 ? 0 : 1, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
   }
   void _goToSummary() => _goToTab(0);
 
@@ -124,7 +127,7 @@ class _ProfileModalState extends State<ProfileModal> {
     return BlocBuilder<FinanceBloc, FinanceState>(
       builder: (context, state) {
         final profile = state.profile;
-        final profiles = state.profiles;
+        final profiles = state.profiles.isNotEmpty ? state.profiles : [profile];
 
         return PopScope(
           canPop: _currentTab == 0,
@@ -174,10 +177,14 @@ class _ProfileModalState extends State<ProfileModal> {
                             ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
                           ],
                         ),
-                        ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
-                        FinancialHealthTab(report: state.healthReport),
-                        FinancialReportTab(state: state),
-                        ProfileSettingsTab(state: state, activeRoute: _settingsRoute, onNavigate: (route) => setState(() => _settingsRoute = route)),
+                        RepaintBoundary(
+                          child: switch (_subTab) {
+                            1 => ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
+                            2 => FinancialHealthTab(report: state.healthReport),
+                            3 => FinancialReportTab(state: state),
+                            _ => ProfileSettingsTab(state: state, activeRoute: _settingsRoute, onNavigate: (route) => setState(() => _settingsRoute = route)),
+                          },
+                        ),
                       ],
                     ),
                   ),

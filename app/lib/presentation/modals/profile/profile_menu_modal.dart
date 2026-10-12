@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../edit_profile_modal.dart';
 import '../financial_health_modal.dart';
+import 'profile_morphing_menu.dart';
 export 'profile_morphing_menu.dart';
-
 void showProfileMenuModal(BuildContext context, {
   required ProfileEntry profile,
   int totalProfiles = 1,
@@ -37,8 +35,7 @@ void showProfileMenuModal(BuildContext context, {
               onClose: () => Navigator.of(ctx).pop(),
             ),
             const SizedBox(height: 14),
-            _buildItem(
-              ctx,
+            ProfileMorphingMenuItem(
               icon: Icons.person_add_alt_1_outlined,
               title: 'New Profile',
               subtitle: 'Tambah akun profil baru di perangkat',
@@ -48,8 +45,7 @@ void showProfileMenuModal(BuildContext context, {
               },
             ),
             const SizedBox(height: 8),
-            _buildItem(
-              ctx,
+            ProfileMorphingMenuItem(
               icon: Icons.favorite_outline_rounded,
               title: 'Health Finance Details',
               subtitle: 'Audit komprehensif 4 pilar kesehatan keuangan',
@@ -59,8 +55,7 @@ void showProfileMenuModal(BuildContext context, {
               },
             ),
             const SizedBox(height: 8),
-            _buildItem(
-              ctx,
+            ProfileMorphingMenuItem(
               icon: Icons.share_outlined,
               title: 'Share Profile',
               subtitle: 'Bagikan kartu profil finansial',
@@ -68,77 +63,12 @@ void showProfileMenuModal(BuildContext context, {
                 Navigator.of(ctx).pop();
                 Clipboard.setData(ClipboardData(text: '${profile.fullName} (@${profile.username}) - fiBOnanci'));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Kartu profil berhasil disalin!'),
-                    duration: Duration(seconds: 2),
-                  ),
+                  const SnackBar(content: Text('Kartu profil berhasil disalin!'), duration: Duration(seconds: 2)),
                 );
               },
             ),
           ],
         ),
-      ),
-    ),
-  );
-}
-
-Widget _buildItem(
-  BuildContext context, {
-  required IconData icon,
-  required String title,
-  required String subtitle,
-  required VoidCallback onTap,
-  Color? iconColor,
-  Color? titleColor,
-}) {
-  return GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: (iconColor ?? AppColors.neoChartreuse).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor ?? AppColors.neoChartreuse, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: titleColor ?? Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 1.5),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 18),
-        ],
       ),
     ),
   );

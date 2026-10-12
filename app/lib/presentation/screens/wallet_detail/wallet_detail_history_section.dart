@@ -140,7 +140,16 @@ class WalletDetailHistorySection extends StatelessWidget {
         else
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => WalletDetailTransactionTile(tx: filteredTx[index], walletId: wallet.id, currencyFormatter: currencyFormatter, onEditTransaction: onEditTransaction),
+              (context, index) {
+                final tx = filteredTx[index];
+                return WalletDetailTransactionTile(
+                  key: ValueKey(tx.id),
+                  tx: tx,
+                  walletId: wallet.id,
+                  currencyFormatter: currencyFormatter,
+                  onEditTransaction: onEditTransaction,
+                );
+              },
               childCount: filteredTx.length,
             ),
           ),

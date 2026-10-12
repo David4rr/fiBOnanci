@@ -4,6 +4,9 @@ import '../theme/app_colors.dart';
 
 /// Concept 2: Interactive 3D Tilt & Slingshot (Physics & Gesture Toy).
 class AddActionButton extends StatefulWidget {
+  static final GlobalKey buttonKey = GlobalKey();
+  static final ValueNotifier<bool> isMenuOpen = ValueNotifier<bool>(false);
+
   final VoidCallback onPressed;
   final VoidCallback? onLongPress;
 
@@ -57,15 +60,27 @@ class _AddActionButtonState extends State<AddActionButton>
       _isPressed = false;
       _slingshotStart = _tiltOffset;
     });
-    _controller.forward(from: 0.0);
     HapticFeedback.mediumImpact();
     widget.onPressed();
+    if (!AddActionButton.isMenuOpen.value) {
+      _controller.forward(from: 0.0);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return ValueListenableBuilder<bool>(
+      valueListenable: AddActionButton.isMenuOpen,
+      builder: (context, menuOpen, child) {
+        return SizedBox(
+          key: AddActionButton.buttonKey,
+          width: 56,
+          height: 56,
+          child: menuOpen ? const SizedBox.shrink() : child,
+        );
+      },
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
       onPanDown: (details) {
         setState(() => _isPressed = true);
         _handlePointer(details.localPosition);
@@ -167,6 +182,7 @@ class _AddActionButtonState extends State<AddActionButton>
             ),
           );
         },
+        ),
       ),
     );
   }

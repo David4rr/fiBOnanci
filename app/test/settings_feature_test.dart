@@ -146,11 +146,14 @@ void main() {
       expect(bloc.state.budgetCycleDay, 18);
       await tester.tap(find.byIcon(Icons.keyboard_arrow_left_rounded));
       await tester.pumpAndSettle();
-      // 5. Toggle Privacy Balance Masking on Pengaturan root menu
+      // 5. Toggle Privacy Balance Masking & 120Hz Refresh Rate on Pengaturan root menu
       await tester.tap(find.byKey(const Key('settings_privacy_switch')));
       await tester.pumpAndSettle();
       expect(bloc.state.isBalanceHidden, isTrue);
-
+      expect(bloc.state.isHighRefreshRate, isTrue);
+      await tester.tap(find.byKey(const Key('settings_refresh_rate_switch')));
+      await tester.pumpAndSettle();
+      expect(bloc.state.isHighRefreshRate, isFalse);
       // 6. Tap Kategori Transaksi menu row -> opens sub-route & add category
       final initialCatCount = bloc.state.categories.length;
       await tester.tap(find.byKey(const Key('settings_category_menu_row')));

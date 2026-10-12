@@ -42,6 +42,11 @@ extension SettingsBlocHandlers on FinanceBloc {
     emit(state.copyWith(isBalanceHidden: nextHidden));
   }
 
+  void handleSetHighRefreshRate(SetHighRefreshRateEvent event, Emitter<FinanceState> emit) {
+    NotificationBridge.setHighRefreshRate(event.enabled);
+    emit(state.copyWith(isHighRefreshRate: event.enabled));
+  }
+
   void handleSetExchangeRate(
     SetExchangeRateEvent event,
     Emitter<FinanceState> emit,

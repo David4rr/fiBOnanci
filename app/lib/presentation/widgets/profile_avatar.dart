@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
 class AvatarPreset {
@@ -23,10 +22,10 @@ class ProfileAvatarPresets {
   static const List<AvatarPreset> presets = [
     AvatarPreset(
       id: 'preset:avatar_1',
-      label: 'Tech',
-      icon: Icons.terminal_rounded,
-      color: AppColors.neoMint,
-      bgTint: Color(0xFF142B1F),
+      label: 'Default',
+      icon: Icons.person_rounded,
+      color: AppColors.neoChartreuse,
+      bgTint: Color(0xFF1E212D),
     ),
     AvatarPreset(
       id: 'preset:avatar_2',
@@ -141,27 +140,23 @@ class ProfileAvatar extends StatelessWidget {
       );
     }
 
-    // 3. Fallback: initials or default person icon
-    final cleanName = name.trim();
-    final initials = cleanName.isNotEmpty
-        ? cleanName.substring(0, cleanName.length >= 2 ? 2 : 1).toUpperCase()
-        : 'FI';
-
+    // 3. Fallback: default person icon
     return Container(
       width: size,
       height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFF1E212D),
-          border: border ?? Border.all(color: AppColors.canvasBorder, width: 1.5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFF1E212D),
+        border: border ?? Border.all(color: AppColors.canvasBorder, width: 1.5),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.person_rounded,
+          color: AppColors.neoChartreuse,
+          size: iconSize,
         ),
-        child: Center(
-          child: Text(
-            initials,
-            style: GoogleFonts.plusJakartaSans(color: AppColors.neoChartreuse, fontWeight: FontWeight.w700, fontSize: size * 0.38),
-          ),
-        ),
-      );
+      ),
+    );
     }
   }
 

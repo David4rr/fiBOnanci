@@ -59,6 +59,7 @@ extension WalletAndPocketMutations on AppDatabase {
                     ? 'Setoran ke Kantong ${pocket.name}'
                     : 'Penarikan dari Kantong ${pocket.name}'),
           ),
+          externalRef: Value('pocket_${pocket.id}'),
           transactionDate: Value(now),
           createdAt: Value(now),
           updatedAt: Value(now),
@@ -68,11 +69,12 @@ extension WalletAndPocketMutations on AppDatabase {
     });
   }
 
-  Future<void> markSubscriptionAsPaid(String subscriptionId) {
+  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount}) {
     return transaction(() async {
       final sub = await (select(subscriptions)..where((t) => t.id.equals(subscriptionId))).getSingle();
       final now = DateTime.now().toUtc();
       const uuid = Uuid();
+      final effectiveCost = (actualAmount != null && actualAmount >= 0) ? actualAmount : sub.cost;
 
       final isInstallment = sub.isInstallment;
       final newPaidCycles = sub.paidCycles + 1;
@@ -89,9 +91,12 @@ extension WalletAndPocketMutations on AppDatabase {
         ),
       );
 
-      final txNotes = isInstallment && sub.totalCycles != null
+      final baseNote = isInstallment && sub.totalCycles != null
           ? 'Pembayaran Cicilan ($newPaidCycles/${sub.totalCycles}): ${sub.title}'
           : 'Pembayaran Tagihan: ${sub.title}';
+      final txNotes = (effectiveCost - sub.cost).abs() > 0.01
+          ? '$baseNote (Diskon/Penyesuaian dari ${sub.cost.toInt()})'
+          : baseNote;
 
       await logTransactionWithBalanceMutation(
         tx: TransactionsCompanion(
@@ -99,7 +104,7 @@ extension WalletAndPocketMutations on AppDatabase {
           profileId: Value(sub.profileId),
           walletId: Value(sub.walletId),
           categoryId: Value(sub.categoryId),
-          amount: Value(sub.cost),
+          amount: Value(effectiveCost),
           type: const Value('expense'),
           notes: Value(txNotes),
           transactionDate: Value(now),

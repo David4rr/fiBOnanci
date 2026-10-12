@@ -126,6 +126,30 @@ void main() {
       expect(profiles.first.username, 'David');
       expect(profiles.first.isActive, isTrue); // David automatically reactivated
     });
+
+    test('Resetting the only profile restores active default profile and wipes all financial data', () async {
+      final initialProfiles = await repo.getProfiles();
+      expect(initialProfiles.length, 1);
+      final soleId = initialProfiles.first.id;
+
+      final initialWallets = await repo.getWallets(profileId: soleId);
+      expect(initialWallets, isNotEmpty);
+
+      await repo.deleteProfile(soleId);
+
+      final profilesAfterReset = await repo.getProfiles();
+      expect(profilesAfterReset.length, 1);
+      expect(profilesAfterReset.first.id, 'default_profile_1');
+      expect(profilesAfterReset.first.isActive, isTrue);
+      expect(profilesAfterReset.first.isDeleted, isFalse);
+
+      final walletsAfterReset = await repo.getWallets(profileId: 'default_profile_1');
+      final txAfterReset = await repo.getTransactions(profileId: 'default_profile_1');
+      final pocketsAfterReset = await repo.getPockets(profileId: 'default_profile_1');
+      expect(walletsAfterReset, isEmpty);
+      expect(txAfterReset, isEmpty);
+      expect(pocketsAfterReset, isEmpty);
+    });
   });
 
   group('Profile BLoC Reactive State Tests', () {

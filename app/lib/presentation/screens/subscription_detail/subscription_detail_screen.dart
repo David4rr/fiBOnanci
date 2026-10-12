@@ -30,7 +30,7 @@ class SubscriptionDetailScreen extends StatefulWidget {
     required this.subscriptionId,
     required this.initialWallet,
     this.indexOverride,
-    this.initialChildSize = 0.94,
+    this.initialChildSize = 1.0,
   });
 
   static Future<void> show(
@@ -38,7 +38,7 @@ class SubscriptionDetailScreen extends StatefulWidget {
     required SubscriptionEntry subscription,
     required WalletEntry wallet,
     int? indexOverride,
-    double initialChildSize = 0.94,
+    double initialChildSize = 1.0,
   }) {
     return SubscriptionDetailModalRoute.show(
       context,

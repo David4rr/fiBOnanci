@@ -103,8 +103,8 @@ class FolderTabCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: ClipPath(
@@ -112,14 +112,11 @@ class FolderTabCard extends StatelessWidget {
         child: Container(
           width: width,
           height: height,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            gradient: gradient,
-          ),
+          decoration: BoxDecoration(color: backgroundColor, gradient: gradient),
           padding: padding,
           child: child,
         ),
       ),
-    );
-  }
+    ),
+  );
 }

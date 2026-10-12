@@ -38,4 +38,7 @@ class AppColors {
   static const Color statusComfortable = neoChartreuse;
   static const Color statusCaution = Color(0xFFF59E0B);
   static const Color statusDeficit = Color(0xFFEF4444);
+
+  static Color fromHex(String hex) =>
+      Color(int.tryParse(hex.replaceAll('#', '0xFF')) ?? 0xFFD4F442);
 }

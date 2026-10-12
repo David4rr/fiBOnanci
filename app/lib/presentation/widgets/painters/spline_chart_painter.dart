@@ -59,17 +59,11 @@ class SplineChartPainter extends CustomPainter {
     final expPoints = _calcPoints(exp, n, dx, 0.0, maxVal, topPad, plotH, size.width);
 
     if (touchedIndex != null && touchedIndex! < n) {
-      final scrubX = incPoints[touchedIndex!].dx;
-      canvas.drawLine(
-        Offset(scrubX, 0),
-        Offset(scrubX, chartHeight),
-        Paint()..color = AppColors.canvasBorder..strokeWidth = 1.2..style = PaintingStyle.stroke,
-      );
+      SplineCanvasHelper.drawScrubLine(canvas, incPoints[touchedIndex!].dx, chartHeight);
     }
-
-    _drawSplineCurve(canvas, incPoints, chartHeight, AppColors.neoMint, withGradient: true, activeIndex: touchedIndex);
-    _drawSplineCurve(canvas, expPoints, chartHeight, AppColors.neoCoral, withGradient: false, activeIndex: touchedIndex);
-    _drawLabels(canvas, size, incPoints, bottomLabelHeight);
+    SplineCanvasHelper.drawSplineCurve(canvas, incPoints, chartHeight, AppColors.neoMint, progress: progress, withGradient: true, withGlow: true, activeIndex: touchedIndex, centerDotColor: AppColors.canvasCardSurface);
+    SplineCanvasHelper.drawSplineCurve(canvas, expPoints, chartHeight, AppColors.neoCoral, progress: progress, withGradient: false, withGlow: true, activeIndex: touchedIndex, centerDotColor: AppColors.canvasCardSurface);
+    SplineCanvasHelper.drawBottomLabels(canvas, size, incPoints, labels, bottomLabelHeight, topOffset: 6);
   }
 
   void _paintSingle(Canvas canvas, Size size, double chartHeight, double bottomLabelHeight, List<double> vals, Color color) {
@@ -85,16 +79,10 @@ class SplineChartPainter extends CustomPainter {
     final points = _calcPoints(vals, n, dx, minVal, maxVal, topPad, plotH, size.width);
 
     if (touchedIndex != null && touchedIndex! < n) {
-      final scrubX = points[touchedIndex!].dx;
-      canvas.drawLine(
-        Offset(scrubX, 0),
-        Offset(scrubX, chartHeight),
-        Paint()..color = AppColors.canvasBorder..strokeWidth = 1.2..style = PaintingStyle.stroke,
-      );
+      SplineCanvasHelper.drawScrubLine(canvas, points[touchedIndex!].dx, chartHeight);
     }
-
-    _drawSplineCurve(canvas, points, chartHeight, color, withGradient: true, activeIndex: touchedIndex);
-    _drawLabels(canvas, size, points, bottomLabelHeight);
+    SplineCanvasHelper.drawSplineCurve(canvas, points, chartHeight, color, progress: progress, withGradient: true, withGlow: true, activeIndex: touchedIndex, centerDotColor: AppColors.canvasCardSurface);
+    SplineCanvasHelper.drawBottomLabels(canvas, size, points, labels, bottomLabelHeight, topOffset: 6);
   }
 
   List<Offset> _calcPoints(List<double> vals, int n, double dx, double minVal, double maxVal, double topPad, double plotH, double totalWidth) {
@@ -112,83 +100,71 @@ class SplineChartPainter extends CustomPainter {
     return points;
   }
 
-  void _drawSplineCurve(Canvas canvas, List<Offset> points, double chartHeight, Color color, {required bool withGradient, int? activeIndex}) {
+  @override
+  bool shouldRepaint(covariant SplineChartPainter oldDelegate) =>
+      oldDelegate.values != values ||
+      oldDelegate.incomeValues != incomeValues ||
+      oldDelegate.expenseValues != expenseValues ||
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.labels != labels ||
+      oldDelegate.touchedIndex != touchedIndex ||
+      oldDelegate.progress != progress;
+}
+
+class SplineCanvasHelper {
+  SplineCanvasHelper._();
+
+  static const _labelStyle = TextStyle(color: AppColors.textMuted, fontSize: 9.2, fontWeight: FontWeight.w600);
+  static final _scrubPaint = Paint()..color = AppColors.canvasBorder..strokeWidth = 1.1..style = PaintingStyle.stroke;
+
+  static void drawScrubLine(Canvas canvas, double x, double chartHeight) {
+    canvas.drawLine(Offset(x, 0), Offset(x, chartHeight), _scrubPaint);
+  }
+
+  static void drawSplineCurve(
+    Canvas canvas, List<Offset> points, double chartHeight, Color color, {
+    required double progress, bool withGradient = true, bool withGlow = false,
+    int? activeIndex, Color centerDotColor = Colors.white,
+  }) {
     if (points.isEmpty) return;
-
-    final path = Path();
-    final fillPath = Path();
-
-    path.moveTo(points[0].dx, points[0].dy);
-    fillPath.moveTo(points[0].dx, chartHeight);
-    fillPath.lineTo(points[0].dx, points[0].dy);
-
+    final path = Path()..moveTo(points[0].dx, points[0].dy);
+    final fillPath = Path()..moveTo(points[0].dx, chartHeight)..lineTo(points[0].dx, points[0].dy);
     for (int i = 0; i < points.length - 1; i++) {
-      final p0 = points[i];
-      final p1 = points[i + 1];
-      final controlX = (p0.dx + p1.dx) / 2;
-      path.cubicTo(controlX, p0.dy, controlX, p1.dy, p1.dx, p1.dy);
-      fillPath.cubicTo(controlX, p0.dy, controlX, p1.dy, p1.dx, p1.dy);
+      final p0 = points[i], p1 = points[i + 1];
+      final cx = (p0.dx + p1.dx) / 2;
+      path.cubicTo(cx, p0.dy, cx, p1.dy, p1.dx, p1.dy);
+      fillPath.cubicTo(cx, p0.dy, cx, p1.dy, p1.dx, p1.dy);
     }
-
-    fillPath.lineTo(points.last.dx, chartHeight);
-    fillPath.close();
-
+    fillPath..lineTo(points.last.dx, chartHeight)..close();
     if (withGradient) {
-      final gradient = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withValues(alpha: 0.22 * progress), color.withValues(alpha: 0.01)],
+      final grad = LinearGradient(
+        begin: Alignment.topCenter, end: Alignment.bottomCenter,
+        colors: [color.withValues(alpha: 0.23 * progress), color.withValues(alpha: 0.01)],
       );
-      final fillPaint = Paint()
-        ..shader = gradient.createShader(Rect.fromLTWH(0, 0, points.last.dx, chartHeight))
-        ..style = PaintingStyle.fill;
-      canvas.drawPath(fillPath, fillPaint);
+      canvas.drawPath(fillPath, Paint()..shader = grad.createShader(Rect.fromLTWH(0, 0, points.last.dx, chartHeight)));
     }
-
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(path, glowPaint);
-
-    final linePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(path, linePaint);
-
-    final highlightIdx = activeIndex ?? (points.length - 1);
-    if (highlightIdx < points.length) {
-      final targetPt = points[highlightIdx];
-      canvas.drawCircle(targetPt, 7.0, Paint()..color = color.withValues(alpha: 0.25));
-      canvas.drawCircle(targetPt, 4.0, Paint()..color = color);
-      canvas.drawCircle(targetPt, 1.8, Paint()..color = AppColors.canvasCardSurface);
+    if (withGlow) {
+      canvas.drawPath(path, Paint()..color = color.withValues(alpha: 0.25)..style = PaintingStyle.stroke..strokeWidth = 3.5..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round);
+    }
+    canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 2.1..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round);
+    final idx = activeIndex ?? (points.length - 1);
+    if (idx < points.length) {
+      final pt = points[idx];
+      canvas.drawCircle(pt, 6.5, Paint()..color = color.withValues(alpha: 0.30));
+      canvas.drawCircle(pt, 3.6, Paint()..color = color);
+      canvas.drawCircle(pt, 1.6, Paint()..color = centerDotColor);
     }
   }
 
-  void _drawLabels(Canvas canvas, Size size, List<Offset> points, double bottomLabelHeight) {
-    const labelStyle = TextStyle(color: AppColors.textMuted, fontSize: 9.5, fontWeight: FontWeight.w600);
+  static void drawBottomLabels(Canvas canvas, Size size, List<Offset> points, List<String> labels, double labelHeight, {double topOffset = 2}) {
+    if (labels.isEmpty) return;
+    final tp = TextPainter(textDirection: TextDirection.ltr);
     for (int i = 0; i < labels.length && i < points.length; i++) {
       if (labels[i].isEmpty) continue;
-      final textSpan = TextSpan(text: labels[i], style: labelStyle);
-      final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr)..layout();
-      final x = (points[i].dx - (textPainter.width / 2)).clamp(0.0, size.width - textPainter.width);
-      textPainter.paint(canvas, Offset(x, size.height - bottomLabelHeight + 6));
+      tp.text = TextSpan(text: labels[i], style: _labelStyle);
+      tp.layout();
+      final x = (points[i].dx - tp.width / 2).clamp(0.0, size.width - tp.width);
+      tp.paint(canvas, Offset(x, size.height - labelHeight + topOffset));
     }
-  }
-
-  @override
-  bool shouldRepaint(covariant SplineChartPainter oldDelegate) {
-    return oldDelegate.values != values ||
-        oldDelegate.incomeValues != incomeValues ||
-        oldDelegate.expenseValues != expenseValues ||
-        oldDelegate.lineColor != lineColor ||
-        oldDelegate.labels != labels ||
-        oldDelegate.touchedIndex != touchedIndex ||
-        oldDelegate.progress != progress;
   }
 }

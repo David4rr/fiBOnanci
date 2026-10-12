@@ -19,45 +19,59 @@ mixin DriftPocketRepository on DriftRepoBase {
     String? notes,
     String? profileId,
   }) async {
-    final now = DateTime.now().toUtc();
-    final pocketId = uuid.v4();
-    final effProfileId = profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
-    await db.createPocket(
-      PocketsCompanion(
-        id: drift.Value(pocketId),
-        profileId: drift.Value(effProfileId),
-        name: drift.Value(name),
-        type: drift.Value(type),
-        targetAmount: drift.Value(targetAmount),
-        currentAmount: drift.Value(initialAmount),
-        colorHex: drift.Value(colorHex),
-        iconName: drift.Value(iconName),
-        targetDate: drift.Value(targetDate),
-        linkedWalletId: drift.Value(linkedWalletId),
-        notes: drift.Value(notes),
-        createdAt: drift.Value(now),
-        updatedAt: drift.Value(now),
-      ),
-    );
-
-    if (initialAmount > 0) {
+    return db.transaction(() async {
+      final now = DateTime.now().toUtc();
+      final pocketId = uuid.v4();
+      final effProfileId = profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
       String? effectiveWalletId = linkedWalletId;
-      if (effectiveWalletId == null) {
-        final existingWallets = await (db.select(db.wallets)..where((t) => t.isDeleted.equals(false))).get();
+      if (initialAmount > 0 && effectiveWalletId == null) {
+        final existingWallets = await (db.select(db.wallets)
+              ..where((t) => t.isDeleted.equals(false) & db.profileFilter(t.profileId, effProfileId)))
+            .get();
         if (existingWallets.isNotEmpty) {
           effectiveWalletId = existingWallets.first.id;
         }
       }
 
-      if (effectiveWalletId != null) {
+      await db.createPocket(
+        PocketsCompanion(
+          id: drift.Value(pocketId),
+          profileId: drift.Value(effProfileId),
+          name: drift.Value(name),
+          type: drift.Value(type),
+          targetAmount: drift.Value(targetAmount),
+          currentAmount: drift.Value(initialAmount),
+          colorHex: drift.Value(colorHex),
+          iconName: drift.Value(iconName),
+          targetDate: drift.Value(targetDate),
+          linkedWalletId: drift.Value(effectiveWalletId),
+          notes: drift.Value(notes),
+          createdAt: drift.Value(now),
+          updatedAt: drift.Value(now),
+        ),
+      );
+
+      if (initialAmount > 0 && effectiveWalletId != null) {
+        final sourceWallet = await (db.select(db.wallets)..where((t) => t.id.equals(effectiveWalletId!))).getSingleOrNull();
+        if (sourceWallet != null) {
+          await (db.update(db.wallets)..where((t) => t.id.equals(sourceWallet.id))).write(
+            WalletsCompanion(
+              balance: drift.Value(sourceWallet.balance - initialAmount),
+              updatedAt: drift.Value(now),
+              isSynced: const drift.Value(false),
+            ),
+          );
+        }
         await db.into(db.transactions).insert(
           TransactionsCompanion(
             id: drift.Value(uuid.v4()),
+            profileId: drift.Value(effProfileId),
             walletId: drift.Value(effectiveWalletId),
             categoryId: const drift.Value('11111111-1111-4111-8111-111111111111'),
             amount: drift.Value(initialAmount),
             type: const drift.Value('transfer'),
             notes: drift.Value('Setoran ke Kantong $name (Awal)'),
+            externalRef: drift.Value('pocket_$pocketId'),
             transactionDate: drift.Value(now),
             createdAt: drift.Value(now),
             updatedAt: drift.Value(now),
@@ -65,7 +79,7 @@ mixin DriftPocketRepository on DriftRepoBase {
           ),
         );
       }
-    }
+    });
   }
 
   Future<void> updatePocket({

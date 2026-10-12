@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
+import '../../widgets/bento_folder_card.dart';
+import '../../widgets/pocket_card_theme.dart';
 import 'pocket_transfer_dialog.dart';
-
 export 'pocket_delete_dialog.dart';
 IconData getPocketIcon(String type) => switch (type) {
   'savings' => Icons.savings_outlined,
@@ -25,59 +25,95 @@ String getPocketTypeLabel(String type) => switch (type) {
 class PocketDetailHeader extends StatelessWidget {
   final PocketEntry pocket;
   final Color pocketColor;
+  final PocketCardThemeConfig? themeConfig;
   final NumberFormat currencyFormatter;
 
   const PocketDetailHeader({
     super.key,
     required this.pocket,
     required this.pocketColor,
+    this.themeConfig,
     required this.currencyFormatter,
   });
 
   @override
   Widget build(BuildContext context) {
+    final config = themeConfig ?? PocketCardThemeConfig.resolve(pocket, 0);
     final double? target = pocket.targetAmount;
     final latestCurrent = pocket.currentAmount;
-    final latestProgress = (target != null && target > 0) ? (latestCurrent / target).clamp(0.0, 1.0) : 1.0;
+    final hasTarget = target != null && target > 0;
+    final latestProgress = hasTarget ? (latestCurrent / target).clamp(0.0, 1.0) : null;
 
-    return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.canvasInputSearch,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.canvasBorder),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Total Terkumpul di Kantong', style: AppTypography.listSubtitle),
-              const SizedBox(height: 6),
-              Text(
-                currencyFormatter.format(latestCurrent),
-                style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textWhite, fontFeatures: const [FontFeature.tabularFigures()]),
-              ),
-              if (target != null && target > 0) ...[
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Target: ${currencyFormatter.format(target)}', style: AppTypography.listSubtitle),
-                    Text('${(latestProgress * 100).toStringAsFixed(0)}%', style: TextStyle(color: pocketColor, fontWeight: FontWeight.w800, fontSize: 13)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: latestProgress,
-                    minHeight: 8,
-                    backgroundColor: Colors.white.withValues(alpha: 0.08),
-                    valueColor: AlwaysStoppedAnimation<Color>(pocketColor),
+    return Hero(
+      tag: 'pocket_card_${pocket.id}',
+      flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+        final Hero toHero = toHeroContext.widget as Hero;
+        return Material(
+          color: Colors.transparent,
+          child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: toHero.child),
+        );
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: BentoFolderCard(
+          backgroundColor: config.backgroundColor,
+          gradient: null,
+          textColor: config.primaryTextColor,
+          subtitleColor: config.secondaryTextColor,
+          iconColor: config.iconColor,
+          iconBgColor: config.iconBgColor,
+          height: 172,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          iconData: getPocketIcon(pocket.type),
+          topTrailing: hasTarget
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: config.iconBgColor,
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Text(
+                    '${(latestProgress! * 100).toStringAsFixed(0)}%',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: config.primaryTextColor,
+                    ),
+                  ),
+                )
+              : null,
+          title: currencyFormatter.format(latestCurrent),
+          subtitleWidget: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pocket.name,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: config.secondaryTextColor,
+                  letterSpacing: -0.2,
                 ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                hasTarget ? 'Target: ${currencyFormatter.format(target)}' : 'Total Terkumpul di Kantong',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: config.tertiaryTextColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
+          progress: latestProgress,
+        ),
+      ),
     );
   }
 }

@@ -37,7 +37,7 @@ class AddPocketModal {
             return StatefulBuilder(
               builder: (modalContext, setModalState) {
                 final currentType = kPocketTypes.firstWhere((t) => t['id'] == selectedType, orElse: () => kPocketTypes.first);
-                final Color activeColor = Color(int.parse((currentType['color'] as String).replaceAll('#', '0xFF')));
+                final Color activeColor = AppColors.fromHex(currentType['color'] as String);
 
                 return Padding(
                   padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(ctx).viewInsets.bottom),

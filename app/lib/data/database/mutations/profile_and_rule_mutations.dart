@@ -11,33 +11,30 @@ extension ProfileAndRuleMutations on AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      await (update(wallets)..where((t) => t.profileId.equals(profileId))).write(
-        WalletsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
-      );
-      await (update(transactions)..where((t) => t.profileId.equals(profileId))).write(
-        TransactionsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
-      );
-      await (update(subscriptions)..where((t) => t.profileId.equals(profileId))).write(
-        SubscriptionsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
-      );
-      await (update(pockets)..where((t) => t.profileId.equals(profileId))).write(
-        PocketsCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
-      );
-      await (update(notificationRules)..where((t) => t.profileId.equals(profileId))).write(
-        NotificationRulesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
-      );
       final remaining = await (select(profiles)
             ..where((t) => t.isDeleted.equals(false))
             ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
           .get();
+      final wipeAll = remaining.isEmpty;
+      await (update(wallets)..where((t) => wipeAll ? t.isDeleted.equals(false) : profileFilter(t.profileId, profileId))).write(
+        WalletsCompanion(balance: const Value(0.0), isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      await (update(transactions)..where((t) => wipeAll ? t.isDeleted.equals(false) : profileFilter(t.profileId, profileId))).write(
+        TransactionsCompanion(isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      await (update(subscriptions)..where((t) => wipeAll ? t.isDeleted.equals(false) : profileFilter(t.profileId, profileId))).write(
+        SubscriptionsCompanion(isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      await (update(pockets)..where((t) => wipeAll ? t.isDeleted.equals(false) : profileFilter(t.profileId, profileId))).write(
+        PocketsCompanion(currentAmount: const Value(0.0), isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      await (update(notificationRules)..where((t) => wipeAll ? t.isDeleted.equals(false) : profileFilter(t.profileId, profileId))).write(
+        NotificationRulesCompanion(isEnabled: const Value(false), isDeleted: const Value(true), updatedAt: Value(now), isSynced: const Value(false)),
+      );
       if (remaining.isNotEmpty) {
-        final hasActive = remaining.any((p) => p.isActive);
-        if (!hasActive) {
+        if (!remaining.any((p) => p.isActive)) {
           await (update(profiles)..where((t) => t.id.equals(remaining.first.id))).write(
-            ProfilesCompanion(
-              isActive: const Value(true),
-              updatedAt: Value(now),
-            ),
+            ProfilesCompanion(isActive: const Value(true), updatedAt: Value(now)),
           );
         }
       } else {
@@ -149,11 +146,10 @@ extension ProfileAndRuleMutations on AppDatabase {
         ),
       );
       await (update(wallets)..where((t) => profileFilter(t.profileId, profileId) & t.isDeleted.equals(false))).write(
-        WalletsCompanion(
-          balance: const Value(0.0),
-          updatedAt: Value(now),
-          isSynced: const Value(false),
-        ),
+        WalletsCompanion(balance: const Value(0.0), updatedAt: Value(now), isSynced: const Value(false)),
+      );
+      await (update(pockets)..where((t) => profileFilter(t.profileId, profileId) & t.isDeleted.equals(false))).write(
+        PocketsCompanion(currentAmount: const Value(0.0), updatedAt: Value(now), isSynced: const Value(false)),
       );
     });
   }

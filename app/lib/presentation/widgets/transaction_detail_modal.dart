@@ -50,6 +50,9 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   late String _categoryId;
   String? _destinationWalletId;
 
+  bool get _isPocketTx =>
+      (widget.transaction.externalRef?.startsWith('pocket_') ?? false) ||
+      (widget.transaction.notes?.contains('Kantong ') ?? false);
   @override
   void initState() {
     super.initState();
@@ -71,7 +74,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
   void _saveChanges(BuildContext context) {
     final newAmount = AppCurrency.parseInputOf(context, _amountController.text);
     if (newAmount <= 0) return;
-    if (_type == 'transfer' && _walletId == _destinationWalletId) {
+    if (_type == 'transfer' && !_isPocketTx && (_destinationWalletId == null || _destinationWalletId == _walletId)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rekening asal dan tujuan tidak boleh sama!')));
       return;
     }
@@ -82,7 +85,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
       newNotes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
       newType: _type,
       newWalletId: _walletId,
-      newDestinationWalletId: _type == 'transfer' ? _destinationWalletId : null,
+      newDestinationWalletId: (_type == 'transfer' && !_isPocketTx) ? _destinationWalletId : null,
     ));
     if (widget.onSaved != null) {
       widget.onSaved!();
@@ -102,8 +105,9 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
     final categories = state.categories;
 
     _walletId = wallets.any((w) => w.id == _walletId) ? _walletId : (wallets.isNotEmpty ? wallets.first.id : '');
-    if (_destinationWalletId == null && wallets.length > 1) {
-      _destinationWalletId = wallets.firstWhere((w) => w.id != _walletId, orElse: () => wallets.last).id;
+    final destWallets = wallets.where((w) => w.id != _walletId).toList();
+    if (!_isPocketTx && (_destinationWalletId == null || !destWallets.any((w) => w.id == _destinationWalletId))) {
+      _destinationWalletId = destWallets.isNotEmpty ? destWallets.first.id : null;
     }
     final matchingCats = categories.where((c) => c.type == _type).toList();
     if (_type != 'transfer' && !matchingCats.any((c) => c.id == _categoryId)) {
@@ -148,12 +152,12 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
             Text('REKENING PENYIMPANAN', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 6),
             TransactionDetailComponents.buildWalletDropdown(wallets: wallets, selectedId: _walletId, onChanged: (v) => setState(() => _walletId = v!)),
-            if (_type == 'transfer') ...[
+            if (_type == 'transfer' && !_isPocketTx) ...[
               const SizedBox(height: 12),
               Text('Rekening Tujuan', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
               const SizedBox(height: 6),
-              TransactionDetailComponents.buildWalletDropdown(wallets: wallets.where((w) => w.id != _walletId).toList(), selectedId: _destinationWalletId, onChanged: (v) => setState(() => _destinationWalletId = v)),
-            ] else ...[
+              TransactionDetailComponents.buildWalletDropdown(wallets: destWallets, selectedId: _destinationWalletId, onChanged: (v) => setState(() => _destinationWalletId = v)),
+            ] else if (_type != 'transfer') ...[
               const SizedBox(height: 12),
               Text('Kategori', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
               const SizedBox(height: 6),
@@ -168,24 +172,13 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
               ),
             ],
             const SizedBox(height: 12),
-            AppTextField(
-              controller: _notesController,
-              hintText: 'Catatan (Opsional)',
-            ),
+            AppTextField(controller: _notesController, hintText: 'Catatan (Opsional)'),
             const SizedBox(height: 24),
-            TransactionDetailComponents.buildActionButtons(
-              context: context,
-              onSave: () => _saveChanges(context),
-              onCancel: widget.onClose,
-            ),
+            TransactionDetailComponents.buildActionButtons(context: context, onSave: () => _saveChanges(context), onCancel: widget.onClose),
             const SizedBox(height: 14),
             SlideToDeleteButton(
               label: 'Hapus Transaksi',
-              onSlideComplete: () => TransactionDetailComponents.executeDelete(
-                context,
-                widget.transaction.id,
-                onDeleted: widget.onDeleted,
-              ),
+              onSlideComplete: () => TransactionDetailComponents.executeDelete(context, widget.transaction.id, onDeleted: widget.onDeleted),
             ),
           ],
         ),

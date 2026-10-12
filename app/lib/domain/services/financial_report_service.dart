@@ -81,7 +81,6 @@ class FinancialReportService {
 
     final filteredTxs = transactions.where((tx) {
       if (tx.isDeleted) return false;
-      if (tx.externalRef?.startsWith('pocket_') == true) return false;
       final d = tx.transactionDate.toLocal();
       switch (period) {
         case ReportPeriod.thisMonth:
@@ -112,11 +111,15 @@ class FinancialReportService {
         incCatSum[tx.categoryId] = (incCatSum[tx.categoryId] ?? 0.0) + tx.amount;
         incCatCount[tx.categoryId] = (incCatCount[tx.categoryId] ?? 0) + 1;
         walletInc[tx.walletId] = (walletInc[tx.walletId] ?? 0.0) + tx.amount;
-      } else if (tx.type == 'expense') {
+      } else if (tx.type == 'expense' || tx.type == 'transfer') {
         totalExpense += tx.amount;
         expCatSum[tx.categoryId] = (expCatSum[tx.categoryId] ?? 0.0) + tx.amount;
         expCatCount[tx.categoryId] = (expCatCount[tx.categoryId] ?? 0) + 1;
         walletExp[tx.walletId] = (walletExp[tx.walletId] ?? 0.0) + tx.amount;
+        if (tx.type == 'transfer' && tx.destinationWalletId != null) {
+          totalIncome += tx.amount;
+          walletInc[tx.destinationWalletId!] = (walletInc[tx.destinationWalletId!] ?? 0.0) + tx.amount;
+        }
       }
     }
 

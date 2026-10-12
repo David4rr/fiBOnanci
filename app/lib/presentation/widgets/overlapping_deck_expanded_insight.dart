@@ -25,6 +25,9 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final totalWeekly = (weeklySpending != null && weeklySpending!.isNotEmpty)
+        ? weeklySpending!.fold<double>(0.0, (sum, v) => sum + v.abs())
+        : 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -48,16 +51,15 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            if (weeklySpending != null)
-              Text(
-                currencyFormatter.format(weeklySpending!.reduce((a, b) => a + b)),
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0C0D11).withValues(alpha: 0.8),
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+            Text(
+              currencyFormatter.format(totalWeekly),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0C0D11).withValues(alpha: 0.8),
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
+            ),
           ],
         ),
         const SizedBox(height: 8),

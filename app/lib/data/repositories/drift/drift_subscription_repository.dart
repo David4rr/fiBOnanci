@@ -94,7 +94,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     );
   }
 
-  Future<void> markSubscriptionAsPaid(String subscriptionId) {
-    return db.markSubscriptionAsPaid(subscriptionId);
+  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount}) {
+    return db.markSubscriptionAsPaid(subscriptionId, actualAmount: actualAmount);
   }
 }

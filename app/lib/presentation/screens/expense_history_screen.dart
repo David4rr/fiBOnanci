@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/finance/finance_bloc.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
@@ -19,13 +21,13 @@ class ExpenseHistoryScreen extends StatefulWidget {
   final double initialChildSize;
 
   const ExpenseHistoryScreen({
-    super.key, required this.allTransactions, required this.wallets, this.initialChildSize = 0.94,
+    super.key, required this.allTransactions, required this.wallets, this.initialChildSize = 1.0,
   });
   static Future<void> show(
     BuildContext context, {
     required List<TransactionEntry> allTransactions,
     required List<WalletEntry> wallets,
-    double initialChildSize = 0.94,
+    double initialChildSize = 1.0,
     Widget Function(BuildContext)? builder,
   }) {
     return Navigator.of(context).push<void>(
@@ -74,18 +76,10 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   }
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    _searchController.dispose();
-    _dayScrollController.dispose();
-    super.dispose();
-  }
+  void dispose() { _pageController.dispose(); _searchController.dispose(); _dayScrollController.dispose(); super.dispose(); }
 
   void _goToEditTx(TransactionEntry tx) {
-    setState(() {
-      _selectedTransaction = tx;
-      _currentTab = 1;
-    });
+    setState(() { _selectedTransaction = tx; _currentTab = 1; });
     _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
   }
 
@@ -96,9 +90,11 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final currencyFormatter = AppCurrency.of(context);
+    final blocState = context.watch<FinanceBloc?>()?.state;
+    final liveTxs = (blocState != null && blocState.transactions.isNotEmpty) ? blocState.transactions : widget.allTransactions;
+    final liveWallets = (blocState != null && blocState.wallets.isNotEmpty) ? blocState.wallets : widget.wallets;
     final filtered = CashflowAnalyticsService.filterTransactions(
-      transactions: widget.allTransactions, wallets: widget.wallets,
-      query: _searchQuery, typeFilter: _typeFilter, walletFilter: _walletFilter,
+      transactions: liveTxs, wallets: liveWallets, query: _searchQuery, typeFilter: _typeFilter, walletFilter: _walletFilter,
     );
     final dayGroups = DailyDateHelper.groupByDay(filtered);
     final sortedDays = DailyDateHelper.getAllDateKeys(dayGroups);
@@ -144,7 +140,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
                         searchQuery: _searchQuery,
                         typeFilter: _typeFilter,
                         walletFilter: _walletFilter,
-                        wallets: widget.wallets,
+                        wallets: liveWallets,
                         onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
                         onClearSearch: () => setState(() => _searchQuery = ''),
                         onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
@@ -167,8 +163,8 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
                         sortedDays: sortedDays,
                         currentDayKey: currentDayKey,
                         currentDayTxs: currentDayTxs,
-                        allTransactions: widget.allTransactions,
-                        wallets: widget.wallets,
+                        allTransactions: liveTxs,
+                        wallets: liveWallets,
                         onManageTransaction: _goToEditTx,
                         onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
                         onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),

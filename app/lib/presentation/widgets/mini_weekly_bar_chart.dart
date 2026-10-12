@@ -15,7 +15,7 @@ class MiniWeeklyBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-    final int activeDayIndex = (txDate.weekday - 1).clamp(0, 6);
+    final int activeDayIndex = (txDate.toLocal().weekday - 1).clamp(0, 6);
 
     final data = (weeklySpending != null && weeklySpending!.length == 7)
         ? weeklySpending!

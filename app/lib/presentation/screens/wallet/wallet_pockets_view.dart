@@ -70,44 +70,58 @@ class WalletPocketsView extends StatelessWidget {
                 final target = pocket.targetAmount;
                 final current = pocket.currentAmount;
 
-                return BentoFolderCard(
-                  backgroundColor: config.backgroundColor,
-                  textColor: config.primaryTextColor,
-                  subtitleColor: config.secondaryTextColor,
-                  iconColor: config.iconColor,
-                  iconBgColor: config.iconBgColor,
-                  height: 148,
-                  iconData: getPocketIcon(pocket.type),
-                  title: currencyFormatter.format(current),
-                  subtitleWidget: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        pocket.name,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: config.secondaryTextColor,
-                          letterSpacing: -0.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                return Hero(
+                  tag: 'pocket_card_${pocket.id}',
+                  flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                    final Hero toHero = toHeroContext.widget as Hero;
+                    return Material(
+                      color: Colors.transparent,
+                      child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: toHero.child),
+                    );
+                  },
+                  child: Material(
+                    color: Colors.transparent,
+                    child: BentoFolderCard(
+                      backgroundColor: config.backgroundColor,
+                      gradient: null,
+                      textColor: config.primaryTextColor,
+                      subtitleColor: config.secondaryTextColor,
+                      iconColor: config.iconColor,
+                      iconBgColor: config.iconBgColor,
+                      height: 148,
+                      iconData: getPocketIcon(pocket.type),
+                      title: currencyFormatter.format(current),
+                      subtitleWidget: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            pocket.name,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: config.secondaryTextColor,
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            target != null && target > 0 ? 'Target ${currencyFormatter.format(target)}' : 'Tanpa target',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: config.tertiaryTextColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        target != null && target > 0 ? 'Target ${currencyFormatter.format(target)}' : 'Tanpa target',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                          color: config.tertiaryTextColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      onTap: () => PocketDetailModal.show(context, pocket: pocket),
+                    ),
                   ),
-                  onTap: () => PocketDetailModal.show(context, pocket: pocket),
                 );
               },
               childCount: pockets.length,

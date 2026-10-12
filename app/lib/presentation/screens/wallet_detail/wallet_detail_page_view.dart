@@ -10,6 +10,7 @@ import 'wallet_detail_scroll_view.dart';
 
 class WalletDetailPageView extends StatelessWidget {
   final PageController pageController;
+  final int activeSubTab;
   final ScrollController scrollController;
   final WalletEntry wallet;
   final int cardIndex;
@@ -34,6 +35,7 @@ class WalletDetailPageView extends StatelessWidget {
   const WalletDetailPageView({
     super.key,
     required this.pageController,
+    this.activeSubTab = 1,
     required this.scrollController,
     required this.wallet,
     required this.cardIndex,
@@ -89,26 +91,19 @@ class WalletDetailPageView extends StatelessWidget {
             onEditTransaction: onEditTransaction,
           ),
         ),
-        WalletDetailEditTab(
-          wallet: wallet,
-          onReturnToDetails: onReturnToDetails,
-        ),
-        TransactionModal(
-          initialWalletId: wallet.id,
-          isInline: true,
-          onClose: onReturnToDetails,
-          onSaved: onReturnToDetails,
-        ),
-        if (selectedTransaction != null)
-          TransactionDetailModal(
-            transaction: selectedTransaction!,
-            isInline: true,
-            onClose: onReturnToDetails,
-            onSaved: onReturnToDetails,
-            onDeleted: onReturnToDetails,
-          )
-        else
-          const SizedBox.shrink(),
+        switch (activeSubTab) {
+          1 => WalletDetailEditTab(wallet: wallet, onReturnToDetails: onReturnToDetails),
+          2 => TransactionModal(initialWalletId: wallet.id, isInline: true, onClose: onReturnToDetails, onSaved: onReturnToDetails),
+          _ => selectedTransaction != null
+              ? TransactionDetailModal(
+                  transaction: selectedTransaction!,
+                  isInline: true,
+                  onClose: onReturnToDetails,
+                  onSaved: onReturnToDetails,
+                  onDeleted: onReturnToDetails,
+                )
+              : const SizedBox.shrink(),
+        },
       ],
     );
   }

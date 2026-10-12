@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +10,7 @@ import '../../widgets/common/common_widgets.dart';
 class WalletDetailAppBar extends StatelessWidget {
   final WalletEntry wallet;
   final double headerBalanceOpacity;
+  final ValueListenable<double>? headerOpacityListenable;
   final NumberFormat currencyFormatter;
   final VoidCallback? onDismiss;
   final bool isEditing;
@@ -19,7 +21,8 @@ class WalletDetailAppBar extends StatelessWidget {
   const WalletDetailAppBar({
     super.key,
     required this.wallet,
-    required this.headerBalanceOpacity,
+    this.headerBalanceOpacity = 0.0,
+    this.headerOpacityListenable,
     required this.currencyFormatter,
     this.onDismiss,
     this.isEditing = false,
@@ -75,32 +78,39 @@ class WalletDetailAppBar extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (!isEditing && headerBalanceOpacity > 0.1) ...[
-                          const SizedBox(width: 8),
-                          Opacity(
-                            opacity: headerBalanceOpacity,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.neoChartreuse.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: AppColors.neoChartreuse.withValues(alpha: 0.35),
-                                  width: 0.6,
+                        if (!isEditing)
+                          ValueListenableBuilder<double>(
+                            valueListenable: headerOpacityListenable ?? AlwaysStoppedAnimation<double>(headerBalanceOpacity),
+                            builder: (context, opacity, _) {
+                              if (opacity <= 0.1) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Opacity(
+                                  opacity: opacity,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: AppColors.neoChartreuse.withValues(alpha: 0.35),
+                                        width: 0.6,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      currencyFormatter.format(wallet.balance),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.neoChartreuse,
+                                        fontFeatures: const [FontFeature.tabularFigures()],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              child: Text(
-                                currencyFormatter.format(wallet.balance),
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.neoChartreuse,
-                                  fontFeatures: const [FontFeature.tabularFigures()],
-                                ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        ],
                       ],
                     ),
                   ],

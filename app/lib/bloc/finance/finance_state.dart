@@ -19,7 +19,7 @@ class FinanceState {
   final FinancialHealthReport healthReport;
   final Set<String>? safeToSpendWalletIds; // null = all wallets
   final int budgetCycleDay;
-  final bool isBalanceHidden;
+  final bool isBalanceHidden, isHighRefreshRate;
   final int exchangeRateVersion;
   final String? errorMessage;
 
@@ -35,6 +35,7 @@ class FinanceState {
     this.safeToSpendWalletIds,
     this.budgetCycleDay = 1,
     this.isBalanceHidden = false,
+    this.isHighRefreshRate = true,
     this.exchangeRateVersion = 0,
     SafeToSpendMetrics? metrics,
     MonthlyCashflow? monthlyCashflow,
@@ -57,7 +58,6 @@ class FinanceState {
                   ),
               monthlyIncomeTarget: (activeProfile ?? profiles.where((p) => p.isActive).firstOrNull)?.monthlyIncomeTarget,
             );
-
   static final ProfileEntry _defaultFallback = ProfileEntry(
     id: 'default_fallback',
     username: 'David',
@@ -98,6 +98,7 @@ class FinanceState {
     FinancialHealthReport? healthReport,
     int? budgetCycleDay,
     bool? isBalanceHidden,
+    bool? isHighRefreshRate,
     int? exchangeRateVersion,
     String? errorMessage,
   }) {
@@ -106,48 +107,49 @@ class FinanceState {
     final nextTx = transactions ?? this.transactions;
     final nextPockets = pockets ?? this.pockets;
     final nextProfiles = profiles ?? this.profiles;
-    final nextActiveProfile = clearActiveProfile
-        ? null
-        : (activeProfile ?? this.activeProfile);
-    final nextWalletIds = clearSafeToSpendWallets
-        ? null
-        : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
+    final nextActiveProfile = clearActiveProfile ? null : (activeProfile ?? this.activeProfile);
+    final nextWalletIds = clearSafeToSpendWallets ? null : (safeToSpendWalletIds ?? this.safeToSpendWalletIds);
     final nextCycleDay = budgetCycleDay ?? this.budgetCycleDay;
-    final nextHidden = isBalanceHidden ?? this.isBalanceHidden;
-    final nextRateVer = exchangeRateVersion ?? this.exchangeRateVersion;
     final resolvedProfile = nextActiveProfile ?? nextProfiles.where((p) => p.isActive).firstOrNull;
+
+    final sameStsInputs = identical(nextWallets, this.wallets) &&
+        identical(nextSubs, this.subscriptions) &&
+        identical(nextWalletIds, this.safeToSpendWalletIds) &&
+        nextCycleDay == this.budgetCycleDay;
+    final nextMetrics = metrics ??
+        (sameStsInputs
+            ? this.metrics
+            : SafeToSpendService.calculate(
+                wallets: nextWallets, subscriptions: nextSubs,
+                selectedWalletIds: nextWalletIds, cycleDay: nextCycleDay,
+              ));
+    final sameTx = identical(nextTx, this.transactions);
+    final nextCashflow = monthlyCashflow ??
+        (sameTx ? this.monthlyCashflow : CashflowAnalyticsService.calculateMonthlyCashflow(nextTx));
+    final sameHealthInputs = sameStsInputs &&
+        sameTx &&
+        identical(nextPockets, this.pockets) &&
+        resolvedProfile?.monthlyIncomeTarget == profile.monthlyIncomeTarget;
+    final nextHealth = healthReport ??
+        (sameHealthInputs && metrics == null && monthlyCashflow == null
+            ? this.healthReport
+            : FinancialHealthService.evaluate(
+                wallets: nextWallets, pockets: nextPockets, subscriptions: nextSubs,
+                monthlyCashflow: nextCashflow, safeToSpend: nextMetrics,
+                monthlyIncomeTarget: resolvedProfile?.monthlyIncomeTarget,
+              ));
 
     return FinanceState(
       status: status ?? this.status,
-      wallets: nextWallets,
-      categories: categories ?? this.categories,
-      transactions: nextTx,
-      subscriptions: nextSubs,
-      pockets: nextPockets,
-      profiles: nextProfiles,
-      activeProfile: nextActiveProfile,
-      safeToSpendWalletIds: nextWalletIds,
-      budgetCycleDay: nextCycleDay,
-      isBalanceHidden: nextHidden,
-      exchangeRateVersion: nextRateVer,
-      metrics: metrics ??
-          SafeToSpendService.calculate(
-            wallets: nextWallets, subscriptions: nextSubs,
-            selectedWalletIds: nextWalletIds, cycleDay: nextCycleDay,
-          ),
-      monthlyCashflow: monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
-      errorMessage: errorMessage ?? this.errorMessage,
-      healthReport: healthReport ??
-          FinancialHealthService.evaluate(
-            wallets: nextWallets, pockets: nextPockets, subscriptions: nextSubs,
-            monthlyCashflow: monthlyCashflow ?? CashflowAnalyticsService.calculateMonthlyCashflow(nextTx),
-            safeToSpend: metrics ??
-                SafeToSpendService.calculate(
-                  wallets: nextWallets, subscriptions: nextSubs,
-                  selectedWalletIds: nextWalletIds, cycleDay: nextCycleDay,
-                ),
-            monthlyIncomeTarget: resolvedProfile?.monthlyIncomeTarget,
-          ),
+      wallets: nextWallets, categories: categories ?? this.categories,
+      transactions: nextTx, subscriptions: nextSubs, pockets: nextPockets,
+      profiles: nextProfiles, activeProfile: nextActiveProfile,
+      safeToSpendWalletIds: nextWalletIds, budgetCycleDay: nextCycleDay,
+      isBalanceHidden: isBalanceHidden ?? this.isBalanceHidden,
+      isHighRefreshRate: isHighRefreshRate ?? this.isHighRefreshRate,
+      exchangeRateVersion: exchangeRateVersion ?? this.exchangeRateVersion,
+      metrics: nextMetrics, monthlyCashflow: nextCashflow,
+      healthReport: nextHealth, errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -163,6 +165,7 @@ class FinanceState {
           setEquals(safeToSpendWalletIds, other.safeToSpendWalletIds) &&
           budgetCycleDay == other.budgetCycleDay &&
           isBalanceHidden == other.isBalanceHidden &&
+          isHighRefreshRate == other.isHighRefreshRate &&
           exchangeRateVersion == other.exchangeRateVersion &&
           listEquals(wallets, other.wallets) &&
           listEquals(categories, other.categories) &&
@@ -186,6 +189,7 @@ class FinanceState {
         activeProfile?.id,
         budgetCycleDay,
         isBalanceHidden,
+        isHighRefreshRate,
         exchangeRateVersion,
         healthReport.overallScore,
       );

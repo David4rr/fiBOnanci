@@ -160,8 +160,8 @@ class ExpandableModalSheetState extends State<ExpandableModalSheet> {
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: widget.backgroundColor,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(widget.topRadius)),
-                    border: Border.all(color: widget.borderColor, width: 1),
+                    borderRadius: _currentSize >= 0.99 ? BorderRadius.zero : BorderRadius.vertical(top: Radius.circular(widget.topRadius)),
+                    border: _currentSize >= 0.99 ? null : Border.all(color: widget.borderColor, width: 1),
                   ),
                   child: SafeArea(top: true, bottom: true, child: widget.builder(ctx, scrollController, _currentSize)),
                 ),

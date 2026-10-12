@@ -64,18 +64,14 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SettingsStyle.sectionHeader('PENGATURAN GLOBAL • SEMUA PROFIL'),
         const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('Samarkan Nominal Saldo', style: SettingsStyle.title),
-            Transform.scale(
-              scale: 0.85, alignment: Alignment.centerRight,
-              child: Switch.adaptive(
-                key: const Key('settings_privacy_switch'), value: s.isBalanceHidden, activeTrackColor: AppColors.neoChartreuse,
-                onChanged: (v) => context.read<FinanceBloc>().add(ToggleBalanceVisibilityEvent(v)),
-              ),
-            ),
-          ]),
+        SettingsStyle.switchRow(
+          switchKey: const Key('settings_privacy_switch'), title: 'Samarkan Nominal Saldo',
+          value: s.isBalanceHidden, onChanged: (v) => context.read<FinanceBloc>().add(ToggleBalanceVisibilityEvent(v)),
+        ),
+        SettingsStyle.hairline(),
+        SettingsStyle.switchRow(
+          switchKey: const Key('settings_refresh_rate_switch'), title: 'Mode Layar 120Hz (High FPS)',
+          value: s.isHighRefreshRate, onChanged: (v) => context.read<FinanceBloc>().add(SetHighRefreshRateEvent(v)),
         ),
         SettingsStyle.hairline(),
         SettingsStyle.menuRow(

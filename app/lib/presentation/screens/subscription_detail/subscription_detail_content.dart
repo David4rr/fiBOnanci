@@ -31,8 +31,7 @@ class SubscriptionDetailContent extends StatelessWidget {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            controller: scrollController,
-            physics: const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

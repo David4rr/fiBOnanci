@@ -48,3 +48,8 @@ class SetExchangeRateEvent extends FinanceEvent {
 class SyncExchangeRatesEvent extends FinanceEvent {
   const SyncExchangeRatesEvent();
 }
+
+class SetHighRefreshRateEvent extends FinanceEvent {
+  final bool enabled;
+  const SetHighRefreshRateEvent(this.enabled);
+}

@@ -5,12 +5,14 @@ import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/pocket_card_theme.dart';
 import '../../widgets/pocket_transaction_tile.dart';
 import 'pocket_detail_views.dart';
 
 class PocketDetailTab extends StatelessWidget {
   final PocketEntry pocket;
   final Color pocketColor;
+  final PocketCardThemeConfig? themeConfig;
   final List<TransactionEntry> transactions;
   final List<WalletEntry> wallets;
   final NumberFormat currencyFormatter;
@@ -22,6 +24,7 @@ class PocketDetailTab extends StatelessWidget {
     super.key,
     required this.pocket,
     required this.pocketColor,
+    this.themeConfig,
     required this.transactions,
     required this.wallets,
     required this.currencyFormatter,
@@ -33,14 +36,18 @@ class PocketDetailTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      padding: EdgeInsets.fromLTRB(20, 4, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PocketDetailHeader(
-            pocket: pocket,
-            pocketColor: pocketColor,
-            currencyFormatter: currencyFormatter,
+          RepaintBoundary(
+            child: PocketDetailHeader(
+              pocket: pocket,
+              pocketColor: pocketColor,
+              themeConfig: themeConfig,
+              currencyFormatter: currencyFormatter,
+            ),
           ),
           const SizedBox(height: 20),
           PocketDetailActions(

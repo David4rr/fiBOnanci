@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/database/app_database.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/native_bridge/notification_bridge.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import 'finance_event.dart';
@@ -84,6 +85,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<ClearProfileTransactionsEvent>(handleClearProfileTransactions);
     on<SetExchangeRateEvent>(handleSetExchangeRate);
     on<SyncExchangeRatesEvent>(handleSyncExchangeRates);
+    on<SetHighRefreshRateEvent>(handleSetHighRefreshRate);
 
     on<_WalletsUpdated>((event, emit) {
       Set<String>? safeWallets = state.safeToSpendWalletIds;
@@ -135,7 +137,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
     _walletsSubscription = repository.watchWallets(profileId: profileId).listen((w) => add(_WalletsUpdated(w)));
     _categoriesSubscription ??= repository.watchCategories().listen((c) => add(_CategoriesUpdated(c)));
-    _transactionsSubscription = repository.watchRecentTransactions(profileId: profileId, limit: 50).listen((t) => add(_TransactionsUpdated(t)));
+    _transactionsSubscription = repository.watchRecentTransactions(profileId: profileId, limit: 5000).listen((t) => add(_TransactionsUpdated(t)));
     _subscriptionsSubscription = repository.watchActiveSubscriptions(profileId: profileId).listen((s) => add(_SubscriptionsUpdated(s)));
     _pocketsSubscription = repository.watchPockets(profileId: profileId).listen((p) => add(_PocketsUpdated(p)));
     _profilesSubscription ??= repository.watchProfiles().listen((pr) => add(_ProfilesUpdated(pr)));
@@ -151,7 +153,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final wallets = await repository.getWallets(profileId: pId);
       final categories = await repository.getCategories();
       final subscriptions = await repository.getSubscriptions(profileId: pId);
-      final transactions = await repository.getTransactions(profileId: pId, limit: 50);
+      final transactions = await repository.getTransactions(profileId: pId, limit: 5000);
       final pockets = await repository.getPockets(profileId: pId);
 
       final metrics = SafeToSpendService.calculate(

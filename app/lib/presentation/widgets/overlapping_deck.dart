@@ -147,16 +147,15 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                   Builder(builder: (context) {
                     final tx = list[i];
                     final isExpanded = currentExpandedId == tx.id;
-                    final wallet = widget.wallets.firstWhere(
-                      (w) => w.id == tx.walletId,
-                      orElse: () => widget.wallets.first,
-                    );
-
+                    final wallet = widget.wallets.firstWhere((w) => w.id == tx.walletId, orElse: () => widget.wallets.first);
+                    final destWallet = tx.destinationWalletId != null
+                        ? widget.wallets.where((w) => w.id == tx.destinationWalletId).firstOrNull
+                        : null;
                     final cardColor = getExpenseCategoryColor(tx.type, tx.notes, tx.type, i);
                     final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
 
                     final weeklySpending = isExpanded
-                        ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, categoryId: tx.categoryId, type: tx.type)
+                        ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, type: tx.type == 'income' ? 'income' : null)
                         : null;
                     final double naturalTop = _getNaturalTop(i, expandedIdx);
                     final double screenY = naturalTop - _scrollOffset;
@@ -171,7 +170,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                       left: 0,
                       right: 0,
                       child: OverlappingDeckItem(
-                        title: tx.notes?.isNotEmpty == true ? tx.notes! : (tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan'),
+                        title: tx.notes?.isNotEmpty == true ? tx.notes! : (tx.type == 'transfer' ? (destWallet != null ? 'Transfer ke ${destWallet.name}' : 'Transfer') : (tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan')),
                         category: tx.type == 'transfer' ? 'TRANSFER' : (tx.type == 'expense' ? 'PENGELUARAN' : 'PEMASUKAN'),
                         amount: tx.amount,
                         isExpense: tx.type == 'expense' || tx.type == 'transfer',
@@ -180,7 +179,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                         isExpanded: isExpanded,
                         transactionDate: tx.transactionDate,
                         weeklySpending: weeklySpending,
-                        subtitle: '${wallet.name} • ${DateFormat('dd MMM yyyy, HH:mm').format(tx.transactionDate)}',
+                        subtitle: '${wallet.name}${destWallet != null ? ' → ${destWallet.name}' : ''} • ${DateFormat('dd MMM yyyy, HH:mm').format(tx.transactionDate)}',
                         onTap: () => widget.onToggleExpand != null ? widget.onToggleExpand!(isExpanded ? null : tx.id) : setState(() => _internalExpandedId = isExpanded ? null : tx.id),
                         onManage: () => widget.onManageTransaction != null ? widget.onManageTransaction!(tx) : TransactionDetailModal.show(context, transaction: tx),
                       ),

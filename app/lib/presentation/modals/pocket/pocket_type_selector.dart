@@ -31,7 +31,7 @@ class PocketTypeSelector extends StatelessWidget {
         itemBuilder: (context, index) {
           final t = kPocketTypes[index];
           final isSelected = t['id'] == selectedType;
-          final Color typeColor = Color(int.parse((t['color'] as String).replaceAll('#', '0xFF')));
+          final Color typeColor = AppColors.fromHex(t['color'] as String);
 
           return GestureDetector(
             behavior: HitTestBehavior.opaque,

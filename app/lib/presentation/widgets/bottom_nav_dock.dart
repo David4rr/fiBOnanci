@@ -51,8 +51,8 @@ class BottomNavDock extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return SafeArea(
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
@@ -77,26 +77,12 @@ class BottomNavDock extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: const Color(0xB813141C),
                               borderRadius: BorderRadius.circular(28),
-                              border: Border.all(
-                                color: const Color(0x33FFFFFF),
-                                width: 1.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              border: Border.all(color: const Color(0x33FFFFFF), width: 1.2),
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 4))],
                             ),
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 6),
-                              child: AnimatedNavDockRow(
-                                currentIndex: currentIndex,
-                                onTapIndex: onTapIndex,
-                                items: _navItems,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: AnimatedNavDockRow(currentIndex: currentIndex, onTapIndex: onTapIndex, items: _navItems),
                             ),
                           ),
                         ),
@@ -111,6 +97,6 @@ class BottomNavDock extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

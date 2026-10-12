@@ -17,10 +17,16 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        applyHighRefreshRate(true)
         smartInputHelper = SmartInputHelper(this)
-        // 1. MethodChannel for Permission & Pending Queue
+        // 1. MethodChannel for Permission, 120Hz Display Mode & Pending Queue
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "setHighRefreshRate" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: true
+                    applyHighRefreshRate(enabled)
+                    result.success(true)
+                }
                 "isPermissionGranted" -> {
                     val enabledPackages = NotificationManagerCompat.getEnabledListenerPackages(applicationContext)
                     val isGranted = enabledPackages.contains(applicationContext.packageName)
@@ -103,6 +109,24 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    private fun applyHighRefreshRate(enabled: Boolean) {
+        try {
+            @Suppress("DEPRECATION")
+            val d = windowManager.defaultDisplay ?: return
+            val modes = d.supportedModes
+            if (modes.isEmpty()) return
+            val cur = d.mode
+            val sameRes = modes.filter { it.physicalWidth == cur.physicalWidth && it.physicalHeight == cur.physicalHeight }.ifEmpty { modes.toList() }
+            val target = if (enabled) sameRes.maxByOrNull { it.refreshRate } else sameRes.minByOrNull { kotlin.math.abs(it.refreshRate - 60f) }
+            if (target != null) {
+                val params = window.attributes
+                params.preferredDisplayModeId = target.modeId
+                params.preferredRefreshRate = target.refreshRate
+                window.attributes = params
+            }
+        } catch (_: Exception) {}
     }
 
     override fun onRequestPermissionsResult(

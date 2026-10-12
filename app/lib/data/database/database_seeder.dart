@@ -22,7 +22,7 @@ extension DatabaseSeeder on AppDatabase {
 
   Future<void> _seedDefaultProfile() async {
     final now = DateTime.now().toUtc();
-    await into(profiles).insert(
+    await into(profiles).insertOnConflictUpdate(
       ProfilesCompanion(
         id: const Value('default_profile_1'),
         username: const Value('David'),
@@ -40,7 +40,6 @@ extension DatabaseSeeder on AppDatabase {
         isSynced: const Value(false),
         isDeleted: const Value(false),
       ),
-      mode: InsertMode.insertOrIgnore,
     );
   }
 }

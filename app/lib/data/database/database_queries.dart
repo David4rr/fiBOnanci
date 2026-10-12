@@ -55,11 +55,19 @@ extension DatabaseQueries on AppDatabase {
         .watch();
   }
 
-  Future<List<ProfileEntry>> getProfiles() {
-    return (select(profiles)
+  Future<List<ProfileEntry>> getProfiles() async {
+    var list = await (select(profiles)
           ..where((tbl) => tbl.isDeleted.equals(false))
           ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
         .get();
+    if (list.isEmpty) {
+      await _seedDefaultProfile();
+      list = await (select(profiles)
+            ..where((tbl) => tbl.isDeleted.equals(false))
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          .get();
+    }
+    return list;
   }
 
   Future<ProfileEntry?> getActiveProfile() {

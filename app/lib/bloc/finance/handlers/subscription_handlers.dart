@@ -53,7 +53,7 @@ extension SubscriptionBlocHandlers on FinanceBloc {
 
   Future<void> handleMarkSubscriptionPaid(MarkSubscriptionPaidEvent event, Emitter<FinanceState> emit) async {
     try {
-      await repository.markSubscriptionAsPaid(event.subscriptionId);
+      await repository.markSubscriptionAsPaid(event.subscriptionId, actualAmount: event.actualAmount);
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menandai lunas: $e'));
     }

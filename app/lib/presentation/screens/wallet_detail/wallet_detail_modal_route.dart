@@ -6,7 +6,7 @@ import '../../../data/database/app_database.dart';
 import '../wallet_detail_screen.dart';
 
 class WalletDetailModalRoute {
-  static Future<void> show(BuildContext context, {required WalletEntry wallet, double initialChildSize = 0.94}) {
+  static Future<void> show(BuildContext context, {required WalletEntry wallet, double initialChildSize = 1.0}) {
     final financeBloc = context.read<FinanceBloc>();
     final currencyFormatter = AppCurrency.forCode(financeBloc.state.profile.currency);
     return Navigator.of(context).push<void>(

@@ -37,6 +37,12 @@ class NotificationBridge {
     } catch (_) {}
   }
 
+
+  static Future<void> setHighRefreshRate(bool enabled) async {
+    try {
+      await _methodChannel.invokeMethod('setHighRefreshRate', {'enabled': enabled});
+    } catch (_) {}
+  }
   static Future<List<Map<String, dynamic>>> getPendingRawNotifications() =>
       NotificationInbox.getPendingRawNotifications();
 

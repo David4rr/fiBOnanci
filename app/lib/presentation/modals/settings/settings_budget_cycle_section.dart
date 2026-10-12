@@ -22,22 +22,24 @@ class SettingsStyle {
   static Widget segmentedTrack({required List<Widget> children}) => Container(
     padding: const EdgeInsets.all(3), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.035), borderRadius: BorderRadius.circular(10)), child: Row(children: children),
   );
-
+  static Widget switchRow({required Key switchKey, required String title, required bool value, required ValueChanged<bool> onChanged}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(title, style: SettingsStyle.title),
+      Transform.scale(scale: 0.85, alignment: Alignment.centerRight, child: Switch.adaptive(key: switchKey, value: value, activeTrackColor: AppColors.neoChartreuse, onChanged: onChanged)),
+    ]),
+  );
   static Widget menuRow({
     Key? key, required String title, required String valueText,
     required VoidCallback onTap, Color? titleColor, Color? valueColor, Widget? trailingAction,
   }) => GestureDetector(
     key: key, behavior: HitTestBehavior.opaque, onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 13),
-      child: Row(children: [
-        Expanded(child: Text(title, style: SettingsStyle.title.copyWith(color: titleColor))),
-        if (trailingAction != null) ...[trailingAction, const SizedBox(width: 10)],
-        Text(valueText, style: value.copyWith(color: valueColor)),
-        const SizedBox(width: 4),
-        Icon(Icons.chevron_right_rounded, size: 17, color: valueColor ?? Colors.white24),
-      ]),
-    ),
+    child: Padding(padding: const EdgeInsets.symmetric(vertical: 13), child: Row(children: [
+      Expanded(child: Text(title, style: SettingsStyle.title.copyWith(color: titleColor))),
+      if (trailingAction != null) ...[trailingAction, const SizedBox(width: 10)],
+      Text(valueText, style: value.copyWith(color: valueColor)), const SizedBox(width: 4),
+      Icon(Icons.chevron_right_rounded, size: 17, color: valueColor ?? Colors.white24),
+    ])),
   );
   static Widget optionRow({
     Key? key, required String title, String? subtitle, required bool selected, required VoidCallback onTap,

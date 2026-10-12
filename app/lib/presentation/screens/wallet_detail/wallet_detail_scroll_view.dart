@@ -49,32 +49,35 @@ class WalletDetailScrollView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
-      controller: scrollController,
-      cacheExtent: 600,
+      cacheExtent: 800,
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-            child: Center(
-              child: TactileHeroCard(
-                wallet: wallet,
-                cardIndex: cardIndex >= 0 ? cardIndex : 0,
-                fmt: currencyFormatter,
-                cardColor: cardColor,
-                allWallets: allWallets,
+          child: RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+              child: Center(
+                child: TactileHeroCard(
+                  wallet: wallet,
+                  cardIndex: cardIndex >= 0 ? cardIndex : 0,
+                  fmt: currencyFormatter,
+                  cardColor: cardColor,
+                  allWallets: allWallets,
+                ),
               ),
             ),
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
         SliverToBoxAdapter(
-          child: WalletDetailActionsAndChart(
-            wallet: wallet,
-            cardColor: cardColor,
-            transactions: transactions,
-            onEditBalance: onEditBalance,
-            onAddTransaction: onAddTransaction,
+          child: RepaintBoundary(
+            child: WalletDetailActionsAndChart(
+              wallet: wallet,
+              cardColor: cardColor,
+              transactions: transactions,
+              onEditBalance: onEditBalance,
+              onAddTransaction: onAddTransaction,
+            ),
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 14)),

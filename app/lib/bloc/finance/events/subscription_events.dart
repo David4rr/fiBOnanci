@@ -66,6 +66,7 @@ class DeleteSubscriptionEvent extends FinanceEvent {
 
 class MarkSubscriptionPaidEvent extends FinanceEvent {
   final String subscriptionId;
+  final double? actualAmount;
 
-  const MarkSubscriptionPaidEvent(this.subscriptionId);
+  const MarkSubscriptionPaidEvent(this.subscriptionId, {this.actualAmount});
 }

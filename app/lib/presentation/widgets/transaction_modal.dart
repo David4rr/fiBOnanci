@@ -97,6 +97,12 @@ class _TransactionModalState extends State<TransactionModal> {
   void _onSave() {
     final amount = AppCurrency.parseInputOf(context, _amountController.text);
     if (amount <= 0 || _selectedWalletId == null || (_type != 'transfer' && _selectedCategoryId == null)) return;
+    if (_type == 'transfer' && (_selectedDestinationWalletId == null || _selectedDestinationWalletId == _selectedWalletId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih rekening tujuan yang berbeda dari rekening asal!')),
+      );
+      return;
+    }
     context.read<FinanceBloc>().add(AddTransactionEvent(
       walletId: _selectedWalletId!, amount: amount, type: _type, transactionDate: DateTime.now(),
       categoryId: _type == 'transfer' ? '11111111-1111-4111-8111-111111111111' : _selectedCategoryId!,
@@ -110,11 +116,17 @@ class _TransactionModalState extends State<TransactionModal> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final state = context.watch<FinanceBloc>().state;
+    if (_selectedWalletId == null || !state.wallets.any((w) => w.id == _selectedWalletId)) {
+      _selectedWalletId = state.wallets.isNotEmpty ? state.wallets.first.id : null;
+    }
+    final destWallets = state.wallets.where((w) => w.id != _selectedWalletId).toList();
+    if (_selectedDestinationWalletId == null || !destWallets.any((w) => w.id == _selectedDestinationWalletId)) {
+      _selectedDestinationWalletId = destWallets.isNotEmpty ? destWallets.first.id : null;
+    }
     final matchingCats = state.categories.where((c) => c.type == _type).toList();
     if (_type != 'transfer' && (_selectedCategoryId == null || !matchingCats.any((c) => c.id == _selectedCategoryId))) {
       _selectedCategoryId = matchingCats.isNotEmpty ? matchingCats.first.id : null;
     }
-
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -164,7 +176,7 @@ class _TransactionModalState extends State<TransactionModal> {
                     ? DropdownButton<String>(
                         value: _selectedDestinationWalletId, isExpanded: true, dropdownColor: AppColors.canvasCardSurface,
                         hint: Text('Pilih Rekening Tujuan', style: AppTypography.listSubtitle),
-                        items: state.wallets.where((w) => w.id != _selectedWalletId).map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
+                        items: destWallets.map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
                         onChanged: (val) => setState(() => _selectedDestinationWalletId = val),
                       )
                     : DropdownButton<String>(

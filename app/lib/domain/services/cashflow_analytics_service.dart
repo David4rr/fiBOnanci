@@ -38,8 +38,9 @@ class CashflowAnalyticsService {
       if (localTx.year == now.year && localTx.month == now.month) {
         if (tx.type == 'income') {
           income += tx.amount;
-        } else if (tx.type == 'expense') {
+        } else if (tx.type == 'expense' || tx.type == 'transfer') {
           expense += tx.amount;
+          if (tx.type == 'transfer' && tx.destinationWalletId != null) income += tx.amount;
         }
       }
     }
@@ -59,11 +60,17 @@ class CashflowAnalyticsService {
     final List<double> dailyValues = List.filled(30, 0.0);
 
     for (final tx in transactions) {
-      if (walletId != null && tx.walletId != walletId && tx.destinationWalletId != walletId) {
-        continue;
+      if (walletId != null) {
+        final isOutTransfer = tx.type == 'transfer' && tx.walletId == walletId;
+        final isInTransfer = tx.type == 'transfer' && tx.destinationWalletId == walletId;
+        if (type == 'expense' && !(tx.type == 'expense' && tx.walletId == walletId) && !isOutTransfer) continue;
+        if (type == 'income' && !(tx.type == 'income' && tx.walletId == walletId) && !isInTransfer) continue;
+        if (type != 'expense' && type != 'income' && tx.type != type) continue;
+      } else {
+        if (type == 'expense' && tx.type != 'expense' && tx.type != 'transfer') continue;
+        if (type == 'income' && tx.type != 'income' && !(tx.type == 'transfer' && tx.destinationWalletId != null)) continue;
+        if (type != 'expense' && type != 'income' && tx.type != type) continue;
       }
-      if (tx.type != type) continue;
-
       final localTx = tx.transactionDate.toLocal();
       final txDay = DateTime(localTx.year, localTx.month, localTx.day);
       final diff = today.difference(txDay).inDays;
@@ -86,25 +93,37 @@ class CashflowAnalyticsService {
     String? categoryId,
     String? type,
   }) {
-    final ref = referenceDate ?? DateTime.now();
-    final today = DateTime(ref.year, ref.month, ref.day);
-    final monday = today.subtract(Duration(days: ref.weekday - 1));
+    final ref = (referenceDate ?? DateTime.now()).toLocal();
+    final monday = DateTime(ref.year, ref.month, ref.day - (ref.weekday - 1));
     final List<double> dailySpend = List.filled(7, 0.0);
 
     for (final tx in transactions) {
-      if (type != null) {
-        if (tx.type != type) continue;
+      if (walletId != null) {
+        if (type == 'income') {
+          final isIn = (tx.type == 'income' && tx.walletId == walletId) || (tx.type == 'transfer' && tx.destinationWalletId == walletId);
+          if (!isIn) continue;
+        } else if (type == 'transfer') {
+          if (tx.type != 'transfer' || (tx.walletId != walletId && tx.destinationWalletId != walletId)) continue;
+        } else {
+          final isOut = (tx.type == 'expense' || tx.type == 'transfer') && tx.walletId == walletId;
+          if (!isOut) continue;
+        }
       } else {
-        if (tx.type != 'expense' && tx.type != 'transfer') continue;
+        if (type == 'income') {
+          if (tx.type != 'income' && !(tx.type == 'transfer' && tx.destinationWalletId != null)) continue;
+        } else if (type == 'transfer') {
+          if (tx.type != 'transfer') continue;
+        } else if (tx.type != 'expense' && tx.type != 'transfer') {
+          continue;
+        }
       }
-      if (walletId != null && tx.walletId != walletId && tx.destinationWalletId != walletId) continue;
       if (categoryId != null && tx.categoryId != categoryId) continue;
 
       final localTx = tx.transactionDate.toLocal();
       final txDate = DateTime(localTx.year, localTx.month, localTx.day);
-      final diff = txDate.difference(monday).inDays;
+      final diff = (txDate.difference(monday).inHours / 24).round();
       if (diff >= 0 && diff < 7) {
-        dailySpend[diff] += tx.amount;
+        dailySpend[diff] += tx.amount.abs();
       }
     }
 
@@ -138,31 +157,17 @@ class CashflowAnalyticsService {
         final notes = (tx.notes ?? '').toLowerCase();
         final type = tx.type.toLowerCase();
         final amt = tx.amount.toString();
-        final wallet = wallets.firstWhere(
-          (w) => w.id == tx.walletId,
-          orElse: () => wallets.isNotEmpty
-              ? wallets.first
-              : WalletEntry(
-                  id: '',
-                  name: '',
-                  type: '',
-                  currency: '',
-                  balance: 0,
-                  colorHex: '#64748B',
-                  iconName: '',
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                  isSynced: false,
-                  isDeleted: false,
-                ),
-        );
-        final walletName = wallet.name.toLowerCase();
-        final typeIndo = tx.type == 'income' ? 'pemasukan masuk' : (tx.type == 'expense' ? 'pengeluaran keluar' : 'transfer');
+        final walletName = (wallets.where((w) => w.id == tx.walletId).firstOrNull ?? wallets.firstOrNull)?.name.toLowerCase() ?? '';
+        final destWalletName = tx.destinationWalletId != null
+            ? (wallets.where((w) => w.id == tx.destinationWalletId).firstOrNull?.name.toLowerCase() ?? '')
+            : '';
+        final typeIndo = tx.type == 'income' ? 'pemasukan masuk' : (tx.type == 'expense' ? 'pengeluaran keluar' : 'transfer mutasi');
         final match = notes.contains(cleanQuery) ||
             type.contains(cleanQuery) ||
             typeIndo.contains(cleanQuery) ||
             amt.contains(cleanQuery) ||
-            walletName.contains(cleanQuery);
+            walletName.contains(cleanQuery) ||
+            destWalletName.contains(cleanQuery);
         if (!match) return false;
       }
 
