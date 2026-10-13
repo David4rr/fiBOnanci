@@ -122,4 +122,7 @@ mixin DriftProfileRepository on DriftRepoBase {
 
   Future<void> clearProfileTransactions(String profileId) =>
       db.clearProfileTransactions(profileId);
+
+  Future<void> restoreJsonBackup(Map<String, dynamic> data) =>
+      db.restoreJsonBackup(data);
 }

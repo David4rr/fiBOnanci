@@ -174,4 +174,5 @@ abstract class FinanceRepository {
   });
   Future<void> deleteCategory(String categoryId);
   Future<void> clearProfileTransactions(String profileId);
+  Future<void> restoreJsonBackup(Map<String, dynamic> data);
 }

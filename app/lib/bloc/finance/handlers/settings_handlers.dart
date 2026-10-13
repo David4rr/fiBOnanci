@@ -119,4 +119,16 @@ extension SettingsBlocHandlers on FinanceBloc {
       emit(state.copyWith(errorMessage: 'Gagal membersihkan transaksi: $e'));
     }
   }
+
+  Future<void> handleImportJsonBackup(
+    ImportJsonBackupEvent event,
+    Emitter<FinanceState> emit,
+  ) async {
+    try {
+      await repository.restoreJsonBackup(event.data);
+      add(const LoadFinanceData());
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memulihkan cadangan JSON: $e'));
+    }
+  }
 }

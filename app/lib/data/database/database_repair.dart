@@ -68,4 +68,39 @@ extension DatabaseRepair on AppDatabase {
       }
     }
   }
+
+  Future<void> restoreJsonBackup(Map<String, dynamic> data) {
+    return transaction(() async {
+      for (final item in (data['profiles'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(profiles).insertOnConflictUpdate(ProfileEntry.fromJson(item));
+        }
+      }
+      for (final item in (data['categories'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(categories).insertOnConflictUpdate(CategoryEntry.fromJson(item));
+        }
+      }
+      for (final item in (data['wallets'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(wallets).insertOnConflictUpdate(WalletEntry.fromJson(item));
+        }
+      }
+      for (final item in (data['pockets'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(pockets).insertOnConflictUpdate(PocketEntry.fromJson(item));
+        }
+      }
+      for (final item in (data['subscriptions'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(subscriptions).insertOnConflictUpdate(SubscriptionEntry.fromJson(item));
+        }
+      }
+      for (final item in (data['transactions'] as List? ?? const [])) {
+        if (item is Map<String, dynamic>) {
+          await into(transactions).insertOnConflictUpdate(TransactionEntry.fromJson(item));
+        }
+      }
+    });
+  }
 }

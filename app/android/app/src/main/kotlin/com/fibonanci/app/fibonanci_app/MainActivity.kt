@@ -16,14 +16,50 @@ class MainActivity : FlutterActivity() {
     private val EVENT_CHANNEL = "com.fibonanci.app/live_notifications"
     private val SMART_INPUT_CHANNEL = "com.fibonanci.app/smart_input"
     private lateinit var smartInputHelper: SmartInputHelper
+    private var pendingAuthCallback: ((Boolean) -> Unit)? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         applyHighRefreshRate(true)
+        SecurityVaultHelper.applyPrivacyScreen(
+            this,
+            SecurityVaultHelper.isPrivacyScreenEnabled(applicationContext)
+        )
         ensureNotificationListenerBound()
         smartInputHelper = SmartInputHelper(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "getDatabaseEncryptionKey" -> {
+                    result.success(SecurityVaultHelper.getOrCreateDatabaseKey(applicationContext))
+                }
+                "getSecuritySettings" -> {
+                    result.success(
+                        mapOf(
+                            "biometricLockEnabled" to SecurityVaultHelper.isBiometricLockEnabled(applicationContext),
+                            "privacyScreenEnabled" to SecurityVaultHelper.isPrivacyScreenEnabled(applicationContext),
+                            "isDeviceSecure" to SecurityVaultHelper.isDeviceSecure(applicationContext)
+                        )
+                    )
+                }
+                "setBiometricLockEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    SecurityVaultHelper.setBiometricLockEnabled(applicationContext, enabled)
+                    result.success(true)
+                }
+                "setPrivacyScreenEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    SecurityVaultHelper.applyPrivacyScreen(this, enabled)
+                    result.success(true)
+                }
+                "authenticateBiometric" -> {
+                    val reason = call.argument<String>("reason") ?: "Gunakan sidik jari atau PIN untuk membuka fiBOnanci"
+                    SecurityVaultHelper.authenticateUser(
+                        this,
+                        reason,
+                        onResult = { ok -> runOnUiThread { result.success(ok) } },
+                        registerPendingResult = { cb -> pendingAuthCallback = cb }
+                    )
+                }
                 "setHighRefreshRate" -> {
                     val enabled = call.argument<Boolean>("enabled") ?: true
                     applyHighRefreshRate(enabled)
@@ -153,6 +189,17 @@ class MainActivity : FlutterActivity() {
     override fun onPause() {
         FibonanciNotificationListener.isAppForeground = false
         super.onPause()
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == SecurityVaultHelper.REQUEST_CONFIRM_CREDENTIAL) {
+            val cb = pendingAuthCallback
+            pendingAuthCallback = null
+            cb?.invoke(resultCode == RESULT_OK)
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onRequestPermissionsResult(

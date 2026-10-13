@@ -53,3 +53,8 @@ class SetHighRefreshRateEvent extends FinanceEvent {
   final bool enabled;
   const SetHighRefreshRateEvent(this.enabled);
 }
+
+class ImportJsonBackupEvent extends FinanceEvent {
+  final Map<String, dynamic> data;
+  const ImportJsonBackupEvent(this.data);
+}

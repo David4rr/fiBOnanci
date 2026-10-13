@@ -382,12 +382,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(selectedWallet?.id, 'w_bottom_cash');
 
-      // Tapping top card expands it with smooth animation
+      // Tapping top card brings it to the front as the single open card while bottom card tucks behind at full cardH
       await tester.tap(find.text('BCA Utama'));
       await tester.pumpAndSettle();
       final expandedCards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(expandedCards[0].showBottomLayout, isTrue);
-      expect(expandedCards[0].animate, isTrue);
+      final topCard = expandedCards.firstWhere((c) => c.wallet.id == 'w_top');
+      final bottomCard = expandedCards.firstWhere((c) => c.wallet.id == 'w_bottom_cash');
+      expect(topCard.showBottomLayout, isTrue);
+      expect(topCard.animate, isTrue);
+      expect(bottomCard.showBottomLayout, isFalse);
+      expect(topCard.cardH, equals(bottomCard.cardH));
     });
 
     testWidgets('Expanded stacked card auto-closes after 6s of inactivity', (tester) async {
@@ -438,18 +442,20 @@ void main() {
       await tester.tap(find.text('BCA Utama'));
       await tester.pumpAndSettle();
       var cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isTrue);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isTrue);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_bottom_cash').showBottomLayout, isFalse);
 
       // Advance clock by 4s -> still expanded (< 6s)
       await tester.pump(const Duration(seconds: 4));
       cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isTrue);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isTrue);
 
-      // Advance clock past 6s total -> auto-collapses
+      // Advance clock past 6s total -> auto-collapses back to resting stack
       await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
       cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isFalse);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isFalse);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_bottom_cash').showBottomLayout, isTrue);
     });
 
     testWidgets('Expanded stacked card auto-closes on account detail view exit', (tester) async {
@@ -501,7 +507,7 @@ void main() {
       await tester.tap(find.text('BCA Utama'));
       await tester.pumpAndSettle();
       var cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isTrue);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isTrue);
 
       // 2. Tap expanded card to open detail view
       await tester.tap(find.text('BCA Utama'));
@@ -509,7 +515,7 @@ void main() {
 
       // Detail view is open, card is still expanded while open
       cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isTrue);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isTrue);
 
       // 3. Exit detail view
       completer.complete();
@@ -517,7 +523,7 @@ void main() {
 
       // Card automatically closes upon exiting detail view!
       cards = tester.widgetList<WalletCard>(find.byType(WalletCard)).toList();
-      expect(cards[0].showBottomLayout, isFalse);
+      expect(cards.firstWhere((c) => c.wallet.id == 'w_top').showBottomLayout, isFalse);
     });
   });
 }

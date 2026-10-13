@@ -63,13 +63,17 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
   Future<void> _handleCardTap(WalletEntry wallet) async {
     HapticFeedback.selectionClick();
     final isBottomCard = widget.wallets.isNotEmpty && widget.wallets.last.id == wallet.id;
-    if (widget.wallets.length == 1 || isBottomCard || _expandedWalletId == wallet.id) {
+    final isCurrentlyExpanded = _expandedWalletId == wallet.id || (_expandedWalletId == null && isBottomCard);
+    if (widget.wallets.length == 1 || isCurrentlyExpanded) {
       _cancelAutoCloseTimer();
-      final wasExpanded = _expandedWalletId == wallet.id;
+      final wasUpperExpanded = _expandedWalletId == wallet.id;
       await widget.onSelectWallet(wallet);
-      if (mounted && wasExpanded) {
+      if (mounted && wasUpperExpanded) {
         setState(() => _expandedWalletId = null);
       }
+    } else if (isBottomCard) {
+      _cancelAutoCloseTimer();
+      setState(() => _expandedWalletId = null);
     } else {
       setState(() => _expandedWalletId = wallet.id);
       _startAutoCloseTimer();
@@ -94,11 +98,13 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
       builder: (context, constraints) {
         final cardW = constraints.maxWidth;
         final cardH = cardW * WalletCardDeck.atmRatio;
-        final expandedIndex = _expandedWalletId != null ? wallets.indexWhere((w) => w.id == _expandedWalletId) : -1;
+        final rawExpandedIdx = _expandedWalletId != null ? wallets.indexWhere((w) => w.id == _expandedWalletId) : -1;
+        final expandedIndex = (rawExpandedIdx >= 0 && rawExpandedIdx < wallets.length - 1) ? rawExpandedIdx : -1;
+        final activeIndex = expandedIndex >= 0 ? expandedIndex : wallets.length - 1;
         final deckH = wallets.length == 1
             ? cardH
             : (expandedIndex >= 0
-                ? cardH + (wallets.length - 1) * WalletCardDeck.peekHeight + 20.0
+                ? (2 * cardH) + (wallets.length - 2) * WalletCardDeck.peekHeight + 16.0
                 : cardH + (wallets.length - 1) * WalletCardDeck.peekHeight);
 
         return AnimatedContainer(
@@ -113,12 +119,10 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                   final wallet = wallets[i];
                   final isBottomCard = i == wallets.length - 1;
                   final isSingleCard = wallets.length == 1;
-                  final isExpanded = isSingleCard || isBottomCard || expandedIndex == i;
-                  final shouldAnimate = !isSingleCard && !isBottomCard;
+                  final isExpanded = isSingleCard || i == activeIndex;
+                  final shouldAnimate = !isSingleCard && (!isBottomCard || expandedIndex >= 0);
                   double topOffset;
-                  if (expandedIndex == -1) {
-                    topOffset = i * WalletCardDeck.peekHeight;
-                  } else if (i <= expandedIndex) {
+                  if (expandedIndex == -1 || i <= expandedIndex) {
                     topOffset = i * WalletCardDeck.peekHeight;
                   } else {
                     topOffset = (i * WalletCardDeck.peekHeight) + (cardH - WalletCardDeck.peekHeight) + 16.0;
@@ -136,21 +140,10 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                       onTap: () => _handleCardTap(wallet),
                       child: Hero(
                         tag: 'wallet_card_${wallet.id}',
-                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-                          return Material(
-                            color: Colors.transparent,
-                            child: WalletCard(
-                              wallet: wallet,
-                              index: i,
-                              allWallets: wallets,
-                              fmt: fmt,
-                              cardH: cardH,
-                              isLifted: true,
-                              showBottomLayout: true,
-                              animate: false,
-                            ),
-                          );
-                        },
+                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Material(
+                          color: Colors.transparent,
+                          child: WalletCard(wallet: wallet, index: i, allWallets: wallets, fmt: fmt, cardH: cardH, isLifted: true, showBottomLayout: true, animate: false),
+                        ),
                         child: Material(
                           color: Colors.transparent,
                           child: WalletCard(

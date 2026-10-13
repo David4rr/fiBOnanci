@@ -115,7 +115,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     ];
 
     return IPhoneViewportContainer(
-      child: Scaffold(
+      child: AppLockGate(
+        child: Scaffold(
         backgroundColor: AppColors.canvasBg,
         extendBody: true,
         body: AnimatedSwitcher(
@@ -160,6 +161,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
             ),
           ),
         ),
+      ),
       ),
     );
   }

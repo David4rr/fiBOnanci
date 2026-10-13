@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
@@ -9,6 +8,7 @@ import '../../core/notification_parser/bank_presets.dart';
 import 'seed/default_categories.dart';
 import 'seed/default_wallets.dart';
 import 'tables/tables.dart';
+import 'database_encryption.dart';
 
 part 'app_database.g.dart';
 part 'database_seeder.dart';
@@ -112,11 +112,11 @@ class AppDatabase extends _$AppDatabase {
     },
   );
 
-  static LazyDatabase _openConnection() {
+  static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
       final dbFolder = await getApplicationDocumentsDirectory();
       final file = File(p.join(dbFolder.path, 'fibonanci.sqlite'));
-      return NativeDatabase.createInBackground(file);
+      return DatabaseEncryption.openEncryptedFile(file);
     });
   }
 }

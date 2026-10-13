@@ -55,7 +55,7 @@ class FiBOnanciApp extends StatelessWidget {
           if (child == null) return const SizedBox.shrink();
           return IPhoneViewportContainer(child: child);
         },
-        home: MainShell(db: database),
+        home: FibonanciSplashGate(child: MainShell(db: database)),
       ),
     );
   }

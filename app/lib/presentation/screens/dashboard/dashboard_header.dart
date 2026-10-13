@@ -5,6 +5,7 @@ import '../../modals/profile_modal.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/profile_avatar.dart';
+import '../../widgets/common/fibonanci_logo_mark.dart';
 
 class DashboardHeader extends StatelessWidget {
   final String? profileId;
@@ -33,7 +34,14 @@ class DashboardHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('fiBOnanci', style: AppTypography.heroGreeting),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const FibonanciLogoMark(size: 24),
+                    const SizedBox(width: 8),
+                    Text('fiBOnanci', style: AppTypography.heroGreeting),
+                  ],
+                ),
                 const SizedBox(height: 2),
                 Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle),
               ],

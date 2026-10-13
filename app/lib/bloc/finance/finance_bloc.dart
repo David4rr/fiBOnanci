@@ -86,6 +86,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<SetExchangeRateEvent>(handleSetExchangeRate);
     on<SyncExchangeRatesEvent>(handleSyncExchangeRates);
     on<SetHighRefreshRateEvent>(handleSetHighRefreshRate);
+    on<ImportJsonBackupEvent>(handleImportJsonBackup);
 
     on<_WalletsUpdated>((event, emit) {
       Set<String>? safeWallets = state.safeToSpendWalletIds;

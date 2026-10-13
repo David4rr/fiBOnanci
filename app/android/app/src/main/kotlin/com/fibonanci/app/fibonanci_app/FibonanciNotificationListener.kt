@@ -46,12 +46,14 @@ class FibonanciNotificationListener : NotificationListenerService() {
         fun setDynamicWhitelist(context: Context, packages: List<String>) {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val jsonArray = JSONArray(packages)
-            prefs.edit().putString(KEY_DYNAMIC_WHITELIST, jsonArray.toString()).apply()
+            val encrypted = SecurityVaultHelper.encryptString(jsonArray.toString())
+            prefs.edit().putString(KEY_DYNAMIC_WHITELIST, encrypted).apply()
         }
 
         fun getDynamicWhitelist(context: Context): Set<String> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val jsonString = prefs.getString(KEY_DYNAMIC_WHITELIST, "[]") ?: "[]"
+            val rawString = prefs.getString(KEY_DYNAMIC_WHITELIST, "[]") ?: "[]"
+            val jsonString = SecurityVaultHelper.decryptString(rawString)
             val result = mutableSetOf<String>()
             try {
                 val jsonArray = JSONArray(jsonString)
@@ -65,25 +67,27 @@ class FibonanciNotificationListener : NotificationListenerService() {
             return result
         }
 
-
         fun getAndClearPending(context: Context): List<Map<String, Any>> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val jsonString = prefs.getString(KEY_PENDING, "[]") ?: "[]"
-            val jsonArray = JSONArray(jsonString)
+            val rawString = prefs.getString(KEY_PENDING, "[]") ?: "[]"
+            val jsonString = SecurityVaultHelper.decryptString(rawString)
             val result = mutableListOf<Map<String, Any>>()
 
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-                val map = mutableMapOf<String, Any>()
-                val keys = obj.keys()
-                while (keys.hasNext()) {
-                    val key = keys.next()
-                    map[key] = obj.get(key)
+            try {
+                val jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    val map = mutableMapOf<String, Any>()
+                    val keys = obj.keys()
+                    while (keys.hasNext()) {
+                        val key = keys.next()
+                        map[key] = obj.get(key)
+                    }
+                    result.add(map)
                 }
-                result.add(map)
-            }
+            } catch (_: Exception) {}
 
-            prefs.edit().putString(KEY_PENDING, "[]").apply()
+            prefs.edit().putString(KEY_PENDING, SecurityVaultHelper.encryptString("[]")).apply()
             return result
         }
     }
@@ -162,14 +166,15 @@ class FibonanciNotificationListener : NotificationListenerService() {
         }
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val existing = prefs.getString(KEY_PENDING, "[]") ?: "[]"
-        val jsonArray = JSONArray(existing)
+        val rawExisting = prefs.getString(KEY_PENDING, "[]") ?: "[]"
+        val existing = SecurityVaultHelper.decryptString(rawExisting)
+        val jsonArray = try { JSONArray(existing) } catch (_: Exception) { JSONArray() }
         val obj = JSONObject()
         obj.put("package", pkg)
         obj.put("title", title)
         obj.put("text", text)
         obj.put("timestamp", sbn.postTime)
         jsonArray.put(obj)
-        prefs.edit().putString(KEY_PENDING, jsonArray.toString()).apply()
+        prefs.edit().putString(KEY_PENDING, SecurityVaultHelper.encryptString(jsonArray.toString())).apply()
     }
 }

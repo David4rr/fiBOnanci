@@ -18,3 +18,6 @@ export 'primary_action_button.dart';
 export 'search_filter_chip.dart';
 export 'slide_to_delete_button.dart';
 export 'smooth_page_view.dart';
+export 'app_lock_gate.dart';
+export 'fibonanci_logo_mark.dart';
+export 'fibonanci_splash_gate.dart';
