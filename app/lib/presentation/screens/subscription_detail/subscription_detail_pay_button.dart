@@ -103,12 +103,26 @@ class _SubscriptionDetailPayButtonState extends State<SubscriptionDetailPayButto
     if ((isPaidThisMonth || isCompleted) && !_isMorphed) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.neoMint.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.neoMint.withValues(alpha: 0.3))),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.canvasCardSurface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.28)),
+        ),
         child: Row(children: [
-          const Icon(Icons.verified_rounded, color: AppColors.neoMint, size: 22),
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neoChartreuse),
+            child: const Icon(Icons.check_rounded, color: AppColors.textDarkPrimary, size: 17),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: Text(isCompleted ? 'Semua cicilan telah lunas! Rencana pembiayaan ini telah selesai.' : 'Tagihan periode bulan ini telah lunas tercatat di buku kas.', style: GoogleFonts.plusJakartaSans(color: AppColors.neoMint, fontSize: 13, fontWeight: FontWeight.w600))),
+          Expanded(
+            child: Text(
+              isCompleted ? 'Semua cicilan telah lunas! Rencana pembiayaan ini telah selesai.' : 'Tagihan periode bulan ini telah lunas tercatat di buku kas.',
+              style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.35),
+            ),
+          ),
         ]),
       );
     }

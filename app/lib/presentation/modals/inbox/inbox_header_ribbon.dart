@@ -5,14 +5,11 @@ import '../../theme/app_typography.dart';
 
 class InboxHeaderRibbon extends StatelessWidget {
   final int pendingCount;
-  final VoidCallback onSimulate;
 
   const InboxHeaderRibbon({
     super.key,
     required this.pendingCount,
-    required this.onSimulate,
   });
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -56,35 +53,6 @@ class InboxHeaderRibbon extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: onSimulate,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 16,
-                        height: 16,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neoChartreuse.withValues(alpha: 0.15)),
-                        child: const Icon(Icons.bolt_rounded, color: AppColors.neoChartreuse, size: 11),
-                      ),
-                      const SizedBox(width: 5),
-                      Text('Simulasi', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: -0.1)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),

@@ -68,23 +68,19 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
           switchKey: const Key('settings_privacy_switch'), title: 'Samarkan Nominal Saldo',
           value: s.isBalanceHidden, onChanged: (v) => context.read<FinanceBloc>().add(ToggleBalanceVisibilityEvent(v)),
         ),
-        SettingsStyle.hairline(),
         SettingsStyle.switchRow(
           switchKey: const Key('settings_refresh_rate_switch'), title: 'Mode Layar 120Hz (High FPS)',
           value: s.isHighRefreshRate, onChanged: (v) => context.read<FinanceBloc>().add(SetHighRefreshRateEvent(v)),
         ),
-        SettingsStyle.hairline(),
         SettingsStyle.menuRow(
           key: const Key('settings_category_menu_row'), title: 'Kategori Transaksi',
           valueText: '$activeCatCount Kategori', onTap: () => widget.onNavigate(SettingsSubRoute.categories),
         ),
-        SettingsStyle.hairline(),
         SettingsStyle.menuRow(
           key: const Key('settings_notif_permission_row'), title: 'Listener Notifikasi Bank',
           valueText: _permissionGranted ? 'Aktif' : 'Mati', valueColor: _permissionGranted ? AppColors.neoMint : null,
           onTap: () async { await NotificationBridge.openPermissionSettings(); await _checkPermission(); },
         ),
-        SettingsStyle.hairline(),
         SettingsStyle.menuRow(
           key: const Key('settings_bank_apps_row'), title: 'Aplikasi Bank & E-Wallet',
           valueText: '${kPopularBankAppPresets.length} Didukung', onTap: () => widget.onNavigate(SettingsSubRoute.bankApps),
@@ -102,7 +98,6 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
         key: const Key('settings_export_csv_row'), title: 'Ekspor Transaksi (CSV / Excel)',
         valueText: '${s.transactions.length} Baris', onTap: () => widget.onNavigate(SettingsSubRoute.exportData),
       ),
-      SettingsStyle.hairline(),
       SettingsStyle.menuRow(
         key: const Key('settings_export_json_row'), title: 'Simpan Cadangan (JSON)',
         valueText: 'File .json', onTap: _exportJsonBackup,
@@ -115,7 +110,6 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
         titleColor: AppColors.neoCoral, valueColor: AppColors.neoCoral.withValues(alpha: 0.8),
         onTap: () => widget.onNavigate(SettingsSubRoute.clearTransactions),
       ),
-      Divider(color: AppColors.neoCoral.withValues(alpha: 0.12), height: 1),
       SettingsStyle.menuRow(
         key: const Key('settings_delete_profile_row'),
         title: s.profiles.length > 1 ? 'Hapus Profil (@${s.profile.username})' : 'Reset Profil (@${s.profile.username})',
@@ -123,7 +117,6 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
         titleColor: AppColors.neoCoral, valueColor: AppColors.neoCoral.withValues(alpha: 0.8),
         onTap: () => widget.onNavigate(SettingsSubRoute.deleteProfile),
       ),
-      const SizedBox(height: 20),
       Text('SQLite Drift v6 • $unsyncedCount belum sinkron • 100% On-Device Offline', style: SettingsStyle.sub.copyWith(fontSize: 10.5, color: Colors.white24)),
     ]);
   }
@@ -176,7 +169,6 @@ class _SettingsExportSubPageState extends State<SettingsExportSubPage> {
       subtitle: 'Format koma terpisah (UTF-8 BOM), kompatibel semua spreadsheet',
       selected: _savedPath?.endsWith('.csv') ?? false, onTap: () => _export(asExcel: false),
     ),
-    SettingsStyle.hairline(),
     SettingsStyle.optionRow(
       key: const Key('settings_export_excel_file_btn'), title: 'Simpan File Excel (.xls)',
       subtitle: 'Format tabel buku kerja Microsoft Excel / Google Sheets',

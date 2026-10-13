@@ -4,10 +4,7 @@ import '../../../core/native_bridge/notification_bridge.dart';
 import '../../theme/app_colors.dart';
 
 class InboxEmptyView extends StatelessWidget {
-  final VoidCallback onSimulationTap;
-
-  const InboxEmptyView({super.key, required this.onSimulationTap});
-
+  const InboxEmptyView({super.key});
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -47,45 +44,7 @@ class InboxEmptyView extends StatelessWidget {
                 letterSpacing: -0.1,
               ),
             ),
-            const SizedBox(height: 24),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: onSimulationTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.neoChartreuse,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.bolt_rounded,
-                        size: 15,
-                        color: AppColors.textDarkPrimary,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          'Coba Simulasi Notifikasi Masuk',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: AppColors.textDarkPrimary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 12,
-                            letterSpacing: -0.1,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
             TextButton.icon(
               onPressed: () => NotificationBridge.openPermissionSettings(),
               icon: const Icon(Icons.settings_suggest_rounded, size: 16, color: AppColors.textMuted),

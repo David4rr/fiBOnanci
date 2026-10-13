@@ -11,14 +11,12 @@ import '../widgets/common/common_widgets.dart';
 import 'inbox/inbox_cards_list.dart';
 import 'inbox/inbox_empty_view.dart';
 import 'inbox/inbox_header_ribbon.dart';
-import 'inbox/inbox_simulation_picker.dart';
 import 'inbox/inbox_wallet_reassign_sheet.dart';
 
 export 'inbox/inbox_cards_list.dart';
 export 'inbox/inbox_empty_view.dart';
 export 'inbox/inbox_header_ribbon.dart';
 export 'inbox/inbox_notification_card.dart';
-export 'inbox/inbox_simulation_picker.dart';
 export 'inbox/inbox_wallet_chip.dart';
 export 'inbox/inbox_stacked_deck.dart';
 export 'inbox/inbox_wallet_reassign_sheet.dart';
@@ -94,14 +92,6 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
     _showSnack('Transaksi dibatalkan & saldo dipulihkan', AppColors.neoCoral);
   }
 
-  void _injectNotification(Map<String, dynamic> raw) async {
-    final db = _resolveDb();
-    if (db == null) return;
-    await NotificationBridge.handleRawNotification(raw, db);
-    final updated = await NotificationBridge.getPendingRawNotifications();
-    if (mounted) setState(() => _pending = updated);
-  }
-
   void _reassignWallet(Map<String, dynamic> item) async {
     final db = _resolveDb();
     if (db == null) return;
@@ -159,12 +149,9 @@ class _PendingInboxSheetState extends State<_PendingInboxSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-          InboxHeaderRibbon(
-            pendingCount: _pending.length,
-            onSimulate: () => InboxSimulationPicker.show(context, _injectNotification),
-          ),
+          InboxHeaderRibbon(pendingCount: _pending.length),
           if (_pending.isEmpty)
-            InboxEmptyView(onSimulationTap: () => InboxSimulationPicker.show(context, _injectNotification))
+            const InboxEmptyView()
           else
             InboxCardsList(
               items: _pending,

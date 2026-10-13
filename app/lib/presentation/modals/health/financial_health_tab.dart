@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../domain/services/financial_health_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import 'financial_health_pillar_card.dart';
 import 'financial_health_score_card.dart';
 
@@ -23,36 +22,25 @@ class FinancialHealthTab extends StatelessWidget {
     return ListView(
       controller: scrollController,
       physics: const BouncingScrollPhysics(),
-      padding: padding ?? const EdgeInsets.fromLTRB(20, 16, 20, 36),
+      padding: padding ?? const EdgeInsets.fromLTRB(24, 12, 24, 40),
       children: [
         FinancialHealthScoreCard(report: report),
         const SizedBox(height: 28),
-        Text('4 Pilar Rasio Keuangan', style: AppTypography.sectionTitle),
-        const SizedBox(height: 14),
-        FinancialHealthPillarCard(
-          metric: report.emergencyRunway,
-          icon: Icons.shield_outlined,
-          accentColor: AppColors.neoMint,
+        Text(
+          '4 Pilar Rasio Keuangan',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withValues(alpha: 0.38),
+            letterSpacing: 0.8,
+          ),
         ),
-        const SizedBox(height: 12),
-        FinancialHealthPillarCard(
-          metric: report.fixedCommitment,
-          icon: Icons.receipt_long_outlined,
-          accentColor: AppColors.neoCoral,
-        ),
-        const SizedBox(height: 12),
-        FinancialHealthPillarCard(
-          metric: report.savingsMargin,
-          icon: Icons.savings_outlined,
-          accentColor: AppColors.neoPurple,
-        ),
-        const SizedBox(height: 12),
-        FinancialHealthPillarCard(
-          metric: report.spendPacing,
-          icon: Icons.speed_rounded,
-          accentColor: AppColors.neoCyan,
-        ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 8),
+        FinancialHealthPillarCard(metric: report.emergencyRunway),
+        FinancialHealthPillarCard(metric: report.fixedCommitment),
+        FinancialHealthPillarCard(metric: report.savingsMargin),
+        FinancialHealthPillarCard(metric: report.spendPacing),
+        const SizedBox(height: 24),
         FinancialHealthRecommendationsSection(
           recommendations: report.recommendations,
         ),

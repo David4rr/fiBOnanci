@@ -16,9 +16,7 @@ class SettingsStyle {
   static Widget sectionHeader(String text, {Color? color}) => Text(
     text, style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w700, color: color ?? Colors.white.withValues(alpha: 0.36), letterSpacing: 1.0),
   );
-  static Widget hairline([double vertical = 0]) => Padding(
-    padding: EdgeInsets.symmetric(vertical: vertical), child: Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
-  );
+  static Widget hairline([double vertical = 0]) => SizedBox(height: vertical);
   static Widget segmentedTrack({required List<Widget> children}) => Container(
     padding: const EdgeInsets.all(3), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.035), borderRadius: BorderRadius.circular(10)), child: Row(children: children),
   );
@@ -85,14 +83,12 @@ class SettingsBudgetCycleSection extends StatelessWidget {
         valueText: 'Tgl ${state.budgetCycleDay} (${state.metrics.daysRemainingInMonth} hr)',
         onTap: () => onNavigate(SettingsSubRoute.cycleDay),
       ),
-      if (wallets.isNotEmpty) ...[
-        SettingsStyle.hairline(),
+      if (wallets.isNotEmpty)
         SettingsStyle.menuRow(
           key: const Key('settings_sts_wallets_menu_row'), title: 'Rekening Safe-to-Spend',
           valueText: isAllWallets ? 'Semua (${wallets.length})' : '${selectedIds.length} Aktif',
           onTap: () => onNavigate(SettingsSubRoute.stsWallets),
         ),
-      ],
     ]);
   }
 }
@@ -125,13 +121,11 @@ class _SettingsCycleDaySubPageState extends State<SettingsCycleDaySubPage> {
     return ListView(physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(24, 12, 24, 48), children: [
       SettingsStyle.sectionHeader('PRESET TANGGAL SIKLUS'),
       const SizedBox(height: 6),
-      for (int i = 0; i < _presets.length; i++) ...[
-        if (i > 0) SettingsStyle.hairline(),
+      for (int i = 0; i < _presets.length; i++)
         SettingsStyle.optionRow(
           key: Key('settings_cycle_day_${_presets[i]}'), title: 'Tanggal ${_presets[i]} setiap bulan',
           selected: cur == _presets[i], onTap: () => _setDay(_presets[i]),
         ),
-      ],
       const SizedBox(height: 20),
       SettingsStyle.sectionHeader('TANGGAL KUSTOM (1–31)'),
       const SizedBox(height: 10),
@@ -180,8 +174,7 @@ class SettingsStsWalletsSubPage extends StatelessWidget {
         key: const Key('settings_sts_wallet_all'), title: 'Semua Rekening (${wallets.length})',
         selected: isAllWallets, onTap: () => context.read<FinanceBloc>().add(const SetSafeToSpendWalletsEvent(null)),
       ),
-      for (final w in wallets) ...[
-        SettingsStyle.hairline(),
+      for (final w in wallets)
         SettingsStyle.optionRow(
           key: Key('settings_sts_wallet_${w.id}'), title: w.name, selected: !isAllWallets && selectedIds.contains(w.id),
           onTap: () {
@@ -191,7 +184,6 @@ class SettingsStsWalletsSubPage extends StatelessWidget {
             context.read<FinanceBloc>().add(SetSafeToSpendWalletsEvent(next.isEmpty || next.length >= wallets.length ? null : next));
           },
         ),
-      ],
     ]);
   }
 }

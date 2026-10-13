@@ -24,7 +24,7 @@ class ProfileGeneralDataCard extends StatelessWidget {
     bool isMuted = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 9),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -75,38 +75,18 @@ class ProfileGeneralDataCard extends StatelessWidget {
             letterSpacing: 0.8,
           ),
         ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.carbonBlack,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          ),
-          child: Column(
-            children: [
-              buildDataRow(label: 'Profesi / Pekerjaan', value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'No. Handphone', value: hasPhone ? profile.phone! : '—', isMuted: !hasPhone),
-              if (hasBio) ...[
-                Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-                buildDataRow(label: 'Bio / Catatan', value: profile.bio!),
-              ],
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'Mata Uang Utama', value: '${profile.currency} (${profile.currency == 'IDR' ? 'Rupiah' : profile.currency})'),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(
-                label: 'Target Pemasukan',
-                value: hasIncome ? AppCurrency.forCode(profile.currency).format(profile.monthlyIncomeTarget) : '—',
-                isMuted: !hasIncome,
-              ),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'Rekening Terhubung', value: '$walletCount Akun'),
-              Divider(color: Colors.white.withValues(alpha: 0.04), height: 1),
-              buildDataRow(label: 'Total Transaksi', value: '$txCount Tercatat'),
-            ],
-          ),
+        const SizedBox(height: 8),
+        buildDataRow(label: 'Profesi / Pekerjaan', value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
+        buildDataRow(label: 'No. Handphone', value: hasPhone ? profile.phone! : '—', isMuted: !hasPhone),
+        if (hasBio) buildDataRow(label: 'Bio / Catatan', value: profile.bio!),
+        buildDataRow(label: 'Mata Uang Utama', value: '${profile.currency} (${profile.currency == 'IDR' ? 'Rupiah' : profile.currency})'),
+        buildDataRow(
+          label: 'Target Pemasukan',
+          value: hasIncome ? AppCurrency.forCode(profile.currency).format(profile.monthlyIncomeTarget) : '—',
+          isMuted: !hasIncome,
         ),
+        buildDataRow(label: 'Rekening Terhubung', value: '$walletCount Akun'),
+        buildDataRow(label: 'Total Transaksi', value: '$txCount Tercatat'),
       ],
     );
   }

@@ -28,13 +28,11 @@ class SettingsFinancialSection extends StatelessWidget {
         key: const Key('settings_currency_menu_row'), title: 'Mata Uang Utama',
         valueText: profile.currency, onTap: () => onNavigate(SettingsSubRoute.currency),
       ),
-      SettingsStyle.hairline(),
       SettingsStyle.menuRow(
         key: const Key('settings_income_target_row'), title: 'Target Pemasukan Bulanan',
         valueText: hasTarget ? AppCurrency.forCode(profile.currency).format(target) : 'Atur',
         onTap: () => onNavigate(SettingsSubRoute.incomeTarget),
       ),
-      SettingsStyle.hairline(),
     ]);
   }
 }
@@ -83,13 +81,11 @@ class _SettingsCurrencySubPageState extends State<SettingsCurrencySubPage> {
     return ListView(physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(24, 12, 24, 48), children: [
         SettingsStyle.sectionHeader('PILIH MATA UANG'),
         const SizedBox(height: 6),
-        for (int i = 0; i < _currencies.length; i++) ...[
-          if (i > 0) SettingsStyle.hairline(),
+        for (int i = 0; i < _currencies.length; i++)
           SettingsStyle.optionRow(
             key: Key('settings_currency_${_currencies[i].$1}'), title: '${_currencies[i].$1} — ${_currencies[i].$2}',
             selected: code == _currencies[i].$1, onTap: () => _selectCurrency(_currencies[i].$1),
           ),
-        ],
         if (code != 'IDR') ...[
           const SizedBox(height: 24),
           SettingsStyle.sectionHeader('KURS KONVERSI (1 $code KE IDR)'),

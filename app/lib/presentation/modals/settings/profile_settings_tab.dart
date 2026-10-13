@@ -156,9 +156,9 @@ class SettingsDeleteProfileSubPage extends StatelessWidget {
 class SettingsBankAppsSubPage extends StatelessWidget {
   const SettingsBankAppsSubPage({super.key});
   @override
-  Widget build(BuildContext context) => ListView.separated(
+  Widget build(BuildContext context) => ListView.builder(
     physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
-    itemCount: kPopularBankAppPresets.length, separatorBuilder: (_, _) => SettingsStyle.hairline(),
+    itemCount: kPopularBankAppPresets.length,
     itemBuilder: (_, i) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

@@ -386,7 +386,7 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     });
-    testWidgets('Simulation feature allows picking preset and adds notification to inbox for review', (tester) async {
+    testWidgets('Empty inbox shows clean empty state without simulation buttons', (tester) async {
       tester.view.physicalSize = const Size(400 * 2, 900 * 2);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -399,45 +399,14 @@ void main() {
         (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [] : null,
       );
 
-      // Mount app with empty pending notifications
       await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
       await tester.pumpAndSettle();
 
-      // Open empty inbox
       await tester.tap(find.byIcon(Icons.inbox_outlined));
       await tester.pumpAndSettle();
 
-      expect(find.text('Coba Simulasi Notifikasi Masuk'), findsOneWidget);
-      expect(find.text('Simulasi'), findsOneWidget);
-
-      // Tap Simulation trigger
-      await tester.tap(find.text('Coba Simulasi Notifikasi Masuk'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Pilih Skenario Notifikasi'), findsOneWidget);
-      expect(find.text('SeaBank'), findsOneWidget);
-      expect(find.text('QRIS Superindo Rp 125.000 (Pengeluaran)'), findsOneWidget);
-
-      // Tap SeaBank preset (Transfer masuk Rp 500.000)
-      await tester.tap(find.text('SeaBank'));
-      await tester.pumpAndSettle();
-
-      // Verify notification is added to inbox
-      expect(NotificationBridge.pendingCount, 1);
-      expect(find.textContaining('Transfer masuk sebesar Rp 500.000'), findsOneWidget);
-
-      // Verify transaction is logged in SQLite database as income
-      final txs = await db.select(db.transactions).get();
-      final incomeTx = txs.where((t) => t.amount == 500000.0 && !t.isDeleted).firstOrNull;
-      expect(incomeTx, isNotNull);
-      expect(incomeTx!.type, 'income');
-
-      // Swipe right to confirm simulated transaction
-      await tester.drag(find.textContaining('Transfer masuk sebesar Rp 500.000'), const Offset(500, 0));
-      await tester.pumpAndSettle();
-
-      // Verify inbox empty again
-      expect(NotificationBridge.pendingCount, 0);
+      expect(find.text('Coba Simulasi Notifikasi Masuk'), findsNothing);
+      expect(find.text('Simulasi'), findsNothing);
       expect(find.text('Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());

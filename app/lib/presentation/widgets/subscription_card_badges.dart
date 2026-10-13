@@ -12,86 +12,87 @@ class SubscriptionCardBadges {
     int paidCycles = 0,
     bool isCompleted = false,
   }) {
-    final now = DateTime.now();
-    final today = now.day;
-    Color badgeBg;
-    Color dotColor;
-    Color textColor;
-    String statusText;
+    final today = DateTime.now().day;
     final isDarkBg = config.backgroundColor.computeLuminance() < 0.35;
+    final isPaidState = isCompleted || isPaid || (isInstallment && totalCycles != null && paidCycles >= totalCycles);
+
+    late final Color badgeBg;
+    late final Color borderColor;
+    late final Color accentColor;
+    late final Color textColor;
+    late final String statusText;
 
     if (isCompleted || (isInstallment && totalCycles != null && paidCycles >= totalCycles)) {
-      badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
-      dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
-      textColor = dotColor;
+      badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
+      borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
+      accentColor = const Color(0xFFD4F442);
+      textColor = const Color(0xFFF8FAFC);
       statusText = 'CICILAN LUNAS ($paidCycles/${totalCycles ?? paidCycles})';
     } else if (isInstallment && isPaid) {
-      badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
-      dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
-      textColor = dotColor;
+      badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
+      borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
+      accentColor = const Color(0xFFD4F442);
+      textColor = const Color(0xFFF8FAFC);
       statusText = 'CICILAN $paidCycles/${totalCycles ?? "?"} • LUNAS';
-    } else if (isInstallment) {
+    } else if (isPaid) {
+      badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
+      borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
+      accentColor = const Color(0xFFD4F442);
+      textColor = const Color(0xFFF8FAFC);
+      statusText = 'LUNAS BULAN INI';
+    } else {
       final currentStep = (paidCycles + 1).clamp(1, totalCycles ?? 99);
+      final prefix = isInstallment ? 'CICILAN $currentStep/$totalCycles • ' : 'JATUH TEMPO ';
       if (today == dueDay) {
-        badgeBg = const Color(0xFFDC2626);
-        dotColor = Colors.white;
-        textColor = Colors.white;
-        statusText = 'CICILAN $currentStep/$totalCycles • HARI INI';
+        badgeBg = const Color(0xFF141115).withValues(alpha: 0.90);
+        borderColor = const Color(0xFFFF6B6B).withValues(alpha: 0.45);
+        accentColor = const Color(0xFFFF6B6B);
+        textColor = const Color(0xFFFFF1F2);
+        statusText = '${prefix}HARI INI';
       } else if (today < dueDay && (dueDay - today) <= 3) {
         final diff = dueDay - today;
-        badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.9);
-        dotColor = const Color(0xFFF59E0B);
-        textColor = const Color(0xFFFBBF24);
-        statusText = 'CICILAN $currentStep/$totalCycles • H-$diff';
+        badgeBg = const Color(0xFF121318).withValues(alpha: 0.88);
+        borderColor = const Color(0xFFFBBF24).withValues(alpha: 0.38);
+        accentColor = const Color(0xFFFBBF24);
+        textColor = const Color(0xFFFEF3C7);
+        statusText = '${prefix}H-$diff';
       } else {
-        badgeBg = isDarkBg ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF0F172A).withValues(alpha: 0.85);
-        dotColor = isDarkBg ? Colors.white.withValues(alpha: 0.8) : config.backgroundColor;
-        textColor = Colors.white;
-        statusText = 'CICILAN $currentStep/$totalCycles • TGL $dueDay';
+        badgeBg = isDarkBg ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08);
+        borderColor = config.textColor.withValues(alpha: 0.14);
+        accentColor = config.textColor.withValues(alpha: 0.70);
+        textColor = config.textColor;
+        statusText = '${prefix}TGL $dueDay';
       }
-    } else if (isPaid) {
-      badgeBg = isDarkBg ? const Color(0xFF064E3B).withValues(alpha: 0.85) : const Color(0xFF0F172A).withValues(alpha: 0.9);
-      dotColor = isDarkBg ? const Color(0xFF34D399) : const Color(0xFF10B981);
-      textColor = dotColor;
-      statusText = 'LUNAS BULAN INI';
-    } else if (today == dueDay) {
-      badgeBg = const Color(0xFFDC2626);
-      dotColor = Colors.white;
-      textColor = Colors.white;
-      statusText = 'JATUH TEMPO HARI INI';
-    } else if (today < dueDay && (dueDay - today) <= 3) {
-      final diff = dueDay - today;
-      badgeBg = const Color(0xFF0F172A).withValues(alpha: 0.9);
-      dotColor = const Color(0xFFF59E0B);
-      textColor = const Color(0xFFFBBF24);
-      statusText = 'JATUH TEMPO H-$diff';
-    } else {
-      badgeBg = isDarkBg ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF0F172A).withValues(alpha: 0.85);
-      dotColor = isDarkBg ? Colors.white.withValues(alpha: 0.8) : config.backgroundColor;
-      textColor = Colors.white;
-      statusText = 'JATUH TEMPO TGL $dueDay';
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: EdgeInsets.fromLTRB(isPaidState ? 5 : 9, 4, 10, 4),
       decoration: BoxDecoration(
         color: badgeBg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isPaid
-              ? (isDarkBg ? const Color(0xFF10B981).withValues(alpha: 0.4) : Colors.transparent)
-              : Colors.white.withValues(alpha: 0.1),
-          width: 0.8,
-        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor, width: 0.9),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: dotColor)),
+          if (isPaidState)
+            Container(
+              width: 15,
+              height: 15,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: accentColor),
+              child: const Icon(Icons.check_rounded, size: 10.5, color: Color(0xFF0C0D11)),
+            )
+          else
+            Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: accentColor)),
           const SizedBox(width: 6),
           Text(
             statusText,
-            style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.4, color: textColor),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.35,
+              color: textColor,
+            ),
           ),
         ],
       ),
