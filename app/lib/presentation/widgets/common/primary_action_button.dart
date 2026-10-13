@@ -61,10 +61,10 @@ class PrimaryActionButton extends StatelessWidget {
                     children: [
                       Icon(icon, size: 20, color: foregroundColor),
                       const SizedBox(width: 8),
-                      Text(text, style: style),
+                      Flexible(child: Text(text, style: style, maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   )
-                : Text(text, style: style),
+                : Text(text, style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );
   }

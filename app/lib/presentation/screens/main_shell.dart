@@ -22,42 +22,58 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
+  double _slideDirection = 1.0;
   int _walletSegment = 0;
   bool _isWalletDetailOpen = false;
   final _bridge = NotificationBridge();
 
-  @override
-  void initState() {
-    super.initState();
-    _bridge.startListening(
-      widget.db,
-      onAutoLogged: (msg) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: AppColors.neoMint,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: AppColors.textDarkPrimary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text('Notifikasi Otomatis Tercatat!\n$msg', style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+  void _switchTab(int newIndex) {
+    if (newIndex == _currentIndex) return;
+    setState(() {
+      _slideDirection = newIndex > _currentIndex ? 1.0 : -1.0;
+      _currentIndex = newIndex;
+    });
+  }
+
+  void _showAutoLoggedSnackBar(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.neoMint,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: AppColors.textDarkPrimary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('Notifikasi Otomatis Tercatat!\n$msg', style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
             ),
-          );
-        }
-      },
+          ],
+        ),
+      ),
     );
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _bridge.startListening(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _bridge.onAppResumed(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _bridge.stopListening();
     super.dispose();
   }
@@ -86,8 +102,8 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final screens = [
       DashboardScreen(
-        onNavigateToWallets: () => setState(() => _currentIndex = 2),
-        onNavigateToSubscriptions: () => setState(() => _currentIndex = 1),
+        onNavigateToWallets: () => _switchTab(2),
+        onNavigateToSubscriptions: () => _switchTab(1),
       ),
       SubscriptionScreen(onAddSubscription: () => AddSubscriptionModal.show(context)),
       WalletScreen(
@@ -102,7 +118,29 @@ class _MainShellState extends State<MainShell> {
       child: Scaffold(
         backgroundColor: AppColors.canvasBg,
         extendBody: true,
-        body: screens[_currentIndex < screens.length ? _currentIndex : 0],
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: SmoothPageView.defaultCurve,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            final isIncoming = child.key == ValueKey<int>(_currentIndex);
+            final offset = isIncoming ? Offset(_slideDirection * 0.05, 0) : Offset(-_slideDirection * 0.05, 0);
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(begin: offset, end: Offset.zero).animate(animation),
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 0.985, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              ),
+            );
+          },
+          child: KeyedSubtree(
+            key: ValueKey<int>(_currentIndex),
+            child: screens[_currentIndex < screens.length ? _currentIndex : 0],
+          ),
+        ),
         bottomNavigationBar: AnimatedSlide(
           offset: _isWalletDetailOpen ? const Offset(0, 1.8) : Offset.zero,
           duration: const Duration(milliseconds: 260),
@@ -115,7 +153,7 @@ class _MainShellState extends State<MainShell> {
               ignoring: _isWalletDetailOpen,
               child: BottomNavDock(
                 currentIndex: _currentIndex,
-                onTapIndex: (index) => setState(() => _currentIndex = index),
+                onTapIndex: _switchTab,
                 onAddAction: _onAddAction,
                 onAddLongPress: () => QuickTransactionInputSheet.show(context),
               ),

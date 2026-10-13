@@ -57,7 +57,7 @@ class SubscriptionDetailAppBar extends StatelessWidget {
               child: Center(child: ModalGrabHandle()),
             )
           else
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: ModalHeader(

@@ -79,13 +79,15 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   void dispose() { _pageController.dispose(); _searchController.dispose(); _dayScrollController.dispose(); super.dispose(); }
 
   void _goToEditTx(TransactionEntry tx) {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() { _selectedTransaction = tx; _currentTab = 1; });
-    _pageController.animateToPage(1, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+    SmoothPageView.animateTo(_pageController, 1);
   }
 
   void _goToHistory() {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _currentTab = 0);
-    _pageController.animateToPage(0, duration: const Duration(milliseconds: 320), curve: Curves.easeInOutCubic);
+    SmoothPageView.animateTo(_pageController, 0);
   }
   @override
   Widget build(BuildContext context) {
@@ -129,56 +131,54 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
               onDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
             ),
             Expanded(
-              child: PageView(
+              child: SmoothPageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   Column(
                     children: [
-                      ExpenseHistorySearchBar(
-                        searchController: _searchController,
-                        searchQuery: _searchQuery,
-                        typeFilter: _typeFilter,
-                        walletFilter: _walletFilter,
-                        wallets: liveWallets,
-                        onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
-                        onClearSearch: () => setState(() => _searchQuery = ''),
-                        onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
-                        onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
-                        onClearWalletFilter: () => setState(() => _walletFilter = null),
-                      ),
-                      const SizedBox(height: 6),
-                      DailyCalendarBar(
-                        scrollController: _dayScrollController,
-                        sortedDays: sortedDays,
-                        selectedIndex: safeIndex,
-                        dayGroups: dayGroups,
-                        onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
-                      ),
-                      const SizedBox(height: 10),
-                      ExpenseHistoryDeckView(
-                        isFiltering: _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null,
-                        searchQuery: _searchQuery,
-                        filtered: filtered,
-                        sortedDays: sortedDays,
-                        currentDayKey: currentDayKey,
-                        currentDayTxs: currentDayTxs,
-                        allTransactions: liveTxs,
-                        wallets: liveWallets,
-                        onManageTransaction: _goToEditTx,
-                        onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
-                        onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
-                      ),
-                    ],
+                        ExpenseHistorySearchBar(
+                          searchController: _searchController,
+                          searchQuery: _searchQuery,
+                          typeFilter: _typeFilter,
+                          walletFilter: _walletFilter,
+                          wallets: liveWallets,
+                          onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
+                          onClearSearch: () => setState(() => _searchQuery = ''),
+                          onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
+                          onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
+                          onClearWalletFilter: () => setState(() => _walletFilter = null),
+                        ),
+                        const SizedBox(height: 6),
+                        DailyCalendarBar(
+                          scrollController: _dayScrollController,
+                          sortedDays: sortedDays,
+                          selectedIndex: safeIndex,
+                          dayGroups: dayGroups,
+                          onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
+                        ),
+                        const SizedBox(height: 10),
+                        ExpenseHistoryDeckView(
+                          isFiltering: _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null,
+                          searchQuery: _searchQuery,
+                          filtered: filtered,
+                          sortedDays: sortedDays,
+                          currentDayKey: currentDayKey,
+                          currentDayTxs: currentDayTxs,
+                          allTransactions: liveTxs,
+                          wallets: liveWallets,
+                          onManageTransaction: _goToEditTx,
+                          onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
+                          onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
+                        ),
+                      ],
                   ),
-                  if (_selectedTransaction != null)
-                    TransactionDetailModal(
-                      transaction: _selectedTransaction!,
-                      isInline: true,
-                      onClose: _goToHistory, onSaved: _goToHistory, onDeleted: _goToHistory,
-                    )
-                  else
-                    const SizedBox.shrink(),
+                  _selectedTransaction != null
+                      ? TransactionDetailModal(
+                          transaction: _selectedTransaction!,
+                          isInline: true,
+                          onClose: _goToHistory, onSaved: _goToHistory, onDeleted: _goToHistory,
+                          )
+                      : const SizedBox.shrink(),
                 ],
               ),
             ),

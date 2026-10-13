@@ -18,46 +18,26 @@ class NotificationBridge {
   static const _eventChannel = EventChannel('com.fibonanci.app/live_notifications');
 
   StreamSubscription? _liveSubscription;
-
+  bool _isProcessingPending = false;
   static ValueNotifier<int> get pendingCountNotifier => NotificationInbox.pendingCountNotifier;
   static int get pendingCount => NotificationInbox.pendingCount;
 
   static Future<bool> isPermissionGranted() async {
-    try {
-      final bool? isGranted = await _methodChannel.invokeMethod('isPermissionGranted');
-      return isGranted ?? false;
-    } catch (_) {
-      return false;
-    }
+    try { return (await _methodChannel.invokeMethod<bool>('isPermissionGranted')) ?? false; } catch (_) { return false; }
   }
 
   static Future<void> openPermissionSettings() async {
-    try {
-      await _methodChannel.invokeMethod('openPermissionSettings');
-    } catch (_) {}
+    try { await _methodChannel.invokeMethod('openPermissionSettings'); } catch (_) {}
   }
-
 
   static Future<void> setHighRefreshRate(bool enabled) async {
-    try {
-      await _methodChannel.invokeMethod('setHighRefreshRate', {'enabled': enabled});
-    } catch (_) {}
+    try { await _methodChannel.invokeMethod('setHighRefreshRate', {'enabled': enabled}); } catch (_) {}
   }
-  static Future<List<Map<String, dynamic>>> getPendingRawNotifications() =>
-      NotificationInbox.getPendingRawNotifications();
-
-  static void removePendingNotification(Map<String, dynamic> raw) =>
-      NotificationInbox.removePendingNotification(raw);
-
-  static void confirmNotification(Map<String, dynamic> item) =>
-      NotificationInbox.confirmNotification(item);
-
-  static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) =>
-      NotificationInbox.rejectNotification(item, db);
-
-  static void clearPendingNotifications() =>
-      NotificationInbox.clearPendingNotifications();
-
+  static Future<List<Map<String, dynamic>>> getPendingRawNotifications() => NotificationInbox.getPendingRawNotifications();
+  static void removePendingNotification(Map<String, dynamic> raw) => NotificationInbox.removePendingNotification(raw);
+  static void confirmNotification(Map<String, dynamic> item) => NotificationInbox.confirmNotification(item);
+  static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) => NotificationInbox.rejectNotification(item, db);
+  static void clearPendingNotifications() => NotificationInbox.clearPendingNotifications();
   static Future<void> syncAllowedPackages(AppDatabase db) async {
     try {
       final activePackages = await db.getActiveNotificationPackages();
@@ -65,14 +45,20 @@ class NotificationBridge {
     } catch (_) {}
   }
 
+  static List<Map<String, String>>? _cachedInstalledApps;
+  static List<Map<String, String>>? get cachedInstalledBankApps => _cachedInstalledApps;
+
   static Future<List<Map<String, String>>> getInstalledBankApps() async {
     try {
       final List<dynamic>? apps = await _methodChannel.invokeMethod('getInstalledBankApps');
       if (apps != null) {
-        return apps.whereType<Map>().map((m) => Map<String, String>.from(m)).toList();
+        final parsed = apps.whereType<Map>().map((m) => Map<String, String>.from(m)).toList();
+        parsed.sort((a, b) => (a['appName'] ?? '').compareTo(b['appName'] ?? ''));
+        if (parsed.isNotEmpty) _cachedInstalledApps = parsed;
+        return parsed;
       }
     } catch (_) {}
-    return [];
+    return _cachedInstalledApps ?? [];
   }
 
   Future<void> startListening(
@@ -93,15 +79,19 @@ class NotificationBridge {
     } catch (_) {}
   }
 
-  void stopListening() {
-    _liveSubscription?.cancel();
-    _liveSubscription = null;
+  Future<void> onAppResumed(AppDatabase db, {Function(String message)? onAutoLogged}) async {
+    await syncAllowedPackages(db);
+    await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
   }
+
+  void stopListening() { _liveSubscription?.cancel(); _liveSubscription = null; }
 
   Future<void> _processPendingNotifications(
     AppDatabase db, {
     Function(String message)? onAutoLogged,
   }) async {
+    if (_isProcessingPending) return;
+    _isProcessingPending = true;
     try {
       final List<dynamic>? pending = await _methodChannel.invokeMethod('getPendingNotifications');
       if (pending != null) {
@@ -111,7 +101,10 @@ class NotificationBridge {
           }
         }
       }
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _isProcessingPending = false;
+    }
   }
 
   static Future<void> handleRawNotification(
@@ -122,8 +115,10 @@ class NotificationBridge {
     final pkg = raw['package'] as String? ?? '';
     final title = raw['title'] as String? ?? '';
     final text = raw['text'] as String? ?? '';
+    final rawTs = raw['timestamp'];
+    final ts = rawTs is num ? DateTime.fromMillisecondsSinceEpoch(rawTs.toInt()) : null;
 
-    final parsed = NotificationParser.parse(packageName: pkg, title: title, body: text);
+    final parsed = NotificationParser.parse(packageName: pkg, title: title, body: text, timestamp: ts);
     if (parsed == null) return;
 
     final targetWallet = await NotificationWalletResolver.resolve(db: db, pkg: pkg, title: title, text: text);
@@ -134,10 +129,11 @@ class NotificationBridge {
     final now = DateTime.now().toUtc();
 
     if (parsed.externalRef != null) {
-      final existing = await (db.select(db.transactions)..where((t) => t.externalRef.equals(parsed.externalRef!))).get();
+      final existing = await (db.select(db.transactions)
+            ..where((t) => t.externalRef.equals(parsed.externalRef!) & t.isDeleted.equals(false)))
+          .get();
       if (existing.isNotEmpty) return;
     }
-
     final txId = const Uuid().v4();
     await db.logTransactionWithBalanceMutation(
       tx: TransactionsCompanion(

@@ -40,18 +40,21 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
   @override
   void dispose() { _pageController.dispose(); super.dispose(); }
   void _goToTransfer({required bool isDeposit}) {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() { _isDeposit = isDeposit; _subTab = 1; _currentTab = 1; });
-    _pageController.animateToPage(1, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    SmoothPageView.animateTo(_pageController, 1);
   }
 
   void _goToEditTx(TransactionEntry tx) {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() { _selectedTransaction = tx; _subTab = 2; _currentTab = 2; });
-    _pageController.animateToPage(1, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    SmoothPageView.animateTo(_pageController, 1);
   }
 
   void _goToDetails() {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _currentTab = 0);
-    _pageController.animateToPage(0, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    SmoothPageView.animateTo(_pageController, 0);
   }
   String _getTitle(PocketEntry latestPocket) {
     if (_currentTab == 1) return _isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening';
@@ -122,8 +125,9 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_currentTab == 0)
-                          const ModalGrabHandle(padding: EdgeInsets.only(top: 10, bottom: 6)),
+                        _currentTab == 0
+                            ? const ModalGrabHandle(padding: EdgeInsets.only(top: 10, bottom: 6))
+                            : const SizedBox(height: 20),
                         ModalHeader(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                           title: _getTitle(latestPocket),
@@ -135,41 +139,39 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
                     ),
                   ),
                   Expanded(
-                    child: PageView(
+                    child: SmoothPageView(
                       controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         PocketDetailTab(
                           pocket: latestPocket,
-                          pocketColor: pocketColor,
-                          themeConfig: themeConfig,
-                          transactions: pocketTxs,
-                          wallets: state.wallets,
-                          currencyFormatter: AppCurrency.forCode(state.profile.currency),
-                          onDeposit: () => _goToTransfer(isDeposit: true),
-                          onWithdraw: () => _goToTransfer(isDeposit: false),
-                          onEditTransaction: _goToEditTx,
+                            pocketColor: pocketColor,
+                            themeConfig: themeConfig,
+                            transactions: pocketTxs,
+                            wallets: state.wallets,
+                            currencyFormatter: AppCurrency.forCode(state.profile.currency),
+                            onDeposit: () => _goToTransfer(isDeposit: true),
+                            onWithdraw: () => _goToTransfer(isDeposit: false),
+                            onEditTransaction: _goToEditTx,
                         ),
-                        if (_subTab == 2 && _selectedTransaction != null)
-                          TransactionDetailModal(
-                            key: ValueKey(_selectedTransaction!.id),
-                            transaction: _selectedTransaction!,
-                            isInline: true,
-                            onClose: _goToDetails,
-                            onSaved: _goToDetails,
-                            onDeleted: _goToDetails,
-                          )
-                        else
-                          SingleChildScrollView(
-                            padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
-                            child: PocketTransferForm(
-                              key: ValueKey('transfer_${_isDeposit}_${latestPocket.id}'),
-                              pocket: latestPocket,
-                              isDeposit: _isDeposit,
-                              onSuccess: _handleClose,
-                              onCancel: _handleClose,
-                            ),
-                          ),
+                        (_subTab == 2 && _selectedTransaction != null)
+                            ? TransactionDetailModal(
+                                  key: ValueKey(_selectedTransaction!.id),
+                                  transaction: _selectedTransaction!,
+                                  isInline: true,
+                                  onClose: _goToDetails,
+                                  onSaved: _goToDetails,
+                                  onDeleted: _goToDetails,
+                                )
+                              : SingleChildScrollView(
+                                  padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+                                  child: PocketTransferForm(
+                                    key: ValueKey('transfer_${_isDeposit}_${latestPocket.id}'),
+                                    pocket: latestPocket,
+                                    isDeposit: _isDeposit,
+                                    onSuccess: _handleClose,
+                                    onCancel: _handleClose,
+                                  ),
+                              ),
                       ],
                     ),
                   ),

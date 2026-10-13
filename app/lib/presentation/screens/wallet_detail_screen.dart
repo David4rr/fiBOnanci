@@ -49,6 +49,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
   WalletTxFilter _selectedFilter = WalletTxFilter.all;
   String _searchQuery = '';
   int _currentTab = 0, _subTab = 1;
+  bool _isPickingApp = false;
   TransactionEntry? _selectedTransaction;
 
   @override
@@ -66,12 +67,14 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
   }
 
   void _goToSubTab(int tab, [TransactionEntry? tx]) {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
+      _isPickingApp = false;
       if (tx != null) _selectedTransaction = tx;
       if (tab != 0) _subTab = tab;
       _currentTab = tab;
     });
-    _pageController.animateToPage(tab == 0 ? 0 : 1, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    SmoothPageView.animateTo(_pageController, tab == 0 ? 0 : 1);
   }
 
   void _goToEditTab() => _goToSubTab(1);
@@ -119,13 +122,13 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                     headerOpacityListenable: _headerOpacity,
                     currencyFormatter: widget.currencyFormatter,
                     isEditing: _currentTab != 0,
-                    onReturnToDetails: _goToDetailsTab,
-                    customTitle: _currentTab == 1
-                        ? 'Penyesuaian Saldo: ${wallet.name}'
-                        : (_currentTab == 2 ? 'Catat Transaksi' : (_currentTab == 3 ? 'Edit Transaksi' : null)),
-                    customSubtitle: _currentTab == 1
-                        ? 'Ubah saldo awal & preferensi rekening'
-                        : (_currentTab == 2 ? 'Rekening: ${wallet.name}' : (_currentTab == 3 ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi') : null)),
+                    onReturnToDetails: (_currentTab == 1 && _isPickingApp) ? () => setState(() => _isPickingApp = false) : _goToDetailsTab,
+                    customTitle: (_currentTab == 1 && _isPickingApp)
+                        ? 'Pilih Aplikasi'
+                        : (_currentTab == 1 ? 'Penyesuaian Saldo: ${wallet.name}' : (_currentTab == 2 ? 'Catat Transaksi' : (_currentTab == 3 ? 'Edit Transaksi' : null))),
+                    customSubtitle: (_currentTab == 1 && _isPickingApp)
+                        ? 'Cari bank atau e-wallet di HP Anda'
+                        : (_currentTab == 1 ? 'Ubah saldo awal & preferensi rekening' : (_currentTab == 2 ? 'Rekening: ${wallet.name}' : (_currentTab == 3 ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi') : null))),
                   ),
                 ),
                 Expanded(
@@ -160,6 +163,8 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                     onEditTransaction: _goToEditTxTab,
                     selectedTransaction: _selectedTransaction,
                     onReturnToDetails: _goToDetailsTab,
+                    isPickingApp: _isPickingApp,
+                    onPickingAppChanged: (val) => setState(() => _isPickingApp = val),
                   ),
                 ),
               ],

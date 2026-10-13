@@ -90,11 +90,12 @@ class _ProfileModalState extends State<ProfileModal> {
   }
 
   void _goToTab(int tab, [ProfileEntry? target]) {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
-      if (tab != 0) _subTab = tab;
-      _editingProfile = target; _settingsRoute = null; _currentTab = tab;
+      if (tab != 0) { _subTab = tab; _editingProfile = target; _settingsRoute = null; }
+      _currentTab = tab;
     });
-    _pageController.animateToPage(tab == 0 ? 0 : 1, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    SmoothPageView.animateTo(_pageController, tab == 0 ? 0 : 1);
   }
   void _goToSummary() => _goToTab(0);
 
@@ -131,9 +132,7 @@ class _ProfileModalState extends State<ProfileModal> {
 
         return PopScope(
           canPop: _currentTab == 0,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) _handleBack();
-          },
+          onPopInvokedWithResult: (didPop, _) { if (!didPop) _handleBack(); },
           child: Scaffold(
             backgroundColor: AppColors.canvasBg,
             body: SafeArea(
@@ -147,10 +146,9 @@ class _ProfileModalState extends State<ProfileModal> {
                       onVerticalDragUpdate: _onHeaderDragUpdate,
                       onVerticalDragEnd: _onHeaderDragEnd,
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        if (_currentTab == 0)
-                          const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle()))
-                        else
-                          const SizedBox(height: 8),
+                        _currentTab == 0
+                            ? const Padding(padding: EdgeInsets.only(top: 8, bottom: 4), child: Center(child: ModalGrabHandle()))
+                            : const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                           child: ModalHeader(
@@ -162,29 +160,27 @@ class _ProfileModalState extends State<ProfileModal> {
                       ]),
                     ),
                   Expanded(
-                    child: PageView(
-                      controller: _pageController, physics: const NeverScrollableScrollPhysics(),
+                    child: SmoothPageView(
+                      controller: _pageController,
                       children: [
                         ListView(
                           physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
                           children: [
-                            ProfileCardCarousel(
-                              profiles: profiles, currentProfileId: profile.id, walletCount: state.wallets.length, txCount: state.transactions.length,
-                              onEditProfile: () => _goToTab(1, profile), onNewProfile: () => _goToTab(1),
-                              onHealthDetails: () => _goToTab(2), onFinancialReport: () => _goToTab(3), onSettings: () => _goToTab(4),
-                            ),
-                            const SizedBox(height: 16),
-                            ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
+                              ProfileCardCarousel(
+                                profiles: profiles, currentProfileId: profile.id, walletCount: state.wallets.length, txCount: state.transactions.length,
+                                onEditProfile: () => _goToTab(1, profile), onNewProfile: () => _goToTab(1),
+                                onHealthDetails: () => _goToTab(2), onFinancialReport: () => _goToTab(3), onSettings: () => _goToTab(4),
+                              ),
+                              const SizedBox(height: 16),
+                              ProfileGeneralDataCard(profile: profile, walletCount: state.wallets.length, txCount: state.transactions.length),
                           ],
                         ),
-                        RepaintBoundary(
-                          child: switch (_subTab) {
-                            1 => ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
-                            2 => FinancialHealthTab(report: state.healthReport),
+                        switch (_subTab) {
+                          1 => ProfileEditTab(key: ValueKey(_editingProfile?.id ?? 'new_profile'), initialProfile: _editingProfile, onSaved: _goToSummary),
+                          2 => FinancialHealthTab(report: state.healthReport),
                             3 => FinancialReportTab(state: state),
                             _ => ProfileSettingsTab(state: state, activeRoute: _settingsRoute, onNavigate: (route) => setState(() => _settingsRoute = route)),
-                          },
-                        ),
+                        },
                       ],
                     ),
                   ),

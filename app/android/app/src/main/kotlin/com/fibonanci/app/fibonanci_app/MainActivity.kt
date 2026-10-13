@@ -1,7 +1,9 @@
 package com.fibonanci.app.fibonanci_app
 
+import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
+import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationManagerCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -18,8 +20,8 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         applyHighRefreshRate(true)
+        ensureNotificationListenerBound()
         smartInputHelper = SmartInputHelper(this)
-        // 1. MethodChannel for Permission, 120Hz Display Mode & Pending Queue
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "setHighRefreshRate" -> {
@@ -48,19 +50,22 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "getInstalledBankApps" -> {
-                    try {
-                        val pm = packageManager
-                        val installed = pm.getInstalledApplications(0)
-                        val bankApps = mutableListOf<Map<String, String>>()
-                        for (app in installed) {
-                            val pkg = app.packageName
-                            val label = pm.getApplicationLabel(app).toString()
-                            bankApps.add(mapOf("packageName" to pkg, "appName" to label))
+                    val pm = packageManager
+                    Thread {
+                        try {
+                            val installed = pm.getInstalledApplications(0)
+                            val bankApps = ArrayList<Map<String, String>>(installed.size)
+                            for (app in installed) {
+                                val pkg = app.packageName
+                                val label = pm.getApplicationLabel(app).toString()
+                                bankApps.add(mapOf("packageName" to pkg, "appName" to label))
+                            }
+                            bankApps.sortBy { it["appName"]?.lowercase() ?: "" }
+                            runOnUiThread { result.success(bankApps) }
+                        } catch (_: Exception) {
+                            runOnUiThread { result.success(emptyList<Map<String, String>>()) }
                         }
-                        result.success(bankApps)
-                    } catch (_: Exception) {
-                        result.success(emptyList<Map<String, String>>())
-                    }
+                    }.start()
                 }
                 else -> result.notImplemented()
             }
@@ -128,6 +133,27 @@ class MainActivity : FlutterActivity() {
             }
         } catch (_: Exception) {}
     }
+    private fun ensureNotificationListenerBound() {
+        try {
+            val enabledPackages = NotificationManagerCompat.getEnabledListenerPackages(applicationContext)
+            if (enabledPackages.contains(applicationContext.packageName)) {
+                NotificationListenerService.requestRebind(
+                    ComponentName(applicationContext, FibonanciNotificationListener::class.java)
+                )
+            }
+        } catch (_: Exception) {}
+    }
+
+    override fun onResume() {
+        super.onResume()
+        FibonanciNotificationListener.isAppForeground = true
+        ensureNotificationListenerBound()
+    }
+
+    override fun onPause() {
+        FibonanciNotificationListener.isAppForeground = false
+        super.onPause()
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -143,6 +169,8 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        FibonanciNotificationListener.isAppForeground = false
+        FibonanciNotificationListener.liveNotificationListener = null
         if (::smartInputHelper.isInitialized) {
             smartInputHelper.dispose()
         }

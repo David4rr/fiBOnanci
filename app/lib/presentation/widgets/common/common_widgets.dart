@@ -17,3 +17,4 @@ export 'peekable_balance_text.dart';
 export 'primary_action_button.dart';
 export 'search_filter_chip.dart';
 export 'slide_to_delete_button.dart';
+export 'smooth_page_view.dart';

@@ -9,19 +9,26 @@ class SemanticNotificationClassifier {
   }) {
     final fullText = '$title $body';
 
-    final amountRegex = RegExp(
-      r'(?:Rp\.?|IDR)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|(?:sebesar|senilai|amount|nominal)\s+(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|([0-9]{1,3}(?:[.,][0-9]{3})+)',
+    final explicitMatches = RegExp(
+      r'(?:Rp\.?|IDR)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|(?:sebesar|senilai|amount|nominal)\s+(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)',
       caseSensitive: false,
-    );
-    final amtMatch = amountRegex.firstMatch(fullText);
-    if (amtMatch == null) return null;
-
-    final rawAmountStr = amtMatch.group(1) ?? amtMatch.group(2) ?? amtMatch.group(3);
-    if (rawAmountStr == null) return null;
-
-    final amount = parseIdr(rawAmountStr);
+    ).allMatches(fullText);
+    double amount = 0;
+    for (final m in explicitMatches) {
+      final raw = m.group(1) ?? m.group(2);
+      if (raw != null) {
+        final parsed = parseIdr(raw);
+        if (parsed > 0) {
+          amount = parsed;
+          break;
+        }
+      }
+    }
+    if (amount <= 0) {
+      final fallbackMatch = RegExp(r'([0-9]{1,3}(?:[.,][0-9]{3})+)').firstMatch(fullText);
+      if (fallbackMatch != null) amount = parseIdr(fallbackMatch.group(1)!);
+    }
     if (amount <= 0) return null;
-
     final lowText = fullText.toLowerCase();
 
     final hasExpenseAction = lowText.contains('pembayaran') ||
@@ -35,8 +42,13 @@ class SemanticNotificationClassifier {
         lowText.contains('tagihan') ||
         lowText.contains('tarik tunai') ||
         lowText.contains('transfer keluar') ||
+        lowText.contains('mengirim') ||
+        lowText.contains('berhasil kirim') ||
+        lowText.contains('baru aja kirim') ||
+        lowText.contains('kirim ke') ||
+        lowText.contains('berhasil transfer') ||
+        lowText.contains('uang keluar') ||
         lowText.contains('kirim uang');
-
     final isIncome = (lowText.contains('masuk') ||
         lowText.contains('menerima') ||
         lowText.contains('kredit') ||
@@ -101,11 +113,22 @@ class SemanticNotificationClassifier {
         lowText.contains('transfer sebesar') ||
         lowText.contains('kirim uang') ||
         lowText.contains('kirim dana') ||
+        lowText.contains('baru aja kirim') ||
+        lowText.contains('kirim rp') ||
+        lowText.contains('kirim idr') ||
+        lowText.contains('kirim ke') ||
+        lowText.contains('mengirim') ||
+        lowText.contains('dikirim') ||
+        lowText.contains('terkirim') ||
+        lowText.contains('berhasil kirim') ||
+        lowText.contains('berhasil transfer') ||
+        lowText.contains('transfer berhasil') ||
+        lowText.contains('uang keluar') ||
+        lowText.contains('dana keluar') ||
         lowText.contains('sent to') ||
         lowText.contains('send to') ||
         lowText.contains('transferred to') ||
         lowText.contains('transferred') ||
-        lowText.contains('transaksi') ||
         lowText.contains('transaction') ||
         lowText.contains('qris') ||
         lowText.contains('pembelian') ||
@@ -126,7 +149,7 @@ class SemanticNotificationClassifier {
         lowText.contains('outgoing');
 
     if (isIncome) {
-      final senderRegex = RegExp(r'(?:dari|pengirim|from)\s+([^.,\n]+?)(?:\s+(?:pada|sebesar|senilai|ke|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
+      final senderRegex = RegExp(r'(?:dari|pengirim|from)\s+([^.,\n]+?)(?:\s+(?:pada|sebesar|senilai|ke\s+rekening|ke\s+kantong|ke\s+saldo|ke\s+tabungan|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
       final sMatch = senderRegex.firstMatch(fullText);
       String sender = sMatch != null ? sMatch.group(1)!.trim() : '';
       if (sender.isEmpty) {
@@ -140,24 +163,13 @@ class SemanticNotificationClassifier {
           sender = title.isNotEmpty ? title.trim() : 'Transfer Masuk';
         }
       }
-
-      return ParsedNotificationResult(
-        amount: amount,
-        type: 'income',
-        counterparty: sender,
-      );
+      return ParsedNotificationResult(amount: amount, type: 'income', counterparty: sender);
     } else if (isExpense) {
-      final recipientRegex = RegExp(r'(?:ke|kepada|di|to)\s+([^.,\n]+?)(?:\s+(?:sebesar|senilai|pada|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
+      final recipientRegex = RegExp(r'(?:ke|kepada|di|to)\s+([^.,\n]+?)(?:\s+(?:sebesar|senilai|pada|menggunakan|dari\s+kantong|dari\s+rekening|berhasil|telah|sukses)|$|\.)', caseSensitive: false);
       final rMatch = recipientRegex.firstMatch(fullText);
       final recipient = rMatch != null ? rMatch.group(1)!.trim() : (title.isNotEmpty ? title.trim() : 'Pengeluaran Transaksi');
-
-      return ParsedNotificationResult(
-        amount: amount,
-        type: 'expense',
-        counterparty: recipient,
-      );
+      return ParsedNotificationResult(amount: amount, type: 'expense', counterparty: recipient);
     }
-
     return null;
   }
 }

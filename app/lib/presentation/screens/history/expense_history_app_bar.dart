@@ -41,36 +41,48 @@ class ExpenseHistoryAppBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!isEditing)
-            const Padding(
-              padding: EdgeInsets.only(top: 8, bottom: 4),
-              child: Center(child: ModalGrabHandle()),
-            ),
+          !isEditing
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 8, bottom: 4),
+                  child: Center(child: ModalGrabHandle()),
+                )
+              : const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isEditing ? (customTitle ?? 'Edit Transaksi') : 'Riwayat\nPengeluaran',
-                        style: AppTypography.modalTitle,
-                        maxLines: isEditing ? 1 : 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isEditing
-                            ? (customSubtitle ?? 'Ubah rincian mutasi transaksi')
-                            : 'Total Terfilter: ${currencyFormatter.format(totalFiltered)}',
-                        style: AppTypography.modalSubtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 260),
+                    switchInCurve: SmoothPageView.defaultCurve,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: SmoothPageView.headerTitleTransition,
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      alignment: Alignment.topLeft,
+                      children: [...previousChildren, ?currentChild],
+                    ),
+                    child: Column(
+                      key: ValueKey('$isEditing|$customTitle|$customSubtitle'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isEditing ? (customTitle ?? 'Edit Transaksi') : 'Riwayat\nPengeluaran',
+                          style: AppTypography.modalTitle,
+                          maxLines: isEditing ? 1 : 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isEditing
+                              ? (customSubtitle ?? 'Ubah rincian mutasi transaksi')
+                              : 'Total Terfilter: ${currencyFormatter.format(totalFiltered)}',
+                          style: AppTypography.modalSubtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 IconButton(

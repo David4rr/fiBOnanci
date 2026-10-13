@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import 'smooth_page_view.dart';
 
 class ModalHeader extends StatelessWidget {
   final String title;
@@ -42,21 +43,26 @@ class ModalHeader extends StatelessWidget {
         children: [
           ?leading,
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: titleStyle ?? AppTypography.modalTitle,
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: subtitleStyle ?? AppTypography.modalSubtitle,
-                  ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              switchInCurve: SmoothPageView.defaultCurve,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: SmoothPageView.headerTitleTransition,
+              layoutBuilder: (currentChild, previousChildren) => Stack(
+                alignment: Alignment.topLeft,
+                children: [...previousChildren, ?currentChild],
+              ),
+              child: Column(
+                key: ValueKey('$title|$subtitle'),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: titleStyle ?? AppTypography.modalTitle),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(subtitle!, style: subtitleStyle ?? AppTypography.modalSubtitle),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           if (trailing != null)

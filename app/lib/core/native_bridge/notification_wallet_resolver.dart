@@ -93,30 +93,46 @@ class NotificationWalletResolver {
     return null;
   }
 
+  static const List<(List<String>, List<String>)> _kProviders = [
+    (['seabank', 'bke', 'digitalbank', 'sea.bank'], ['seabank', 'sea bank']),
+    (['bcadigital', 'blu'], ['blu']),
+    (['mybca'], ['mybca', 'bca']),
+    (['bca'], ['bca']),
+    (['mandiri', 'livin'], ['mandiri', 'livin']),
+    (['jago'], ['jago']),
+    (['krom'], ['krom']),
+    (['brimo', 'bri'], ['bri', 'brimo']),
+    (['wondr', 'bni'], ['bni', 'wondr']),
+    (['bsi', 'byond'], ['bsi', 'byond']),
+    (['bnc', 'neobank', 'bankneo'], ['neo', 'bnc']),
+    (['btpn', 'jenius'], ['jenius', 'btpn']),
+    (['allo'], ['allo']),
+    (['linebank'], ['line']),
+    (['superbank', 'bankfama'], ['superbank']),
+    (['cimb', 'octo'], ['cimb', 'octo']),
+    (['permata'], ['permata']),
+    (['danamon', 'dbank'], ['danamon', 'd-bank', 'dbank']),
+    (['banksaqu'], ['saqu']),
+    (['flip'], ['flip']),
+    (['ovo'], ['ovo']),
+    (['dana'], ['dana']),
+    (['gojek', 'gopay'], ['gopay', 'gojek']),
+    (['shopee'], ['shopee']),
+    (['mwallet', 'linkaja'], ['linkaja']),
+  ];
+
   static WalletEntry? _matchProvider(String pkg, String lowText, List<WalletEntry> list) {
-    if (pkg.contains('seabank') || pkg.contains('bke') || pkg.contains('digitalbank') || pkg.contains('sea.bank') || lowText.contains('seabank') || lowText.contains('sea bank')) {
-      return list.where((w) {
-        final n = w.name.toLowerCase();
-        return n.contains('seabank') || n.contains('sea bank') || n.replaceAll(' ', '').contains('seabank');
-      }).firstOrNull;
-    } else if (pkg.contains('bcadigital') || pkg.contains('blu') || lowText.contains('blu')) {
-      return list.where((w) => w.name.toLowerCase().contains('blu')).firstOrNull;
-    } else if (pkg.contains('bca') || lowText.contains('bca')) {
-      return list.where((w) => w.name.toLowerCase().contains('bca')).firstOrNull;
-    } else if (pkg.contains('mandiri') || lowText.contains('mandiri') || lowText.contains('livin')) {
-      return list.where((w) => w.name.toLowerCase().contains('mandiri')).firstOrNull;
-    } else if (pkg.contains('jago') || lowText.contains('jago')) {
-      return list.where((w) => w.name.toLowerCase().contains('jago')).firstOrNull;
-    } else if (pkg.contains('ovo') || lowText.contains('ovo')) {
-      return list.where((w) => w.name.toLowerCase().contains('ovo')).firstOrNull;
-    } else if (pkg.contains('dana') || lowText.contains('dana')) {
-      return list.where((w) => w.name.toLowerCase().contains('dana')).firstOrNull;
-    } else if (pkg.contains('gojek') || pkg.contains('gopay') || lowText.contains('gopay')) {
-      return list.where((w) => w.name.toLowerCase().contains('gopay') || w.name.toLowerCase().contains('gojek')).firstOrNull;
-    } else if (pkg.contains('brimo') || pkg.contains('bri') || lowText.contains('brimo') || lowText.contains('bri')) {
-      return list.where((w) => w.name.toLowerCase().contains('bri')).firstOrNull;
-    } else if (pkg.contains('wondr') || pkg.contains('bni') || lowText.contains('wondr') || lowText.contains('bni')) {
-      return list.where((w) => w.name.toLowerCase().contains('bni') || w.name.toLowerCase().contains('wondr')).firstOrNull;
+    final lowPkg = pkg.toLowerCase();
+    for (final (pkgTokens, walletTokens) in _kProviders) {
+      if (pkgTokens.any(lowPkg.contains)) {
+        return list.where((w) => walletTokens.any((k) => w.name.toLowerCase().contains(k) || w.name.toLowerCase().replaceAll(' ', '').contains(k))).firstOrNull;
+      }
+    }
+    for (final (_, walletTokens) in _kProviders) {
+      if (walletTokens.any(lowText.contains)) {
+        final match = list.where((w) => walletTokens.any((k) => w.name.toLowerCase().contains(k))).firstOrNull;
+        if (match != null) return match;
+      }
     }
     return null;
   }

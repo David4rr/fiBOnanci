@@ -70,21 +70,15 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
   }
 
   void _goToEditTab() {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _currentTab = 1);
-    _pageController.animateToPage(
-      1,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeInOutCubic,
-    );
+    SmoothPageView.animateTo(_pageController, 1);
   }
 
   void _goToDetailsTab() {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _currentTab = 0);
-    _pageController.animateToPage(
-      0,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeInOutCubic,
-    );
+    SmoothPageView.animateTo(_pageController, 0);
   }
 
   @override
@@ -133,22 +127,22 @@ class _SubscriptionDetailScreenState extends State<SubscriptionDetailScreen> {
                     onDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
                   ),
                   Expanded(
-                    child: PageView(
+                    child: SmoothPageView(
                       controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
+                      allowImplicitScrolling: false,
                       children: [
                         SubscriptionDetailContent(
                           subscription: sub,
-                          wallet: wallet,
-                          indexOverride: effectiveIndex,
-                          currencyFormatter: currencyFormatter,
-                          scrollController: scrollController,
-                          onEdit: _goToEditTab,
+                            wallet: wallet,
+                            indexOverride: effectiveIndex,
+                            currencyFormatter: currencyFormatter,
+                            scrollController: scrollController,
+                            onEdit: _goToEditTab,
                         ),
                         SubscriptionDetailEditTab(
                           subscription: sub,
-                          onSaved: () => Navigator.of(context).maybePop(),
-                          onReturnToDetails: _goToDetailsTab,
+                            onSaved: () => Navigator.of(context).maybePop(),
+                            onReturnToDetails: _goToDetailsTab,
                         ),
                       ],
                     ),

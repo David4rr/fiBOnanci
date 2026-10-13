@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
+import '../../core/notification_parser/bank_presets.dart';
 import 'seed/default_categories.dart';
 import 'seed/default_wallets.dart';
 import 'tables/tables.dart';

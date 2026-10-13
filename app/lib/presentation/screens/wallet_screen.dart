@@ -37,15 +37,24 @@ class WalletScreen extends StatefulWidget {
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen> {
+class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderStateMixin {
   late int _selectedSegment;
+  late final AnimationController _segmentAnim;
+  late final Animation<double> _segmentOpacity;
 
   @override
   void initState() {
     super.initState();
     _selectedSegment = widget.initialSegment;
+    _segmentAnim = AnimationController(vsync: this, duration: const Duration(milliseconds: 260), value: 1.0);
+    _segmentOpacity = CurvedAnimation(parent: _segmentAnim, curve: const Cubic(0.22, 1.0, 0.36, 1.0));
   }
 
+  @override
+  void dispose() {
+    _segmentAnim.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,69 +105,78 @@ class _WalletScreenState extends State<WalletScreen> {
                       walletCount: wallets.length,
                       pocketCount: pockets.length,
                       onSegmentChanged: (idx) {
+                        if (idx == _selectedSegment) return;
                         setState(() => _selectedSegment = idx);
+                        _segmentAnim.forward(from: 0.0);
                         widget.onSegmentChanged?.call(idx);
                       },
                     ),
                   ),
                 ),
-                if (_selectedSegment == 0) ...[
-                  if (wallets.isNotEmpty) ...[
-                    SliverToBoxAdapter(
-                      child: WalletTotalBalanceCard(
-                        totalRealBalance: totalRealBalance,
-                        monthlyIncome: monthlyCashflow.income,
-                        monthlyExpense: monthlyCashflow.expense,
-                        incomeSeries: incomeSeries,
-                        expenseSeries: expenseSeries,
-                        dateLabels: dateLabels,
-                        showChart: totalRealBalance > 0 || state.transactions.isNotEmpty,
-                        currencyFormatter: currencyFormatter,
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: WalletCardDeck(
-                          wallets: wallets,
-                          fmt: currencyFormatter,
-                          onSelectWallet: (wallet) {
-                            widget.onDetailViewChanged?.call(true);
-                            return WalletDetailScreen.push(context, wallet: wallet)
-                                .then((_) => widget.onDetailViewChanged?.call(false));
-                          },
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
-                          child: WalletCardDeck(
-                            wallets: wallets,
-                            fmt: currencyFormatter,
-                            onSelectWallet: (wallet) {
-                              widget.onDetailViewChanged?.call(true);
-                              return WalletDetailScreen.push(context, wallet: wallet)
-                                  .then((_) => widget.onDetailViewChanged?.call(false));
-                            },
+                SliverFadeTransition(
+                  opacity: _segmentOpacity,
+                  sliver: SliverMainAxisGroup(
+                    slivers: [
+                      if (_selectedSegment == 0) ...[
+                        if (wallets.isNotEmpty) ...[
+                          SliverToBoxAdapter(
+                            child: WalletTotalBalanceCard(
+                              totalRealBalance: totalRealBalance,
+                              monthlyIncome: monthlyCashflow.income,
+                              monthlyExpense: monthlyCashflow.expense,
+                              incomeSeries: incomeSeries,
+                              expenseSeries: expenseSeries,
+                              dateLabels: dateLabels,
+                              showChart: totalRealBalance > 0 || state.transactions.isNotEmpty,
+                              currencyFormatter: currencyFormatter,
+                            ),
                           ),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                              child: WalletCardDeck(
+                                wallets: wallets,
+                                fmt: currencyFormatter,
+                                onSelectWallet: (wallet) {
+                                  widget.onDetailViewChanged?.call(true);
+                                  return WalletDetailScreen.push(context, wallet: wallet)
+                                      .then((_) => widget.onDetailViewChanged?.call(false));
+                                },
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                                child: WalletCardDeck(
+                                  wallets: wallets,
+                                  fmt: currencyFormatter,
+                                  onSelectWallet: (wallet) {
+                                    widget.onDetailViewChanged?.call(true);
+                                    return WalletDetailScreen.push(context, wallet: wallet)
+                                        .then((_) => widget.onDetailViewChanged?.call(false));
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ] else ...[
+                        WalletPocketsView(
+                          pockets: pockets,
+                          totalPocketsAmount: totalPocketsAmount,
+                          transactions: state.transactions,
+                          currencyFormatter: currencyFormatter,
                         ),
-                      ),
-                    ),
-                  ],
-                ] else ...[
-                  WalletPocketsView(
-                    pockets: pockets,
-                    totalPocketsAmount: totalPocketsAmount,
-                    transactions: state.transactions,
-                    currencyFormatter: currencyFormatter,
+                      ],
+                      if ((_selectedSegment == 0 && wallets.isNotEmpty) || (_selectedSegment == 1 && pockets.isNotEmpty))
+                        const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                    ],
                   ),
-                ],
-                if ((_selectedSegment == 0 && wallets.isNotEmpty) || (_selectedSegment == 1 && pockets.isNotEmpty))
-                  const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                ),
               ],
             ),
           );

@@ -90,21 +90,24 @@ extension DatabaseQueries on AppDatabase {
     return (q..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 
-  Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName, {String? profileId}) {
+  Future<NotificationRuleEntry?> getNotificationRuleForPackage(String packageName, {String? profileId}) async {
+    final aliases = expandPackageAliases(packageName).map((e) => e.toLowerCase()).toSet();
+    if (aliases.isEmpty) return null;
+    final activeWallets = await (select(wallets)..where((w) => w.isDeleted.equals(false))).get();
+    final activeWalletIds = activeWallets.map((w) => w.id).toSet();
+
+    final rules = await (select(notificationRules)
+          ..where((tbl) => tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+        .get();
+
+    final matching = rules.where((r) => aliases.contains(r.packageName.toLowerCase()) && activeWalletIds.contains(r.walletId)).toList();
+    if (matching.isEmpty) return null;
     if (profileId != null) {
-      return (select(notificationRules)
-            ..where((tbl) =>
-                tbl.packageName.equals(packageName) &
-                tbl.profileId.equals(profileId) &
-                tbl.isEnabled.equals(true) &
-                tbl.isDeleted.equals(false))
-            ..limit(1))
-          .getSingleOrNull();
+      final profMatch = matching.where((r) => r.profileId == profileId).firstOrNull;
+      if (profMatch != null) return profMatch;
     }
-    return (select(notificationRules)
-          ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false))
-          ..limit(1))
-        .getSingleOrNull();
+    return matching.first;
   }
 
   Future<List<NotificationRuleEntry>> getNotificationRulesForWallet(String walletId) {
@@ -117,7 +120,11 @@ extension DatabaseQueries on AppDatabase {
     final rules = await (select(notificationRules)
           ..where((tbl) => tbl.isEnabled.equals(true) & tbl.isDeleted.equals(false)))
         .get();
-    return rules.map((r) => r.packageName).toSet().toList();
+    final expanded = <String>{};
+    for (final r in rules) {
+      expanded.addAll(expandPackageAliases(r.packageName));
+    }
+    return expanded.toList();
   }
 
   Future<void> deleteNotificationRulesForWallet(String walletId) {
@@ -132,9 +139,10 @@ extension DatabaseQueries on AppDatabase {
     );
   }
 
-  Future<void> unbindPackage(String packageName) {
+  Future<void> unbindPackage(String packageName) async {
     final now = DateTime.now().toUtc();
-    return (update(notificationRules)..where((t) => t.packageName.equals(packageName))).write(
+    final aliases = expandPackageAliases(packageName);
+    await (update(notificationRules)..where((t) => t.packageName.isIn(aliases.toList()))).write(
       NotificationRulesCompanion(
         isDeleted: const Value(true),
         isEnabled: const Value(false),

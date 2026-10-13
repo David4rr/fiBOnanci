@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/transaction_detail_modal.dart';
 import '../../widgets/transaction_modal.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'wallet_detail_edit_tab.dart';
 import 'wallet_detail_history_section.dart';
 import 'wallet_detail_scroll_view.dart';
@@ -31,6 +32,8 @@ class WalletDetailPageView extends StatelessWidget {
   final ValueChanged<TransactionEntry> onEditTransaction;
   final TransactionEntry? selectedTransaction;
   final VoidCallback onReturnToDetails;
+  final bool isPickingApp;
+  final ValueChanged<bool>? onPickingAppChanged;
 
   const WalletDetailPageView({
     super.key,
@@ -56,53 +59,54 @@ class WalletDetailPageView extends StatelessWidget {
     required this.onEditTransaction,
     required this.selectedTransaction,
     required this.onReturnToDetails,
+    this.isPickingApp = false,
+    this.onPickingAppChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return PageView(
+    return SmoothPageView(
       controller: pageController,
-      physics: const NeverScrollableScrollPhysics(),
       children: [
         NotificationListener<ScrollNotification>(
           onNotification: (n) {
             if (n.metrics.axis == Axis.vertical) {
-              onScrollOffsetChanged(n.metrics.pixels);
-            }
-            return false;
-          },
-          child: WalletDetailScrollView(
-            scrollController: scrollController,
-            wallet: wallet,
-            cardIndex: cardIndex >= 0 ? cardIndex : 0,
-            currencyFormatter: currencyFormatter,
-            cardColor: cardColor,
-            allWallets: allWallets,
-            transactions: transactions,
-            filteredTx: filteredTx,
-            searchController: searchController,
-            searchQuery: searchQuery,
-            selectedFilter: selectedFilter,
-            onSearchChanged: onSearchChanged,
-            onClearSearch: onClearSearch,
-            onFilterChanged: onFilterChanged,
-            onEditBalance: onEditBalance,
-            onAddTransaction: onAddTransaction,
-            onEditTransaction: onEditTransaction,
-          ),
+                onScrollOffsetChanged(n.metrics.pixels);
+              }
+              return false;
+            },
+            child: WalletDetailScrollView(
+              scrollController: scrollController,
+              wallet: wallet,
+              cardIndex: cardIndex >= 0 ? cardIndex : 0,
+              currencyFormatter: currencyFormatter,
+              cardColor: cardColor,
+              allWallets: allWallets,
+              transactions: transactions,
+              filteredTx: filteredTx,
+              searchController: searchController,
+              searchQuery: searchQuery,
+              selectedFilter: selectedFilter,
+              onSearchChanged: onSearchChanged,
+              onClearSearch: onClearSearch,
+              onFilterChanged: onFilterChanged,
+              onEditBalance: onEditBalance,
+              onAddTransaction: onAddTransaction,
+              onEditTransaction: onEditTransaction,
+            ),
         ),
         switch (activeSubTab) {
-          1 => WalletDetailEditTab(wallet: wallet, onReturnToDetails: onReturnToDetails),
+          1 => WalletDetailEditTab(wallet: wallet, onReturnToDetails: onReturnToDetails, isPickingApp: isPickingApp, onPickingAppChanged: onPickingAppChanged),
           2 => TransactionModal(initialWalletId: wallet.id, isInline: true, onClose: onReturnToDetails, onSaved: onReturnToDetails),
-          _ => selectedTransaction != null
-              ? TransactionDetailModal(
-                  transaction: selectedTransaction!,
-                  isInline: true,
-                  onClose: onReturnToDetails,
-                  onSaved: onReturnToDetails,
-                  onDeleted: onReturnToDetails,
-                )
-              : const SizedBox.shrink(),
+            _ => selectedTransaction != null
+                ? TransactionDetailModal(
+                    transaction: selectedTransaction!,
+                    isInline: true,
+                    onClose: onReturnToDetails,
+                    onSaved: onReturnToDetails,
+                    onDeleted: onReturnToDetails,
+                  )
+                : const SizedBox.shrink(),
         },
       ],
     );

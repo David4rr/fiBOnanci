@@ -8,7 +8,16 @@ import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
 
 class InstalledAppPickerModal extends StatefulWidget {
-  const InstalledAppPickerModal({super.key});
+  final bool isInline;
+  final ValueChanged<String>? onAppSelected;
+  final VoidCallback? onClose;
+
+  const InstalledAppPickerModal({
+    super.key,
+    this.isInline = false,
+    this.onAppSelected,
+    this.onClose,
+  });
 
   static Future<String?> show(BuildContext context) {
     return showModalBottomSheet<String>(
@@ -23,15 +32,31 @@ class InstalledAppPickerModal extends StatefulWidget {
   State<InstalledAppPickerModal> createState() => _InstalledAppPickerModalState();
 }
 
-class _InstalledAppPickerModalState extends State<InstalledAppPickerModal> {
+class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, String>> _allApps = [];
   List<Map<String, String>> _filteredApps = [];
   bool _isLoading = true;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
+    final cached = NotificationBridge.cachedInstalledBankApps;
+    if (cached != null && cached.isNotEmpty) {
+      _allApps = cached;
+      _filteredApps = List.from(cached);
+      _isLoading = false;
+    } else if (widget.isInline) {
+      _allApps = kPopularBankAppPresets
+          .map((p) => {'appName': p.name, 'packageName': p.packageName})
+          .toList();
+      _filteredApps = List.from(_allApps);
+      _isLoading = false;
+    }
     _loadApps();
   }
 
@@ -44,20 +69,15 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal> {
   Future<void> _loadApps() async {
     final apps = await NotificationBridge.getInstalledBankApps();
     if (!mounted) return;
-    if (apps.isEmpty) {
-      _allApps = kPopularBankAppPresets
-          .map((p) => {'appName': p.name, 'packageName': p.packageName})
-          .toList();
-    } else {
-      apps.sort((a, b) => (a['appName'] ?? '').compareTo(b['appName'] ?? ''));
-      _allApps = apps;
-    }
-    setState(() {
-      _filteredApps = List.from(_allApps);
-      _isLoading = false;
-    });
+    final resolved = apps.isEmpty
+        ? kPopularBankAppPresets
+            .map((p) => {'appName': p.name, 'packageName': p.packageName})
+            .toList()
+        : apps;
+    _allApps = resolved;
+    _onSearch(_searchController.text);
+    if (_isLoading) setState(() => _isLoading = false);
   }
-
   void _onSearch(String query) {
     final q = query.trim().toLowerCase();
     setState(() {
@@ -73,56 +93,55 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 0.75;
-    return Container(
-      height: height,
-      decoration: const BoxDecoration(
-        color: AppColors.canvasCardSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        children: [
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      children: [
+        if (!widget.isInline) ...[
           const ModalGrabHandle(),
           ModalHeader(
             title: 'Pilih Aplikasi',
             subtitle: 'Cari bank atau e-wallet di HP Anda',
-            onClose: () => Navigator.of(context).pop(),
+            onClose: widget.onClose ?? () => Navigator.of(context).pop(),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearch,
-              style: AppTypography.listTitle,
-              decoration: InputDecoration(
-                hintText: 'Cari nama app atau package...',
-                hintStyle: AppTypography.listSubtitle,
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
-                filled: true,
-                fillColor: AppColors.canvasInputSearch,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
+        ],
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, widget.isInline ? 4 : 8, 20, 8),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearch,
+            style: AppTypography.listTitle,
+            decoration: InputDecoration(
+              hintText: 'Cari nama app atau package...',
+              hintStyle: AppTypography.listSubtitle,
+              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
+              filled: true,
+              fillColor: AppColors.canvasInputSearch,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
             ),
           ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.neoMint))
-                : _filteredApps.isEmpty
-                    ? Center(
-                        child: Text('Aplikasi tidak ditemukan', style: AppTypography.listSubtitle),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        itemCount: _filteredApps.length,
-                        separatorBuilder: (_, _) => const Divider(color: AppColors.canvasBorder, height: 1),
-                        itemBuilder: (context, index) {
-                          final app = _filteredApps[index];
-                          final name = app['appName'] ?? 'App';
-                          final pkg = app['packageName'] ?? '';
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AppColors.neoMint))
+              : _filteredApps.isEmpty
+                  ? Center(
+                      child: Text('Aplikasi tidak ditemukan', style: AppTypography.listSubtitle),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                      physics: const BouncingScrollPhysics(),
+                      itemExtent: 64,
+                      itemCount: _filteredApps.length,
+                      itemBuilder: (context, index) {
+                        final app = _filteredApps[index];
+                        final name = app['appName'] ?? 'App';
+                        final pkg = app['packageName'] ?? '';
+                        return DecoratedBox(
+                          decoration: const BoxDecoration(
+                            border: Border(bottom: BorderSide(color: AppColors.canvasBorder, width: 0.8)),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             leading: Container(
                               width: 36,
                               height: 36,
@@ -132,16 +151,44 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal> {
                               ),
                               child: const Icon(Icons.android_rounded, color: AppColors.neoChartreuse, size: 20),
                             ),
-                            title: Text(name, style: AppTypography.listTitle),
-                            subtitle: Text(pkg, style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11)),
+                            title: Text(name, style: AppTypography.listTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            subtitle: Text(pkg, style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                             trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
-                            onTap: () => Navigator.of(context).pop(pkg),
-                          );
-                        },
-                      ),
-          ),
-        ],
+                            onTap: () {
+                              if (widget.onAppSelected != null) {
+                                widget.onAppSelected!(pkg);
+                              } else {
+                                Navigator.of(context).pop(pkg);
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    if (widget.isInline) {
+      return RepaintBoundary(
+        child: ColoredBox(
+          color: AppColors.canvasCardSurface,
+          child: _buildContent(context),
+        ),
+      );
+    }
+    final height = MediaQuery.of(context).size.height * 0.75;
+    return Container(
+      height: height,
+      decoration: const BoxDecoration(
+        color: AppColors.canvasCardSurface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
+      child: _buildContent(context),
     );
   }
 }

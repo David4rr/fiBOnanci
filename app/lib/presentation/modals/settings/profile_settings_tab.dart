@@ -6,6 +6,7 @@ import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'settings_automation_data_section.dart';
 import 'settings_budget_cycle_section.dart';
 import 'settings_category_section.dart';
@@ -49,76 +50,79 @@ class ProfileSettingsTab extends StatefulWidget {
 
 class _ProfileSettingsTabState extends State<ProfileSettingsTab> {
   SettingsSubRoute? _localRoute;
+  SettingsSubRoute? _displayedSubRoute;
+  late final PageController _pageController = PageController(initialPage: _route != null ? 1 : 0);
 
   SettingsSubRoute? get _route => widget.onNavigate != null ? widget.activeRoute : _localRoute;
 
+  @override
+  void initState() {
+    super.initState();
+    _displayedSubRoute = _route;
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileSettingsTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final r = _route;
+    if (r != null) _displayedSubRoute = r;
+    if ((r != null) != (oldWidget.activeRoute != null)) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      SmoothPageView.animateTo(_pageController, r != null ? 1 : 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _navigate(SettingsSubRoute? route) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (route != null) _displayedSubRoute = route;
     if (widget.onNavigate != null) {
       widget.onNavigate!(route);
     } else {
       setState(() => _localRoute = route);
+      SmoothPageView.animateTo(_pageController, route != null ? 1 : 0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
-    final route = _route;
+    final subRoute = _route ?? _displayedSubRoute;
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 240),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      transitionBuilder: (child, anim) {
-        final isSub = child.key != const ValueKey('settings_root');
-        final offset = Tween<Offset>(
-          begin: Offset(isSub ? 0.12 : -0.08, 0),
-          end: Offset.zero,
-        ).animate(anim);
-        return SlideTransition(position: offset, child: FadeTransition(opacity: anim, child: child));
-      },
-      child: switch (route) {
-        SettingsSubRoute.currency => SettingsCurrencySubPage(
-          key: const ValueKey('sub_currency'), state: state,
-        ),
-        SettingsSubRoute.incomeTarget => SettingsIncomeTargetSubPage(
-          key: const ValueKey('sub_income'), state: state, onSaved: () => _navigate(null),
-        ),
-        SettingsSubRoute.cycleDay => SettingsCycleDaySubPage(
-          key: const ValueKey('sub_cycle'), state: state,
-        ),
-        SettingsSubRoute.stsWallets => SettingsStsWalletsSubPage(
-          key: const ValueKey('sub_wallets'), state: state,
-        ),
-        SettingsSubRoute.categories => SettingsCategorySection(
-          key: const ValueKey('sub_categories'), categories: state.categories,
-        ),
-        SettingsSubRoute.bankApps => const SettingsBankAppsSubPage(
-          key: ValueKey('sub_banks'),
-        ),
-        SettingsSubRoute.exportData => SettingsExportSubPage(
-          key: const ValueKey('sub_export'), state: state,
-        ),
-        SettingsSubRoute.clearTransactions => SettingsClearTxSubPage(
-          key: const ValueKey('sub_clear'), state: state, onCleared: () => _navigate(null),
-        ),
-        SettingsSubRoute.deleteProfile => SettingsDeleteProfileSubPage(
-          key: const ValueKey('sub_delete_profile'), state: state, onDeleted: () => _navigate(null),
-        ),
-        null => ListView(
+    return SmoothPageView(
+      controller: _pageController,
+      children: [
+        ListView(
           key: const ValueKey('settings_root'),
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
-          children: [
-            SettingsAutomationDataSection(state: state, onNavigate: _navigate, isGlobal: true),
-            const SizedBox(height: 28),
-            SettingsFinancialSection(state: state, onNavigate: _navigate),
-            SettingsBudgetCycleSection(state: state, onNavigate: _navigate),
-            const SizedBox(height: 28),
-            SettingsAutomationDataSection(state: state, onNavigate: _navigate, isGlobal: false),
-          ],
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
+            children: [
+              SettingsAutomationDataSection(state: state, onNavigate: _navigate, isGlobal: true),
+              const SizedBox(height: 28),
+              SettingsFinancialSection(state: state, onNavigate: _navigate),
+              SettingsBudgetCycleSection(state: state, onNavigate: _navigate),
+              const SizedBox(height: 28),
+              SettingsAutomationDataSection(state: state, onNavigate: _navigate, isGlobal: false),
+            ],
         ),
-      },
+        switch (subRoute) {
+          SettingsSubRoute.currency => SettingsCurrencySubPage(key: const ValueKey('sub_currency'), state: state),
+          SettingsSubRoute.incomeTarget => SettingsIncomeTargetSubPage(key: const ValueKey('sub_income'), state: state, onSaved: () => _navigate(null)),
+            SettingsSubRoute.cycleDay => SettingsCycleDaySubPage(key: const ValueKey('sub_cycle'), state: state),
+            SettingsSubRoute.stsWallets => SettingsStsWalletsSubPage(key: const ValueKey('sub_wallets'), state: state),
+            SettingsSubRoute.categories => SettingsCategorySection(key: const ValueKey('sub_categories'), categories: state.categories),
+            SettingsSubRoute.bankApps => const SettingsBankAppsSubPage(key: ValueKey('sub_banks')),
+            SettingsSubRoute.exportData => SettingsExportSubPage(key: const ValueKey('sub_export'), state: state),
+            SettingsSubRoute.clearTransactions => SettingsClearTxSubPage(key: const ValueKey('sub_clear'), state: state, onCleared: () => _navigate(null)),
+            SettingsSubRoute.deleteProfile => SettingsDeleteProfileSubPage(key: const ValueKey('sub_delete_profile'), state: state, onDeleted: () => _navigate(null)),
+            null => const SizedBox.shrink(),
+        },
+      ],
     );
   }
 }

@@ -9,6 +9,7 @@ class WalletBindingSelector extends StatelessWidget {
   final bool isCustomPackage;
   final TextEditingController customPackageController;
   final void Function(String? package, bool isCustom) onPackageChanged;
+  final VoidCallback? onOpenAppPicker;
 
   const WalletBindingSelector({
     super.key,
@@ -16,8 +17,20 @@ class WalletBindingSelector extends StatelessWidget {
     required this.isCustomPackage,
     required this.customPackageController,
     required this.onPackageChanged,
+    this.onOpenAppPicker,
   });
 
+  Future<void> _openPicker(BuildContext context) async {
+    if (onOpenAppPicker != null) {
+      onOpenAppPicker!();
+      return;
+    }
+    final picked = await InstalledAppPickerModal.show(context);
+    if (picked != null) {
+      customPackageController.text = picked;
+      onPackageChanged(picked, true);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -36,13 +49,7 @@ class WalletBindingSelector extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               borderRadius: BorderRadius.circular(8),
-              onTap: () async {
-                final picked = await InstalledAppPickerModal.show(context);
-                if (picked != null) {
-                  customPackageController.text = picked;
-                  onPackageChanged(picked, true);
-                }
-              },
+              onTap: () => _openPicker(context),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 child: Row(
@@ -106,7 +113,13 @@ class WalletBindingSelector extends StatelessWidget {
                     children: [
                       Icon(Icons.edit_note, size: 18, color: AppColors.neoCyan),
                       SizedBox(width: 8),
-                      Text('Cari / Input Package Lain...', style: TextStyle(color: AppColors.neoCyan)),
+                      Expanded(
+                        child: Text(
+                          'Cari / Input Package Lain...',
+                          style: TextStyle(color: AppColors.neoCyan),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -134,13 +147,7 @@ class WalletBindingSelector extends StatelessWidget {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.apps_rounded, size: 18, color: AppColors.neoCyan),
                 tooltip: 'Pilih dari Aplikasi Terpasang',
-                onPressed: () async {
-                  final picked = await InstalledAppPickerModal.show(context);
-                  if (picked != null) {
-                    customPackageController.text = picked;
-                    onPackageChanged(picked, true);
-                  }
-                },
+                onPressed: () => _openPicker(context),
               ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
             ),

@@ -25,19 +25,16 @@ class WalletSegmentedToggle extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onSegmentChanged(index),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.neoChartreuse : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               color: isSelected ? AppColors.textDarkPrimary : AppColors.textMuted,
             ),
+            child: Text(label),
           ),
         ),
       ),
@@ -54,10 +51,29 @@ class WalletSegmentedToggle extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.canvasBorder),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          _buildSegmentButton(index: 0, label: 'Rekening Utama ($walletCount)', isSelected: selectedSegment == 0),
-          _buildSegmentButton(index: 1, label: 'Kantong Tabungan ($pocketCount)', isSelected: selectedSegment == 1),
+          AnimatedAlign(
+            alignment: selectedSegment == 0 ? Alignment.centerLeft : Alignment.centerRight,
+            duration: const Duration(milliseconds: 280),
+            curve: const Cubic(0.22, 1.0, 0.36, 1.0),
+            child: FractionallySizedBox(
+              widthFactor: 0.5,
+              heightFactor: 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.neoChartreuse,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              _buildSegmentButton(index: 0, label: 'Rekening Utama ($walletCount)', isSelected: selectedSegment == 0),
+              _buildSegmentButton(index: 1, label: 'Kantong Tabungan ($pocketCount)', isSelected: selectedSegment == 1),
+            ],
+          ),
         ],
       ),
     );

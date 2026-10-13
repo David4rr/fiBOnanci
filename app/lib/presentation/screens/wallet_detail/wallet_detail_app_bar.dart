@@ -48,26 +48,32 @@ class WalletDetailAppBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (!isEditing)
-          const Padding(
-            padding: EdgeInsets.only(top: 8, bottom: 4),
-            child: Center(child: ModalGrabHandle()),
-          ),
+        !isEditing
+            ? const Padding(
+                padding: EdgeInsets.only(top: 8, bottom: 4),
+                child: Center(child: ModalGrabHandle()),
+              )
+            : const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTypography.modalTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 260),
+                  switchInCurve: SmoothPageView.defaultCurve,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: SmoothPageView.headerTitleTransition,
+                  layoutBuilder: (currentChild, previousChildren) => Stack(
+                    alignment: Alignment.topLeft,
+                    children: [...previousChildren, ?currentChild],
+                  ),
+                  child: Column(
+                    key: ValueKey('$title|$subtitle'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AppTypography.modalTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
                     Row(
                       children: [
                         Flexible(
@@ -113,7 +119,8 @@ class WalletDetailAppBar extends StatelessWidget {
                           ),
                       ],
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               IconButton(

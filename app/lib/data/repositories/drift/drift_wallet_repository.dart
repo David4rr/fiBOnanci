@@ -58,6 +58,7 @@ mixin DriftWalletRepository on DriftRepoBase {
         walletId: walletId,
         packageName: boundPackageName.trim(),
       );
+      await NotificationBridge.syncAllowedPackages(db);
     }
   }
 
@@ -83,13 +84,18 @@ mixin DriftWalletRepository on DriftRepoBase {
     required String packageName,
     bool isEnabled = true,
     String? profileId,
-  }) =>
-      db.upsertNotificationRule(
-        walletId: walletId,
-        packageName: packageName,
-        isEnabled: isEnabled,
-        profileId: profileId,
-      );
+  }) async {
+    await db.upsertNotificationRule(
+      walletId: walletId,
+      packageName: packageName,
+      isEnabled: isEnabled,
+      profileId: profileId,
+    );
+    await NotificationBridge.syncAllowedPackages(db);
+  }
 
-  Future<void> unbindPackage(String packageName) => db.unbindPackage(packageName);
+  Future<void> unbindPackage(String packageName) async {
+    await db.unbindPackage(packageName);
+    await NotificationBridge.syncAllowedPackages(db);
+  }
 }

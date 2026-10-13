@@ -70,14 +70,25 @@ extension ProfileAndRuleMutations on AppDatabase {
     final now = DateTime.now().toUtc();
     final wallet = await (select(wallets)..where((t) => t.id.equals(walletId))).getSingleOrNull();
     final effProfileId = profileId ?? wallet?.profileId;
+    final aliases = expandPackageAliases(packageName).toList();
+    await (update(notificationRules)
+          ..where((t) => t.walletId.equals(walletId) & t.packageName.isNotIn(aliases) & t.isDeleted.equals(false)))
+        .write(
+      NotificationRulesCompanion(
+        isEnabled: const Value(false),
+        isDeleted: const Value(true),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ),
+    );
     final existing = await (select(notificationRules)
-          ..where((tbl) => tbl.packageName.equals(packageName) & tbl.isDeleted.equals(false))
+          ..where((tbl) => tbl.packageName.isIn(aliases) & tbl.isDeleted.equals(false))
           ..limit(1))
         .getSingleOrNull();
-
     if (existing != null) {
       await (update(notificationRules)..where((t) => t.id.equals(existing.id))).write(
         NotificationRulesCompanion(
+          packageName: Value(packageName),
           walletId: Value(walletId),
           profileId: Value(effProfileId),
           isEnabled: Value(isEnabled),
