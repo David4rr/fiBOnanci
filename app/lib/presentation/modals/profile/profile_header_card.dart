@@ -86,20 +86,16 @@ class ProfileHeaderCard extends StatelessWidget {
                               onTap: onEditProfile ?? () => EditProfileModal.show(context, profile: profile),
                               child: Hero(
                                 tag: 'profile_avatar_hero_${profile.id}',
+                                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                                 flightShuttleBuilder: profileAvatarFlightShuttle,
                                 child: Material(
                                   type: MaterialType.transparency,
-                                  child: Container(
-                                    width: 58,
-                                    height: 58,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: const Color(0xFF1E212D),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5),
-                                    ),
-                                    child: Center(
-                                      child: ProfileAvatar(avatarPath: profile.avatarPath, name: profile.username, size: 50, iconSize: 26),
-                                    ),
+                                  child: ProfileAvatar(
+                                    avatarPath: profile.avatarPath,
+                                    name: profile.username,
+                                    size: 58,
+                                    iconSize: 28,
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5),
                                   ),
                                 ),
                               ),

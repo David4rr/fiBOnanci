@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-fgeo">
+  <title id="t-fgeo">fiBOnanci Golden Monogram F</title>
+  <!-- Vertical spine -->
+  <rect x="52" y="32" width="36" height="192" rx="18" fill="#0C0D11" />
+  <!-- Upper golden arm: length 136, height 36, rounded terminal -->
+  <path fill="#0C0D11" d="
+    M 88 32
+    H 186
+    A 18 18 0 0 1 204 50
+    V 50
+    A 18 18 0 0 1 186 68
+    H 88
+    Z
+  "/>
+  <!-- Lower golden arm: length 84 (136 / 1.618), height 36, rounded terminal -->
+  <path fill="#0C0D11" d="
+    M 88 114
+    H 154
+    A 18 18 0 0 1 172 132
+    V 132
+    A 18 18 0 0 1 154 150
+    H 88
+    Z
+  "/>
+</svg>

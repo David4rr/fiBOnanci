@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-phi">
+  <title id="t-phi">fiBOnanci Phi Vault</title>
+  <!-- Central monolithic axis -->
+  <rect x="114" y="24" width="28" height="208" rx="14" fill="#0C0D11" />
+  <!-- Left vault wing (arc R=84) -->
+  <path fill="#0C0D11" d="
+    M 98 48
+    A 84 84 0 0 0 98 208
+    H 104
+    V 48
+    H 98
+    Z
+  "/>
+  <!-- Right vault wing (arc R=84) -->
+  <path fill="#0C0D11" d="
+    M 158 48
+    V 208
+    H 152
+    A 84 84 0 0 0 152 48
+    H 158
+    Z
+  "/>
+</svg>

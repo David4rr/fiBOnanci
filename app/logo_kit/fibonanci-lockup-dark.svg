@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" width="840" height="256" role="img" aria-labelledby="t-lockup-dark">
+  <title id="t-lockup-dark">fiBOnanci Horizontal Lockup</title>
+  <rect width="840" height="256" fill="#0C0D11" />
+  
+  <!-- Phi Vault Symbol in Neo-Chartreuse -->
+  <g transform="translate(48, 36) scale(0.71875)">
+    <rect x="111" y="23" width="34" height="210" rx="17" fill="#D4F442" />
+    <path fill="#D4F442" d="M 97 39 A 89 89 0 0 0 39 128 A 89 89 0 0 0 97 217 V 183 A 55 55 0 0 1 73 128 A 55 55 0 0 1 97 73 Z" />
+    <path fill="#D4F442" d="M 159 39 A 89 89 0 0 1 217 128 A 89 89 0 0 1 159 217 V 183 A 55 55 0 0 0 183 128 A 55 55 0 0 0 159 73 Z" />
+  </g>
+  
+  <!-- Divider -->
+  <line x1="266" y1="64" x2="266" y2="192" stroke="#252836" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Wordmark -->
+  <path fill="#F4F5F8" transform="translate(300, 164)" d="M 8 0 V -30 H 0 V -44 H 8 V -52 A 12 12 0 0 1 20 -64 H 36 V -50 H 26 A 4 4 0 0 0 22 -46 V -44 H 36 V -30 H 22 V 0 Z" />
+  <path fill="#F4F5F8" transform="translate(340, 164)" d="M 4 0 V -44 H 18 V 0 Z" />
+  <g fill="#F4F5F8" transform="translate(340, 164)"><circle cx="11" cy="-56" r="7" /></g>
+  <path fill="#D4F442" fill-rule="evenodd" transform="translate(364, 164)" d="M 0 -64 H 26 A 15 15 0 0 1 38 -49 A 15 15 0 0 1 26 -34 H 0 Z
+              M 0 -34 H 28 A 17 17 0 0 1 42 -17 A 17 17 0 0 1 28 0 H 0 Z
+              M 14 -50 V -48 H 22 A 2 2 0 0 0 22 -50 Z
+              M 14 -20 V -14 H 24 A 4 4 0 0 0 24 -20 Z" />
+  <path fill="#D4F442" fill-rule="evenodd" transform="translate(410, 164)" d="M 32 -64 A 32 32 0 1 1 31.9 -64 Z
+              M 32 -48 A 16 16 0 1 0 32.1 -48 Z" />
+  <path fill="#F4F5F8" transform="translate(478, 164)" d="M 0 0 V -44 H 14 V -36 A 15 15 0 0 1 36 -44 A 12 12 0 0 1 42 -32 V 0 H 28 V -30 A 6 6 0 0 0 22 -36 A 8 8 0 0 0 14 -28 V 0 Z" />
+  <path fill="#F4F5F8" fill-rule="evenodd" transform="translate(526, 164)" d="M 22 -44 A 22 22 0 0 0 0 -22 A 22 22 0 0 0 22 0 A 21 21 0 0 0 34 -4 V 0 H 46 V -44 H 34 V -38 A 20 20 0 0 0 22 -44 Z
+              M 22 -30 A 10 10 0 1 1 21.9 -30 Z" />
+  <path fill="#F4F5F8" transform="translate(578, 164)" d="M 0 0 V -44 H 14 V -36 A 15 15 0 0 1 36 -44 A 12 12 0 0 1 42 -32 V 0 H 28 V -30 A 6 6 0 0 0 22 -36 A 8 8 0 0 0 14 -28 V 0 Z" />
+  <path fill="#F4F5F8" transform="translate(626, 164)" d="M 40 -10 A 18 18 0 0 1 22 0 A 22 22 0 1 1 22 -44 A 18 18 0 0 1 40 -34 L 30 -26 A 10 10 0 0 0 22 -32 A 10 10 0 1 0 22 -12 A 10 10 0 0 0 30 -18 Z" />
+  <path fill="#F4F5F8" transform="translate(672, 164)" d="M 4 0 V -44 H 18 V 0 Z" />
+  <g fill="#F4F5F8" transform="translate(672, 164)"><circle cx="11" cy="-56" r="7" /></g>
+</svg>

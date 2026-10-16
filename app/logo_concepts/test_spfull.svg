@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-spfull">
+  <title id="t-spfull">fiBOnanci Complete Golden Spiral</title>
+  <path fill="none" stroke="#0C0D11" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" d="
+    M 54.50 82.50
+    A 91 91 0 0 0 145.50 173.50
+    A 56 56 0 0 0 201.50 117.50
+    A 35 35 0 0 0 166.50 82.50
+    A 21 21 0 0 0 145.50 103.50
+    A 14 14 0 0 0 159.50 117.50
+    A 7 7 0 0 0 166.50 110.50
+  "/>
+</svg>

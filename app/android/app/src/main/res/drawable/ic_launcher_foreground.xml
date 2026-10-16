@@ -4,10 +4,16 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Central Monolith (w=8.5, h=52.5, rx=4.25, centered at 54,54) -->
     <path
-        android:strokeColor="#DDF557"
-        android:strokeWidth="6.4"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M64.5,58 A4.2,4.2 0 0,0 60.3,62.2 A8.4,8.4 0 0,0 68.7,70.6 A12.6,12.6 0 0,0 81.3,58 A21,21 0 0,0 60.3,37 A33.6,33.6 0 0,0 27,66" />
+        android:fillColor="#D4F442"
+        android:pathData="M49.75,32 A4.25,4.25 0 0,1 58.25,32 V76 A4.25,4.25 0 0,1 49.75,76 Z" />
+    <!-- Left Vault Gate (Outer R=22.25, Inner r=13.75) -->
+    <path
+        android:fillColor="#D4F442"
+        android:pathData="M46.25,31.75 A22.25,22.25 0 0,0 46.25,76.25 V67.75 A13.75,13.75 0 0,1 46.25,40.25 Z" />
+    <!-- Right Vault Gate (Outer R=22.25, Inner r=13.75) -->
+    <path
+        android:fillColor="#D4F442"
+        android:pathData="M61.75,31.75 A22.25,22.25 0 0,1 61.75,76.25 V67.75 A13.75,13.75 0 0,0 61.75,40.25 Z" />
 </vector>

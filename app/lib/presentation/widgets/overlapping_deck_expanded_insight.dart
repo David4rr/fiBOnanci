@@ -25,8 +25,9 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalWeekly = (weeklySpending != null && weeklySpending!.isNotEmpty)
-        ? weeklySpending!.fold<double>(0.0, (sum, v) => sum + v.abs())
+    final int activeDayIndex = (transactionDate.toLocal().weekday - 1).clamp(0, 6);
+    final dailyTotal = (weeklySpending != null && weeklySpending!.length > activeDayIndex)
+        ? weeklySpending![activeDayIndex].abs()
         : 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +53,7 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              currencyFormatter.format(totalWeekly),
+              currencyFormatter.format(dailyTotal),
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w800,

@@ -11,24 +11,37 @@ class IndonesianAmountParser {
   static double? parseReceiptAmount(String text) {
     final lines = text.split(RegExp(r'[\r\n]+')).map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
     final priorityRegex = RegExp(
-      r'\b(grand\s*total|total\s*bayar|total\s*belanja|total\s*pembayaran|total\s*transaksi|total\s*tagihan|nominal\s*transfer|jumlah\s*transfer|total\s*harga|harga\s*jual|jumlah\s*bayar|total)\b',
+      r'\b(grand\s*total|total\s*bayar|total\s*belanja|total\s*pembayaran|total\s*transaksi|total\s*tagihan|nominal\s*transfer|jumlah\s*transfer|total\s*harga|harga\s*jual|jumlah\s*bayar|total|netto|net|tagihan|ttl|tot)\b',
       caseSensitive: false,
     );
     final ignoreLineRegex = RegExp(
-      r'\b(kembali|kembalian|change|tunai|cash|diskon|hemat|voucher|ppn|tax|pajak|subtotal|sub\s*total|no\.?\s*trx|no\.?\s*ref|npwp|telp)\b',
+      r'\b(kembali|kembalian|change|tunai|cash|diskon|hemat|voucher|ppn|tax|pajak|subtotal|sub\s*total|no\.?\s*trx|no\.?\s*ref|npwp|telp|tanggal|tgl|date|waktu|time|jam|pukul|kasir|cashier|meja|antrian)\b',
+      caseSensitive: false,
+    );
+    final datePatternRegex = RegExp(
+      r'\b(?:\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{1,2}\s+(?:jan|feb|mar|apr|mei|jun|jul|agu|aug|sep|okt|oct|nov|des)\b|\d{1,2}[:.]\d{2}(?:[:.]\d{2})?)',
       caseSensitive: false,
     );
 
     double? bestTotal;
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
-      if (priorityRegex.hasMatch(line) && !ignoreLineRegex.hasMatch(line)) {
+      final isDate = datePatternRegex.hasMatch(line) && !priorityRegex.hasMatch(line);
+      if (priorityRegex.hasMatch(line) && !ignoreLineRegex.hasMatch(line) && !isDate) {
         final sameLineAmt = _extractNumericAmountFromLine(line);
         if (sameLineAmt != null && sameLineAmt >= 500) {
           bestTotal = sameLineAmt;
-        } else if (i + 1 < lines.length && !ignoreLineRegex.hasMatch(lines[i + 1])) {
-          final nextLineAmt = _extractNumericAmountFromLine(lines[i + 1]);
-          if (nextLineAmt != null && nextLineAmt >= 500) bestTotal = nextLineAmt;
+        } else {
+          for (int off = 1; off <= 3 && i + off < lines.length; off++) {
+            final nextLine = lines[i + off];
+            if (priorityRegex.hasMatch(nextLine)) break;
+            if (ignoreLineRegex.hasMatch(nextLine) || datePatternRegex.hasMatch(nextLine)) continue;
+            final nextLineAmt = _extractNumericAmountFromLine(nextLine);
+            if (nextLineAmt != null && nextLineAmt >= 500) {
+              bestTotal = nextLineAmt;
+              break;
+            }
+          }
         }
       }
     }
@@ -40,6 +53,8 @@ class IndonesianAmountParser {
     ).allMatches(text);
     double? maxRp;
     for (final m in rpMatches) {
+      final lineOfMatch = lines.firstWhere((l) => l.contains(m.group(0)!), orElse: () => '');
+      if (ignoreLineRegex.hasMatch(lineOfMatch) || (datePatternRegex.hasMatch(lineOfMatch) && !priorityRegex.hasMatch(lineOfMatch))) continue;
       final raw = m.group(1);
       if (raw != null) {
         final val = parseFormattedIdr(raw);
@@ -75,11 +90,29 @@ class IndonesianAmountParser {
   }
 
   static double? _extractNumericAmountFromLine(String line) {
+    final sanitized = line
+        .replaceAll(RegExp(r'\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b'), '')
+        .replaceAll(RegExp(r'\b\d{1,2}[:.]\d{2}(?:[:.]\d{2})?\b'), '');
+
+    final shMatch = RegExp(
+      r'\b(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta)\b',
+      caseSensitive: false,
+    ).firstMatch(sanitized);
+    if (shMatch != null) {
+      final base = double.tryParse(shMatch.group(1)!.replaceAll(',', '.'));
+      final unit = shMatch.group(2)!.toLowerCase();
+      if (base != null) {
+        final mult = (unit == 'jt' || unit == 'juta') ? 1000000.0 : 1000.0;
+        final val = base * mult;
+        if (val >= 500) return val;
+      }
+    }
+
     final regex = RegExp(
       r'(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})+(?:[.,][0-9]{1,2})?|\b[0-9]{4,9}\b)',
       caseSensitive: false,
     );
-    final matches = regex.allMatches(line).toList();
+    final matches = regex.allMatches(sanitized).toList();
     for (final m in matches.reversed) {
       final raw = m.group(1);
       if (raw == null) continue;

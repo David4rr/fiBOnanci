@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-dualwave">
+  <title id="t-dualwave">fiBOnanci Golden Wave Equilibrium</title>
+  <!-- Arm 1 -->
+  <path fill="none" stroke="#0C0D11" stroke-width="24" stroke-linecap="round" d="
+    M 128 32
+    A 96 96 0 0 1 224 128
+    A 64 64 0 0 1 144 176
+    A 32 32 0 0 1 116 136
+  "/>
+  <!-- Arm 2 (180 deg rotation) -->
+  <path fill="none" stroke="#0C0D11" stroke-width="24" stroke-linecap="round" d="
+    M 128 224
+    A 96 96 0 0 1 32 128
+    A 64 64 0 0 1 112 80
+    A 32 32 0 0 1 140 120
+  "/>
+  <!-- Core balance seed -->
+  <circle cx="128" cy="128" r="12" fill="#0C0D11" />
+</svg>

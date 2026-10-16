@@ -1,13 +1,14 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
 import 'fibonanci_logo_mark.dart';
 
-/// 3-Stage Geometric Morphing Splash Screen Overlay for fiBOnanci.
-/// - Stage 1 (0.00 - 0.38): Golden Ratio seed & Fibonacci spiral unfolding
-/// - Stage 2 (0.32 - 0.78): Circle-to-Folder-Tab vault morph + fiBOnanci wordmark reveal
-/// - Stage 3 (0.78 - 1.00): Vault scale-through & seamless dissolve into MainShell
+/// 3-Stage Mathematical Vault Splash Screen Gate for fiBOnanci.
+/// - Stage 1 (0.00 - 0.58): Central monolith rises & dual vault gates slide open
+/// - Stage 2 (0.34 - 0.60): Biometric breathing pulse + fiBOnanci wordmark reveal
+/// - Stage 3 (0.58 - 1.00): Luxurious depth cross-dissolve & parallel rise into MainShell
 class FibonanciSplashGate extends StatefulWidget {
   static final ValueNotifier<bool> isSplashActive = ValueNotifier<bool>(false);
   final Widget child;
@@ -16,7 +17,7 @@ class FibonanciSplashGate extends StatefulWidget {
   const FibonanciSplashGate({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 1450),
+    this.duration = const Duration(milliseconds: 1650),
   });
 
   @override
@@ -51,49 +52,81 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
 
   @override
   Widget build(BuildContext context) {
+    if (_isDone) return widget.child;
+
     return Stack(
       children: [
-        widget.child,
-        if (!_isDone)
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final t = _controller.value;
-                final morphT = ((t) / 0.76).clamp(0.0, 1.0);
-                final textT = Curves.easeOutCubic.transform(
-                  ((t - 0.28) / 0.42).clamp(0.0, 1.0),
-                );
-                final exitT = Curves.easeInOutCubic.transform(
-                  ((t - 0.76) / 0.24).clamp(0.0, 1.0),
-                );
-                final curtainOpacity = (1.0 - exitT).clamp(0.0, 1.0);
-                final exitScale = ui.lerpDouble(1.0, 1.07, exitT)!;
+        const Positioned.fill(child: ColoredBox(color: AppColors.canvasBg)),
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final t = _controller.value;
+            final enterT = Curves.easeOutCubic.transform(
+              ((t - 0.58) / 0.42).clamp(0.0, 1.0),
+            );
+            final scale = ui.lerpDouble(0.93, 1.0, enterT)!;
+            final translateY = ui.lerpDouble(24.0, 0.0, enterT)!;
 
-                return IgnorePointer(
-                  ignoring: t > 0.75,
-                  child: Opacity(
-                    opacity: curtainOpacity,
-                    child: Material(
-                      key: const Key('fibonanci_splash_overlay'),
-                      color: AppColors.canvasBg,
+            return Transform.translate(
+              offset: Offset(0, translateY),
+              child: Transform.scale(
+                scale: scale,
+                child: Opacity(
+                  opacity: enterT,
+                  child: widget.child,
+                ),
+              ),
+            );
+          },
+        ),
+        Positioned.fill(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              final t = _controller.value;
+              final morphT = ((t) / 0.58).clamp(0.0, 1.0);
+              final textT = Curves.easeOutCubic.transform(
+                ((t - 0.24) / 0.34).clamp(0.0, 1.0),
+              );
+              final exitT = Curves.easeInOutCubic.transform(
+                ((t - 0.58) / 0.42).clamp(0.0, 1.0),
+              );
+              final curtainOpacity = (1.0 - exitT).clamp(0.0, 1.0);
+              final exitScale = ui.lerpDouble(1.0, 1.10, exitT)!;
+              final exitTranslateY = ui.lerpDouble(0.0, -28.0, exitT)!;
+
+              final pulseT = ((t - 0.34) / 0.26).clamp(0.0, 1.0);
+              final logoPulse = 1.0 + (math.sin(pulseT * math.pi) * 0.045);
+
+              return IgnorePointer(
+                ignoring: t > 0.70,
+                child: Opacity(
+                  opacity: curtainOpacity,
+                  child: Material(
+                    key: const Key('fibonanci_splash_overlay'),
+                    color: AppColors.canvasBg,
+                    child: Transform.translate(
+                      offset: Offset(0, exitTranslateY),
                       child: Transform.scale(
                         scale: exitScale,
                         child: Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              FibonanciLogoMark(
-                                key: const Key('fibonanci_splash_logo'),
-                                size: 96,
-                                morphProgress: morphT,
-                                showGlow: true,
+                              Transform.scale(
+                                scale: logoPulse,
+                                child: FibonanciLogoMark(
+                                  key: const Key('fibonanci_splash_logo'),
+                                  size: 104,
+                                  morphProgress: morphT,
+                                  showGlow: true,
+                                ),
                               ),
-                              const SizedBox(height: 22),
+                              const SizedBox(height: 24),
                               Opacity(
                                 opacity: textT,
                                 child: Transform.translate(
-                                  offset: Offset(0, 12 * (1.0 - textT)),
+                                  offset: Offset(0, 14 * (1.0 - textT)),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -123,7 +156,7 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
-                                          letterSpacing: 1.4,
+                                          letterSpacing: 2.2,
                                           color: AppColors.textMuted,
                                         ),
                                       ),
@@ -137,10 +170,11 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
                       ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
+        ),
       ],
     );
   }

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-nautsolid">
+  <title id="t-nautsolid">fiBOnanci Solid Nautilus</title>
+  <path fill="#0C0D11" fill-rule="evenodd" d="
+    M 128 228
+    A 100 100 0 1 1 228 128
+    A 100 100 0 0 1 128 228
+    Z
+    M 128 200
+    A 72 72 0 0 0 200 128
+    A 72 72 0 0 0 128 56
+    A 72 72 0 0 0 56 128
+    A 72 72 0 0 0 128 200
+    L 128 168
+    A 40 40 0 1 1 168 128
+    L 140 128
+    A 12 12 0 1 0 128 140
+    L 128 200
+    Z
+  "/>
+</svg>

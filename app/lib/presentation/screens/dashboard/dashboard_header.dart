@@ -39,11 +39,13 @@ class DashboardHeader extends StatelessWidget {
                   children: [
                     const FibonanciLogoMark(size: 24),
                     const SizedBox(width: 8),
-                    Text('fiBOnanci', style: AppTypography.heroGreeting),
+                    Flexible(
+                      child: Text('fiBOnanci', style: AppTypography.heroGreeting, overflow: TextOverflow.ellipsis),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle),
+                Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -97,6 +99,7 @@ class DashboardHeader extends StatelessWidget {
                   tag: profileId != null && profileId!.isNotEmpty
                       ? 'profile_avatar_hero_$profileId'
                       : 'profile_avatar_hero',
+                  createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                   flightShuttleBuilder: profileAvatarFlightShuttle,
                   child: Material(
                     type: MaterialType.transparency,

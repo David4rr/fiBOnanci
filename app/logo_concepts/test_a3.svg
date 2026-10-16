@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title-a3">
+  <title id="title-a3">fiBOnanci Geometric Capital F</title>
+  <!-- Pillar -->
+  <path fill="#0C0D11" d="
+    M 64 224
+    V 32
+    H 196
+    V 68
+    H 104
+    V 112
+    H 168
+    V 148
+    H 104
+    V 224
+    H 64
+    Z
+  "/>
+</svg>

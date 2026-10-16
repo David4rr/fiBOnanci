@@ -77,12 +77,14 @@ class InboxNotificationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 165),
-                child: InboxWalletChip(
-                  walletName: walletName,
-                  profileName: profileName,
-                  onSwitchWallet: onSwitchWallet,
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 165),
+                  child: InboxWalletChip(
+                    walletName: walletName,
+                    profileName: profileName,
+                    onSwitchWallet: onSwitchWallet,
+                  ),
                 ),
               ),
             ],

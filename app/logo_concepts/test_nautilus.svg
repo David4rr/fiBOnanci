@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-nautilus">
+  <title id="t-nautilus">fiBOnanci Nautilus Core</title>
+  <!-- Outer golden sweeping petal -->
+  <path fill="#0C0D11" d="
+    M 128 228
+    A 100 100 0 0 1 28 128
+    A 100 100 0 0 1 128 28
+    A 100 100 0 0 1 228 128
+    H 176
+    A 48 48 0 0 0 128 80
+    A 48 48 0 0 0 80 128
+    A 48 48 0 0 0 128 176
+    V 228
+    Z
+  "/>
+  <!-- Inner golden nucleus/seed -->
+  <circle cx="128" cy="128" r="26" fill="#0C0D11" />
+</svg>

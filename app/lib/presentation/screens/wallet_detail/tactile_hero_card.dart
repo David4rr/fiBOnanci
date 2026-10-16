@@ -27,25 +27,11 @@ class _PressableScaleState extends State<PressableScale> {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: (_) {
-        if (widget.onTap != null) {
-          setState(() => _isPressed = true);
-          HapticFeedback.selectionClick();
-        }
-      },
-      onTapUp: (_) {
-        if (widget.onTap != null) setState(() => _isPressed = false);
-      },
-      onTapCancel: () {
-        if (widget.onTap != null) setState(() => _isPressed = false);
-      },
+      onTapDown: (_) { if (widget.onTap != null) { setState(() => _isPressed = true); HapticFeedback.selectionClick(); } },
+      onTapUp: (_) { if (widget.onTap != null) setState(() => _isPressed = false); },
+      onTapCancel: () { if (widget.onTap != null) setState(() => _isPressed = false); },
       onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.97 : 1.0,
-        duration: const Duration(milliseconds: 140),
-        curve: Curves.easeOutCubic,
-        child: widget.child,
-      ),
+      child: AnimatedScale(scale: _isPressed ? 0.97 : 1.0, duration: const Duration(milliseconds: 140), curve: Curves.easeOutCubic, child: widget.child),
     );
   }
 }
@@ -126,25 +112,28 @@ class _TactileHeroCardState extends State<TactileHeroCard> {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => _handleTap(context),
-          child: Container(
+          child: SizedBox(
             width: cardW,
             height: cardH,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(color: widget.cardColor.withValues(alpha: 0.26), blurRadius: 28, offset: const Offset(0, 14), spreadRadius: -4),
-                BoxShadow(color: Colors.black.withValues(alpha: 0.60), blurRadius: 16, offset: const Offset(0, 8)),
-              ],
-            ),
             child: Stack(
               children: [
                 Positioned.fill(
                   child: Hero(
                     tag: 'wallet_card_${widget.wallet.id}',
-                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-                      final Hero toHero = toHeroContext.widget as Hero;
-                      return Material(color: Colors.transparent, child: toHero.child);
-                    },
+                    createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Material(
+                      color: Colors.transparent,
+                      child: WalletCard(
+                        wallet: widget.wallet,
+                        index: widget.cardIndex,
+                        allWallets: widget.allWallets,
+                        fmt: widget.fmt,
+                        cardH: cardH,
+                        isLifted: true,
+                        showBottomLayout: true,
+                        animate: false,
+                      ),
+                    ),
                     child: Material(
                       color: Colors.transparent,
                       child: WalletCard(
@@ -155,6 +144,7 @@ class _TactileHeroCardState extends State<TactileHeroCard> {
                         cardH: cardH,
                         isLifted: true,
                         showBottomLayout: true,
+                        animate: false,
                       ),
                     ),
                   ),
@@ -162,7 +152,7 @@ class _TactileHeroCardState extends State<TactileHeroCard> {
                 if (_isCopied)
                   Positioned.fill(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(26),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                         child: Container(

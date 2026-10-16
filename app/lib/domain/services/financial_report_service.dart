@@ -81,6 +81,7 @@ class FinancialReportService {
 
     final filteredTxs = transactions.where((tx) {
       if (tx.isDeleted) return false;
+      if (tx.externalRef?.startsWith('pocket_') == true) return false;
       final d = tx.transactionDate.toLocal();
       switch (period) {
         case ReportPeriod.thisMonth:

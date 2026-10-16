@@ -168,12 +168,14 @@ Widget profileAvatarFlightShuttle(
   BuildContext fromHeroContext,
   BuildContext toHeroContext,
 ) {
-  final Hero toHero = toHeroContext.widget as Hero;
+  final Hero targetHero = (flightDirection == HeroFlightDirection.push
+      ? toHeroContext.widget
+      : fromHeroContext.widget) as Hero;
   return Material(
     type: MaterialType.transparency,
     child: FittedBox(
       fit: BoxFit.contain,
-      child: toHero.child,
+      child: targetHero.child,
     ),
   );
 }

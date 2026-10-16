@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-blocks">
+  <title id="t-blocks">fiBOnanci Fibonacci Monolith</title>
+  <!-- Block 1: Large golden vertical monolith (89 units) -->
+  <rect x="36" y="36" width="80" height="184" rx="16" fill="#0C0D11" />
+  <!-- Block 2: Golden square block (55 units) -->
+  <rect x="130" y="36" width="90" height="90" rx="16" fill="#0C0D11" />
+  <!-- Block 3: Golden horizontal bar (34 units) -->
+  <rect x="130" y="140" width="90" height="80" rx="16" fill="#0C0D11" />
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-filig">
+  <title id="t-filig">fiBOnanci 'fi' Ligature</title>
+  <!-- Main ligature path -->
+  <path fill="#0C0D11" d="
+    M 72 224
+    V 136
+    H 48
+    V 104
+    H 72
+    V 88
+    A 48 48 0 0 1 120 40
+    H 144
+    V 72
+    H 120
+    A 16 16 0 0 0 104 88
+    V 104
+    H 184
+    V 224
+    H 152
+    V 136
+    H 104
+    V 224
+    H 72
+    Z
+  "/>
+  <!-- 'i' golden dot -->
+  <circle cx="168" cy="64" r="16" fill="#0C0D11" />
+</svg>

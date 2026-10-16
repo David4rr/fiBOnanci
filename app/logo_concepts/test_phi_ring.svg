@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-phi-ring">
+  <title id="t-phi-ring">fiBOnanci Phi Ring Vault</title>
+  <!-- Central monolithic axis -->
+  <rect x="114" y="24" width="28" height="208" rx="14" fill="#0C0D11" />
+  <!-- Left wing -->
+  <path fill="#0C0D11" d="
+    M 102 39.75
+    A 92 92 0 0 0 102 216.25
+    V 175.33
+    A 54 54 0 0 1 102 80.67
+    Z
+  "/>
+  <!-- Right wing -->
+  <path fill="#0C0D11" d="
+    M 154 39.75
+    V 80.67
+    A 54 54 0 0 1 154 175.33
+    V 216.25
+    A 92 92 0 0 0 154 39.75
+    Z
+  "/>
+</svg>

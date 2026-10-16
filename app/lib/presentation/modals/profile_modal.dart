@@ -43,10 +43,7 @@ class ProfileModal extends StatefulWidget {
         ),
         transitionsBuilder: (ctx, animation, _, child) {
           final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0.0, 0.18), end: Offset.zero).animate(curved),
-            child: FadeTransition(opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved), child: child),
-          );
+          return FadeTransition(opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved), child: child);
         },
       ),
     );

@@ -155,7 +155,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                     final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
 
                     final weeklySpending = isExpanded
-                        ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, type: tx.type == 'income' ? 'income' : null)
+                        ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, walletId: tx.walletId, type: tx.type == 'income' ? 'income' : null)
                         : null;
                     final double naturalTop = _getNaturalTop(i, expandedIdx);
                     final double screenY = naturalTop - _scrollOffset;

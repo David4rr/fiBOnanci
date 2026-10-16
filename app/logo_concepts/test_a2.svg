@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title-a2">
+  <title id="title-a2">fiBOnanci Golden f Minimal</title>
+  <!-- Main stem and golden arch -->
+  <path fill="#0C0D11" d="
+    M 84 228
+    V 102
+    A 66 66 0 0 1 150 36
+    H 188
+    V 72
+    H 150
+    A 30 30 0 0 0 120 102
+    V 228
+    H 84
+    Z
+  "/>
+  <!-- Floating precision crossbar at golden ratio height -->
+  <rect x="52" y="116" width="136" height="36" rx="0" fill="#0C0D11" />
+</svg>

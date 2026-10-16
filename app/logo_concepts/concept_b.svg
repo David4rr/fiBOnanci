@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-phi">
+  <title id="t-phi">fiBOnanci Phi Vault</title>
+  <!-- Central monolithic axis (width 34, height 210, rounded pill caps) -->
+  <rect x="111" y="23" width="34" height="210" rx="17" fill="#0C0D11" />
+  <!-- Left vault wing (Fibonacci R=89 outer, r=55 inner) -->
+  <path fill="#0C0D11" d="
+    M 99 43.86
+    A 89 89 0 0 0 99 212.14
+    V 174.73
+    A 55 55 0 0 1 99 81.27
+    Z
+  "/>
+  <!-- Right vault wing (Fibonacci R=89 outer, r=55 inner) -->
+  <path fill="#0C0D11" d="
+    M 157 43.86
+    V 81.27
+    A 55 55 0 0 1 157 174.73
+    V 212.14
+    A 89 89 0 0 0 157 43.86
+    Z
+  "/>
+</svg>

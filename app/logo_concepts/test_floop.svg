@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-floop">
+  <title id="t-floop">fiBOnanci Golden F Loop</title>
+  <path fill="none" stroke="#0C0D11" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" d="
+    M 76 220
+    V 92
+    A 52 52 0 0 1 180 92
+    V 112
+    A 24 24 0 0 1 156 136
+    H 76
+  "/>
+</svg>

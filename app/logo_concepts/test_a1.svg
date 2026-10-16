@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title-a1">
+  <title id="title-a1">fiBOnanci Golden F</title>
+  <!-- Combined clean path with evenodd fill -->
+  <path fill="#0C0D11" d="
+    M 76 112
+    L 48 112
+    A 6 6 0 0 0 42 118
+    L 42 142
+    A 6 6 0 0 0 48 148
+    L 76 148
+    L 76 226
+    A 8 8 0 0 0 84 234
+    L 112 234
+    A 8 8 0 0 0 120 226
+    L 120 148
+    L 190 148
+    A 6 6 0 0 0 196 142
+    L 196 118
+    A 6 6 0 0 0 190 112
+    L 120 112
+    L 120 96
+    A 38 38 0 0 1 158 58
+    L 178 58
+    A 6 6 0 0 0 184 52
+    L 184 28
+    A 6 6 0 0 0 178 22
+    L 156 22
+    A 76 76 0 0 0 80 98
+    L 80 112
+    Z
+  "/>
+</svg>

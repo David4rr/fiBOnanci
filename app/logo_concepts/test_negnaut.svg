@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-negnaut">
+  <title id="t-negnaut">fiBOnanci Negative Spiral Monolith</title>
+  <mask id="spiral-cut">
+    <rect width="256" height="256" fill="white" />
+    <path fill="none" stroke="black" stroke-width="20" stroke-linecap="round" d="
+      M 128 32
+      A 96 96 0 0 1 224 128
+      A 68 68 0 0 1 156 196
+      A 44 44 0 0 1 112 152
+      A 24 24 0 0 1 136 128
+    "/>
+  </mask>
+  <circle cx="128" cy="128" r="96" fill="#0C0D11" mask="url(#spiral-cut)" />
+</svg>

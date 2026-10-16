@@ -45,3 +45,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Desktop and Web boilerplate platforms (Android & iOS mobile targets only)
+/linux/
+/macos/
+/web/
+/windows/

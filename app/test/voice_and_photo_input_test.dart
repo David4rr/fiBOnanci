@@ -91,6 +91,58 @@ KEMBALI           Rp  7.500
       expect(cat.name, contains('Belanja'));
     });
 
+    test('ignores date 16 and time 16:00 and accurately parses 14k total', () {
+      const receiptWithDate16 = '''
+CAFE KENANGAN FIBONANCI
+TGL: 16/10/2026 16:00:00
+KASIR: SITI
+---------------------------
+ES KOPI SUSU        14.000
+---------------------------
+TOTAL               14.000
+BAYAR TUNAI         20.000
+KEMBALI              6.000
+TERIMA KASIH
+''';
+      final draft = SmartTransactionParser.parse(
+        rawText: receiptWithDate16,
+        source: SmartInputSource.camera,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draft.amount, 14000);
+
+      const receiptWith14kShorthand = '''
+WARUNG KOPI LOKAL
+16-10-2026
+KOPI HITAM          14k
+---------------------------
+TOTAL: 14k
+''';
+      final draft2 = SmartTransactionParser.parse(
+        rawText: receiptWith14kShorthand,
+        source: SmartInputSource.camera,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draft2.amount, 14000);
+
+      const receiptMultiLineTotal = '''
+BAKSO MALANG
+TGL: 16 OKT 2026
+TOTAL HARGA
+---------------------------
+14.000
+''';
+      final draft3 = SmartTransactionParser.parse(
+        rawText: receiptMultiLineTotal,
+        source: SmartInputSource.camera,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draft3.amount, 14000);
+    });
+
     test('parses voice expense, income, and inter-wallet transfer accurately', () {
       final expenseDraft = SmartTransactionParser.parse(
         rawText: 'Beli kopi kenangan dua puluh lima ribu pakai OVO',

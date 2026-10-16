@@ -1,21 +1,23 @@
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 
-/// Pure Minimalist fiBOnanci Spiral Logo Mark.
-/// Renders ONLY the continuous Fibonacci Golden Spiral (1:1:2:3:5:8)
-/// without any rings, lines, or containers.
+/// Pure Mathematical "The Phi Vault" (Φ = 1.618) Logo Mark for fiBOnanci.
+///
+/// Features a central monolithic pillar flanked by dual symmetrical vault gates
+/// with exact Fibonacci sequence proportions (34, 55, 89, 210).
 class FibonanciLogoMark extends StatelessWidget {
   final double size;
   final double morphProgress;
   final bool showGlow;
+  final Color? color;
 
   const FibonanciLogoMark({
     super.key,
     this.size = 64.0,
     this.morphProgress = 1.0,
     this.showGlow = false,
+    this.color,
   });
 
   @override
@@ -24,109 +26,133 @@ class FibonanciLogoMark extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _FibonanciLogoPainter(
+        painter: _FibonanciPhiVaultPainter(
           progress: morphProgress.clamp(0.0, 1.0),
           showGlow: showGlow,
+          overrideColor: color,
         ),
       ),
     );
   }
 }
 
-class _FibonanciLogoPainter extends CustomPainter {
+class _FibonanciPhiVaultPainter extends CustomPainter {
   final double progress;
   final bool showGlow;
+  final Color? overrideColor;
 
-  const _FibonanciLogoPainter({required this.progress, required this.showGlow});
+  const _FibonanciPhiVaultPainter({
+    required this.progress,
+    required this.showGlow,
+    this.overrideColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
-    final spiralT = Curves.easeInOutCubic.transform(progress.clamp(0.0, 1.0));
+    final s = w / 256.0;
+    final cx = w * 0.5, cy = h * 0.5;
 
-    if (showGlow && spiralT > 0.05) {
+    // Stage 1 & 2 timing curves
+    final pillarT = Curves.easeOutCubic.transform(
+      (progress / 0.55).clamp(0.0, 1.0),
+    );
+    final gateT = Curves.easeOutBack.transform(
+      ((progress - 0.25) / 0.75).clamp(0.0, 1.0),
+    );
+
+    // Subtle luminous aura
+    if (showGlow && progress > 0.08) {
       final glowPaint = Paint()
-        ..color = AppColors.neoChartreuse.withValues(alpha: 0.14 * spiralT)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, w * 0.22);
-      canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.32 * spiralT, glowPaint);
+        ..color = (overrideColor ?? AppColors.neoChartreuse).withValues(
+          alpha: 0.20 * progress,
+        )
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, w * 0.26);
+      canvas.drawCircle(Offset(cx, cy), w * 0.36 * progress, glowPaint);
     }
 
-    final fullSpiral = _buildGoldenSpiralPath(size);
-    final metrics = fullSpiral.computeMetrics().toList();
-    if (metrics.isNotEmpty) {
-      final metric = metrics.first;
-      final drawLen = metric.length * spiralT.clamp(0.02, 1.0);
-      final activeSpiral = metric.extractPath(0, drawLen);
+    final fillPaint = Paint()..style = PaintingStyle.fill;
+    if (overrideColor != null) {
+      fillPaint.color = overrideColor!;
+    } else {
+      fillPaint.shader = ui.Gradient.linear(
+        Offset(cx - 89 * s, cy - 89 * s),
+        Offset(cx + 89 * s, cy + 89 * s),
+        const [AppColors.neoMint, AppColors.neoChartreuse],
+      );
+    }
 
-      final spiralPaint = Paint()
-        ..shader = ui.Gradient.linear(
-          Offset(w * 0.18, h * 0.78),
-          Offset(w * 0.82, h * 0.18),
-          const [AppColors.neoMint, AppColors.neoChartreuse],
-        )
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = (w * 0.095).clamp(2.4, 7.6);
+    // Draw central monolith (grows from center origin)
+    if (pillarT > 0.01) {
+      final pillarH = 210.0 * s * pillarT;
+      final cornerRadius = (17.0 * s).clamp(1.0, pillarH * 0.5);
+      final pillarRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(cx, cy), width: 34.0 * s, height: pillarH),
+        Radius.circular(cornerRadius),
+      );
+      canvas.drawRRect(pillarRect, fillPaint);
+    }
 
+    // Draw dual symmetrical vault gates (slide out from monolith)
+    if (gateT > 0.01) {
+      final gateOffset = (1.0 - gateT) * (24.0 * s);
+      final gateScale = ui.lerpDouble(0.72, 1.0, gateT)!;
+
+      // Left vault gate
       canvas.save();
-      // Subtle rotation morph as the spiral uncoils from seed (0.0 -> 1.0)
-      final angle = (1.0 - spiralT) * (-math.pi * 0.35);
-      final scale = ui.lerpDouble(0.55, 1.0, spiralT)!;
-      canvas.translate(w * 0.5, h * 0.5);
-      canvas.rotate(angle);
-      canvas.scale(scale, scale);
-      canvas.translate(-w * 0.5, -h * 0.5);
+      canvas.translate(cx, cy);
+      canvas.scale(gateScale, gateScale);
+      canvas.translate(-cx + gateOffset, -cy);
+      canvas.drawPath(_buildLeftGate(cx, cy, s), fillPaint);
+      canvas.restore();
 
-      canvas.drawPath(activeSpiral, spiralPaint);
+      // Right vault gate
+      canvas.save();
+      canvas.translate(cx, cy);
+      canvas.scale(gateScale, gateScale);
+      canvas.translate(-cx - gateOffset, -cy);
+      canvas.drawPath(_buildRightGate(cx, cy, s), fillPaint);
       canvas.restore();
     }
   }
-  Path _buildGoldenSpiralPath(Size size) {
-    final w = size.width, h = size.height;
-    final u = w * 0.052;
-    // Mathematically centered 5-arc Fibonacci progression: x in [0.16..0.84], y in [0.29..0.71]
-    final origin = Offset(w * 0.627, h * 0.552);
+
+  Path _buildLeftGate(double cx, double cy, double s) {
     return Path()
-      ..moveTo(origin.dx, origin.dy)
-      // Arc 1 (r = 1u): top-left
-      ..arcTo(
-        Rect.fromCircle(center: Offset(origin.dx, origin.dy + u), radius: u),
-        -math.pi / 2,
-        -math.pi / 2,
-        false,
+      ..moveTo(cx - 31.0 * s, cy - 89.0 * s)
+      ..arcToPoint(
+        Offset(cx - 31.0 * s, cy + 89.0 * s),
+        radius: Radius.circular(89.0 * s),
+        clockwise: false,
       )
-      // Arc 2 (r = 2u): bottom-left
-      ..arcTo(
-        Rect.fromCircle(center: Offset(origin.dx + u, origin.dy + u), radius: 2 * u),
-        math.pi,
-        -math.pi / 2,
-        false,
+      ..lineTo(cx - 31.0 * s, cy + 55.0 * s)
+      ..arcToPoint(
+        Offset(cx - 31.0 * s, cy - 55.0 * s),
+        radius: Radius.circular(55.0 * s),
+        clockwise: true,
       )
-      // Arc 3 (r = 3u): bottom-right
-      ..arcTo(
-        Rect.fromCircle(center: Offset(origin.dx + u, origin.dy), radius: 3 * u),
-        math.pi / 2,
-        -math.pi / 2,
-        false,
+      ..close();
+  }
+
+  Path _buildRightGate(double cx, double cy, double s) {
+    return Path()
+      ..moveTo(cx + 31.0 * s, cy - 89.0 * s)
+      ..arcToPoint(
+        Offset(cx + 31.0 * s, cy + 89.0 * s),
+        radius: Radius.circular(89.0 * s),
+        clockwise: true,
       )
-      // Arc 4 (r = 5u): top-right
-      ..arcTo(
-        Rect.fromCircle(center: Offset(origin.dx - u, origin.dy), radius: 5 * u),
-        0,
-        -math.pi / 2,
-        false,
+      ..lineTo(cx + 31.0 * s, cy + 55.0 * s)
+      ..arcToPoint(
+        Offset(cx + 31.0 * s, cy - 55.0 * s),
+        radius: Radius.circular(55.0 * s),
+        clockwise: false,
       )
-      // Arc 5 (r = 8u): sweeping outer golden curve
-      ..arcTo(
-        Rect.fromCircle(center: Offset(origin.dx - u, origin.dy + 3 * u), radius: 8 * u),
-        -math.pi / 2,
-        -math.pi * 0.46,
-        false,
-      );
+      ..close();
   }
 
   @override
-  bool shouldRepaint(covariant _FibonanciLogoPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.showGlow != showGlow;
+  bool shouldRepaint(covariant _FibonanciPhiVaultPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.showGlow != showGlow ||
+      oldDelegate.overrideColor != overrideColor;
 }

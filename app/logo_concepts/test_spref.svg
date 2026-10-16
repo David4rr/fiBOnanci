@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-spref">
+  <title id="t-spref">fiBOnanci Golden Spiral Nautilus</title>
+  <path fill="none" stroke="#0C0D11" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" d="
+    M 148 138
+    A 18 18 0 0 0 130 156
+    A 36 36 0 0 0 166 192
+    A 54 54 0 0 0 220 138
+    A 90 90 0 0 0 130 48
+    A 120 120 0 0 0 36 150
+  "/>
+  <circle cx="148" cy="138" r="12" fill="#0C0D11" />
+</svg>

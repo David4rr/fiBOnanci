@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-spiral">
+  <title id="t-spiral">fiBOnanci Golden Ribbon</title>
+  <path fill="#0C0D11" fill-rule="evenodd" d="
+    M 128 32
+    A 96 96 0 1 1 32 128
+    A 96 96 0 0 1 128 32
+    Z
+    M 128 68
+    A 60 60 0 0 0 68 128
+    A 60 60 0 1 0 168 84
+    L 152 110
+    A 34 34 0 1 1 128 94
+    V 68
+    Z
+  "/>
+</svg>

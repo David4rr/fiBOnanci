@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-nest">
+  <title id="t-nest">fiBOnanci Nested Golden Spiral</title>
+  <path fill="#0C0D11" d="M 195.88 60.12 A 96 96 0 1 1 32.37 119.63 A 14.00 14.00 0 0 1 60.26 122.07 A 68 68 0 1 0 176.08 79.92 A 14.00 14.00 0 0 1 195.88 60.12 Z" />
+  <path fill="#0C0D11" d="M 89.82 166.18 A 54 54 0 1 1 181.79 132.71 A 12.00 12.00 0 0 1 157.89 130.61 A 30 30 0 1 0 106.79 149.21 A 12.00 12.00 0 0 1 89.82 166.18 Z" />
+  <circle cx="128" cy="128" r="14" fill="#0C0D11" />
+</svg>

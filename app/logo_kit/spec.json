@@ -1,0 +1,28 @@
+{
+  "brand": "fiBOnanci",
+  "tagline": "Offline-First Personal Finance & Safe-to-Spend Intelligence",
+  "brief": "Minimalist, clean, and elegant identity system for zero-latency on-device personal finance, embodying mathematical Fibonacci precision and local encrypted vault security.",
+  "adjectives": ["mathematical", "minimalist", "cryptographic", "sovereign", "clean"],
+  "industry": "finance",
+  "brand_color": "#D4F442",
+  "tile_color": "#0C0D11",
+  "greyscale": false,
+  "final": true,
+  "concepts": [
+    {
+      "name": "The Phi Vault",
+      "symbol": "fibonanci-symbol-obsidian.svg",
+      "lockup": "fibonanci-lockup-dark.svg",
+      "avatar": "fibonanci-app-icon.svg",
+      "symbol_on_dark": "fibonanci-symbol-chartreuse.svg",
+      "symbol_on_tile": "fibonanci-symbol-chartreuse.svg",
+      "idea": "Simbol Yunani Phi (1.618) dan gerbang brankas simetris berdimensi deret Fibonacci murni (34, 55, 89, 210).",
+      "rationale": [
+        "Mewakili identitas Fibonacci murni melalui konstanta emas universal Phi (1.618).",
+        "Pilar monolitik diapit dua gerbang brankas melambangkan enkripsi lokal on-device dan keseimbangan Safe-to-Spend.",
+        "Setiap dimensi geometris diturunkan secara eksak dari deret Fibonacci (34, 55, 89, 210) dengan skor audit produksi 100/100."
+      ]
+    }
+  ],
+  "recommendation": "The Phi Vault terpilih sebagai identitas resmi fiBOnanci karena keunggulan arsitekturalnya, daya kenal instan pada 16 px, dan filosofi ganda privasi brankas finansial lokal."
+}

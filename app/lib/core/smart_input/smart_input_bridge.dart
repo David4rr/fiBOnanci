@@ -72,7 +72,6 @@ class SmartInputBridge {
     try {
       final XFile? image = await _picker.pickImage(
         source: fromCamera ? ImageSource.camera : ImageSource.gallery,
-        imageQuality: 85,
       );
       if (image == null) {
         return (ocrText: null, canceled: true);

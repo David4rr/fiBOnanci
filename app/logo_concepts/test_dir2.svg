@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t-dir2">
+  <title id="t-dir2">fiBOnanci Architectural Golden F</title>
+  <path fill="#0C0D11" d="
+    M 78 32
+    H 186
+    A 18 18 0 0 1 204 50
+    V 50
+    A 18 18 0 0 1 186 68
+    H 96
+    V 110
+    H 145
+    A 18 18 0 0 1 163 128
+    V 128
+    A 18 18 0 0 1 145 146
+    H 96
+    V 206
+    A 18 18 0 0 1 78 224
+    H 78
+    A 18 18 0 0 1 60 206
+    V 50
+    A 18 18 0 0 1 78 32
+    Z
+  "/>
+</svg>
