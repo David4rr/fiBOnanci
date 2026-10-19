@@ -6,6 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/profile_avatar.dart';
 import '../../widgets/common/fibonanci_logo_mark.dart';
+import '../../widgets/common/fibonanci_splash_gate.dart';
 
 class DashboardHeader extends StatelessWidget {
   final String? profileId;
@@ -37,7 +38,19 @@ class DashboardHeader extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const FibonanciLogoMark(size: 24),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: FibonanciSplashGate.isSplashActive,
+                      builder: (context, isActive, child) {
+                        return Opacity(
+                          opacity: isActive ? 0.0 : 1.0,
+                          child: child,
+                        );
+                      },
+                      child: FibonanciLogoMark(
+                        key: FibonanciSplashGate.dashboardLogoKey,
+                        size: 24,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text('fiBOnanci', style: AppTypography.heroGreeting, overflow: TextOverflow.ellipsis),

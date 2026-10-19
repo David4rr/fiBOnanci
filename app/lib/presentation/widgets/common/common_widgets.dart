@@ -21,3 +21,4 @@ export 'smooth_page_view.dart';
 export 'app_lock_gate.dart';
 export 'fibonanci_logo_mark.dart';
 export 'fibonanci_splash_gate.dart';
+export 'fibonanci_splash_overlay.dart';
