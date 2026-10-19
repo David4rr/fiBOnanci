@@ -30,7 +30,7 @@ class SmartInputFallbackSheet extends StatefulWidget {
 
 class _NominalHighlightController extends TextEditingController {
   static final _incomeRx = RegExp(
-    r'\b(gaji|gajian|upah|bonus|thr|terima|dapat|masuk|pemasukan|income|refund|cashback|dividen|komisi|jualan|untung|laba|kiriman)\b',
+    r'\b(gaji|gajian|upah|honor|tunjangan|bonus|thr|terima|menerima|diterima|dapat|mendapat|mendapatkan|dapet|masuk|pemasukan|pendapatan|penghasilan|income|refund|cashback|reimburse|dividen|komisi|insentif|jualan|penjualan|untung|laba|profit|hadiah|cair|pencairan|kiriman|dikasih|ditransfer)\b',
     caseSensitive: false,
   );
   static final _nominalRx = RegExp(

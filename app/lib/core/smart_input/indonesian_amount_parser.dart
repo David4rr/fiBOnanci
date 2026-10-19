@@ -68,7 +68,7 @@ class IndonesianAmountParser {
   static double? parseVoiceOrInlineAmount(String text) {
     final normalized = text.toLowerCase();
     final shorthandRegex = RegExp(
-      r'(\d+(?:[.,]\d+)?)\s*(?:setengah\s*)?(rb|ribu|k|jt|juta|miliar|milyar)\b',
+      r'(\d+(?:[.,]\d+)?)\s*(?:setengah\s*)?(rb|ribu|rebu|k|jt|juta|miliar|milyar)\b',
       caseSensitive: false,
     );
     final shMatch = shorthandRegex.firstMatch(normalized);
@@ -95,21 +95,23 @@ class IndonesianAmountParser {
         .replaceAll(RegExp(r'\b\d{1,2}[:.]\d{2}(?:[:.]\d{2})?\b'), '');
 
     final shMatch = RegExp(
-      r'\b(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta)\b',
+      r'\b(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|rebu|jt|juta|miliar|milyar)\b',
       caseSensitive: false,
     ).firstMatch(sanitized);
     if (shMatch != null) {
       final base = double.tryParse(shMatch.group(1)!.replaceAll(',', '.'));
       final unit = shMatch.group(2)!.toLowerCase();
       if (base != null) {
-        final mult = (unit == 'jt' || unit == 'juta') ? 1000000.0 : 1000.0;
+        final mult = (unit == 'jt' || unit == 'juta')
+            ? 1000000.0
+            : (unit == 'miliar' || unit == 'milyar') ? 1000000000.0 : 1000.0;
         final val = base * mult;
         if (val >= 500) return val;
       }
     }
 
     final regex = RegExp(
-      r'(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})+(?:[.,][0-9]{1,2})?|\b[0-9]{4,9}\b)',
+      r'(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})+(?:[.,][0-9]{1,2})?|\b[0-9]{3,9}\b(?:\s*(?:rupiah|perak))?|\b[0-9]{4,9}\b)',
       caseSensitive: false,
     );
     final matches = regex.allMatches(sanitized).toList();
@@ -117,7 +119,8 @@ class IndonesianAmountParser {
       final raw = m.group(1);
       if (raw == null) continue;
       final val = parseFormattedIdr(raw);
-      final hasPrefix = m.group(0)!.toLowerCase().contains('rp') || m.group(0)!.toLowerCase().contains('idr');
+      final fullM = m.group(0)!.toLowerCase();
+      final hasPrefix = fullM.contains('rp') || fullM.contains('idr') || fullM.contains('rupiah') || fullM.contains('perak');
       if (!hasPrefix && val >= 2020 && val <= 2035 && !raw.contains('.') && !raw.contains(',')) continue;
       if (val > 0) return val;
     }
@@ -135,6 +138,10 @@ class IndonesianAmountParser {
   }
 
   static double? _parseSpokenIndonesianWords(String text) {
+    const colloquial = {'seceng': 1000.0, 'goceng': 5000.0, 'ceban': 10000.0, 'goban': 50000.0, 'cepek': 100.0};
+    for (final entry in colloquial.entries) {
+      if (RegExp(r'\b' + entry.key + r'\b').hasMatch(text)) return entry.value;
+    }
     final tokens = text.replaceAll(RegExp(r'[^a-z\s]'), ' ').split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
     double total = 0, currentGroup = 0, currentNumber = 0;
     bool matchedAny = false;
@@ -165,9 +172,9 @@ class IndonesianAmountParser {
         currentGroup = 0;
         currentNumber = 0;
         matchedAny = true;
-      } else if (w == 'ribu' || w == 'juta' || w == 'miliar' || w == 'milyar') {
+      } else if (w == 'ribu' || w == 'rebu' || w == 'juta' || w == 'miliar' || w == 'milyar') {
         final mult = currentGroup + currentNumber;
-        final factor = w == 'ribu' ? 1000.0 : (w == 'juta' ? 1000000.0 : 1000000000.0);
+        final factor = (w == 'ribu' || w == 'rebu') ? 1000.0 : (w == 'juta' ? 1000000.0 : 1000000000.0);
         total += (mult == 0 ? 1 : mult) * factor;
         currentGroup = 0;
         currentNumber = 0;

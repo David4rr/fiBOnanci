@@ -1,40 +1,15 @@
 import '../../data/database/app_database.dart';
 import 'indonesian_amount_parser.dart';
+import 'smart_input_rules.dart';
 import 'smart_transaction_draft.dart';
 
 export 'indonesian_amount_parser.dart';
+export 'smart_input_rules.dart';
 export 'smart_transaction_draft.dart';
 
 /// Deterministic on-device NLP & OCR parser converting Voice transcripts or
 /// Receipt/Proof OCR text into a pre-filled [SmartTransactionDraft].
 class SmartTransactionParser {
-  static const Map<String, List<String>> _walletAliases = {
-    'bca': ['bca', 'mybca', 'klikbca', 'tahapan'],
-    'blu': ['blu', 'bca digital'],
-    'mandiri': ['mandiri', 'livin'],
-    'bri': ['bri', 'brimo'],
-    'bni': ['bni', 'wondr'],
-    'jago': ['jago', 'bank jago'],
-    'seabank': ['seabank', 'sea bank'],
-    'gopay': ['gopay', 'go pay', 'gojek'],
-    'ovo': ['ovo'],
-    'dana': ['dana'],
-    'shopeepay': ['shopeepay', 'shopee pay'],
-  };
-
-  static const Map<String, List<String>> _categoryRules = {
-    'makanan': ['makan', 'minum', 'kopi', 'coffee', 'cafe', 'resto', 'warung', 'nasi', 'ayam', 'bakso', 'mie', 'gofood', 'grabfood', 'shopeefood', 'starbucks', 'kenangan', 'fore', 'roti', 'snack', 'sarapan', 'dinner', 'lunch'],
-    'transportasi': ['bensin', 'pertamina', 'pertamax', 'pertalite', 'shell', 'parkir', 'tol', 'gojek', 'goride', 'gocar', 'grab', 'uber', 'kereta', 'krl', 'mrt', 'lrt', 'busway', 'transjakarta', 'tiket', 'taksi'],
-    'belanja': ['belanja', 'indomaret', 'alfamart', 'alfamidi', 'superindo', 'hypermart', 'tokopedia', 'shopee', 'lazada', 'tiktok', 'baju', 'sepatu', 'sabun', 'minimarket', 'supermarket', 'mall'],
-    'tagihan': ['listrik', 'pln', 'pdam', 'air', 'wifi', 'indihome', 'biznet', 'pulsa', 'paket data', 'telkomsel', 'xl', 'indosat', 'bpjs', 'pajak', 'tagihan', 'cicilan', 'kredit'],
-    'hiburan': ['netflix', 'spotify', 'youtube', 'bioskop', 'xxi', 'cgv', 'game', 'steam', 'playstation', 'konser', 'liburan', 'hotel', 'hiburan'],
-    'kesehatan': ['obat', 'apotek', 'kimia farma', 'k24', 'rs', 'rumah sakit', 'dokter', 'klinik', 'halodoc', 'vitamin', 'medis', 'lab'],
-    'pendidikan': ['buku', 'gramedia', 'kursus', 'udemy', 'coursera', 'sekolah', 'kuliah', 'ukt', 'spp', 'seminar'],
-    'gaji': ['gaji', 'salary', 'payroll', 'upah', 'thr', 'tunjangan'],
-    'bonus': ['bonus', 'freelance', 'proyek', 'project', 'komisi', 'insentif', 'hadiah'],
-    'investasi': ['dividen', 'bunga', 'investasi', 'reksadana', 'saham', 'bibit', 'ajaib', 'deposito', 'emas'],
-  };
-
   static SmartTransactionDraft parse({
     required String rawText,
     required SmartInputSource source,
@@ -48,12 +23,13 @@ class SmartTransactionParser {
     final amount = source == SmartInputSource.voice
         ? IndonesianAmountParser.parseVoiceOrInlineAmount(cleaned)
         : IndonesianAmountParser.parseReceiptAmount(cleaned);
-    final type = _detectTransactionType(cleaned);
+    final type = SmartInputRules.detectTransactionType(cleaned);
     final walletPair = _matchWallets(cleaned, type, wallets, preferredWalletId);
     final categoryId = type == 'transfer'
         ? '11111111-1111-4111-8111-111111111111'
         : _matchCategory(cleaned, type, categories);
-    final notes = _extractCleanNotes(cleaned, source);
+    final matchedWallet = wallets.where((w) => w.id == walletPair.$1).firstOrNull;
+    final notes = SmartInputRules.extractCleanNotes(cleaned, source, type, matchedWallet?.name);
 
     return SmartTransactionDraft(
       amount: amount,
@@ -67,24 +43,6 @@ class SmartTransactionParser {
     );
   }
 
-  static String _detectTransactionType(String text) {
-    final low = text.toLowerCase();
-    final isTransfer = (low.contains('transfer antar') ||
-            low.contains('pindah dana') ||
-            low.contains('pindah saldo') ||
-            RegExp(r'\b(transfer|pindah|kirim)\b.*\bdari\b.*\bke\b').hasMatch(low)) &&
-        !low.contains('terima transfer');
-    if (isTransfer) return 'transfer';
-
-    const incomeKw = [
-      'gaji', 'pemasukan', 'terima uang', 'terima dana', 'terima transfer',
-      'uang masuk', 'dana masuk', 'dapat bonus', 'bonus ', 'freelance',
-      'dividen', 'bunga bank', 'refund', 'cashback',
-    ];
-    if (incomeKw.any((k) => low.contains(k))) return 'income';
-    return 'expense';
-  }
-
   static (String?, String?) _matchWallets(
     String text,
     String type,
@@ -95,10 +53,10 @@ class SmartTransactionParser {
     final low = text.toLowerCase();
 
     if (type == 'transfer') {
-      final m = RegExp(r'\bdari\s+([a-z0-9\s]+?)\s+ke\s+([a-z0-9\s]+)', caseSensitive: false).firstMatch(low);
-      if (m != null) {
-        final fromW = _findWalletByHint(m.group(1)!, wallets);
-        final toW = _findWalletByHint(m.group(2)!, wallets, excludeId: fromW?.id);
+      final hints = SmartInputRules.matchTransferWallets(low);
+      if (hints.$1 != null && hints.$2 != null) {
+        final fromW = _findWalletByHint(hints.$1!, wallets);
+        final toW = _findWalletByHint(hints.$2!, wallets, excludeId: fromW?.id);
         final srcId = fromW?.id ?? preferredWalletId ?? wallets.first.id;
         final dstId = toW?.id ?? wallets.where((w) => w.id != srcId).map((w) => w.id).firstOrNull;
         return (srcId, dstId);
@@ -122,7 +80,7 @@ class SmartTransactionParser {
       if (excludeId != null && w.id == excludeId) continue;
       final wName = w.name.toLowerCase();
       if (low.contains(wName)) return w;
-      for (final entry in _walletAliases.entries) {
+      for (final entry in SmartInputRules.walletAliases.entries) {
         if (wName.contains(entry.key) && entry.value.any((a) => low.contains(a))) return w;
       }
     }
@@ -139,7 +97,7 @@ class SmartTransactionParser {
     for (final c in matching) {
       final cLow = c.name.toLowerCase();
       int score = 0;
-      for (final entry in _categoryRules.entries) {
+      for (final entry in SmartInputRules.categoryRules.entries) {
         if (cLow.contains(entry.key)) {
           for (final kw in entry.value) {
             if (firstLine.contains(kw)) score += 3;
@@ -153,36 +111,5 @@ class SmartTransactionParser {
       }
     }
     return (bestCat ?? matching.first).id;
-  }
-
-  static String? _extractCleanNotes(String text, SmartInputSource source) {
-    if (source == SmartInputSource.voice) {
-      var note = text
-          .replaceAll(RegExp(r'(?:Rp\.?|IDR)\s*[0-9.,]+', caseSensitive: false), '')
-          .replaceAll(RegExp(r'\b\d+(?:[.,]\d+)?\s*(?:rb|ribu|k|jt|juta|miliar|milyar|rupiah)?\b', caseSensitive: false), '')
-          .replaceAll(RegExp(r'\b(?:satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh|sebelas|belas|puluh|seratus|ratus|seribu|ribu|sejuta|juta|miliar|milyar|setengah|rupiah)\b', caseSensitive: false), '')
-          .replaceAll(RegExp(r'\b(?:pakai|via|dari|ke|masuk\s+ke|menggunakan|lewat)\s+(?:rekening\s+|dompet\s+|bank\s+)?[a-zA-Z0-9]+\b', caseSensitive: false), '')
-          .replaceAll(RegExp(r'\b(?:sebesar|senilai)\b.*$', caseSensitive: false), '')
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
-      if (note.isEmpty) note = text.trim();
-      return note[0].toUpperCase() + note.substring(1);
-    }
-
-    final lines = text.split(RegExp(r'[\r\n]+')).map((l) => l.trim()).where((l) => l.length >= 3).toList();
-    for (final l in lines) {
-      final m = RegExp(r'^(?:merchant|penerima|tujuan|toko|outlet)\s*[:\-]\s*(.+)$', caseSensitive: false).firstMatch(l);
-      if (m != null && m.group(1)!.trim().isNotEmpty) return m.group(1)!.trim();
-    }
-    final skipHeader = RegExp(
-      r'^(struk|bukti|transaksi|berhasil|sukses|tanggal|waktu|no\.|npwp|jl\.|jalan|telp|welcome|terima\s*kasih|kasir|copy|receipt|\d+)',
-      caseSensitive: false,
-    );
-    for (final l in lines) {
-      if (!skipHeader.hasMatch(l) && !l.contains('Rp') && !RegExp(r'\d{3}[.,]\d{3}').hasMatch(l)) {
-        return l.length > 42 ? l.substring(0, 42).trim() : l;
-      }
-    }
-    return lines.isNotEmpty ? (lines.first.length > 42 ? lines.first.substring(0, 42) : lines.first) : null;
   }
 }

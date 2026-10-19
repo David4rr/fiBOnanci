@@ -178,6 +178,73 @@ TOTAL HARGA
       expect(transferDraft.walletId, bcaWallet.id);
       expect(transferDraft.destinationWalletId, ovoWallet.id);
     });
+    test('accurately parses "saya mendapat 5000 di rekening bca" as income with BCA wallet', () {
+      final draft = SmartTransactionParser.parse(
+        rawText: 'saya mendapat 5000 di rekening bca',
+        source: SmartInputSource.voice,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draft.amount, 5000);
+      expect(draft.type, 'income');
+      final bcaWallet = wallets.firstWhere((w) => w.id == draft.walletId);
+      expect(bcaWallet.name.toLowerCase(), contains('bca'));
+      expect(draft.notes, 'Pemasukan ${bcaWallet.name}');
+      final draftDapat = SmartTransactionParser.parse(
+        rawText: 'saya dapat 5000 di rekening bca',
+        source: SmartInputSource.voice,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draftDapat.amount, 5000);
+      expect(draftDapat.type, 'income');
+
+      final draftMenerima = SmartTransactionParser.parse(
+        rawText: 'menerima 100 ribu di mandiri dari andi',
+        source: SmartInputSource.voice,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(draftMenerima.amount, 100000);
+      expect(draftMenerima.type, 'income');
+      expect(draftMenerima.notes, 'Menerima dari andi');
+    });
+
+    test('parses Indonesian colloquial amounts like goceng, ceban, goban, and perak/rupiah', () {
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('dapat goceng di bca'), 5000);
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('terima ceban'), 10000);
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('bonus goban'), 50000);
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('500 rupiah'), 500);
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('500 perak'), 500);
+      expect(IndonesianAmountParser.parseVoiceOrInlineAmount('beli es teh 5 rebu'), 5000);
+    });
+
+    test('parses reverse transfer syntax (ke ... dari ...) and top up syntax', () {
+      final ovoWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('ovo'));
+      final bcaWallet = wallets.firstWhere((w) => w.name.toLowerCase().contains('bca'));
+
+      final revTransfer = SmartTransactionParser.parse(
+        rawText: 'Transfer 50rb ke OVO dari BCA',
+        source: SmartInputSource.voice,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(revTransfer.amount, 50000);
+      expect(revTransfer.type, 'transfer');
+      expect(revTransfer.walletId, bcaWallet.id);
+      expect(revTransfer.destinationWalletId, ovoWallet.id);
+
+      final topUpTransfer = SmartTransactionParser.parse(
+        rawText: 'Top up OVO dari BCA 100rb',
+        source: SmartInputSource.voice,
+        wallets: wallets,
+        categories: categories,
+      );
+      expect(topUpTransfer.amount, 100000);
+      expect(topUpTransfer.type, 'transfer');
+      expect(topUpTransfer.walletId, bcaWallet.id);
+      expect(topUpTransfer.destinationWalletId, ovoWallet.id);
+    });
   });
 
   group('Voice & Photo Capture UI Integration Tests', () {
