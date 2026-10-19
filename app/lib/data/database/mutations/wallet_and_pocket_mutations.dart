@@ -9,20 +9,35 @@ extension WalletAndPocketMutations on AppDatabase {
     String? notes,
   }) {
     return transaction(() async {
+      if (amount <= 0) throw ArgumentError('Nominal transfer harus lebih besar dari 0');
       final now = DateTime.now().toUtc();
-      final pocket = await (select(pockets)..where((t) => t.id.equals(pocketId))).getSingle();
-      final wallet = await (select(wallets)..where((t) => t.id.equals(walletId))).getSingle();
+      final pocket = await (select(pockets)..where((t) => t.id.equals(pocketId) & t.isDeleted.equals(false))).getSingleOrNull();
+      if (pocket == null) throw StateError('Kantong tidak ditemukan atau telah dihapus');
+      final wallet = await (select(wallets)..where((t) => t.id.equals(walletId) & t.isDeleted.equals(false))).getSingleOrNull();
+      if (wallet == null) throw StateError('Rekening tidak ditemukan atau telah dihapus');
 
       if (isDepositToPocket) {
+        if (wallet.balance < amount) throw StateError('Saldo rekening tidak mencukupi untuk setoran');
         await (update(wallets)..where((t) => t.id.equals(walletId))).write(
           WalletsCompanion(balance: Value(wallet.balance - amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
         await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
-          PocketsCompanion(currentAmount: Value(pocket.currentAmount + amount), updatedAt: Value(now), isSynced: const Value(false)),
+          PocketsCompanion(
+            currentAmount: Value(pocket.currentAmount + amount),
+            linkedWalletId: pocket.linkedWalletId == null ? Value(walletId) : const Value.absent(),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
         );
       } else {
+        if (pocket.currentAmount < amount) throw StateError('Saldo kantong tidak mencukupi untuk penarikan');
         await (update(pockets)..where((t) => t.id.equals(pocketId))).write(
-          PocketsCompanion(currentAmount: Value(pocket.currentAmount - amount), updatedAt: Value(now), isSynced: const Value(false)),
+          PocketsCompanion(
+            currentAmount: Value(pocket.currentAmount - amount),
+            linkedWalletId: pocket.linkedWalletId == null ? Value(walletId) : const Value.absent(),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ),
         );
         await (update(wallets)..where((t) => t.id.equals(walletId))).write(
           WalletsCompanion(balance: Value(wallet.balance + amount), updatedAt: Value(now), isSynced: const Value(false)),
@@ -31,7 +46,7 @@ extension WalletAndPocketMutations on AppDatabase {
       await into(transactions).insert(
         TransactionsCompanion(
           id: Value(const Uuid().v4()),
-          profileId: Value(pocket.profileId ?? wallet.profileId),
+          profileId: Value(wallet.profileId ?? pocket.profileId),
           walletId: Value(walletId),
           categoryId: const Value('11111111-1111-4111-8111-111111111111'),
           amount: Value(amount),

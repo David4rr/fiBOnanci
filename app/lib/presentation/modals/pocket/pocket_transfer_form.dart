@@ -40,9 +40,9 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
     if (oldWidget.isDeposit != widget.isDeposit || oldWidget.pocket.id != widget.pocket.id) {
       _amountController.clear();
       _errorMessage = null;
+      _selectedWalletId = null;
     }
   }
-
   @override
   void dispose() {
     _amountController.dispose();
@@ -53,8 +53,9 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
   Widget build(BuildContext context) {
     return BlocBuilder<FinanceBloc, FinanceState>(
       builder: (context, state) {
+        final pocket = state.pockets.firstWhere((p) => p.id == widget.pocket.id, orElse: () => widget.pocket);
         final activeWallets = state.wallets.where((w) => !w.isDeleted).toList();
-        final linked = widget.pocket.linkedWalletId;
+        final linked = pocket.linkedWalletId;
         final defaultId = (linked != null && activeWallets.any((w) => w.id == linked))
             ? linked
             : (activeWallets.isNotEmpty ? activeWallets.first.id : null);
@@ -102,18 +103,24 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
                 if (!widget.isDeposit)
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      _amountController.text = AppCurrency.formatInputOf(context, widget.pocket.currentAmount);
-                      if (_errorMessage != null) setState(() => _errorMessage = null);
-                    },
+                    onTap: pocket.currentAmount > 0
+                        ? () {
+                            _amountController.text = AppCurrency.formatInputOf(context, pocket.currentAmount);
+                            if (_errorMessage != null) setState(() => _errorMessage = null);
+                          }
+                        : null,
                     child: Text(
-                      'Tarik Semua (${_currencyFormatter.format(widget.pocket.currentAmount)})',
-                      style: GoogleFonts.plusJakartaSans(color: actionColor, fontSize: 11.5, fontWeight: FontWeight.w700),
+                      'Tarik Semua (${_currencyFormatter.format(pocket.currentAmount)})',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: pocket.currentAmount > 0 ? actionColor : AppColors.textMuted,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   )
                 else
                   Text(
-                    'Saldo: ${_currencyFormatter.format(widget.pocket.currentAmount)}',
+                    'Saldo: ${_currencyFormatter.format(pocket.currentAmount)}',
                     style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600),
                   ),
               ],
@@ -149,22 +156,23 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
               text: 'Konfirmasi',
               backgroundColor: actionColor,
               foregroundColor: AppColors.canvasBg,
-              onPressed: activeWallets.isEmpty
+              onPressed: (activeWallets.isEmpty || (!widget.isDeposit && pocket.currentAmount <= 0))
                   ? null
                   : () {
                       final fmt = AppCurrency.read(context);
                       final amount = AppCurrency.parseInputOf(context, _amountController.text);
                       if (amount <= 0) return setState(() => _errorMessage = 'Masukkan nominal lebih dari ${fmt.format(0)}');
                       if (_selectedWalletId == null) return setState(() => _errorMessage = 'Pilih rekening terlebih dahulu');
-                      final selectedWallet = activeWallets.firstWhere((w) => w.id == _selectedWalletId);
+                      final selectedWallet = activeWallets.where((w) => w.id == _selectedWalletId).firstOrNull;
+                      if (selectedWallet == null) return setState(() => _errorMessage = 'Rekening tidak valid');
                       if (widget.isDeposit && amount > selectedWallet.balance) {
                         return setState(() => _errorMessage = 'Saldo ${selectedWallet.name} tidak cukup (${fmt.format(selectedWallet.balance)})');
                       }
-                      if (!widget.isDeposit && amount > widget.pocket.currentAmount) {
-                        return setState(() => _errorMessage = 'Saldo kantong tidak cukup (${fmt.format(widget.pocket.currentAmount)})');
+                      if (!widget.isDeposit && amount > pocket.currentAmount) {
+                        return setState(() => _errorMessage = 'Saldo kantong tidak cukup (${fmt.format(pocket.currentAmount)})');
                       }
                       context.read<FinanceBloc>().add(TransferPocketFundsEvent(
-                        pocketId: widget.pocket.id,
+                        pocketId: pocket.id,
                         walletId: _selectedWalletId!,
                         amount: amount,
                         isDepositToPocket: widget.isDeposit,

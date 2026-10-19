@@ -95,10 +95,11 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
         final themeConfig = PocketCardThemeConfig.resolve(latestPocket, pocketIdx >= 0 ? pocketIdx : 0, allPockets: state.pockets);
         final pocketColor = themeConfig.backgroundColor;
         final pocketTxs = state.transactions.where((tx) {
-          if (tx.externalRef == 'pocket_${latestPocket.id}') return true;
+          if (tx.externalRef == 'pocket_${latestPocket.id}' || tx.externalRef == 'pocket_close_${latestPocket.id}') return true;
+          if (tx.externalRef != null && tx.externalRef!.startsWith('pocket_')) return false;
           final n = (tx.notes ?? '').toLowerCase();
           final nameLower = latestPocket.name.toLowerCase();
-          return n.contains(nameLower) || (n.contains('kantong') && tx.walletId == latestPocket.linkedWalletId);
+          return n.contains(nameLower);
         }).toList();
 
         final canPop = _currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1);

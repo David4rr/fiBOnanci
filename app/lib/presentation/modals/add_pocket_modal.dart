@@ -145,7 +145,7 @@ class AddPocketModal {
                                       name: name, type: selectedType,
                                       targetAmount: target > 0 ? target : null, initialAmount: initial,
                                       colorHex: currentType['color'] as String, iconName: 'flag',
-                                      linkedWalletId: initial > 0 ? selectedWalletId : null,
+                                      linkedWalletId: selectedWalletId,
                                     ));
                                     Navigator.pop(ctx);
                                   },
