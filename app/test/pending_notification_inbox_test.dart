@@ -9,6 +9,8 @@ import 'package:fibonanci_app/data/database/app_database.dart';
 import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/modals/pending_inbox_modal.dart';
+import 'package:fibonanci_app/presentation/widgets/common/common_widgets.dart';
+import 'package:fibonanci_app/presentation/theme/app_colors.dart';
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID', null);
@@ -544,6 +546,77 @@ void main() {
 
       expect(NotificationBridge.pendingCount, 0);
       expect(find.text('Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    testWidgets('Tapping Ubah on inbox card opens InboxEditTransactionSheet, modifies nominal and type, and updates database', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 900 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final rawNotification = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Transfer keluar Rp 50.000 ke Toko berhasil.',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async => methodCall.method == 'getPendingNotifications' ? [rawNotification] : null,
+      );
+
+      await tester.pumpWidget(FiBOnanciApp(database: db, repository: repo));
+      await tester.pumpAndSettle();
+
+      // Open inbox modal
+      await tester.tap(find.byIcon(Icons.inbox_outlined));
+      await tester.pumpAndSettle();
+
+      // Initial card nominal is 50.000 (Expense is neoCoral red)
+      final expenseNominal = find.descendant(of: find.byType(InboxNotificationCard), matching: find.text('-Rp 50.000'));
+      expect(expenseNominal, findsOneWidget);
+      expect(tester.widget<Text>(expenseNominal).style?.color, AppColors.neoCoral);
+
+      // Tap nominal directly to adjust transaction inline
+      await tester.tap(expenseNominal);
+      await tester.pumpAndSettle();
+
+      // InboxEditTransactionSheet opens
+      expect(find.text('Sesuaikan Transaksi'), findsOneWidget);
+      expect(find.text('Pengeluaran'), findsOneWidget);
+      expect(find.text('Pemasukan'), findsOneWidget);
+
+      // Switch type to Pemasukan
+      await tester.tap(find.text('Pemasukan'));
+      await tester.pumpAndSettle();
+
+      // Change nominal to 5.000
+      final amountField = find.descendant(
+        of: find.byType(CurrencyAmountField),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(amountField, '5000');
+      await tester.pumpAndSettle();
+
+      // Tap Simpan Perubahan
+      await tester.tap(find.text('Simpan Perubahan'));
+      await tester.pumpAndSettle();
+
+      // Card in inbox is updated to +Rp 5.000 (Income green)
+      final incomeNominal = find.descendant(of: find.byType(InboxNotificationCard), matching: find.text('+Rp 5.000'));
+      expect(incomeNominal, findsOneWidget);
+      expect(tester.widget<Text>(incomeNominal).style?.color, AppColors.neoMint);
+      // Verify database record is updated atomically
+      final txs = await db.select(db.transactions).get();
+      final updatedTx = txs.firstWhere((t) => !t.isDeleted);
+      expect(updatedTx.amount, 5000.0);
+      expect(updatedTx.type, 'income');
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));

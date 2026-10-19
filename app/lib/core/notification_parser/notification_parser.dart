@@ -4,6 +4,7 @@ import 'bank_notification_parsers.dart';
 import 'notification_blacklist.dart';
 import 'parsed_notification.dart';
 import 'semantic_notification_classifier.dart';
+import 'notification_text_sanitizer.dart';
 
 export 'parsed_notification.dart';
 
@@ -25,15 +26,16 @@ class NotificationParser {
       return null;
     }
 
+    final sanitizedBody = NotificationTextSanitizer.stripBalance(body);
     final pkg = packageName.toLowerCase();
 
     // Stage 2A: Specific Provider Parser
-    ParsedNotificationResult? result = BankNotificationParsers.parseProvider(pkg, title, body);
+    ParsedNotificationResult? result = BankNotificationParsers.parseProvider(pkg, title, sanitizedBody);
 
     // Stage 2B: Universal Semantic Fallback Classifier
     result ??= SemanticNotificationClassifier.classify(
       title: title,
-      body: body,
+      body: sanitizedBody,
       parseIdr: BankNotificationParsers.parseIdr,
     );
 

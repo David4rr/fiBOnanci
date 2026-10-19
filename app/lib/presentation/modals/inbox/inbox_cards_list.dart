@@ -6,6 +6,7 @@ class InboxCardsList extends StatelessWidget {
   final ValueChanged<Map<String, dynamic>> onConfirm;
   final ValueChanged<Map<String, dynamic>> onReject;
   final ValueChanged<Map<String, dynamic>>? onReassign;
+  final ValueChanged<Map<String, dynamic>>? onEdit;
 
   const InboxCardsList({
     super.key,
@@ -13,6 +14,7 @@ class InboxCardsList extends StatelessWidget {
     required this.onConfirm,
     required this.onReject,
     this.onReassign,
+    this.onEdit,
   });
 
   @override
@@ -22,6 +24,7 @@ class InboxCardsList extends StatelessWidget {
       onConfirm: onConfirm,
       onReject: onReject,
       onReassign: onReassign,
+      onEdit: onEdit,
     );
   }
 }

@@ -524,5 +524,70 @@ void main() {
       expect(res!.amount, 120000.0);
       expect(res.type, 'expense');
     });
+
+    test('BCA m-Transfer with balance snapshot parses transaction 5.000, NOT balance 5.000.000', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.bca',
+        title: 'BCA mobile',
+        body: 'm-Transfer: 19/10 BERHASIL Trf ke 1234567890 BUDI Rp 5.000,00 Saldo Rp 5.000.000,00',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 5000.0);
+      expect(res.amount, isNot(5000000.0));
+      expect(res.type, 'expense');
+      expect(res.counterparty, contains('BUDI'));
+    });
+
+    test('BCA QRIS with trailing Sisa Saldo parses 5.000 and ignores balance 5.000.000', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.bca',
+        title: 'BCA mobile',
+        body: 'Pembayaran QR sebesar Rp 5.000 di Kopi Kenangan berhasil. Sisa saldo Rp 5.000.000',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 5000.0);
+      expect(res.amount, isNot(5000000.0));
+      expect(res.type, 'expense');
+      expect(res.counterparty, 'Kopi Kenangan');
+    });
+
+    test('myBCA Transfer to recipient before amount parses amount 5.000 correctly', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.bca.mybca',
+        title: 'Transfer Berhasil',
+        body: 'Transfer ke Rekening 1234567890 BUDI sebesar Rp 5.000,00 berhasil. Saldo: Rp 5.000.000,00',
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 5000.0);
+      expect(res.type, 'expense');
+      expect(res.counterparty, contains('BUDI'));
+    });
+
+    test('Mandiri with Sisa Saldo parses 5.000 transaction correctly', () {
+      final res = NotificationParser.parse(
+        packageName: 'com.bankmandiri.livin',
+        title: 'Transaksi Livin QR',
+        body: "Transaksi QR sebesar IDR 5.000 di Warung Kopi berhasil. Sisa saldo Anda IDR 5.000.000",
+      );
+      expect(res, isNotNull);
+      expect(res!.amount, 5000.0);
+      expect(res.type, 'expense');
+    });
+
+    test('Cents normalization correctly parses ,00 and .00 without inflating nominal', () {
+      final resComma = NotificationParser.parse(
+        packageName: 'com.bca',
+        title: 'BCA',
+        body: 'Pembayaran QRIS Rp 5.000,00 di Merchant A berhasil',
+      );
+      expect(resComma!.amount, 5000.0);
+
+      final resDot = NotificationParser.parse(
+        packageName: 'com.bca',
+        title: 'BCA',
+        body: 'Pembayaran QRIS Rp 5,000.00 di Merchant A berhasil',
+      );
+      expect(resDot!.amount, 5000.0);
+    });
   });
 }

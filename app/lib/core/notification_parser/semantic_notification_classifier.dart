@@ -1,4 +1,5 @@
 import 'parsed_notification.dart';
+import 'notification_text_sanitizer.dart';
 
 /// Fallback semantic classifier handling arbitrary Indonesian financial notifications.
 class SemanticNotificationClassifier {
@@ -7,7 +8,7 @@ class SemanticNotificationClassifier {
     required String body,
     required double Function(String) parseIdr,
   }) {
-    final fullText = '$title $body';
+    final fullText = NotificationTextSanitizer.stripBalance('$title $body');
 
     final explicitMatches = RegExp(
       r'(?:Rp\.?|IDR)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)|(?:sebesar|senilai|amount|nominal)\s+(?:Rp\.?|IDR)?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]+)',

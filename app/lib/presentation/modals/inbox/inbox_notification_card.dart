@@ -13,6 +13,7 @@ class InboxNotificationCard extends StatelessWidget {
   final String? walletName;
   final String? profileName;
   final VoidCallback? onSwitchWallet;
+  final VoidCallback? onEdit;
   final String text;
   final Color cardAccent;
   final int currentIndex;
@@ -28,6 +29,7 @@ class InboxNotificationCard extends StatelessWidget {
     this.walletName,
     this.profileName,
     this.onSwitchWallet,
+    this.onEdit,
     required this.text,
     required this.cardAccent,
     this.currentIndex = 0,
@@ -90,19 +92,39 @@ class InboxNotificationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          if (amount > 0)
-            Text(
-              isIncome ? '+$formattedAmount' : '-$formattedAmount',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-                fontFeatures: const [FontFeature.tabularFigures()],
-                color: isIncome ? AppColors.neoMint : AppColors.textWhite,
-              ),
+          GestureDetector(
+            onTap: isTopCard ? onEdit : null,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (amount > 0)
+                  Flexible(
+                    child: Text(
+                      isIncome ? '+$formattedAmount' : '-$formattedAmount',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: isIncome ? AppColors.neoMint : AppColors.neoCoral,
+                      ),
+                    ),
+                  ),
+                if (isTopCard && onEdit != null) ...[
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 14,
+                    color: isIncome ? AppColors.neoMint.withValues(alpha: 0.6) : AppColors.neoCoral.withValues(alpha: 0.6),
+                  ),
+                ],
+              ],
             ),
+          ),
           const SizedBox(height: 4),
           Text(
             counterparty.isNotEmpty ? counterparty : (isIncome ? 'Pemasukan' : 'Pengeluaran'),

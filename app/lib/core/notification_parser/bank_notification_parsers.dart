@@ -1,17 +1,10 @@
 import 'parsed_notification.dart';
+import 'notification_text_sanitizer.dart';
 
 /// Specialized parsers for Indonesian digital banks and e-wallets.
 class BankNotificationParsers {
   /// Normalizes IDR currency string to double.
-  static double parseIdr(String rawAmount) {
-    String cleaned = rawAmount.replaceAll(' ', '');
-    if (cleaned.contains(',') && cleaned.lastIndexOf(',') == cleaned.length - 3) {
-      cleaned = cleaned.substring(0, cleaned.length - 3).replaceAll(RegExp(r'[.,]'), '');
-    } else {
-      cleaned = cleaned.replaceAll(RegExp(r'[.,]'), '');
-    }
-    return double.tryParse(cleaned) ?? 0.0;
-  }
+  static double parseIdr(String rawAmount) => NotificationTextSanitizer.parseIdr(rawAmount);
 
   static ParsedNotificationResult? parseProvider(String pkg, String title, String body) {
     if (pkg.contains('seabank') ||
@@ -69,14 +62,27 @@ class BankNotificationParsers {
 
   static ParsedNotificationResult? _parseBca(String title, String body) {
     final text = '$title $body';
-    final qr = RegExp(r'Pembayaran\s+(?:QRIS|QR)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:di|ke)\s+([^.]+?)\s+berhasil', caseSensitive: false).firstMatch(text);
+    final qr = RegExp(r'(?:Pembayaran\s+(?:QRIS|QR)|Transaksi\s+(?:QRIS|QR)|Bayar\s+QRIS)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:di|ke)\s+([^.]+?)(?:\s+berhasil|\s+pada|$|\.)', caseSensitive: false).firstMatch(text);
     if (qr != null) return ParsedNotificationResult(amount: parseIdr(qr.group(1)!), type: 'expense', counterparty: qr.group(2)!.trim());
 
-    final outM = RegExp(r'(?:m-Transfer|Transfer)\s+(?:keluar\s+|berhasil[:\s]+)?(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:ke|kepada)\s+([^.]+?)(?:\s+berhasil|$|\.)', caseSensitive: false).firstMatch(text);
+    final qr2 = RegExp(r'(?:Pembayaran\s+(?:QRIS|QR)|Transaksi\s+(?:QRIS|QR)|Bayar\s+QRIS)\s+(?:di|ke)\s+([^.]+?)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false).firstMatch(text);
+    if (qr2 != null) return ParsedNotificationResult(amount: parseIdr(qr2.group(2)!), type: 'expense', counterparty: qr2.group(1)!.trim());
+
+    final outM = RegExp(r'(?:m-Transfer|Transfer|Trf)\s+(?:keluar\s+|berhasil[:\s]+)?(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:ke|kepada)\s+([^.]+?)(?:\s+berhasil|\s+pada|$|\.)', caseSensitive: false).firstMatch(text);
     if (outM != null) return ParsedNotificationResult(amount: parseIdr(outM.group(1)!), type: 'expense', counterparty: outM.group(2)!.trim());
+
+    final out2 = RegExp(r'(?:m-Transfer[:\s]*.*?(?:BERHASIL\s+)?Trf\s+ke|Transfer\s+(?:berhasil\s+)?ke|Kirim\s+uang\s+ke)\s+(?:rekening\s+)?(?:[0-9]+\s+)?([^.]+?)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false).firstMatch(text);
+    if (out2 != null) return ParsedNotificationResult(amount: parseIdr(out2.group(2)!), type: 'expense', counterparty: out2.group(1)!.trim());
 
     final inM = RegExp(r'(?:m-Transfer|Transfer|Dana|Uang)\s+masuk\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+dari\s+([^.]+)', caseSensitive: false).firstMatch(text);
     if (inM != null) return ParsedNotificationResult(amount: parseIdr(inM.group(1)!), type: 'income', counterparty: inM.group(2)!.trim());
+
+    final in2 = RegExp(r'(?:m-Transfer|Transfer|Dana|Uang)\s+masuk\s+dari\s+([^.]+?)\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false).firstMatch(text);
+    if (in2 != null) return ParsedNotificationResult(amount: parseIdr(in2.group(2)!), type: 'income', counterparty: in2.group(1)!.trim());
+
+    final debit = RegExp(r'(?:Debit\s+rekening|Transaksi\s+debit|Terdebit)\s+.*?(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)\s+(?:di|ke)\s+([^.]+)', caseSensitive: false).firstMatch(text);
+    if (debit != null) return ParsedNotificationResult(amount: parseIdr(debit.group(1)!), type: 'expense', counterparty: debit.group(2)!.trim());
+
     return null;
   }
 

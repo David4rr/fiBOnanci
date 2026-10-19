@@ -23,6 +23,38 @@ class InboxWalletReassignSheet extends StatefulWidget {
     );
   }
 
+  static Future<String?> reassignItem(BuildContext context, {required AppDatabase db, required Map<String, dynamic> item}) async {
+    final currentWalletId = item['walletId'] as String?;
+    final newWallet = await show(context, db: db, currentWalletId: currentWalletId);
+    if (newWallet == null || newWallet.id == currentWalletId) return null;
+
+    final txId = item['transactionId'] as String?;
+    if (txId != null) {
+      final tx = await (db.select(db.transactions)..where((t) => t.id.equals(txId))).getSingleOrNull();
+      if (tx != null) {
+        await db.updateTransactionWithWalletReassignment(
+          txId: txId,
+          newWalletId: newWallet.id,
+          newAmount: tx.amount,
+          newType: tx.type,
+          newCategoryId: tx.categoryId,
+          newDestinationWalletId: tx.destinationWalletId,
+          newNotes: tx.notes,
+        );
+      }
+    }
+
+    ProfileEntry? prof;
+    if (newWallet.profileId != null) {
+      prof = await (db.select(db.profiles)..where((t) => t.id.equals(newWallet.profileId!))).getSingleOrNull();
+    }
+    item['walletId'] = newWallet.id;
+    item['walletName'] = newWallet.name;
+    item['profileId'] = newWallet.profileId;
+    item['profileName'] = prof?.fullName ?? prof?.username;
+    final pName = prof?.fullName ?? prof?.username ?? 'Akun Utama';
+    return 'Dialihkan ke $pName • ${newWallet.name}';
+  }
   @override
   State<InboxWalletReassignSheet> createState() => _InboxWalletReassignSheetState();
 }

@@ -10,6 +10,7 @@ class InboxStackedDeck extends StatefulWidget {
   final ValueChanged<Map<String, dynamic>> onConfirm;
   final ValueChanged<Map<String, dynamic>> onReject;
   final ValueChanged<Map<String, dynamic>>? onReassign;
+  final ValueChanged<Map<String, dynamic>>? onEdit;
 
   const InboxStackedDeck({
     super.key,
@@ -17,6 +18,7 @@ class InboxStackedDeck extends StatefulWidget {
     required this.onConfirm,
     required this.onReject,
     this.onReassign,
+    this.onEdit,
   });
 
   @override
@@ -135,6 +137,7 @@ class _InboxStackedDeckState extends State<InboxStackedDeck> {
       walletName: walletName,
       profileName: profileName,
       onSwitchWallet: isTopCard && widget.onReassign != null ? () => widget.onReassign!(item) : null,
+      onEdit: isTopCard && widget.onEdit != null ? () => widget.onEdit!(item) : null,
       text: text,
       cardAccent: cardAccent,
       currentIndex: index,

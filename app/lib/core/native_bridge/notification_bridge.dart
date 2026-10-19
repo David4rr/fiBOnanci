@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/database/app_database.dart';
 import '../notification_parser/notification_parser.dart';
+import '../notification_parser/notification_text_sanitizer.dart';
 import 'notification_inbox.dart';
 import 'notification_wallet_resolver.dart';
 
@@ -174,19 +175,9 @@ class NotificationBridge {
     onAutoLogged?.call('$prefix: ${parsed.type == 'income' ? '+' : '-'}Rp ${parsed.amount.toStringAsFixed(0)} (${parsed.counterparty})');
   }
   static void _syncBalanceSnapshotIfPresent(String text, AppDatabase db, String walletId) async {
-    final reg = RegExp(r'Saldo\s+saat\s+ini\s+(?:sebesar\s+)?(?:Rp\.?|IDR)\s*([0-9.,]+)', caseSensitive: false);
-    final match = reg.firstMatch(text);
-    if (match != null) {
-      String cleaned = match.group(1)!.replaceAll(' ', '');
-      if (cleaned.contains(',') && cleaned.lastIndexOf(',') == cleaned.length - 3) {
-        cleaned = cleaned.substring(0, cleaned.length - 3).replaceAll(RegExp(r'[.,]'), '');
-      } else {
-        cleaned = cleaned.replaceAll(RegExp(r'[.,]'), '');
-      }
-      final exactBal = double.tryParse(cleaned);
-      if (exactBal != null && exactBal > 0) {
-        await db.updateWalletBalance(walletId, exactBal);
-      }
+    final exactBal = NotificationTextSanitizer.extractBalance(text);
+    if (exactBal != null && exactBal > 0) {
+      await db.updateWalletBalance(walletId, exactBal);
     }
   }
 }
