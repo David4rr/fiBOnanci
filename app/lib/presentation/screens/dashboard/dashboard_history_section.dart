@@ -12,6 +12,8 @@ class DashboardHistorySection extends StatelessWidget {
   final List<TransactionEntry> filteredTransactions;
   final List<TransactionEntry> allTransactions;
   final List<WalletEntry> wallets;
+  final List<CategoryEntry>? categories;
+  final List<PocketEntry>? pockets;
 
   const DashboardHistorySection({
     super.key,
@@ -20,6 +22,8 @@ class DashboardHistorySection extends StatelessWidget {
     required this.filteredTransactions,
     required this.allTransactions,
     required this.wallets,
+    this.categories,
+    this.pockets,
   });
 
   @override
@@ -81,6 +85,8 @@ class DashboardHistorySection extends StatelessWidget {
                       transactions: filteredTransactions,
                       allTransactions: allTransactions,
                       wallets: wallets,
+                      categories: categories,
+                      pockets: pockets,
                     ),
             ),
           ),

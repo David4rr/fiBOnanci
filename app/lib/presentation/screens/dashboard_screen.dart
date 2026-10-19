@@ -134,6 +134,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     filteredTransactions: filteredTransactions,
                     allTransactions: allTransactions,
                     wallets: wallets,
+                    categories: state.categories,
+                    pockets: state.pockets,
                   ),
                 ],
               ],

@@ -15,6 +15,8 @@ class ExpenseHistoryDeckView extends StatelessWidget {
   final List<TransactionEntry> currentDayTxs;
   final List<TransactionEntry> allTransactions;
   final List<WalletEntry> wallets;
+  final List<CategoryEntry>? categories;
+  final List<PocketEntry>? pockets;
   final ValueChanged<TransactionEntry>? onManageTransaction;
   final GestureDragUpdateCallback? onDownwardDrag;
   final GestureDragEndCallback? onDownwardDragEnd;
@@ -22,7 +24,9 @@ class ExpenseHistoryDeckView extends StatelessWidget {
   const ExpenseHistoryDeckView({
     super.key, required this.isFiltering, required this.searchQuery, required this.filtered,
     required this.sortedDays, required this.currentDayKey, required this.currentDayTxs,
-    required this.allTransactions, required this.wallets, this.onManageTransaction,
+    required this.allTransactions, required this.wallets,
+    this.categories, this.pockets,
+    this.onManageTransaction,
     this.onDownwardDrag, this.onDownwardDragEnd,
   });
   @override
@@ -94,6 +98,8 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                       transactions: listToDisplay,
                       allTransactions: allTransactions,
                       wallets: wallets,
+                      categories: categories,
+                      pockets: pockets,
                       onManageTransaction: onManageTransaction,
                       onDownwardDrag: onDownwardDrag,
                       onDownwardDragEnd: onDownwardDragEnd,

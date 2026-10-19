@@ -166,6 +166,8 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
                           currentDayTxs: currentDayTxs,
                           allTransactions: liveTxs,
                           wallets: liveWallets,
+                          categories: blocState?.categories,
+                          pockets: blocState?.pockets,
                           onManageTransaction: _goToEditTx,
                           onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
                           onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),

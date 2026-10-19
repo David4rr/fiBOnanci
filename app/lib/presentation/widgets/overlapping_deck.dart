@@ -16,6 +16,8 @@ class StackedCardDeckScrollList extends StatefulWidget {
   final List<TransactionEntry> transactions;
   final List<TransactionEntry>? allTransactions;
   final List<WalletEntry> wallets;
+  final List<CategoryEntry>? categories;
+  final List<PocketEntry>? pockets;
   final String? expandedTxId;
   final ValueChanged<String?>? onToggleExpand;
   final ValueChanged<TransactionEntry>? onManageTransaction;
@@ -25,6 +27,7 @@ class StackedCardDeckScrollList extends StatefulWidget {
 
   const StackedCardDeckScrollList({
     super.key, required this.transactions, this.allTransactions, required this.wallets,
+    this.categories, this.pockets,
     this.expandedTxId, this.onToggleExpand, this.onManageTransaction,
     this.onDownwardDrag, this.onDownwardDragEnd, this.bottomPadding = 110.0,
   });
@@ -69,8 +72,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
 
   double _getMaxScroll(int count, String? expandedId, double viewportHeight) {
     if (count <= 1) return 0.0;
-    final totalNatural = (count - 1) * _cardStep +
-        (expandedId != null ? _expandDisplacement + _expandedCardHeight : _collapsedCardHeight);
+    final totalNatural = (count - 1) * _cardStep + (expandedId != null ? _expandDisplacement + _expandedCardHeight : _collapsedCardHeight);
     return math.max(0.0, totalNatural - (viewportHeight - widget.bottomPadding));
   }
 
@@ -151,9 +153,9 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                     final destWallet = tx.destinationWalletId != null
                         ? widget.wallets.where((w) => w.id == tx.destinationWalletId).firstOrNull
                         : null;
-                    final cardColor = getExpenseCategoryColor(tx.type, tx.notes, tx.type, i);
-                    final iconData = getExpenseCategoryIcon(tx.type, tx.notes);
-
+                    final visual = TransactionVisualResolver.resolve(
+                      tx: tx, categories: widget.categories, pockets: widget.pockets, destWalletName: destWallet?.name,
+                    );
                     final weeklySpending = isExpanded
                         ? CashflowAnalyticsService.computeWeeklySpending(sourceTransactions, referenceDate: tx.transactionDate, walletId: tx.walletId, type: tx.type == 'income' ? 'income' : null)
                         : null;
@@ -170,12 +172,12 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
                       left: 0,
                       right: 0,
                       child: OverlappingDeckItem(
-                        title: tx.notes?.isNotEmpty == true ? tx.notes! : (tx.type == 'transfer' ? (destWallet != null ? 'Transfer ke ${destWallet.name}' : 'Transfer') : (tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan')),
-                        category: tx.type == 'transfer' ? 'TRANSFER' : (tx.type == 'expense' ? 'PENGELUARAN' : 'PEMASUKAN'),
+                        title: visual.title,
+                        category: visual.categoryLabel,
                         amount: tx.amount,
                         isExpense: tx.type == 'expense' || tx.type == 'transfer',
-                        categoryColor: cardColor,
-                        iconData: iconData,
+                        categoryColor: visual.cardColor,
+                        iconData: visual.iconData,
                         isExpanded: isExpanded,
                         transactionDate: tx.transactionDate,
                         weeklySpending: weeklySpending,
