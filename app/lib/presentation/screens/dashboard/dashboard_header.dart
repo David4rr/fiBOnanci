@@ -35,27 +35,41 @@ class DashboardHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ValueListenableBuilder<bool>(
-                      valueListenable: FibonanciSplashGate.isSplashActive,
-                      builder: (context, isActive, child) {
-                        return Opacity(
-                          opacity: isActive ? 0.0 : 1.0,
-                          child: child,
-                        );
-                      },
-                      child: FibonanciLogoMark(
+                ValueListenableBuilder<bool>(
+                  valueListenable: FibonanciSplashGate.isSplashActive,
+                  builder: (context, isActive, child) {
+                    return Opacity(
+                      opacity: isActive ? 0.0 : 1.0,
+                      child: child,
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FibonanciLogoMark(
                         key: FibonanciSplashGate.dashboardLogoKey,
                         size: 24,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text('fiBOnanci', style: AppTypography.heroGreeting, overflow: TextOverflow.ellipsis),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text.rich(
+                          TextSpan(
+                            style: AppTypography.heroGreeting,
+                            children: const [
+                              TextSpan(text: 'fi'),
+                              TextSpan(
+                                text: 'BO',
+                                style: TextStyle(color: AppColors.neoChartreuse),
+                              ),
+                              TextSpan(text: 'nanci'),
+                            ],
+                          ),
+                          key: FibonanciSplashGate.dashboardTextKey,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),

@@ -10,6 +10,7 @@ import 'fibonanci_splash_overlay.dart';
 class FibonanciSplashGate extends StatefulWidget {
   static final ValueNotifier<bool> isSplashActive = ValueNotifier<bool>(false);
   static final GlobalKey dashboardLogoKey = GlobalKey();
+  static final GlobalKey dashboardTextKey = GlobalKey();
   final Widget child;
   final Duration duration;
 
@@ -78,6 +79,7 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
           child: FibonanciSplashOverlay(
             animation: _controller,
             targetKey: FibonanciSplashGate.dashboardLogoKey,
+            targetTextKey: FibonanciSplashGate.dashboardTextKey,
           ),
         ),
       ],

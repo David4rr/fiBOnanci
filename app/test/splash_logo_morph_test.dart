@@ -95,7 +95,10 @@ void main() {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text('fiBOnanci'),
+                      Text(
+                        'fiBOnanci',
+                        key: FibonanciSplashGate.dashboardTextKey,
+                      ),
                     ],
                   ),
                 ),
@@ -113,8 +116,16 @@ void main() {
       // Horizontally centered on 400 width: (400 - 104) / 2 = 148
       expect(startRect.left, closeTo(148.0, 1.0));
 
+      // At 400ms: splash text is revealed in center
+      await tester.pump(const Duration(milliseconds: 400));
+      final startTextFinder = find.byKey(const Key('fibonanci_splash_text'));
+      expect(startTextFinder, findsOneWidget);
+      final startTextRect = tester.getRect(startTextFinder);
+      expect(startTextRect.top, greaterThan(startRect.bottom));
+      expect(startTextRect.left, greaterThan(50.0));
+
       // At 850ms (t ≈ 0.70): flight in progress towards top-left, shrinking
-      await tester.pump(const Duration(milliseconds: 850));
+      await tester.pump(const Duration(milliseconds: 450));
       final flightLogoFinder = find.byKey(const Key('fibonanci_splash_logo'));
       final flightRect = tester.getRect(flightLogoFinder);
       expect(flightRect.width, lessThan(104.0));
@@ -122,7 +133,13 @@ void main() {
       expect(flightRect.left, lessThan(startRect.left)); // moved left
       expect(flightRect.top, lessThan(startRect.top)); // moved up
 
-      // Settle: overlay removed, header logo visible
+      // Text also in flight towards header position
+      final flightTextFinder = find.byKey(const Key('fibonanci_splash_text'));
+      expect(flightTextFinder, findsOneWidget);
+      final flightTextRect = tester.getRect(flightTextFinder);
+      expect(flightTextRect.left, lessThan(startTextRect.left)); // moved left towards header
+      expect(flightTextRect.top, lessThan(startTextRect.top)); // moved up towards header
+
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('fibonanci_splash_overlay')), findsNothing);
       expect(find.byKey(FibonanciSplashGate.dashboardLogoKey), findsOneWidget);
