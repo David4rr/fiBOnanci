@@ -138,22 +138,23 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => _handleCardTap(wallet),
-                      child: HeroMode(
-                        enabled: false,
-                        child: Hero(
-                          tag: 'wallet_card_${wallet.id}',
-                          child: Material(
-                            color: Colors.transparent,
-                            child: WalletCard(
-                              wallet: wallet,
-                              index: i,
-                              allWallets: wallets,
-                              fmt: fmt,
-                              cardH: cardH,
-                              isLifted: isExpanded,
-                              showBottomLayout: isExpanded,
-                              animate: shouldAnimate,
-                            ),
+                      child: Hero(
+                        tag: 'wallet_card_${wallet.id}',
+                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                          final Hero toHero = toHeroContext.widget as Hero;
+                          return Material(color: Colors.transparent, child: toHero.child);
+                        },
+                        child: Material(
+                          color: Colors.transparent,
+                          child: WalletCard(
+                            wallet: wallet,
+                            index: i,
+                            allWallets: wallets,
+                            fmt: fmt,
+                            cardH: cardH,
+                            isLifted: isExpanded,
+                            showBottomLayout: isExpanded,
+                            animate: shouldAnimate,
                           ),
                         ),
                       ),
