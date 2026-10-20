@@ -12,7 +12,7 @@ void main() {
     await initializeDateFormatting('id_ID', null);
   });
 
-  testWidgets('Dashboard Safe-to-Spend modal allows choosing spending accounts and updates live', (WidgetTester tester) async {
+  testWidgets('Dashboard Safe-to-Spend modal displays calculation breakdown without redundant chips', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(400 * 2, 900 * 2);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() {
@@ -34,26 +34,19 @@ void main() {
     await tester.tap(find.text('Safe to Spend'));
     await tester.pumpAndSettle();
 
+    // 3. Modal shows formula breakdown
     expect(find.text('Smart Safe-to-Spend'), findsOneWidget);
-    expect(find.text('SUMBER REKENING PENGELUARAN'), findsOneWidget);
-    expect(find.textContaining('Semua (7)'), findsWidgets);
-
-    // 3. Tap "BCA Utama" chip in the modal to isolate to BCA
-    final bcaChip = find.widgetWithText(AppChoiceChip, 'BCA Utama');
-    expect(bcaChip, findsOneWidget);
-    await tester.tap(bcaChip);
-    await tester.pumpAndSettle();
-
-    // Verification: Now 1 Dipilih is shown
-    expect(find.text('1 Dipilih'), findsOneWidget);
-    expect(find.text('Saldo Rekening Terpilih'), findsOneWidget);
-
-    // 4. Tap "Semua (7)" chip to reset back to all accounts
-    await tester.tap(find.widgetWithText(AppChoiceChip, 'Semua (7)'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Semua (7)'), findsWidgets);
     expect(find.text('Total Saldo Riil'), findsOneWidget);
+    expect(find.text('Sisa Tagihan Bulan Ini'), findsOneWidget);
+    expect(find.text('Sisa Aman Bulan Ini'), findsOneWidget);
+
+    // 4. Redundant chips and selector are eliminated from modal
+    expect(find.text('SUMBER REKENING PENGELUARAN'), findsNothing);
+    expect(find.byType(AppChoiceChip), findsNothing);
+    expect(
+      find.text('Pilihan rekening operasional dapat diatur di Pengaturan > Siklus Anggaran & Safe-to-Spend.'),
+      findsOneWidget,
+    );
 
     await db.close();
   });

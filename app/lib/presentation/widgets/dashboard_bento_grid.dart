@@ -50,7 +50,7 @@ class DashboardBentoGrid extends StatelessWidget {
                   subtitle: metrics.isAllWallets
                       ? 'Safe to Spend'
                       : 'Safe to Spend (${metrics.selectedWalletsCount} Akun)',
-                  trailingIcon: const Icon(Icons.tune, color: AppColors.textDarkSecondary, size: 12),
+                  trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
                   onTap: () => SafeToSpendModal.show(context, wallets),
                 ),
               ),

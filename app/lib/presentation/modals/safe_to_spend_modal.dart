@@ -7,9 +7,6 @@ import '../../data/database/app_database.dart';
 import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'safe_to_spend_accounts_selector.dart';
-
-export 'safe_to_spend_accounts_selector.dart';
 
 class SafeToSpendModal {
   static void show(BuildContext context, List<WalletEntry> wallets) {
@@ -22,7 +19,6 @@ class SafeToSpendModal {
         return BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
             final metrics = state.metrics;
-            final selectedIds = state.safeToSpendWalletIds ?? <String>{};
             final isAll = state.safeToSpendWalletIds == null || state.safeToSpendWalletIds!.isEmpty;
             final currencyFormatter = AppCurrency.forCode(state.profile.currency);
             return Padding(
@@ -38,8 +34,6 @@ class SafeToSpendModal {
                     subtitleStyle: TextStyle(color: metrics.statusColor, fontWeight: FontWeight.bold, fontSize: 12),
                     onClose: () => Navigator.pop(context),
                   ),
-                  const SizedBox(height: 18),
-                  SafeToSpendAccountsSelector(wallets: wallets, selectedIds: selectedIds, isAll: isAll),
                   const SizedBox(height: 18),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -68,8 +62,21 @@ class SafeToSpendModal {
                   Text(
                     isAll
                         ? 'Dihitung dari seluruh rekening Anda. Uang ini aman dibelanjakan tanpa khawatir tagihan bulanan gagal bayar.'
-                        : 'Dihitung hanya dari rekening pengeluaran yang Anda pilih (${metrics.selectedWalletsCount} rekening). Tagihan dan saldo rekening tabungan lain tidak dicampur.',
+                        : 'Dihitung hanya dari rekening operasional (${metrics.selectedWalletsCount} rekening). Tagihan dan saldo rekening tabungan lain tidak dicampur.',
                     style: AppTypography.listSubtitle,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.tune, size: 12, color: AppColors.textMuted),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Pilihan rekening operasional dapat diatur di Pengaturan > Siklus Anggaran & Safe-to-Spend.',
+                          style: AppTypography.listSubtitle.copyWith(color: AppColors.textMuted, fontSize: 11),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                 ],
