@@ -140,11 +140,11 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
                       onTap: () => _handleCardTap(wallet),
                       child: Hero(
                         tag: 'wallet_card_${wallet.id}',
-                        createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Material(
-                          color: Colors.transparent,
-                          child: WalletCard(wallet: wallet, index: i, allWallets: wallets, fmt: fmt, cardH: cardH, isLifted: true, showBottomLayout: true, animate: false),
-                        ),
+                        createRectTween: (begin, end) => MaterialRectCenterArcTween(begin: begin, end: end),
+                        flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                          final Hero toHero = toHeroContext.widget as Hero;
+                          return Material(color: Colors.transparent, child: toHero.child);
+                        },
                         child: Material(
                           color: Colors.transparent,
                           child: WalletCard(

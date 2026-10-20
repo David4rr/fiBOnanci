@@ -120,20 +120,11 @@ class _TactileHeroCardState extends State<TactileHeroCard> {
                 Positioned.fill(
                   child: Hero(
                     tag: 'wallet_card_${widget.wallet.id}',
-                    createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Material(
-                      color: Colors.transparent,
-                      child: WalletCard(
-                        wallet: widget.wallet,
-                        index: widget.cardIndex,
-                        allWallets: widget.allWallets,
-                        fmt: widget.fmt,
-                        cardH: cardH,
-                        isLifted: true,
-                        showBottomLayout: true,
-                        animate: false,
-                      ),
-                    ),
+                    createRectTween: (begin, end) => MaterialRectCenterArcTween(begin: begin, end: end),
+                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                      final Hero toHero = toHeroContext.widget as Hero;
+                      return Material(color: Colors.transparent, child: toHero.child);
+                    },
                     child: Material(
                       color: Colors.transparent,
                       child: WalletCard(
