@@ -26,7 +26,6 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
   double _slideDirection = 1.0;
   int _walletSegment = 0;
-  bool _isWalletDetailOpen = false;
   final _bridge = NotificationBridge();
 
   void _switchTab(int newIndex) {
@@ -109,7 +108,6 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
       WalletScreen(
         initialSegment: _walletSegment,
         onSegmentChanged: (seg) => _walletSegment = seg,
-        onDetailViewChanged: (isOpen) => setState(() => _isWalletDetailOpen = isOpen),
       ),
       const SettingsScreen(),
     ];
@@ -142,24 +140,11 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
             child: screens[_currentIndex < screens.length ? _currentIndex : 0],
           ),
         ),
-        bottomNavigationBar: AnimatedSlide(
-          offset: _isWalletDetailOpen ? const Offset(0, 1.8) : Offset.zero,
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          child: AnimatedOpacity(
-            opacity: _isWalletDetailOpen ? 0.0 : 1.0,
-            duration: const Duration(milliseconds: 260),
-            curve: Curves.easeOutCubic,
-            child: IgnorePointer(
-              ignoring: _isWalletDetailOpen,
-              child: BottomNavDock(
-                currentIndex: _currentIndex,
-                onTapIndex: _switchTab,
-                onAddAction: _onAddAction,
-                onAddLongPress: () => QuickTransactionInputSheet.show(context),
-              ),
-            ),
-          ),
+        bottomNavigationBar: BottomNavDock(
+          currentIndex: _currentIndex,
+          onTapIndex: _switchTab,
+          onAddAction: _onAddAction,
+          onAddLongPress: () => QuickTransactionInputSheet.show(context),
         ),
       ),
       ),

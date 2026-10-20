@@ -14,7 +14,7 @@ class WalletDetailModalRoute {
         opaque: false,
         barrierDismissible: true,
         barrierColor: Colors.black.withValues(alpha: 0.65),
-        transitionDuration: const Duration(milliseconds: 340),
+        transitionDuration: const Duration(milliseconds: 380),
         reverseTransitionDuration: const Duration(milliseconds: 280),
         pageBuilder: (ctx, animation, secondaryAnimation) {
           return BlocProvider.value(
@@ -29,7 +29,7 @@ class WalletDetailModalRoute {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final curvedAnim = CurvedAnimation(
             parent: animation,
-            curve: const Cubic(0.16, 1.0, 0.3, 1.0),
+            curve: Curves.easeOutCubic,
             reverseCurve: Curves.easeInCubic,
           );
           final slide = Tween<Offset>(

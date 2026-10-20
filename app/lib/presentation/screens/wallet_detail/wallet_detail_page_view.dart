@@ -67,6 +67,7 @@ class WalletDetailPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SmoothPageView(
       controller: pageController,
+      allowImplicitScrolling: false,
       children: [
         NotificationListener<ScrollNotification>(
           onNotification: (n) {

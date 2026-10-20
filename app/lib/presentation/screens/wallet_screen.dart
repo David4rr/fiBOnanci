@@ -137,11 +137,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                               child: WalletCardDeck(
                                 wallets: wallets,
                                 fmt: currencyFormatter,
-                                onSelectWallet: (wallet) {
-                                  widget.onDetailViewChanged?.call(true);
-                                  return WalletDetailScreen.push(context, wallet: wallet)
-                                      .then((_) => widget.onDetailViewChanged?.call(false));
-                                },
+                                onSelectWallet: (wallet) => WalletDetailScreen.push(context, wallet: wallet),
                               ),
                             ),
                           ),
@@ -154,11 +150,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                                 child: WalletCardDeck(
                                   wallets: wallets,
                                   fmt: currencyFormatter,
-                                  onSelectWallet: (wallet) {
-                                    widget.onDetailViewChanged?.call(true);
-                                    return WalletDetailScreen.push(context, wallet: wallet)
-                                        .then((_) => widget.onDetailViewChanged?.call(false));
-                                  },
+                                  onSelectWallet: (wallet) => WalletDetailScreen.push(context, wallet: wallet),
                                 ),
                               ),
                             ),
