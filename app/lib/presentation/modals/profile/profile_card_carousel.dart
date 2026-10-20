@@ -5,15 +5,14 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/smooth_page_view.dart';
 import 'profile_header_card.dart';
 
 class ProfileCardCarousel extends StatefulWidget {
   final List<ProfileEntry> profiles;
   final String currentProfileId;
-  final int? walletCount;
-  final int? txCount;
-  final VoidCallback? onEditProfile;
-  final VoidCallback? onNewProfile;
+  final int? walletCount, txCount;
+  final VoidCallback? onEditProfile, onNewProfile;
   final VoidCallback? onHealthDetails, onFinancialReport, onSettings;
 
   const ProfileCardCarousel({
@@ -36,6 +35,7 @@ class ProfileCardCarousel extends StatefulWidget {
 class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
   late PageController _pageController;
   late int _currentPage;
+  bool _isUserScrolling = false;
 
   @override
   void initState() {
@@ -49,12 +49,12 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
   void didUpdateWidget(covariant ProfileCardCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
     final activeIdx = widget.profiles.indexWhere((p) => p.id == widget.currentProfileId);
-    if (activeIdx >= 0 && activeIdx != _currentPage && _pageController.hasClients) {
+    if (!_isUserScrolling && activeIdx >= 0 && activeIdx != _currentPage && _pageController.hasClients) {
       _currentPage = activeIdx;
       _pageController.animateToPage(
         activeIdx,
         duration: const Duration(milliseconds: 320),
-        curve: Curves.easeInOutCubic,
+        curve: SmoothPageView.defaultCurve,
       );
     }
   }
@@ -65,8 +65,8 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    setState(() => _currentPage = index);
+  void _syncActiveProfile(int index) {
+    if (!mounted) return;
     if (index >= 0 && index < widget.profiles.length) {
       final target = widget.profiles[index];
       if (target.id != widget.currentProfileId) {
@@ -75,25 +75,29 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
     }
   }
 
+  void _onPageChanged(int index) {
+    if (_currentPage != index) setState(() => _currentPage = index);
+  }
+
+  ProfileHeaderCard _buildCard(ProfileEntry p) {
+    return ProfileHeaderCard(
+      key: ValueKey('profile_card_${p.id}'),
+      profile: p,
+      totalProfiles: widget.profiles.length,
+      walletCount: widget.walletCount,
+      txCount: widget.txCount,
+      onEditProfile: widget.onEditProfile,
+      onNewProfile: widget.onNewProfile,
+      onHealthDetails: widget.onHealthDetails,
+      onFinancialReport: widget.onFinancialReport,
+      onSettings: widget.onSettings,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.profiles.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    if (widget.profiles.length == 1) {
-      return ProfileHeaderCard(
-        profile: widget.profiles.first,
-        totalProfiles: 1,
-        walletCount: widget.walletCount,
-        txCount: widget.txCount,
-        onEditProfile: widget.onEditProfile,
-        onNewProfile: widget.onNewProfile,
-        onHealthDetails: widget.onHealthDetails,
-        onFinancialReport: widget.onFinancialReport,
-        onSettings: widget.onSettings,
-      );
-    }
+    if (widget.profiles.isEmpty) return const SizedBox.shrink();
+    if (widget.profiles.length == 1) return _buildCard(widget.profiles.first);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -101,26 +105,42 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
       children: [
         SizedBox(
           height: 310,
-          child: PageView.builder(
-            controller: _pageController,
-            physics: const BouncingScrollPhysics(),
-            itemCount: widget.profiles.length,
-            onPageChanged: _onPageChanged,
-            itemBuilder: (context, index) {
-              final p = widget.profiles[index];
-              return ProfileHeaderCard(
-                key: ValueKey('profile_card_${p.id}'),
-                profile: p,
-                totalProfiles: widget.profiles.length,
-                walletCount: widget.walletCount,
-                txCount: widget.txCount,
-                onEditProfile: widget.onEditProfile,
-                onNewProfile: widget.onNewProfile,
-                onHealthDetails: widget.onHealthDetails,
-                onFinancialReport: widget.onFinancialReport,
-                onSettings: widget.onSettings,
-              );
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollStartNotification && notification.dragDetails != null) {
+                _isUserScrolling = true;
+              } else if (notification is ScrollEndNotification) {
+                _isUserScrolling = false;
+                _syncActiveProfile(_currentPage);
+              }
+              return false;
             },
+            child: PageView.builder(
+              controller: _pageController,
+              physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
+              itemCount: widget.profiles.length,
+              onPageChanged: _onPageChanged,
+              itemBuilder: (context, index) {
+                final p = widget.profiles[index];
+                return AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, child) {
+                    double page = _currentPage.toDouble();
+                    if (_pageController.hasClients && _pageController.position.haveDimensions) {
+                      page = _pageController.page ?? page;
+                    }
+                    final delta = (page - index).abs().clamp(0.0, 1.0);
+                    final scale = 1.0 - (delta * 0.04);
+                    final opacity = (1.0 - (delta * 0.25)).clamp(0.0, 1.0);
+                    return Transform.scale(
+                      scale: scale,
+                      child: Opacity(opacity: opacity, child: child),
+                    );
+                  },
+                  child: RepaintBoundary(child: _buildCard(p)),
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(height: 6),
@@ -137,13 +157,15 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
         return GestureDetector(
           key: ValueKey('profile_carousel_dot_$i'),
           behavior: HitTestBehavior.opaque,
-          onTap: () {
-            _onPageChanged(i);
-            _pageController.animateToPage(
+          onTap: () async {
+            if (_currentPage == i) return;
+            setState(() => _currentPage = i);
+            await _pageController.animateToPage(
               i,
               duration: const Duration(milliseconds: 320),
-              curve: Curves.easeInOutCubic,
+              curve: SmoothPageView.defaultCurve,
             );
+            _syncActiveProfile(i);
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),

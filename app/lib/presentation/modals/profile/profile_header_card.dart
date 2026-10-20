@@ -125,22 +125,28 @@ class ProfileHeaderCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        if (isActive)
-                          ProfileActiveCardBody(
-                            metrics: metrics,
-                            healthReport: state.healthReport,
-                            wallets: wallets,
-                            txs: txs,
-                            subs: subs,
-                            burnFormatted: burnFormatted,
-                            healthScore: healthScore,
-                            onHealthDetails: onHealthDetails,
-                          )
-                        else
-                          ProfileInactiveCardBody(
-                            profile: profile,
-                            onActivate: () => context.read<FinanceBloc>().add(SetActiveProfileEvent(profile.id)),
-                          ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: isActive
+                              ? ProfileActiveCardBody(
+                                  key: const ValueKey('profile_active_body'),
+                                  metrics: metrics,
+                                  healthReport: state.healthReport,
+                                  wallets: wallets,
+                                  txs: txs,
+                                  subs: subs,
+                                  burnFormatted: burnFormatted,
+                                  healthScore: healthScore,
+                                  onHealthDetails: onHealthDetails,
+                                )
+                              : ProfileInactiveCardBody(
+                                  key: const ValueKey('profile_inactive_body'),
+                                  profile: profile,
+                                  onActivate: () => context.read<FinanceBloc>().add(SetActiveProfileEvent(profile.id)),
+                                ),
+                        ),
                       ],
                     ),
                   ),

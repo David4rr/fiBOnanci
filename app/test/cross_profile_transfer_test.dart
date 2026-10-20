@@ -213,20 +213,20 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
-      // Check that "PROFIL TUJUAN TRANSFER" section is visible
+      // Check that TransactionTransferDestinationSelector is rendered with consistent dropdown
       expect(find.byType(TransactionTransferDestinationSelector), findsOneWidget);
-      expect(find.text('PROFIL TUJUAN TRANSFER'), findsOneWidget);
-      expect(find.textContaining('Pribadi'), findsWidgets);
-      expect(find.text('Perumahan'), findsOneWidget);
+      expect(find.textContaining('Profil: Pribadi (Profil Ini)'), findsOneWidget);
 
-      // Ensure visible and tap "Perumahan" target profile chip
-      await tester.ensureVisible(find.text('Perumahan'));
-      await tester.tap(find.text('Perumahan'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      // Tap profile dropdown to open menu
+      await tester.tap(find.textContaining('Profil: Pribadi (Profil Ini)'));
+      await tester.pumpAndSettle();
 
-      // Destination wallet dropdown now displays the wallet from Perumahan profile
-      expect(find.text('Kas Mandiri Perum'), findsOneWidget);
+      // Tap "Perumahan (Lintas Profil)" in the dropdown menu
+      await tester.tap(find.textContaining('Perumahan (Lintas Profil)').last);
+      await tester.pumpAndSettle();
+      // Destination wallet dropdown now immediately displays the wallet from Perumahan profile
+      expect(find.text('Kas Mandiri Perum'), findsWidgets);
+      expect(find.text('• Masuk Kas'), findsOneWidget);
     });
   });
 }

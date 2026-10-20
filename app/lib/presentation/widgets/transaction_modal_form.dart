@@ -50,7 +50,16 @@ class TransactionCategoryDropdown extends StatelessWidget {
         dropdownColor: AppColors.canvasCardSurface,
         hint: Text('Pilih Kategori', style: AppTypography.listSubtitle),
         items: categories
-            .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle)))
+            .map((c) => DropdownMenuItem(
+                  value: c.id,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.category_outlined, size: 18, color: AppColors.neoCyan),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(c.name, style: AppTypography.listTitle, overflow: TextOverflow.ellipsis)),
+                    ],
+                  ),
+                ))
             .toList(),
         onChanged: onChanged,
       ),
@@ -113,9 +122,22 @@ class TransactionFormInputs extends StatelessWidget {
         const SizedBox(height: 12),
         TransactionDropdownContainer(
           child: DropdownButton<String>(
-            value: selectedWalletId, isExpanded: true, dropdownColor: AppColors.canvasCardSurface,
+            value: selectedWalletId,
+            isExpanded: true,
+            dropdownColor: AppColors.canvasCardSurface,
             hint: Text(type == 'transfer' ? 'Pilih Rekening Asal' : 'Pilih Rekening', style: AppTypography.listSubtitle),
-            items: wallets.map((w) => DropdownMenuItem(value: w.id, child: Text(w.name, style: AppTypography.listTitle))).toList(),
+            items: wallets
+                .map((w) => DropdownMenuItem(
+                      value: w.id,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.account_balance_wallet_outlined, size: 18, color: AppColors.neoCoral),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(w.name, style: AppTypography.listTitle, overflow: TextOverflow.ellipsis)),
+                        ],
+                      ),
+                    ))
+                .toList(),
             onChanged: onWalletChanged,
           ),
         ),

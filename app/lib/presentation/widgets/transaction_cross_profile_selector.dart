@@ -28,76 +28,51 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final showProfilePicker = profiles.length > 1;
     final isCrossProfile = selectedTargetProfileId != currentProfile.id;
+    final targetProfile = profiles.firstWhere(
+      (p) => p.id == selectedTargetProfileId,
+      orElse: () => currentProfile,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (showProfilePicker) ...[
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.switch_account_rounded,
-                  size: 13,
-                  color: isCrossProfile ? AppColors.neoChartreuse : AppColors.textMuted,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'PROFIL TUJUAN TRANSFER',
-                  style: AppTypography.cardMetricLabel.copyWith(
-                    fontSize: 10,
-                    letterSpacing: 0.8,
-                    color: isCrossProfile ? AppColors.neoChartreuse : AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: profiles.map((p) {
-                final isSelected = p.id == selectedTargetProfileId;
+          TransactionDropdownContainer(
+            child: DropdownButton<String>(
+              value: selectedTargetProfileId,
+              isExpanded: true,
+              dropdownColor: AppColors.canvasCardSurface,
+              items: profiles.map((p) {
                 final isCurrent = p.id == currentProfile.id;
-                final label = isCurrent ? '${p.username} (Profil Ini)' : p.username;
-
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: InkWell(
-                    onTap: () => onTargetProfileChanged(p.id),
-                    borderRadius: BorderRadius.circular(10),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? (isCrossProfile ? AppColors.neoChartreuse.withValues(alpha: 0.18) : AppColors.canvasInputSearch)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected
-                              ? (isCrossProfile ? AppColors.neoChartreuse : AppColors.canvasBorder)
-                              : AppColors.canvasBorderSubtle,
+                return DropdownMenuItem(
+                  value: p.id,
+                  child: Row(
+                    children: [
+                      Icon(
+                        isCurrent ? Icons.person_rounded : Icons.swap_horiz_rounded,
+                        size: 18,
+                        color: isCurrent ? AppColors.neoMint : AppColors.neoChartreuse,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          isCurrent
+                              ? 'Profil: ${p.username} (Profil Ini)'
+                              : 'Profil: ${p.username} (Lintas Profil)',
+                          style: AppTypography.listTitle,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      child: Text(
-                        label,
-                        style: AppTypography.badgeLabel.copyWith(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected
-                              ? (isCrossProfile ? AppColors.neoChartreuse : AppColors.textWhite)
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 );
               }).toList(),
+              onChanged: (id) {
+                if (id != null) onTargetProfileChanged(id);
+              },
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
         ],
         TransactionDropdownContainer(
           child: DropdownButton<String>(
@@ -105,7 +80,7 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
             isExpanded: true,
             dropdownColor: AppColors.canvasCardSurface,
             hint: Text(
-              isCrossProfile ? 'Pilih Rekening di Profil Tujuan' : 'Pilih Rekening Tujuan',
+              isCrossProfile ? 'Pilih Rekening di ${targetProfile.username}' : 'Pilih Rekening Tujuan',
               style: AppTypography.listSubtitle,
             ),
             items: destinationWallets
@@ -113,7 +88,19 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
                       value: w.id,
                       child: Row(
                         children: [
-                          Expanded(child: Text(w.name, style: AppTypography.listTitle)),
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 18,
+                            color: isCrossProfile ? AppColors.neoChartreuse : AppColors.neoCyan,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              w.name,
+                              style: AppTypography.listTitle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           if (isCrossProfile)
                             Text(
                               '• Masuk Kas',
