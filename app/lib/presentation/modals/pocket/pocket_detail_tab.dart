@@ -47,6 +47,7 @@ class PocketDetailTab extends StatelessWidget {
               pocketColor: pocketColor,
               themeConfig: themeConfig,
               currencyFormatter: currencyFormatter,
+              transactions: transactions,
             ),
           ),
           const SizedBox(height: 20),

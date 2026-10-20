@@ -6,8 +6,10 @@ import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/bento_folder_card.dart';
 import '../../widgets/pocket_card_theme.dart';
-import 'pocket_transfer_dialog.dart';
+import '../../widgets/pocket_cashflow_chart.dart';
 export 'pocket_delete_dialog.dart';
+export 'pocket_detail_actions.dart';
+
 IconData getPocketIcon(String type) => switch (type) {
   'savings' => Icons.savings_outlined,
   'retirement' => Icons.elderly_outlined,
@@ -27,6 +29,7 @@ class PocketDetailHeader extends StatelessWidget {
   final Color pocketColor;
   final PocketCardThemeConfig? themeConfig;
   final NumberFormat currencyFormatter;
+  final List<TransactionEntry> transactions;
 
   const PocketDetailHeader({
     super.key,
@@ -34,6 +37,7 @@ class PocketDetailHeader extends StatelessWidget {
     required this.pocketColor,
     this.themeConfig,
     required this.currencyFormatter,
+    this.transactions = const [],
   });
 
   @override
@@ -43,6 +47,16 @@ class PocketDetailHeader extends StatelessWidget {
     final latestCurrent = pocket.currentAmount;
     final hasTarget = target != null && target > 0;
     final latestProgress = hasTarget ? (latestCurrent / target).clamp(0.0, 1.0) : null;
+
+    final isNeoPastel = config.backgroundColor == AppColors.neoCoral ||
+        config.backgroundColor == AppColors.neoChartreuse ||
+        config.backgroundColor == AppColors.neoMint ||
+        config.backgroundColor == AppColors.neoCyan;
+    final isDark = isNeoPastel
+        ? false
+        : ThemeData.estimateBrightnessForColor(config.backgroundColor) == Brightness.dark;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.4);
+    final cardHeight = (172.0 * textScale).clamp(172.0, 216.0);
 
     return Hero(
       tag: 'pocket_card_${pocket.id}',
@@ -62,7 +76,7 @@ class PocketDetailHeader extends StatelessWidget {
           subtitleColor: config.secondaryTextColor,
           iconColor: config.iconColor,
           iconBgColor: config.iconBgColor,
-          height: 172,
+          height: cardHeight,
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           iconData: getPocketIcon(pocket.type),
           topTrailing: hasTarget
@@ -112,65 +126,17 @@ class PocketDetailHeader extends StatelessWidget {
             ],
           ),
           progress: latestProgress,
+          rightWidget: PocketCashflowChart(
+            pocket: pocket,
+            transactions: transactions,
+            isDark: isDark,
+            primaryColor: config.primaryTextColor,
+            secondaryColor: config.secondaryTextColor,
+            accentColor: config.iconColor,
+            currencyFormatter: currencyFormatter,
+          ),
         ),
       ),
-    );
-  }
-}
-
-class PocketDetailActions extends StatelessWidget {
-  final PocketEntry pocket;
-  final Color pocketColor;
-  final VoidCallback? onDeposit;
-  final VoidCallback? onWithdraw;
-
-  const PocketDetailActions({
-    super.key,
-    required this.pocket,
-    required this.pocketColor,
-    this.onDeposit,
-    this.onWithdraw,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.neoMint,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              icon: const Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
-              label: Text('Isi Dana', style: GoogleFonts.plusJakartaSans(color: AppColors.canvasBg, fontWeight: FontWeight.w800, fontSize: 13.5)),
-              onPressed: onDeposit ?? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: true),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: pocket.currentAmount > 0 ? AppColors.neoCoral : AppColors.canvasInputSearch,
-                disabledBackgroundColor: AppColors.canvasInputSearch,
-                disabledForegroundColor: AppColors.textMuted,
-                side: pocket.currentAmount > 0 ? null : const BorderSide(color: AppColors.canvasBorder, width: 0.8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
-              ),
-              icon: Icon(Icons.north_east_rounded, color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, size: 18),
-              label: Text('Tarik Dana', style: GoogleFonts.plusJakartaSans(color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted, fontWeight: FontWeight.w800, fontSize: 13.5)),
-              onPressed: pocket.currentAmount > 0 ? (onWithdraw ?? () => PocketTransferDialog.show(context, pocket: pocket, isDeposit: false)) : null,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
