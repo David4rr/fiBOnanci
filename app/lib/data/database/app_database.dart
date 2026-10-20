@@ -16,6 +16,7 @@ part 'database_queries.dart';
 part 'mutations/transaction_mutations.dart';
 part 'mutations/wallet_and_pocket_mutations.dart';
 part 'mutations/profile_and_rule_mutations.dart';
+part 'mutations/cross_profile_mutations.dart';
 part 'database_repair.dart';
 
 @DriftDatabase(tables: [

@@ -46,6 +46,22 @@ mixin DriftTransactionRepository on DriftRepoBase {
       ),
     );
   }
+  Future<void> transferCrossProfileFunds({
+    required String sourceWalletId,
+    required String destinationWalletId,
+    required double amount,
+    String? notes,
+    DateTime? transactionDate,
+    String source = 'manual',
+  }) => db.logCrossProfileTransferMutation(
+    sourceWalletId: sourceWalletId,
+    destinationWalletId: destinationWalletId,
+    amount: amount,
+    notes: notes,
+    transactionDate: transactionDate,
+    source: source,
+  );
+
 
   Future<void> updateTransaction({
     required String transactionId,

@@ -23,6 +23,14 @@ abstract class FinanceRepository {
     String? externalRef,
     String? profileId,
   });
+  Future<void> transferCrossProfileFunds({
+    required String sourceWalletId,
+    required String destinationWalletId,
+    required double amount,
+    String? notes,
+    DateTime? transactionDate,
+    String source = 'manual',
+  });
 
   Future<void> updateTransaction({
     required String transactionId,

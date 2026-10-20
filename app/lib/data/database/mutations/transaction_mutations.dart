@@ -87,6 +87,7 @@ extension TransactionMutations on AppDatabase {
           );
         }
       }
+      await _reverseCrossProfileSibling(tx, now);
       await _adjustLinkedPocket(tx, now, isRevert: true);
       if (tx.externalRef != null && tx.externalRef!.startsWith('sub_')) {
         final subId = tx.externalRef!.substring(4);

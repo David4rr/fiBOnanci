@@ -19,6 +19,21 @@ extension TransactionBlocHandlers on FinanceBloc {
       emit(state.copyWith(errorMessage: 'Gagal menambah transaksi: $e'));
     }
   }
+  Future<void> handleTransferCrossProfile(TransferCrossProfileEvent event, Emitter<FinanceState> emit) async {
+    try {
+      await repository.transferCrossProfileFunds(
+        sourceWalletId: event.sourceWalletId,
+        destinationWalletId: event.destinationWalletId,
+        amount: event.amount,
+        notes: event.notes,
+        transactionDate: event.transactionDate,
+        source: event.source,
+      );
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal transfer lintas profil: $e'));
+    }
+  }
+
 
   Future<void> handleUpdateTransaction(UpdateTransactionEvent event, Emitter<FinanceState> emit) async {
     try {

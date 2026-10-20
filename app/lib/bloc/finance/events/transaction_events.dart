@@ -23,6 +23,24 @@ class AddTransactionEvent extends FinanceEvent {
     this.externalRef,
   });
 }
+class TransferCrossProfileEvent extends FinanceEvent {
+  final String sourceWalletId;
+  final String destinationWalletId;
+  final double amount;
+  final String? notes;
+  final DateTime? transactionDate;
+  final String source;
+
+  const TransferCrossProfileEvent({
+    required this.sourceWalletId,
+    required this.destinationWalletId,
+    required this.amount,
+    this.notes,
+    this.transactionDate,
+    this.source = 'manual',
+  });
+}
+
 
 class UpdateTransactionEvent extends FinanceEvent {
   final String transactionId;

@@ -88,6 +88,15 @@ class TransactionVisualResolver {
         title: notes.isNotEmpty ? notes : (isWithdraw ? 'Tarik dari Kantong' : 'Setor ke Kantong'),
       );
     }
+    if (extRef.startsWith('cross_profile_')) {
+      final isInc = tx.type == 'income';
+      return TransactionCardVisuals(
+        cardColor: isInc ? incomeMint : transferBlue,
+        iconData: isInc ? Icons.south_west_rounded : Icons.north_east_rounded,
+        categoryLabel: isInc ? 'TRANSFER MASUK' : 'TRANSFER KELUAR',
+        title: notes.isNotEmpty ? notes : (isInc ? 'Transfer Masuk Antar Profil' : 'Transfer Keluar Antar Profil'),
+      );
+    }
 
     if (tx.type == 'transfer') {
       final t = notes.isNotEmpty ? notes : (destWalletName != null ? 'Transfer ke $destWalletName' : 'Transfer Antar Rekening');

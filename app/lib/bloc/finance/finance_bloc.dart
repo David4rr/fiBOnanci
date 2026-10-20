@@ -58,6 +58,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   FinanceBloc({required this.repository}) : super(FinanceState()) {
     on<LoadFinanceData>(_onLoadFinanceData);
     on<AddTransactionEvent>(handleAddTransaction);
+    on<TransferCrossProfileEvent>(handleTransferCrossProfile);
     on<UpdateTransactionEvent>(handleUpdateTransaction);
     on<DeleteTransactionEvent>(handleDeleteTransaction);
     on<AddSubscriptionEvent>(handleAddSubscription);
