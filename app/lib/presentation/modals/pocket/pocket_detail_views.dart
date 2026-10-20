@@ -58,84 +58,80 @@ class PocketDetailHeader extends StatelessWidget {
     final textScale = MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.4);
     final cardHeight = (172.0 * textScale).clamp(172.0, 216.0);
 
+    final topTrailingWidget = hasTarget
+        ? Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(color: config.iconBgColor, borderRadius: BorderRadius.circular(12)),
+            child: Text(
+              '${(latestProgress! * 100).toStringAsFixed(0)}%',
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800, color: config.primaryTextColor),
+            ),
+          )
+        : null;
+
+    final subtitleWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          pocket.name,
+          style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: config.secondaryTextColor, letterSpacing: -0.2),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          hasTarget ? 'Target: ${currencyFormatter.format(target)}' : 'Total Terkumpul di Kantong',
+          style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w600, color: config.tertiaryTextColor),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+
+    Widget buildCard({required bool includeChart}) {
+      return BentoFolderCard(
+        backgroundColor: config.backgroundColor,
+        gradient: null,
+        textColor: config.primaryTextColor,
+        subtitleColor: config.secondaryTextColor,
+        iconColor: config.iconColor,
+        iconBgColor: config.iconBgColor,
+        height: cardHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        iconData: getPocketIcon(pocket.type),
+        topTrailing: topTrailingWidget,
+        title: currencyFormatter.format(latestCurrent),
+        subtitleWidget: subtitleWidget,
+        progress: latestProgress,
+        rightWidget: includeChart
+            ? PocketCashflowChart(
+                pocket: pocket,
+                transactions: transactions,
+                isDark: isDark,
+                primaryColor: config.primaryTextColor,
+                secondaryColor: config.secondaryTextColor,
+                accentColor: config.iconBgColor,
+                currencyFormatter: currencyFormatter,
+              )
+            : null,
+      );
+    }
+
     return Hero(
       tag: 'pocket_card_${pocket.id}',
       flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-        final Hero toHero = toHeroContext.widget as Hero;
         return Material(
           color: Colors.transparent,
-          child: SingleChildScrollView(physics: const NeverScrollableScrollPhysics(), child: toHero.child),
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: buildCard(includeChart: false),
+          ),
         );
       },
       child: Material(
         color: Colors.transparent,
-        child: BentoFolderCard(
-          backgroundColor: config.backgroundColor,
-          gradient: null,
-          textColor: config.primaryTextColor,
-          subtitleColor: config.secondaryTextColor,
-          iconColor: config.iconColor,
-          iconBgColor: config.iconBgColor,
-          height: cardHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          iconData: getPocketIcon(pocket.type),
-          topTrailing: hasTarget
-              ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: config.iconBgColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${(latestProgress! * 100).toStringAsFixed(0)}%',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: config.primaryTextColor,
-                    ),
-                  ),
-                )
-              : null,
-          title: currencyFormatter.format(latestCurrent),
-          subtitleWidget: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                pocket.name,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: config.secondaryTextColor,
-                  letterSpacing: -0.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                hasTarget ? 'Target: ${currencyFormatter.format(target)}' : 'Total Terkumpul di Kantong',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: config.tertiaryTextColor,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          progress: latestProgress,
-          rightWidget: PocketCashflowChart(
-            pocket: pocket,
-            transactions: transactions,
-            isDark: isDark,
-            primaryColor: config.primaryTextColor,
-            secondaryColor: config.secondaryTextColor,
-            accentColor: config.iconColor,
-            currencyFormatter: currencyFormatter,
-          ),
-        ),
+        child: buildCard(includeChart: true),
       ),
     );
   }

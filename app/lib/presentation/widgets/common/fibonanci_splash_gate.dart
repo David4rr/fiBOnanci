@@ -1,6 +1,4 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 import 'fibonanci_splash_overlay.dart';
 
 /// 3-Stage Mathematical Vault Splash Screen Gate for fiBOnanci.
@@ -56,30 +54,14 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
 
     return Stack(
       children: [
-        const Positioned.fill(child: ColoredBox(color: AppColors.canvasBg)),
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final t = _controller.value;
-            final enterT = Curves.easeOutCubic.transform(
-              ((t - 0.50) / 0.42).clamp(0.0, 1.0),
-            );
-            final scale = ui.lerpDouble(0.96, 1.0, enterT)!;
-
-            return Transform.scale(
-              scale: scale,
-              child: Opacity(
-                opacity: enterT,
-                child: widget.child,
-              ),
-            );
-          },
-        ),
+        RepaintBoundary(child: widget.child),
         Positioned.fill(
-          child: FibonanciSplashOverlay(
-            animation: _controller,
-            targetKey: FibonanciSplashGate.dashboardLogoKey,
-            targetTextKey: FibonanciSplashGate.dashboardTextKey,
+          child: RepaintBoundary(
+            child: FibonanciSplashOverlay(
+              animation: _controller,
+              targetKey: FibonanciSplashGate.dashboardLogoKey,
+              targetTextKey: FibonanciSplashGate.dashboardTextKey,
+            ),
           ),
         ),
       ],

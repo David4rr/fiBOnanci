@@ -236,4 +236,38 @@ void main() {
     expect(find.text('-25M'), findsOneWidget);
     expect(find.text('Tabungan Pensiun Masa Depan Bahagia Sejahtera'), findsOneWidget);
   });
+
+  testWidgets('PocketDetailHeader flightShuttleBuilder excludes PocketCashflowChart during flight', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PocketDetailHeader(
+            pocket: mockPocket,
+            pocketColor: const Color(0xFFD4F442),
+            currencyFormatter: currencyFormatter,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final heroFinder = find.byType(Hero);
+    expect(heroFinder, findsOneWidget);
+    final hero = tester.widget<Hero>(heroFinder);
+    expect(hero.flightShuttleBuilder, isNotNull);
+
+    final flightContext = tester.element(heroFinder);
+    final shuttleWidget = hero.flightShuttleBuilder!(
+      flightContext,
+      const AlwaysStoppedAnimation(0.5),
+      HeroFlightDirection.push,
+      flightContext,
+      flightContext,
+    );
+
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: shuttleWidget)));
+    // The flight shuttle MUST NOT contain PocketCashflowChart
+    expect(find.byType(PocketCashflowChart), findsNothing);
+    expect(find.byType(BentoFolderCard), findsOneWidget);
+  });
 }

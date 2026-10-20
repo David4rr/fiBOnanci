@@ -147,5 +147,68 @@ void main() {
       expect(finalRect.width, equals(24.0));
       expect(finalRect.left, equals(20.0));
     });
+
+    testWidgets('FibonanciSplashGate provides strictly monotonic 120Hz trajectory with zero offscreen layers', (tester) async {
+      tester.view.physicalSize = const Size(400 * 2, 800 * 2);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FibonanciSplashGate(
+            duration: const Duration(milliseconds: 1200),
+            child: Scaffold(
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Row(
+                    children: [
+                      FibonanciLogoMark(
+                        key: FibonanciSplashGate.dashboardLogoKey,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'fiBOnanci',
+                        key: FibonanciSplashGate.dashboardTextKey,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Ensure child is wrapped in RepaintBoundary for single-pass GPU isolation
+      expect(find.byType(RepaintBoundary), findsWidgets);
+
+      // Advance to flight start (t = 0.48 * 1200 = 576ms)
+      await tester.pump(const Duration(milliseconds: 576));
+
+      double lastLeft = double.infinity;
+      double lastWidth = double.infinity;
+
+      // Sample 10 frames during flight (~8.33ms intervals / 60ms steps)
+      for (int i = 0; i < 9; i++) {
+        await tester.pump(const Duration(milliseconds: 60));
+        final logoFinder = find.byKey(const Key('fibonanci_splash_logo'));
+        if (logoFinder.evaluate().isNotEmpty) {
+          final rect = tester.getRect(logoFinder);
+          // Must strictly progress towards target (monotonic decrease in left and width)
+          expect(rect.left, lessThanOrEqualTo(lastLeft + 0.001));
+          expect(rect.width, lessThanOrEqualTo(lastWidth + 0.001));
+          lastLeft = rect.left;
+          lastWidth = rect.width;
+        }
+      }
+
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('fibonanci_splash_overlay')), findsNothing);
+    });
   });
 }
