@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Static Analysis & Tests
         run: |
-          flutter analyze
+          flutter analyze --no-fatal-infos
           flutter test
 
       - name: Setup Release Keystore

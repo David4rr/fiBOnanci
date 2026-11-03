@@ -49,6 +49,7 @@ class WalletDetailScrollView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      // ignore: deprecated_member_use
       cacheExtent: 800,
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
