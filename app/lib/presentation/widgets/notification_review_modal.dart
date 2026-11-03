@@ -135,15 +135,18 @@ class _NotificationReviewModalState extends State<NotificationReviewModal> {
             const SizedBox(height: 16),
             AppTextField(controller: _notesController, hintText: 'Catatan / Merchant'),
             const SizedBox(height: 14),
-            CheckboxListTile(
-              value: _rememberBinding,
-              onChanged: (val) => setState(() => _rememberBinding = val ?? false),
-              title: Text('Ingat rekening ini untuk ${widget.rawPackage}', style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite)),
-              activeColor: AppColors.neoChartreuse,
-              checkColor: AppColors.textDarkPrimary,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
+            Material(
+              color: Colors.transparent,
+              child: CheckboxListTile(
+                value: _rememberBinding,
+                onChanged: (val) => setState(() => _rememberBinding = val ?? false),
+                title: Text('Ingat rekening ini untuk ${widget.rawPackage}', style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite)),
+                activeColor: AppColors.neoChartreuse,
+                checkColor: AppColors.textDarkPrimary,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
             ),
             const SizedBox(height: 20),
             Row(

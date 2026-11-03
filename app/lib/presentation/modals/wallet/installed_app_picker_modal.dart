@@ -140,27 +140,30 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
                           decoration: const BoxDecoration(
                             border: Border(bottom: BorderSide(color: AppColors.canvasBorder, width: 0.8)),
                           ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            leading: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AppColors.neoChartreuse.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                              leading: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.android_rounded, color: AppColors.neoChartreuse, size: 20),
                               ),
-                              child: const Icon(Icons.android_rounded, color: AppColors.neoChartreuse, size: 20),
+                              title: Text(name, style: AppTypography.listTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              subtitle: Text(pkg, style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                              onTap: () {
+                                if (widget.onAppSelected != null) {
+                                  widget.onAppSelected!(pkg);
+                                } else {
+                                  Navigator.of(context).pop(pkg);
+                                }
+                              },
                             ),
-                            title: Text(name, style: AppTypography.listTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                            subtitle: Text(pkg, style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
-                            trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
-                            onTap: () {
-                              if (widget.onAppSelected != null) {
-                                widget.onAppSelected!(pkg);
-                              } else {
-                                Navigator.of(context).pop(pkg);
-                              }
-                            },
                           ),
                         );
                       },

@@ -124,10 +124,11 @@ class EditProfileAvatarPicker {
       backgroundColor: const Color(0xFF17181F),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
@@ -171,6 +172,7 @@ class EditProfileAvatarPicker {
                 ),
               ],
             ],
+            ),
           ),
         ),
       ),
