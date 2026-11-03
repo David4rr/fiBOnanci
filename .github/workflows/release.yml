@@ -1,0 +1,124 @@
+name: Build & Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (misal: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      prerelease:
+        description: 'Tandai sebagai Pre-release?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Android APKs & Bundle
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Drift SQLite Code Generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Run Static Analysis & Tests
+        run: |
+          flutter analyze
+          flutter test
+
+      - name: Setup Release Keystore
+        id: keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Keystore secret detected, decoding..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.jks
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/release.jks
+            echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=release.jks" >> android/key.properties
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No keystore secret detected. Using default release build."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Universal Release APK
+        run: flutter build apk --release
+
+      - name: Build Split-per-ABI Release APKs
+        run: flutter build apk --release --split-per-abi
+
+      - name: Build Android App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: Prepare Artifacts for Release
+        run: |
+          mkdir -p release-artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk release-artifacts/fiBOnanci-universal.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release-artifacts/fiBOnanci-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release-artifacts/fiBOnanci-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk release-artifacts/fiBOnanci-x86_64.apk
+          cp build/app/outputs/bundle/release/app-release.aab release-artifacts/fiBOnanci-bundle.aab
+          ls -la release-artifacts/
+
+      - name: Determine Tag Name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: fiBOnanci ${{ steps.get_tag.outputs.tag }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          generate_release_notes: true
+          files: |
+            app/release-artifacts/fiBOnanci-universal.apk
+            app/release-artifacts/fiBOnanci-arm64-v8a.apk
+            app/release-artifacts/fiBOnanci-armeabi-v7a.apk
+            app/release-artifacts/fiBOnanci-x86_64.apk
+            app/release-artifacts/fiBOnanci-bundle.aab

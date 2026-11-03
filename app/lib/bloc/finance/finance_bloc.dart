@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/database/app_database.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../core/native_bridge/notification_bridge.dart';
+import '../../core/notifications/local_notification_service.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import 'finance_event.dart';
@@ -117,6 +118,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         cycleDay: state.budgetCycleDay,
       );
       emit(state.copyWith(subscriptions: event.subscriptions, metrics: metrics));
+      LocalNotificationService.instance.syncAllSubscriptionReminders(event.subscriptions);
     });
     on<_PocketsUpdated>((event, emit) => emit(state.copyWith(pockets: event.pockets)));
     on<_ProfilesUpdated>((event, emit) {

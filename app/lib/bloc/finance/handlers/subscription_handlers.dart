@@ -45,6 +45,7 @@ extension SubscriptionBlocHandlers on FinanceBloc {
 
   Future<void> handleDeleteSubscription(DeleteSubscriptionEvent event, Emitter<FinanceState> emit) async {
     try {
+      await LocalNotificationService.instance.cancelSubscriptionReminders(event.subscriptionId);
       await repository.deleteSubscription(event.subscriptionId);
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal hapus langganan: $e'));

@@ -87,7 +87,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     return db.deleteSubscription(subscriptionId);
   }
 
-  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount}) {
-    return db.markSubscriptionAsPaid(subscriptionId, actualAmount: actualAmount);
+  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount, DateTime? paymentDate}) {
+    return db.markSubscriptionAsPaid(subscriptionId, actualAmount: actualAmount, paymentDate: paymentDate);
   }
 }

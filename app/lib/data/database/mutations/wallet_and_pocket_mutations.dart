@@ -43,32 +43,36 @@ extension WalletAndPocketMutations on AppDatabase {
           WalletsCompanion(balance: Value(wallet.balance + amount), updatedAt: Value(now), isSynced: const Value(false)),
         );
       }
-      await into(transactions).insert(
-        TransactionsCompanion(
-          id: Value(const Uuid().v4()),
-          profileId: Value(wallet.profileId ?? pocket.profileId),
-          walletId: Value(walletId),
-          categoryId: const Value('11111111-1111-4111-8111-111111111111'),
-          amount: Value(amount),
-          type: Value(isDepositToPocket ? 'transfer' : 'income'),
-          notes: Value(notes ?? (isDepositToPocket ? 'Setoran ke Kantong ${pocket.name}' : 'Penarikan dari Kantong ${pocket.name}')),
-          externalRef: Value('pocket_${pocket.id}'),
-          transactionDate: Value(now),
-          createdAt: Value(now),
-          updatedAt: Value(now),
-          isSynced: const Value(false),
-        ),
-      );
+      await into(transactions).insert(TransactionsCompanion(
+        id: Value(const Uuid().v4()),
+        profileId: Value(wallet.profileId ?? pocket.profileId),
+        walletId: Value(walletId),
+        categoryId: const Value('11111111-1111-4111-8111-111111111111'),
+        amount: Value(amount),
+        type: Value(isDepositToPocket ? 'transfer' : 'income'),
+        notes: Value(notes ?? (isDepositToPocket ? 'Setoran ke Kantong ${pocket.name}' : 'Penarikan dari Kantong ${pocket.name}')),
+        externalRef: Value('pocket_${pocket.id}'),
+        transactionDate: Value(now),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ));
     });
   }
 
-  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount}) {
+  Future<void> markSubscriptionAsPaid(
+    String subscriptionId, {
+    double? actualAmount,
+    DateTime? paymentDate,
+  }) {
     return transaction(() async {
-      final sub = await (select(subscriptions)..where((t) => t.id.equals(subscriptionId))).getSingle();
-      final now = DateTime.now().toUtc();
+      final sub = await (select(subscriptions)..where((t) => t.id.equals(subscriptionId))).getSingleOrNull();
+      if (sub == null || sub.isDeleted || sub.status == 'completed') return;
+      final rawCost = (actualAmount != null && actualAmount > 0) ? actualAmount : sub.cost;
+      final effectiveCost = rawCost > 0 ? rawCost : 0.0;
+      if (effectiveCost <= 0) return;
+      final now = (paymentDate ?? DateTime.now()).toUtc();
       const uuid = Uuid();
-      final effectiveCost = (actualAmount != null && actualAmount >= 0) ? actualAmount : sub.cost;
-
       final isInstallment = sub.isInstallment;
       final newPaidCycles = sub.paidCycles + 1;
       final isComplete = isInstallment && sub.totalCycles != null && newPaidCycles >= sub.totalCycles!;
@@ -91,22 +95,20 @@ extension WalletAndPocketMutations on AppDatabase {
           ? '$baseNote (Diskon/Penyesuaian dari ${sub.cost.toInt()})'
           : baseNote;
 
-      await logTransactionWithBalanceMutation(
-        tx: TransactionsCompanion(
-          id: Value(uuid.v4()),
-          profileId: Value(sub.profileId),
-          walletId: Value(sub.walletId),
-          categoryId: Value(sub.categoryId),
-          amount: Value(effectiveCost),
-          type: const Value('expense'),
-          notes: Value(txNotes),
-          externalRef: Value('sub_${sub.id}'),
-          transactionDate: Value(now),
-          source: const Value('subscription_recurring'),
-          createdAt: Value(now),
-          updatedAt: Value(now),
-        ),
-      );
+      await logTransactionWithBalanceMutation(tx: TransactionsCompanion(
+        id: Value(uuid.v4()),
+        profileId: Value(sub.profileId),
+        walletId: Value(sub.walletId),
+        categoryId: Value(sub.categoryId),
+        amount: Value(effectiveCost),
+        type: const Value('expense'),
+        notes: Value(txNotes),
+        externalRef: Value('sub_${sub.id}'),
+        transactionDate: Value(now),
+        source: const Value('subscription_recurring'),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ));
     });
   }
 
@@ -168,22 +170,20 @@ extension WalletAndPocketMutations on AppDatabase {
           await (update(wallets)..where((w) => w.id.equals(targetWallet.id))).write(
             WalletsCompanion(balance: Value(targetWallet.balance + pocket.currentAmount), updatedAt: Value(now), isSynced: const Value(false)),
           );
-          await into(transactions).insert(
-            TransactionsCompanion(
-              id: Value(const Uuid().v4()),
-              profileId: Value(pocket.profileId ?? targetWallet.profileId),
-              walletId: Value(targetWallet.id),
-              categoryId: const Value('11111111-1111-4111-8111-111111111111'),
-              amount: Value(pocket.currentAmount),
-              type: const Value('income'),
-              notes: Value('Penarikan dari Kantong ${pocket.name} (Penutupan)'),
-              externalRef: Value('pocket_close_${pocket.id}'),
-              transactionDate: Value(now),
-              createdAt: Value(now),
-              updatedAt: Value(now),
-              isSynced: const Value(false),
-            ),
-          );
+          await into(transactions).insert(TransactionsCompanion(
+            id: Value(const Uuid().v4()),
+            profileId: Value(pocket.profileId ?? targetWallet.profileId),
+            walletId: Value(targetWallet.id),
+            categoryId: const Value('11111111-1111-4111-8111-111111111111'),
+            amount: Value(pocket.currentAmount),
+            type: const Value('income'),
+            notes: Value('Penarikan dari Kantong ${pocket.name} (Penutupan)'),
+            externalRef: Value('pocket_close_${pocket.id}'),
+            transactionDate: Value(now),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+            isSynced: const Value(false),
+          ));
         }
       }
 

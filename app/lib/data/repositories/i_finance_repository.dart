@@ -76,7 +76,7 @@ abstract class FinanceRepository {
 
   Future<void> deleteSubscription(String subscriptionId);
 
-  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount});
+  Future<void> markSubscriptionAsPaid(String subscriptionId, {double? actualAmount, DateTime? paymentDate});
 
   Future<void> updateWalletBalance(String walletId, double newBalance, {String? accountNumber});
 

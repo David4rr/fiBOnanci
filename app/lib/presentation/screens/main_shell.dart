@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/native_bridge/notification_bridge.dart';
+import '../../core/notifications/local_notification_service.dart';
+import '../../domain/services/subscription_auto_deduct_runner.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
@@ -60,16 +62,18 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    LocalNotificationService.instance.initialize();
     _bridge.startListening(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
+    SubscriptionAutoDeductRunner.runAutoDeduct(db: widget.db);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _bridge.onAppResumed(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
+      SubscriptionAutoDeductRunner.runAutoDeduct(db: widget.db);
     }
   }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
