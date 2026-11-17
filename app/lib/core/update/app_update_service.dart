@@ -23,7 +23,7 @@ class AppUpdateInfo {
 }
 
 class AppUpdateService {
-  static const String currentVersion = '1.0.1';
+  static const String currentVersion = '1.0.2';
   static const String repoOwner = 'David4rr';
   static const String repoName = 'fiBOnanci';
   static const String apiUrl = 'https://api.github.com/repos/$repoOwner/$repoName/releases/latest';

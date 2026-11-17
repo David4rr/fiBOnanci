@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fibonanci_app/core/update/app_update_service.dart';
 
@@ -22,8 +24,14 @@ void main() {
       expect(update, isNull);
     });
 
-    test('currentVersion matches constant version', () {
-      expect(AppUpdateService.currentVersion, '1.0.1');
+    test('currentVersion matches the pubspec version', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      final version = RegExp(r'^version:\s*([^\s+]+)', multiLine: true)
+          .firstMatch(pubspec)
+          ?.group(1);
+
+      expect(version, isNotNull);
+      expect(AppUpdateService.currentVersion, version);
     });
   });
 }
