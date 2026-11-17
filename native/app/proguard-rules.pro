@@ -1,0 +1,2 @@
+-keep class net.zetetic.database.** { *; }
+-keep class com.fibonanci.app.data.db.** { *; }
