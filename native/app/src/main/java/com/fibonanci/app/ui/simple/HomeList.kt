@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.fibonanci.app.core.toLocalDate
 import com.fibonanci.app.data.db.SubscriptionEntry
+import com.fibonanci.app.data.db.TransactionEntry
 import com.fibonanci.app.ui.FinanceState
 
 private const val TRANSACTION_PREVIEW = 30
@@ -42,9 +43,14 @@ fun HomeList(
     padding: PaddingValues,
     onOpen: (SheetRoute) -> Unit,
     onPay: (SubscriptionEntry) -> Unit,
+    hiddenTransactionIds: Set<String>,
+    onDeleteTransaction: (TransactionEntry) -> Unit,
 ) {
     var showAll by rememberSaveable { mutableStateOf(false) }
-    val transactions = state.transactions
+    // rows swiped away wait here for the undo window before the delete is committed
+    val transactions = remember(state.transactions, hiddenTransactionIds) {
+        state.transactions.filter { it.id !in hiddenTransactionIds }
+    }
     val days = remember(transactions, showAll) {
         val shown = if (showAll) transactions else transactions.take(TRANSACTION_PREVIEW)
         shown.groupBy { it.transactionDate.toLocalDate() }.toList()
@@ -118,7 +124,14 @@ fun HomeList(
             days.forEach { (date, list) ->
                 stickyHeader(key = "d-$date") { _ -> DayHeader(dayLabel(list.first().transactionDate)) }
                 itemsIndexed(list, key = { _, t -> "t-${t.id}" }) { index, tx ->
-                    TransactionRow(tx, state, index, list.size, { onOpen(SheetRoute.Transaction(tx.id)) }, Modifier.animateItem())
+                    SwipeToDeleteRow(
+                        shape = groupShapes(index, list.size).shape,
+                        deleteLabel = "Hapus transaksi",
+                        onDelete = { onDeleteTransaction(tx) },
+                        modifier = Modifier.animateItem(),
+                    ) {
+                        TransactionRow(tx, state, index, list.size, { onOpen(SheetRoute.Transaction(tx.id)) })
+                    }
                 }
             }
             if (!showAll && transactions.size > TRANSACTION_PREVIEW) {

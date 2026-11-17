@@ -29,8 +29,10 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults
@@ -93,6 +95,7 @@ fun SimpleShell() {
     var fabExpanded by rememberSaveable { mutableStateOf(false) }
     var payId by rememberSaveable { mutableStateOf<String?>(null) }
     val notify: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+    var hiddenTransactionIds by remember { mutableStateOf(emptySet<String>()) }
 
     LaunchedEffect(state.errorMessage) {
         val message = state.errorMessage ?: return@LaunchedEffect
@@ -150,7 +153,34 @@ fun SimpleShell() {
         if (loading && state.wallets.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { LoadingIndicator() }
         } else {
-            HomeList(state = state, padding = padding, onOpen = { route = it }, onPay = { payId = it.id })
+            HomeList(
+                state = state,
+                padding = padding,
+                onOpen = { route = it },
+                onPay = { payId = it.id },
+                hiddenTransactionIds = hiddenTransactionIds,
+                onDeleteTransaction = { tx ->
+                    // a row can only be waiting for undo once
+                    if (tx.id !in hiddenTransactionIds) {
+                        hiddenTransactionIds = hiddenTransactionIds + tx.id
+                        scope.launch {
+                            var undone = false
+                            try {
+                                val result = snackbar.showSnackbar(
+                                    message = "Transaksi dihapus",
+                                    actionLabel = "Urungkan",
+                                    // 4s is too short to read, decide and reach the button; long keeps undo usable
+                                    duration = SnackbarDuration.Long,
+                                )
+                                undone = result == SnackbarResult.ActionPerformed
+                            } finally {
+                                // the delete is committed when the undo window closes, even if the screen goes away first
+                                if (undone) hiddenTransactionIds = hiddenTransactionIds - tx.id else vm.deleteTransaction(tx.id)
+                            }
+                        }
+                    }
+                },
+            )
         }
     }
 
