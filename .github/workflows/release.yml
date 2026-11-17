@@ -44,7 +44,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          # pinned to match app/android (Gradle 8.14); newer stable releases require Gradle >= 9.3.1
+          flutter-version: '3.41.7'
           cache: true
 
       - name: Install Dependencies
