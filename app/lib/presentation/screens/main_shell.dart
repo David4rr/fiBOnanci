@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notifications/local_notification_service.dart';
+import '../../core/update/app_update_service.dart';
 import '../../domain/services/subscription_auto_deduct_runner.dart';
 import '../../data/database/app_database.dart';
+import '../modals/app_update_modal.dart';
+import '../modals/notification_permission_modal.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
 import '../widgets/bottom_nav_dock.dart';
@@ -65,6 +69,25 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     LocalNotificationService.instance.initialize();
     _bridge.startListening(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
     SubscriptionAutoDeductRunner.runAutoDeduct(db: widget.db);
+    _checkPermissionsAndUpdates();
+  }
+
+  Future<void> _checkPermissionsAndUpdates() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    await LocalNotificationService.instance.requestPermissions();
+    final granted = await NotificationBridge.isPermissionGranted();
+    if (!granted && mounted) {
+      await NotificationPermissionModal.show(context);
+    }
+    if (!mounted) return;
+    try {
+      final update = await AppUpdateService.checkForUpdate();
+      if (update != null && update.hasUpdate && mounted) {
+        await AppUpdateModal.show(context, update);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -72,6 +95,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       _bridge.onAppResumed(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
       SubscriptionAutoDeductRunner.runAutoDeduct(db: widget.db);
+      setState(() {});
     }
   }
   @override

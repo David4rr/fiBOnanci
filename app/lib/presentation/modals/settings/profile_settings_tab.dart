@@ -10,11 +10,13 @@ import '../../widgets/common/common_widgets.dart';
 import 'settings_automation_data_section.dart';
 import 'settings_budget_cycle_section.dart';
 import 'settings_category_section.dart';
+import 'settings_export_sub_page.dart';
 import 'settings_financial_section.dart';
 
 export 'settings_automation_data_section.dart';
 export 'settings_budget_cycle_section.dart';
 export 'settings_category_section.dart';
+export 'settings_export_sub_page.dart';
 export 'settings_financial_section.dart';
 
 enum SettingsSubRoute {

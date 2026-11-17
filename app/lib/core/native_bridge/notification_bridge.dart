@@ -31,6 +31,10 @@ class NotificationBridge {
     try { await _methodChannel.invokeMethod('openPermissionSettings'); } catch (_) {}
   }
 
+  static Future<void> openUrl(String url) async {
+    try { await _methodChannel.invokeMethod('openUrl', {'url': url}); } catch (_) {}
+  }
+
   static Future<void> setHighRefreshRate(bool enabled) async {
     try { await _methodChannel.invokeMethod('setHighRefreshRate', {'enabled': enabled}); } catch (_) {}
   }

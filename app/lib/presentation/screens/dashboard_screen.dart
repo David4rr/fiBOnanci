@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/native_bridge/notification_bridge.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/dashboard_bento_grid.dart';
+import '../widgets/notification_permission_banner.dart';
 import 'dashboard/dashboard_empty_wallet_view.dart';
 import 'dashboard/dashboard_header.dart';
 import 'dashboard/dashboard_history_section.dart';
@@ -36,6 +38,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _searchQuery = '';
   String _typeFilter = 'all';
   String? _walletFilter;
+  bool _isNotificationGranted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationPermission();
+  }
+
+  @override
+  void didUpdateWidget(covariant DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final granted = await NotificationBridge.isPermissionGranted();
+    if (mounted) setState(() => _isNotificationGranted = granted);
+  }
 
   @override
   void dispose() {
@@ -101,6 +121,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   walletCount: wallets.length,
                   txCount: allTransactions.length,
                 ),
+                if (!_isNotificationGranted)
+                  NotificationPermissionBanner(
+                    onDismiss: () => setState(() => _isNotificationGranted = true),
+                  ),
                 if (wallets.isEmpty)
                   const DashboardEmptyWalletView()
                 else ...[
