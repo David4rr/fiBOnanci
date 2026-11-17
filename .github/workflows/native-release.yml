@@ -51,20 +51,47 @@ jobs:
             echo "No keystore secret detected. Release build is signed with the debug key."
           fi
 
-      - name: Build Release APK
-        run: ./gradlew :app:assembleRelease
-
-      - name: Determine Tag Name
-        id: get_tag
+      - name: Derive Version From Tag
+        id: version
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag_name }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ github.event.inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+            tag="$INPUT_TAG"
           else
-            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+            tag="${GITHUB_REF#refs/tags/}"
           fi
+          version="${tag#v}"
+          version="${version%%-*}"
+          IFS=. read -r major minor patch <<< "$version"
+          major="${major:-0}"; minor="${minor:-0}"; patch="${patch:-0}"
+          case "$major$minor$patch" in
+            ''|*[!0-9]*)
+              echo "::error::Tag '$tag' is not a semantic version (vX.Y.Z)"
+              exit 1
+              ;;
+          esac
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "name=$major.$minor.$patch" >> "$GITHUB_OUTPUT"
+          echo "code=$((10#$major * 10000 + 10#$minor * 100 + 10#$patch))" >> "$GITHUB_OUTPUT"
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          files: native/app/build/outputs/apk/release/app-release.apk
+      - name: Build Release APK
+        env:
+          NATIVE_VERSION_NAME: ${{ steps.version.outputs.name }}
+          NATIVE_VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: ./gradlew :app:assembleRelease
+
+      - name: Publish Native APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          asset="fiBOnanci-native-${TAG}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$asset"
+          # the flutter release workflow publishes to the same tag; only create the
+          # release when that job has not, and retry when both race
+          for attempt in 1 2 3 4 5; do
+            if gh release view "$TAG" >/dev/null 2>&1; then break; fi
+            gh release create "$TAG" --title "fiBOnanci $TAG" --generate-notes || sleep 4
+          done
+          gh release upload "$TAG" "$asset" --clobber

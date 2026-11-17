@@ -14,6 +14,10 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// the release workflow derives these from the git tag; local builds keep the defaults
+val nativeVersionCode = System.getenv("NATIVE_VERSION_CODE")?.toIntOrNull() ?: 1
+val nativeVersionName = System.getenv("NATIVE_VERSION_NAME") ?: "1.0.0"
+
 android {
     namespace = "com.fibonanci.app"
     compileSdk = 36
@@ -22,8 +26,8 @@ android {
         applicationId = "com.fibonanci.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = nativeVersionCode
+        versionName = nativeVersionName
     }
 
     signingConfigs {
