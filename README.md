@@ -152,6 +152,43 @@ fiBOnanci/
 
 ---
 
+## Native Android App (Kotlin)
+
+`native/` holds a fully native port of the app: Kotlin, Jetpack Compose, Room on SQLCipher, no Flutter engine. The Flutter project in `app/` stays as the reference implementation.
+
+| Layer | Technology |
+| :--- | :--- |
+| **UI** | Jetpack Compose (Material 3), Plus Jakarta Sans variable font |
+| **State** | `FinanceViewModel` + `StateFlow` (replaces `FinanceBloc`) |
+| **Database** | Room 2.8 over SQLCipher, key kept in the Android Keystore vault |
+| **Ingestion** | `NotificationListenerService` + the same on-device regex parser pipeline |
+| **Reminders** | `AlarmManager` + `BroadcastReceiver` (replaces `flutter_local_notifications`) |
+
+```text
+native/app/src/main/java/com/fibonanci/app/
+├── data/        # Room entities, DAO, FinanceRepository (balance-safe mutations), JSON backup
+├── domain/      # Safe-to-Spend, cashflow, health, report and pocket trend engines
+├── core/        # formatters, notification parser + listener, smart input, security vault, reminders
+└── ui/          # FinanceViewModel, theme, common widgets, modal host and feature screens
+```
+
+Build and run (JDK 17+, Android SDK 36):
+
+```bash
+cd native
+./gradlew :app:installDebug
+adb shell am start -n com.fibonanci.app/.MainActivity
+```
+
+The native app uses the application id `com.fibonanci.app`, so it installs next to the Flutter build (`com.fibonanci.app.fibonanci_app`) and keeps its own encrypted database.
+
+Unlike the Flutter build, the native app ships with no demo profile or wallets. First launch runs an onboarding flow (name, username, monthly income, first wallet, look) and only the default categories are seeded. Two looks share the same data and can be switched at any time:
+
+- `david4rr`: the full tactile card UI (dashboard, card decks, pockets, inbox, reports).
+- `iblameraihan`: a single-screen Material 3 Expressive UI (stock `material3` components, Atelier color scheme) for the everyday record/pay flow.
+
+---
+
 ## Testing & Quality Assurance
 
 The codebase maintains strict automated test coverage across **43 test files (221 passing tests)** spanning all domain algorithms, Drift v6 database migrations, parsing pipelines, and UI interactions:
