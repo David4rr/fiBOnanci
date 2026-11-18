@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notifications/local_notification_service.dart';
+import '../../core/storage/profile_preferences_storage.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import 'finance_event.dart';
@@ -16,46 +17,20 @@ part 'handlers/pocket_handlers.dart';
 part 'handlers/profile_handlers.dart';
 part 'handlers/settings_handlers.dart';
 
-class _WalletsUpdated extends FinanceEvent {
-  final List<WalletEntry> wallets;
-  const _WalletsUpdated(this.wallets);
-}
-
-class _CategoriesUpdated extends FinanceEvent {
-  final List<CategoryEntry> categories;
-  const _CategoriesUpdated(this.categories);
-}
-
-class _TransactionsUpdated extends FinanceEvent {
-  final List<TransactionEntry> transactions;
-  const _TransactionsUpdated(this.transactions);
-}
-
-class _SubscriptionsUpdated extends FinanceEvent {
-  final List<SubscriptionEntry> subscriptions;
-  const _SubscriptionsUpdated(this.subscriptions);
-}
-
-class _PocketsUpdated extends FinanceEvent {
-  final List<PocketEntry> pockets;
-  const _PocketsUpdated(this.pockets);
-}
-
-class _ProfilesUpdated extends FinanceEvent {
-  final List<ProfileEntry> profiles;
-  const _ProfilesUpdated(this.profiles);
-}
+class _WalletsUpdated extends FinanceEvent { final List<WalletEntry> wallets; const _WalletsUpdated(this.wallets); }
+class _CategoriesUpdated extends FinanceEvent { final List<CategoryEntry> categories; const _CategoriesUpdated(this.categories); }
+class _TransactionsUpdated extends FinanceEvent { final List<TransactionEntry> transactions; const _TransactionsUpdated(this.transactions); }
+class _SubscriptionsUpdated extends FinanceEvent { final List<SubscriptionEntry> subscriptions; const _SubscriptionsUpdated(this.subscriptions); }
+class _PocketsUpdated extends FinanceEvent { final List<PocketEntry> pockets; const _PocketsUpdated(this.pockets); }
+class _ProfilesUpdated extends FinanceEvent { final List<ProfileEntry> profiles; const _ProfilesUpdated(this.profiles); }
 
 class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository repository;
   final Map<String, int> _profileCycleDays = {};
   final Map<String, Set<String>?> _profileStsWallets = {};
-  StreamSubscription? _walletsSubscription;
-  StreamSubscription? _categoriesSubscription;
-  StreamSubscription? _transactionsSubscription;
-  StreamSubscription? _subscriptionsSubscription;
-  StreamSubscription? _pocketsSubscription;
-  StreamSubscription? _profilesSubscription;
+  StreamSubscription? _walletsSubscription, _categoriesSubscription, _transactionsSubscription;
+  StreamSubscription? _subscriptionsSubscription, _pocketsSubscription, _profilesSubscription;
+
   FinanceBloc({required this.repository}) : super(FinanceState()) {
     on<LoadFinanceData>(_onLoadFinanceData);
     on<AddTransactionEvent>(handleAddTransaction);
@@ -93,8 +68,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<_WalletsUpdated>((event, emit) {
       Set<String>? safeWallets = state.safeToSpendWalletIds;
       if (safeWallets != null) {
-        final activeIds = event.wallets.map((w) => w.id).toSet();
-        safeWallets = safeWallets.intersection(activeIds);
+        safeWallets = safeWallets.intersection(event.wallets.map((w) => w.id).toSet());
       }
       final metrics = SafeToSpendService.calculate(
         wallets: event.wallets,
@@ -102,11 +76,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         selectedWalletIds: safeWallets,
         cycleDay: state.budgetCycleDay,
       );
-      emit(state.copyWith(
-        wallets: event.wallets,
-        safeToSpendWalletIds: safeWallets,
-        metrics: metrics,
-      ));
+      emit(state.copyWith(wallets: event.wallets, safeToSpendWalletIds: safeWallets, metrics: metrics));
     });
     on<_CategoriesUpdated>((event, emit) => emit(state.copyWith(categories: event.categories)));
     on<_TransactionsUpdated>((event, emit) => emit(state.copyWith(transactions: event.transactions)));
@@ -125,9 +95,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final active = event.profiles.where((p) => p.isActive).firstOrNull ?? event.profiles.firstOrNull;
       final prevId = state.activeProfile?.id;
       emit(state.copyWith(profiles: event.profiles, activeProfile: active));
-      if (active != null && active.id != prevId) {
-        _initStreamListeners(active.id);
-      }
+      if (active != null && active.id != prevId) _initStreamListeners(active.id);
     });
 
     _initStreamListeners();
@@ -150,9 +118,13 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   Future<void> _onLoadFinanceData(LoadFinanceData event, Emitter<FinanceState> emit) async {
     emit(state.copyWith(status: FinanceStatus.loading));
     try {
+      await ProfilePreferencesStorage.load();
+      _profileCycleDays.addAll(ProfilePreferencesStorage.getAllBudgetCycleDays());
+      _profileStsWallets.addAll(ProfilePreferencesStorage.getAllSafeToSpendWallets());
+
       final profiles = await repository.getProfiles();
       final activeProfile = profiles.where((p) => p.isActive).firstOrNull ?? profiles.firstOrNull;
-      final pId = activeProfile?.id;
+      final pId = activeProfile?.id ?? 'default_profile_1';
       _initStreamListeners(pId);
       final wallets = await repository.getWallets(profileId: pId);
       final categories = await repository.getCategories();
@@ -160,11 +132,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final transactions = await repository.getTransactions(profileId: pId, limit: 5000);
       final pockets = await repository.getPockets(profileId: pId);
 
+      final cycleDay = _profileCycleDays[pId] ?? 1;
+      final stsWallets = _profileStsWallets[pId];
+
       final metrics = SafeToSpendService.calculate(
         wallets: wallets,
         subscriptions: subscriptions,
-        selectedWalletIds: state.safeToSpendWalletIds,
-        cycleDay: state.budgetCycleDay,
+        selectedWalletIds: stsWallets,
+        cycleDay: cycleDay,
       );
 
       emit(state.copyWith(
@@ -176,6 +151,9 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         pockets: pockets,
         profiles: profiles,
         activeProfile: activeProfile,
+        budgetCycleDay: cycleDay,
+        safeToSpendWalletIds: stsWallets,
+        clearSafeToSpendWallets: stsWallets == null,
         metrics: metrics,
       ));
     } catch (e) {

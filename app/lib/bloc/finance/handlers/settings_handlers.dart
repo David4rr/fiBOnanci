@@ -5,7 +5,9 @@ extension SettingsBlocHandlers on FinanceBloc {
     SetSafeToSpendWalletsEvent event,
     Emitter<FinanceState> emit,
   ) {
-    _profileStsWallets[state.profile.id] = event.walletIds;
+    final pId = state.profile.id;
+    _profileStsWallets[pId] = event.walletIds;
+    ProfilePreferencesStorage.setSafeToSpendWallets(pId, event.walletIds);
     final metrics = SafeToSpendService.calculate(
       wallets: state.wallets,
       subscriptions: state.subscriptions,
@@ -24,7 +26,9 @@ extension SettingsBlocHandlers on FinanceBloc {
     Emitter<FinanceState> emit,
   ) {
     final clamped = event.cycleDay.clamp(1, 31);
-    _profileCycleDays[state.profile.id] = clamped;
+    final pId = state.profile.id;
+    _profileCycleDays[pId] = clamped;
+    ProfilePreferencesStorage.setBudgetCycleDay(pId, clamped);
     final metrics = SafeToSpendService.calculate(
       wallets: state.wallets,
       subscriptions: state.subscriptions,

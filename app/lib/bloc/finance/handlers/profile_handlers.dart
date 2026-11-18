@@ -43,6 +43,7 @@ extension ProfileBlocHandlers on FinanceBloc {
     try {
       _profileCycleDays.remove(event.profileId);
       _profileStsWallets.remove(event.profileId);
+      ProfilePreferencesStorage.removeProfile(event.profileId);
       await repository.deleteProfile(event.profileId);
       final profiles = await repository.getProfiles();
       final active = profiles.where((p) => p.isActive).firstOrNull ?? profiles.firstOrNull;
@@ -52,8 +53,8 @@ extension ProfileBlocHandlers on FinanceBloc {
       final transactions = await repository.getTransactions(profileId: pId, limit: 50);
       final subscriptions = await repository.getSubscriptions(profileId: pId);
       final pockets = await repository.getPockets(profileId: pId);
-      final cycleDay = _profileCycleDays[pId] ?? 1;
-      final stsWallets = _profileStsWallets[pId];
+      final cycleDay = _profileCycleDays[pId] ?? ProfilePreferencesStorage.getBudgetCycleDay(pId);
+      final stsWallets = _profileStsWallets[pId] ?? ProfilePreferencesStorage.getSafeToSpendWallets(pId);
       final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions, selectedWalletIds: stsWallets, cycleDay: cycleDay);
       emit(state.copyWith(
         activeProfile: active, profiles: profiles, wallets: wallets,
@@ -73,8 +74,8 @@ extension ProfileBlocHandlers on FinanceBloc {
       final transactions = await repository.getTransactions(profileId: event.profileId, limit: 50);
       final subscriptions = await repository.getSubscriptions(profileId: event.profileId);
       final pockets = await repository.getPockets(profileId: event.profileId);
-      final cycleDay = _profileCycleDays[event.profileId] ?? 1;
-      final stsWallets = _profileStsWallets[event.profileId];
+      final cycleDay = _profileCycleDays[event.profileId] ?? ProfilePreferencesStorage.getBudgetCycleDay(event.profileId);
+      final stsWallets = _profileStsWallets[event.profileId] ?? ProfilePreferencesStorage.getSafeToSpendWallets(event.profileId);
       final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions, selectedWalletIds: stsWallets, cycleDay: cycleDay);
       final profiles = await repository.getProfiles();
       final active = profiles.where((p) => p.id == event.profileId).firstOrNull ?? state.activeProfile;

@@ -39,18 +39,21 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
   double _cachedDestSize = 24.0;
   Offset? _cachedDestTextOffset;
 
-  void _resolveTargetOffsets(EdgeInsets padding) {
-    if (_cachedDestOffset == null && widget.targetKey != null) {
-      final box = widget.targetKey!.currentContext?.findRenderObject() as RenderBox?;
-      if (box != null && box.hasSize && box.attached) {
-        _cachedDestOffset = box.localToGlobal(Offset.zero);
-        _cachedDestSize = box.size.width;
+  void _resolveTargetOffsets(BuildContext context, EdgeInsets padding) {
+    final overlayBox = context.findRenderObject() as RenderBox?;
+    if (overlayBox != null && overlayBox.hasSize && overlayBox.attached) {
+      if (widget.targetKey != null) {
+        final box = widget.targetKey!.currentContext?.findRenderObject() as RenderBox?;
+        if (box != null && box.hasSize && box.attached) {
+          _cachedDestOffset = box.localToGlobal(Offset.zero, ancestor: overlayBox);
+          _cachedDestSize = box.size.width;
+        }
       }
-    }
-    if (_cachedDestTextOffset == null && widget.targetTextKey != null) {
-      final textBox = widget.targetTextKey!.currentContext?.findRenderObject() as RenderBox?;
-      if (textBox != null && textBox.hasSize && textBox.attached) {
-        _cachedDestTextOffset = textBox.localToGlobal(Offset.zero);
+      if (widget.targetTextKey != null) {
+        final textBox = widget.targetTextKey!.currentContext?.findRenderObject() as RenderBox?;
+        if (textBox != null && textBox.hasSize && textBox.attached) {
+          _cachedDestTextOffset = textBox.localToGlobal(Offset.zero, ancestor: overlayBox);
+        }
       }
     }
   }
@@ -65,17 +68,11 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
         final pulseT = ((t - 0.28) / 0.20).clamp(0.0, 1.0);
         final logoPulse = 1.0 + (math.sin(pulseT * math.pi) * 0.045);
 
-        final textInT = Curves.easeOutCubic.transform(
-          ((t - 0.20) / 0.24).clamp(0.0, 1.0),
-        );
-        final subExitT = Curves.easeInCubic.transform(
-          ((t - 0.48) / 0.12).clamp(0.0, 1.0),
-        );
+        final textInT = Curves.easeOutCubic.transform(((t - 0.20) / 0.24).clamp(0.0, 1.0));
+        final subExitT = Curves.easeInCubic.transform(((t - 0.48) / 0.12).clamp(0.0, 1.0));
         final subOpacity = (textInT * (1.0 - subExitT)).clamp(0.0, 1.0);
 
-        final curtainExitT = Curves.easeInOutCubic.transform(
-          ((t - 0.50) / 0.44).clamp(0.0, 1.0),
-        );
+        final curtainExitT = Curves.easeInOutCubic.transform(((t - 0.50) / 0.44).clamp(0.0, 1.0));
         final curtainOpacity = (1.0 - curtainExitT).clamp(0.0, 1.0);
 
         final flightT = ((t - 0.48) / 0.48).clamp(0.0, 1.0);
@@ -86,11 +83,12 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
         final startX = (screenSize.width - startSize) / 2;
         final startY = (screenSize.height - 182.0) / 2;
 
-        _resolveTargetOffsets(padding);
-        final destOffset = _cachedDestOffset ?? Offset(20.0, padding.top + 16.0);
+        _resolveTargetOffsets(context, padding);
+        final fallbackX = padding.left + 20.0;
+        final fallbackY = padding.top + 16.0;
+        final destOffset = _cachedDestOffset ?? Offset(fallbackX, fallbackY + 3.6);
         final destSize = _cachedDestSize;
-        final destTextOffset = _cachedDestTextOffset ??
-            Offset(destOffset.dx + destSize + 8.0, destOffset.dy - 1.0);
+        final destTextOffset = _cachedDestTextOffset ?? Offset(destOffset.dx + destSize + 8.0, fallbackY);
 
         final currentSize = ui.lerpDouble(startSize * logoPulse, destSize, flightCurve)!;
         final currentX = ui.lerpDouble(startX, destOffset.dx, flightCurve)!;
@@ -103,12 +101,7 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
         final initialSlideY = 12.0 * (1.0 - textInT);
 
         final currentTextX = ui.lerpDouble(startTextX, destTextOffset.dx, flightCurve)!;
-        final currentTextY = ui.lerpDouble(
-          startTextY + initialSlideY,
-          destTextOffset.dy,
-          flightCurve,
-        )!;
-
+        final currentTextY = ui.lerpDouble(startTextY + initialSlideY, destTextOffset.dy, flightCurve)!;
         final currentTextStyle = TextStyle.lerp(_startTextStyle, _targetTextStyle, flightCurve)!;
 
         return IgnorePointer(
@@ -120,9 +113,7 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
               children: [
                 if (curtainOpacity > 0.0)
                   Positioned.fill(
-                    child: ColoredBox(
-                      color: AppColors.canvasBg.withValues(alpha: curtainOpacity),
-                    ),
+                    child: ColoredBox(color: AppColors.canvasBg.withValues(alpha: curtainOpacity)),
                   ),
                 if (subOpacity > 0.0)
                   Positioned(
@@ -144,9 +135,8 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
                   Positioned(
                     left: currentTextX,
                     top: currentTextY,
-                    child: RichText(
-                      key: const Key('fibonanci_splash_text'),
-                      text: TextSpan(
+                    child: Text.rich(
+                      TextSpan(
                         style: currentTextStyle.copyWith(
                           color: currentTextStyle.color?.withValues(alpha: textInT),
                         ),
@@ -154,13 +144,12 @@ class _FibonanciSplashOverlayState extends State<FibonanciSplashOverlay> {
                           const TextSpan(text: 'fi'),
                           TextSpan(
                             text: 'BO',
-                            style: TextStyle(
-                              color: AppColors.neoChartreuse.withValues(alpha: textInT),
-                            ),
+                            style: TextStyle(color: AppColors.neoChartreuse.withValues(alpha: textInT)),
                           ),
                           const TextSpan(text: 'nanci'),
                         ],
                       ),
+                      key: const Key('fibonanci_splash_text'),
                     ),
                   ),
                 Positioned(
