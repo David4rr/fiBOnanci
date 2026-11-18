@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -55,6 +56,7 @@ class NotificationBridge {
   static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) => NotificationInbox.rejectNotification(item, db);
   static void clearPendingNotifications() => NotificationInbox.clearPendingNotifications();
   static Future<void> syncAllowedPackages(AppDatabase db) async {
+    if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) return;
     try {
       final activePackages = await db.getActiveNotificationPackages();
       await _methodChannel.invokeMethod('updateAllowedPackages', {'packages': activePackages});
@@ -78,19 +80,14 @@ class NotificationBridge {
   }
 
   Future<void> startListening(
-    AppDatabase db, {
-    Function(String message)? onAutoLogged,
-    NotificationReviewPrompt? onReviewPrompt,
-  }) async {
+    AppDatabase db, {Function(String message)? onAutoLogged, NotificationReviewPrompt? onReviewPrompt}
+  ) async {
     await syncAllowedPackages(db);
     await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
-
     _liveSubscription?.cancel();
     try {
       _liveSubscription = _eventChannel.receiveBroadcastStream().listen((dynamic event) {
-        if (event is Map) {
-          handleRawNotification(Map<String, dynamic>.from(event), db, onAutoLogged: onAutoLogged);
-        }
+        if (event is Map) handleRawNotification(Map<String, dynamic>.from(event), db, onAutoLogged: onAutoLogged);
       }, onError: (_) {});
     } catch (_) {}
   }
@@ -112,13 +109,10 @@ class NotificationBridge {
       final List<dynamic>? pending = await _methodChannel.invokeMethod('getPendingNotifications');
       if (pending != null) {
         for (final item in pending) {
-          if (item is Map) {
-            await handleRawNotification(Map<String, dynamic>.from(item), db, onAutoLogged: onAutoLogged);
-          }
+          if (item is Map) await handleRawNotification(Map<String, dynamic>.from(item), db, onAutoLogged: onAutoLogged);
         }
       }
-    } catch (_) {
-    } finally {
+    } catch (_) {} finally {
       _isProcessingPending = false;
     }
   }

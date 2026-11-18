@@ -324,6 +324,7 @@ void main() {
       expect(find.widgetWithText(TextField, 'id.krom.bank'), findsOneWidget);
 
       // Save wallet
+      await tester.ensureVisible(find.text('Simpan Rekening'));
       await tester.tap(find.text('Simpan Rekening'));
       await tester.pumpAndSettle();
 

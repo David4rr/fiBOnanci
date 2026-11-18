@@ -4,6 +4,7 @@ import '../../../core/notification_parser/bank_presets.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import 'installed_app_picker_modal.dart';
+
 class WalletBindingSelector extends StatelessWidget {
   final String? selectedPackage;
   final bool isCustomPackage;
@@ -31,8 +32,14 @@ class WalletBindingSelector extends StatelessWidget {
       onPackageChanged(picked, true);
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final bool hasPreset = kPopularBankAppPresets.any((p) => p.packageName == selectedPackage);
+    final String? dropdownValue = isCustomPackage
+        ? '__custom__'
+        : (hasPreset ? selectedPackage : (selectedPackage != null ? '__custom__' : null));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,7 +48,7 @@ class WalletBindingSelector extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Hubungkan Notifikasi Aplikasi (Opsional)',
+                'Hubungkan Notifikasi Aplikasi',
                 style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -80,7 +87,7 @@ class WalletBindingSelector extends StatelessWidget {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String?>(
-              value: isCustomPackage ? '__custom__' : selectedPackage,
+              value: dropdownValue,
               isExpanded: true,
               dropdownColor: AppColors.canvasCardSurface,
               icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textMuted),
@@ -134,6 +141,25 @@ class WalletBindingSelector extends StatelessWidget {
             ),
           ),
         ),
+        if (selectedPackage != null && selectedPackage!.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, size: 13, color: AppColors.neoChartreuse),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Notifikasi transaksi otomatis terhubung ($selectedPackage)',
+                  style: AppTypography.badgeLabel.copyWith(
+                    color: AppColors.neoChartreuse,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
         if (isCustomPackage) ...[
           const SizedBox(height: 8),
           TextField(

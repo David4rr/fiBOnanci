@@ -171,7 +171,10 @@ void main() {
       await db.select(db.wallets).get();
       final repo = DriftFinanceRepository(db);
       final bloc = FinanceBloc(repository: repo);
-      addTearDown(bloc.close);
+      addTearDown(() async {
+        await bloc.close();
+        await db.close();
+      });
       bloc.add(const LoadFinanceData());
       await expectLater(
         bloc.stream,
@@ -211,6 +214,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap Simpan Rekening
+      await tester.ensureVisible(find.text('Simpan Rekening'));
       await tester.tap(find.text('Simpan Rekening'));
       await tester.pumpAndSettle();
 
@@ -219,8 +223,6 @@ void main() {
       final neoWallet = wallets.firstWhere((w) => w.name == 'Bank Neo Commerce');
       expect(neoWallet.accountNumber, '8899001122');
       expect(neoWallet.balance, 1500000.0);
-
-      await db.close();
     });
 
     testWidgets('AddWalletModal left blank defaults to null and displays dash (-)', (tester) async {
@@ -235,7 +237,10 @@ void main() {
       await db.select(db.wallets).get();
       final repo = DriftFinanceRepository(db);
       final bloc = FinanceBloc(repository: repo);
-      addTearDown(bloc.close);
+      addTearDown(() async {
+        await bloc.close();
+        await db.close();
+      });
       bloc.add(const LoadFinanceData());
       await expectLater(
         bloc.stream,
@@ -271,6 +276,7 @@ void main() {
       // Field at index 2 left untouched
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Simpan Rekening'));
       await tester.tap(find.text('Simpan Rekening'));
       await tester.pumpAndSettle();
 
@@ -293,8 +299,6 @@ void main() {
         ),
       );
       expect(find.text('-'), findsOneWidget);
-
-      await db.close();
     });
 
     testWidgets('Tapping hero card in WalletDetailScreen copies accountNumber to Clipboard', (tester) async {
