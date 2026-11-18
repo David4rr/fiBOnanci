@@ -6,7 +6,9 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/category_icon_resolver.dart';
 import 'category_color_picker.dart';
+import 'category_icon_picker.dart';
 import 'settings_budget_cycle_section.dart';
 
 class SettingsCategorySection extends StatefulWidget {
@@ -22,6 +24,7 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
   String _selectedType = 'expense';
   bool _isAdding = false;
   String _selectedColor = CategoryColorPicker.palette.first;
+  String _selectedIcon = 'category';
   final _nameCtrl = TextEditingController();
 
   @override
@@ -43,9 +46,13 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
       name: name,
       type: _selectedType,
       colorHex: _selectedColor,
+      iconName: _selectedIcon,
     ));
     _nameCtrl.clear();
-    setState(() => _isAdding = false);
+    setState(() {
+      _isAdding = false;
+      _selectedIcon = 'category';
+    });
   }
 
   @override
@@ -102,6 +109,12 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
             selectedColor: _selectedColor,
             onColorChanged: (c) => setState(() => _selectedColor = c),
           ),
+          const SizedBox(height: 12),
+          CategoryIconPicker(
+            selectedIcon: _selectedIcon,
+            accentColor: _parseColor(_selectedColor),
+            onIconChanged: (icon) => setState(() => _selectedIcon = icon),
+          ),
           const SizedBox(height: 16),
         ],
         Wrap(
@@ -110,8 +123,12 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(8)),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: _parseColor(cat.colorHex))),
-              const SizedBox(width: 7),
+              Icon(
+                CategoryIconResolver.mapCategoryIcon(cat.iconName),
+                size: 13,
+                color: _parseColor(cat.colorHex),
+              ),
+              const SizedBox(width: 6),
               Text(cat.name, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.85))),
               if (filtered.length > 1) ...[
                 const SizedBox(width: 6),

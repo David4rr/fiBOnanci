@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/database/app_database.dart';
 import '../notification_parser/notification_parser.dart';
 import '../notification_parser/notification_text_sanitizer.dart';
+import '../smart_input/smart_category_matcher.dart';
 import 'notification_inbox.dart';
 import 'notification_wallet_resolver.dart';
 
@@ -135,7 +136,10 @@ class NotificationBridge {
     if (targetWallet == null) return;
 
     final categories = await db.select(db.categories).get();
-    final defaultCat = categories.firstWhere((c) => c.type == parsed.type, orElse: () => categories.first);
+    final matchedCat = SmartCategoryMatcher.matchCategory(
+      categories: categories, type: parsed.type, text: text, title: title, counterparty: parsed.counterparty,
+    );
+    final resolvedCat = matchedCat ?? categories.firstWhere((c) => c.type == parsed.type, orElse: () => categories.first);
     final now = DateTime.now().toUtc();
 
     if (parsed.externalRef != null) {
@@ -149,7 +153,7 @@ class NotificationBridge {
       tx: TransactionsCompanion(
         id: drift.Value(txId),
         walletId: drift.Value(targetWallet.id),
-        categoryId: drift.Value(defaultCat.id),
+        categoryId: drift.Value(resolvedCat.id),
         amount: drift.Value(parsed.amount),
         type: drift.Value(parsed.type),
         notes: drift.Value(parsed.counterparty),
@@ -178,6 +182,8 @@ class NotificationBridge {
     inboxItem['walletId'] = targetWallet.id;
     inboxItem['profileId'] = targetWallet.profileId;
     inboxItem['profileName'] = profileName;
+    inboxItem['categoryId'] = resolvedCat.id;
+    inboxItem['categoryName'] = resolvedCat.name;
 
     NotificationInbox.addPending(inboxItem);
     final prefix = profileName != null ? '[$profileName] ${targetWallet.name}' : targetWallet.name;
@@ -185,8 +191,6 @@ class NotificationBridge {
   }
   static void _syncBalanceSnapshotIfPresent(String text, AppDatabase db, String walletId) async {
     final exactBal = NotificationTextSanitizer.extractBalance(text);
-    if (exactBal != null && exactBal > 0) {
-      await db.updateWalletBalance(walletId, exactBal);
-    }
+    if (exactBal != null && exactBal > 0) await db.updateWalletBalance(walletId, exactBal);
   }
 }

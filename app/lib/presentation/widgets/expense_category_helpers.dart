@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
+import '../theme/category_icon_resolver.dart';
 
 class TransactionCardVisuals {
   final Color cardColor;
@@ -42,23 +43,7 @@ class TransactionVisualResolver {
   }
 
   static IconData mapIconName(String? name, {IconData fallback = Icons.receipt_long_rounded}) {
-    switch (name?.toLowerCase()) {
-      case 'utensils': case 'restaurant': case 'fastfood': return Icons.restaurant_rounded;
-      case 'car': case 'directions_car': return Icons.directions_car_rounded;
-      case 'shopping_bag': case 'shopping_cart': return Icons.shopping_bag_rounded;
-      case 'receipt': case 'receipt_long': return Icons.receipt_long_rounded;
-      case 'film': case 'movie': case 'play': return Icons.play_circle_fill_rounded;
-      case 'music': case 'music_note': return Icons.music_note_rounded;
-      case 'heart_pulse': case 'favorite': return Icons.favorite_rounded;
-      case 'graduation_cap': case 'school': return Icons.school_rounded;
-      case 'banknote': case 'account_balance_wallet': case 'wallet': return Icons.account_balance_wallet_rounded;
-      case 'sparkles': case 'auto_awesome': return Icons.auto_awesome_rounded;
-      case 'trending_up': return Icons.trending_up_rounded;
-      case 'repeat': case 'swap_horiz': return Icons.swap_horiz_rounded;
-      case 'savings': return Icons.savings_rounded;
-      case 'flag': return Icons.flag_rounded;
-      default: return fallback;
-    }
+    return CategoryIconResolver.mapCategoryIcon(name, fallback: fallback);
   }
 
   static TransactionCardVisuals resolve({
@@ -127,38 +112,42 @@ class TransactionVisualResolver {
       );
     }
 
+    final hasCustomIcon = cat != null && cat.iconName.isNotEmpty && cat.iconName != 'category';
+    final customIcon = hasCustomIcon ? mapIconName(cat.iconName) : null;
+    final customColor = cat != null ? tintToPastel(cat.colorHex) : null;
+
     final str = '$catName $lowNotes';
     if (str.contains('makan') || str.contains('food') || str.contains('resto') || str.contains('kopi') || str.contains('cafe')) {
-      return TransactionCardVisuals(cardColor: foodOchre, iconData: Icons.restaurant_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'MAKANAN & MINUMAN', title: notes.isNotEmpty ? notes : 'Makanan & Minuman');
+      return TransactionCardVisuals(cardColor: customColor ?? foodOchre, iconData: customIcon ?? Icons.restaurant_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'MAKANAN & MINUMAN', title: notes.isNotEmpty ? notes : 'Makanan & Minuman');
     }
     if (str.contains('transport') || str.contains('gojek') || str.contains('grab') || str.contains('bensin') || str.contains('parkir') || str.contains('tol')) {
-      return TransactionCardVisuals(cardColor: transportTeal, iconData: Icons.directions_car_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'TRANSPORTASI', title: notes.isNotEmpty ? notes : 'Transportasi');
+      return TransactionCardVisuals(cardColor: customColor ?? transportTeal, iconData: customIcon ?? Icons.directions_car_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'TRANSPORTASI', title: notes.isNotEmpty ? notes : 'Transportasi');
     }
     if (str.contains('belanja') || str.contains('shopee') || str.contains('tokopedia') || str.contains('mall') || str.contains('supermarket')) {
-      return TransactionCardVisuals(cardColor: shoppingCoral, iconData: Icons.shopping_bag_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'BELANJA', title: notes.isNotEmpty ? notes : 'Belanja');
+      return TransactionCardVisuals(cardColor: customColor ?? shoppingCoral, iconData: customIcon ?? Icons.shopping_bag_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'BELANJA', title: notes.isNotEmpty ? notes : 'Belanja');
     }
     if (str.contains('tagihan') || str.contains('listrik') || str.contains('pln') || str.contains('pdam') || str.contains('wifi') || str.contains('pulsa') || str.contains('bpjs')) {
-      return TransactionCardVisuals(cardColor: billsPeriwinkle, iconData: Icons.receipt_long_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'TAGIHAN & UTILITAS', title: notes.isNotEmpty ? notes : 'Tagihan & Utilitas');
+      return TransactionCardVisuals(cardColor: customColor ?? billsPeriwinkle, iconData: customIcon ?? Icons.receipt_long_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'TAGIHAN & UTILITAS', title: notes.isNotEmpty ? notes : 'Tagihan & Utilitas');
     }
     if (str.contains('hiburan') || str.contains('netflix') || str.contains('spotify') || str.contains('film') || str.contains('movie') || str.contains('game')) {
-      return TransactionCardVisuals(cardColor: entertainmentLilac, iconData: Icons.play_circle_fill_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'HIBURAN', title: notes.isNotEmpty ? notes : 'Hiburan');
+      return TransactionCardVisuals(cardColor: customColor ?? entertainmentLilac, iconData: customIcon ?? Icons.play_circle_fill_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'HIBURAN', title: notes.isNotEmpty ? notes : 'Hiburan');
     }
     if (str.contains('kesehatan') || str.contains('obat') || str.contains('apotek') || str.contains('dokter') || str.contains('klinik')) {
-      return TransactionCardVisuals(cardColor: healthRose, iconData: Icons.favorite_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'KESEHATAN', title: notes.isNotEmpty ? notes : 'Kesehatan');
+      return TransactionCardVisuals(cardColor: customColor ?? healthRose, iconData: customIcon ?? Icons.favorite_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'KESEHATAN', title: notes.isNotEmpty ? notes : 'Kesehatan');
     }
     if (str.contains('pendidikan') || str.contains('buku') || str.contains('kursus') || str.contains('sekolah') || str.contains('kuliah')) {
-      return TransactionCardVisuals(cardColor: educationCyan, iconData: Icons.school_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'PENDIDIKAN', title: notes.isNotEmpty ? notes : 'Pendidikan');
+      return TransactionCardVisuals(cardColor: customColor ?? educationCyan, iconData: customIcon ?? Icons.school_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'PENDIDIKAN', title: notes.isNotEmpty ? notes : 'Pendidikan');
     }
     if (str.contains('cicilan') || str.contains('pinjaman') || str.contains('kredit') || str.contains('kpr')) {
-      return TransactionCardVisuals(cardColor: loanTerracotta, iconData: Icons.credit_card_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'CICILAN', title: notes.isNotEmpty ? notes : 'Cicilan');
+      return TransactionCardVisuals(cardColor: customColor ?? loanTerracotta, iconData: customIcon ?? Icons.credit_card_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'CICILAN', title: notes.isNotEmpty ? notes : 'Cicilan');
     }
     if (str.contains('donasi') || str.contains('amal') || str.contains('zakat') || str.contains('sedekah')) {
-      return TransactionCardVisuals(cardColor: donationLime, iconData: Icons.volunteer_activism_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'DONASI & SOSIAL', title: notes.isNotEmpty ? notes : 'Donasi & Sosial');
+      return TransactionCardVisuals(cardColor: customColor ?? donationLime, iconData: customIcon ?? Icons.volunteer_activism_rounded, categoryLabel: cat?.name.toUpperCase() ?? 'DONASI & SOSIAL', title: notes.isNotEmpty ? notes : 'Donasi & Sosial');
     }
 
     return TransactionCardVisuals(
-      cardColor: cat != null ? tintToPastel(cat.colorHex) : defaultSlate,
-      iconData: mapIconName(cat?.iconName, fallback: Icons.north_east_rounded),
+      cardColor: customColor ?? defaultSlate,
+      iconData: customIcon ?? mapIconName(cat?.iconName, fallback: Icons.north_east_rounded),
       categoryLabel: cat != null ? cat.name.toUpperCase() : 'PENGELUARAN',
       title: notes.isNotEmpty ? notes : 'Pengeluaran',
     );
