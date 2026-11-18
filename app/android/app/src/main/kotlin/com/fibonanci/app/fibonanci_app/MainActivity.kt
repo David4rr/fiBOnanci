@@ -1,8 +1,12 @@
 package com.fibonanci.app.fibonanci_app
 
+import android.app.DownloadManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationManagerCompat
@@ -77,9 +81,30 @@ class MainActivity : FlutterActivity() {
                     startActivity(intent)
                     result.success(true)
                 }
+                "downloadApk" -> {
+                    val url = call.argument<String>("url")
+                    val fileName = call.argument<String>("fileName") ?: "fiBOnanci-update.apk"
+                    if (!url.isNullOrBlank()) {
+                        val ok = downloadApkViaDownloadManager(url, fileName)
+                        result.success(ok)
+                    } else {
+                        result.success(false)
+                    }
+                }
+                "getDeviceAbi" -> {
+                    val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
+                    result.success(abi)
+                }
                 "openUrl" -> {
                     val url = call.argument<String>("url")
                     if (!url.isNullOrBlank()) {
+                        if (isApkUrl(url)) {
+                            val fileName = url.substringAfterLast("/").substringBefore("?").ifBlank { "fiBOnanci-update.apk" }
+                            if (downloadApkViaDownloadManager(url, fileName)) {
+                                result.success(true)
+                                return@setMethodCallHandler
+                            }
+                        }
                         try {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -165,6 +190,31 @@ class MainActivity : FlutterActivity() {
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun isApkUrl(url: String): Boolean {
+        val clean = url.substringBefore("?").lowercase()
+        return clean.endsWith(".apk")
+    }
+
+    private fun downloadApkViaDownloadManager(url: String, fileName: String): Boolean {
+        return try {
+            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager ?: return false
+            val uri = Uri.parse(url)
+            val request = DownloadManager.Request(uri).apply {
+                setTitle("Pembaruan fiBOnanci")
+                setDescription("Mengunduh $fileName...")
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                setMimeType("application/vnd.android.package-archive")
+                setAllowedOverMetered(true)
+                setAllowedOverRoaming(true)
+            }
+            downloadManager.enqueue(request)
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

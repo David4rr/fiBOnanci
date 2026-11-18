@@ -107,9 +107,34 @@ class AppUpdateModal extends StatelessWidget {
           PrimaryActionButton(
             text: 'Unduh & Pasang Pembaruan',
             icon: Icons.download_rounded,
-            onPressed: () {
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.maybeOf(context);
               Navigator.pop(context);
-              NotificationBridge.openUrl(updateInfo.apkUrl ?? updateInfo.htmlUrl);
+
+              final targetUrl = updateInfo.apkUrl ?? updateInfo.htmlUrl;
+              final isApk = targetUrl.toLowerCase().contains('.apk');
+
+              if (isApk) {
+                final fileName = 'fiBOnanci-v${updateInfo.latestVersion}.apk';
+                final started = await NotificationBridge.downloadApk(targetUrl, fileName: fileName);
+                if (started) {
+                  messenger?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Mengunduh pembaruan v${updateInfo.latestVersion}... Cek status di bilah notifikasi.',
+                        style: const TextStyle(color: AppColors.textWhite, fontSize: 13),
+                      ),
+                      backgroundColor: AppColors.canvasCardSurface,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                  return;
+                }
+              }
+
+              await NotificationBridge.openUrl(targetUrl);
             },
           ),
           const SizedBox(height: 10),

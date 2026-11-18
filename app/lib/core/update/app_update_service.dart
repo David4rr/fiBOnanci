@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../native_bridge/notification_bridge.dart';
 
 class AppUpdateInfo {
   final String currentVersion;
@@ -48,7 +49,10 @@ class AppUpdateService {
     }
   }
 
-  static Future<AppUpdateInfo?> checkForUpdate({HttpClient? client}) async {
+  static Future<AppUpdateInfo?> checkForUpdate({
+    HttpClient? client,
+    String? targetAbi,
+  }) async {
     if (kIsWeb) return null;
     if (Platform.environment.containsKey('FLUTTER_TEST') && client == null) {
       return null;
@@ -77,17 +81,28 @@ class AppUpdateService {
       String? apkUrl;
       final assets = json['assets'] as List<dynamic>?;
       if (assets != null) {
+        final resolvedAbi = targetAbi ?? (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST') ? null : await NotificationBridge.getDeviceAbi());
+        final abi = (resolvedAbi ?? '').toLowerCase().trim();
+        String? abiMatch;
+        String? universalMatch;
+        String? fallbackMatch;
+
         for (final asset in assets) {
           if (asset is Map<String, dynamic>) {
             final name = (asset['name'] as String? ?? '').toLowerCase();
             final downloadUrl = asset['browser_download_url'] as String?;
             if (name.endsWith('.apk') && downloadUrl != null) {
-              if (name.contains('universal') || apkUrl == null) {
-                apkUrl = downloadUrl;
+              if (abi.isNotEmpty && name.contains(abi)) {
+                abiMatch = downloadUrl;
+              } else if (name.contains('universal')) {
+                universalMatch = downloadUrl;
+              } else {
+                fallbackMatch ??= downloadUrl;
               }
             }
           }
         }
+        apkUrl = abiMatch ?? universalMatch ?? fallbackMatch;
       }
 
       final hasUpdate = isNewerVersion(tagName, currentVersion);

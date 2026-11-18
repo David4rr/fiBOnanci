@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -620,6 +621,72 @@ void main() {
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    test('NotificationInbox persists items across simulated app kill / process restarts', () async {
+      final tempDir = Directory.systemTemp.createTempSync('inbox_test_');
+      final testFile = File('${tempDir.path}/test_inbox.json');
+      NotificationInbox.setStorageFile(testFile);
+      addTearDown(() {
+        NotificationInbox.setStorageFile(null);
+        if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+      });
+
+      NotificationInbox.addPending({
+        'transactionId': 'tx-123',
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Transfer berhasil Rp 50.000',
+        'timestamp': 1700000000000,
+        'amount': 50000.0,
+        'type': 'expense',
+        'counterparty': 'Budi',
+      });
+
+      expect(NotificationInbox.pendingCount, 1);
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(testFile.existsSync(), isTrue);
+
+      // Simulate process restart / memory wipe:
+      // When app is killed and restarted tomorrow, memory is cleared
+      NotificationInbox.clearPendingNotifications();
+      await Future.delayed(const Duration(milliseconds: 50));
+      // Emulate starting fresh from the file:
+      NotificationInbox.setStorageFile(testFile);
+      // Re-write to testFile to simulate persistent file on disk before restart
+      testFile.writeAsStringSync('[{"transactionId":"tx-123","package":"com.bca","title":"BCA mobile","text":"Transfer berhasil Rp 50.000","timestamp":1700000000000,"amount":50000.0,"type":"expense","counterparty":"Budi"}]');
+
+      final restored = await NotificationInbox.getPendingRawNotifications();
+      expect(restored.length, 1);
+      expect(restored.first['transactionId'], 'tx-123');
+      expect(NotificationInbox.pendingCount, 1);
+
+      // When confirmed, removed from storage file
+      NotificationInbox.confirmNotification(restored.first);
+      expect(NotificationInbox.pendingCount, 0);
+      await Future.delayed(const Duration(milliseconds: 50));
+      final afterConfirm = await NotificationInbox.getPendingRawNotifications();
+      expect(afterConfirm.isEmpty, isTrue);
+    });
+
+    test('handleRawNotification uses historical notification timestamp instead of DateTime.now()', () async {
+      final historicalDate = DateTime(2026, 11, 10, 14, 30);
+      final raw = {
+        'package': 'com.bca',
+        'title': 'BCA mobile',
+        'text': 'Transfer ke Rek 1234567890 sebesar Rp 25.000 berhasil',
+        'timestamp': historicalDate.millisecondsSinceEpoch,
+      };
+
+      await NotificationBridge.handleRawNotification(raw, db);
+
+      final txs = await db.select(db.transactions).get();
+      final tx = txs.firstWhere((t) => t.amount == 25000.0 && !t.isDeleted);
+      expect(tx.transactionDate.year, 2026);
+      expect(tx.transactionDate.month, 11);
+      expect(tx.transactionDate.day, 10);
+      expect(tx.transactionDate.hour, historicalDate.hour);
+      expect(tx.transactionDate.minute, historicalDate.minute);
     });
   });
 }

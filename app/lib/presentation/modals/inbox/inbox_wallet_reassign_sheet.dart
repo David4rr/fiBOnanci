@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -52,6 +53,7 @@ class InboxWalletReassignSheet extends StatefulWidget {
     item['walletName'] = newWallet.name;
     item['profileId'] = newWallet.profileId;
     item['profileName'] = prof?.fullName ?? prof?.username;
+    NotificationInbox.updatePending(item);
     final pName = prof?.fullName ?? prof?.username ?? 'Akun Utama';
     return 'Dialihkan ke $pName • ${newWallet.name}';
   }

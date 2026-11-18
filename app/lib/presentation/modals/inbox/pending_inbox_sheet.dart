@@ -123,6 +123,7 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
       _editingItem = null;
       _isEditing = false;
     });
+    NotificationInbox.updatePending(item);
     _showSnack('Transaksi berhasil disesuaikan', AppColors.neoMint);
   }
 

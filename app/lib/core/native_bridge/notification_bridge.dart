@@ -35,6 +35,17 @@ class NotificationBridge {
     try { await _methodChannel.invokeMethod('openUrl', {'url': url}); } catch (_) {}
   }
 
+  static Future<bool> downloadApk(String url, {String? fileName}) async {
+    try {
+      final res = await _methodChannel.invokeMethod<bool>('downloadApk', {'url': url, 'fileName': fileName});
+      return res ?? false;
+    } catch (_) { return false; }
+  }
+
+  static Future<String?> getDeviceAbi() async {
+    try { return await _methodChannel.invokeMethod<String>('getDeviceAbi'); } catch (_) { return null; }
+  }
+
   static Future<void> setHighRefreshRate(bool enabled) async {
     try { await _methodChannel.invokeMethod('setHighRefreshRate', {'enabled': enabled}); } catch (_) {}
   }
@@ -150,7 +161,7 @@ class NotificationBridge {
         notes: drift.Value(parsed.counterparty),
         source: const drift.Value('notification_auto'),
         externalRef: drift.Value(parsed.externalRef),
-        transactionDate: drift.Value(now),
+        transactionDate: drift.Value(ts?.toUtc() ?? now),
         createdAt: drift.Value(now),
         updatedAt: drift.Value(now),
       ),

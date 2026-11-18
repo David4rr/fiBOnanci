@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fibonanci_app/core/update/app_update_service.dart';
 import 'package:fibonanci_app/presentation/modals/app_update_modal.dart';
@@ -72,6 +73,58 @@ void main() {
       expect(find.text('v1.0.1'), findsOneWidget);
       expect(find.text('Fixed notification bugs and improved performance.'), findsOneWidget);
       expect(find.text('Unduh & Pasang Pembaruan'), findsOneWidget);
+    });
+
+    testWidgets('tapping Unduh & Pasang Pembaruan triggers downloadApk and shows snackbar', (tester) async {
+      String? invokedMethod;
+      Map<dynamic, dynamic>? invokedArguments;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async {
+          invokedMethod = methodCall.method;
+          invokedArguments = methodCall.arguments as Map<dynamic, dynamic>?;
+          if (methodCall.method == 'downloadApk') {
+            return true;
+          }
+          return null;
+        },
+      );
+
+      const info = AppUpdateInfo(
+        currentVersion: '1.0.0',
+        latestVersion: '1.0.1',
+        hasUpdate: true,
+        releaseNotes: 'Performance improvements',
+        apkUrl: 'https://github.com/David4rr/fiBOnanci/releases/download/v1.0.1/fiBOnanci-arm64-v8a.apk',
+        htmlUrl: 'https://github.com/David4rr/fiBOnanci/releases/tag/v1.0.1',
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => Center(
+                child: ElevatedButton(
+                  onPressed: () => AppUpdateModal.show(ctx, info),
+                  child: const Text('Open Modal'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Modal'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Unduh & Pasang Pembaruan'));
+      await tester.pumpAndSettle();
+
+      expect(invokedMethod, equals('downloadApk'));
+      expect(invokedArguments?['fileName'], equals('fiBOnanci-v1.0.1.apk'));
+      expect(find.textContaining('Mengunduh pembaruan v1.0.1'), findsOneWidget);
     });
   });
 }

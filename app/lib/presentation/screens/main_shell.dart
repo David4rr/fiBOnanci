@@ -67,6 +67,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     LocalNotificationService.instance.initialize();
+    NotificationInbox.init();
     _bridge.startListening(widget.db, onAutoLogged: _showAutoLoggedSnackBar);
     SubscriptionAutoDeductRunner.runAutoDeduct(db: widget.db);
     _checkPermissionsAndUpdates();
