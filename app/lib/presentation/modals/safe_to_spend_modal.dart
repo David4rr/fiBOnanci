@@ -42,9 +42,25 @@ class SafeToSpendModal {
                       children: [
                         _buildCalcRow(
                           isAll ? 'Total Saldo Riil' : 'Saldo Rekening Terpilih',
-                          '+${currencyFormatter.format(metrics.totalRealBalance)}',
+                          '+${currencyFormatter.format(metrics.operationalBalance)}',
                           AppColors.neoChartreuse,
                         ),
+                        if (!isAll) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Aset (${wallets.length} Akun)',
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                              ),
+                              Text(
+                                currencyFormatter.format(metrics.totalRealBalance),
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ],
                         const Divider(color: AppColors.canvasBorder),
                         _buildCalcRow(
                           isAll ? 'Sisa Tagihan Bulan Ini' : 'Tagihan Terkait Terpilih',

@@ -78,7 +78,8 @@ void main() {
 
     expect(bloc.state.metrics.isAllWallets, isFalse);
     expect(bloc.state.metrics.selectedWalletsCount, 1);
-    expect(bloc.state.metrics.totalRealBalance, bca.balance);
+    expect(bloc.state.metrics.operationalBalance, bca.balance);
+    expect(bloc.state.metrics.totalRealBalance, 9269259.0); // Total aset across all wallets preserved
 
     // Reset back to all wallets
     bloc.add(const SetSafeToSpendWalletsEvent(null));

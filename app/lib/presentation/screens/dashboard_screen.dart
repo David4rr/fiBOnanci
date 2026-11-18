@@ -99,6 +99,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final n = now.toLocal();
               return d.year == n.year && d.month == n.month && d.day == n.day;
             }).toList();
+            final todayExpense = todayTransactions
+                .where((t) => t.type == 'expense' && !t.isDeleted)
+                .fold<double>(0.0, (sum, t) => sum + t.amount);
 
             final isFiltering = _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null;
             final baseTransactions = isFiltering ? allTransactions : todayTransactions;
@@ -149,6 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     subscriptions: subscriptions,
                     currencyFormatter: AppCurrency.forCode(state.profile.currency),
                     isBalanceHidden: state.isBalanceHidden,
+                    todayExpense: todayExpense,
                     onNavigateToWallets: _onNavigateToWallets,
                     onNavigateToSubscriptions: _onNavigateToSubscriptions,
                   ),

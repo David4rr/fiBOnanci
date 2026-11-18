@@ -247,7 +247,8 @@ void main() {
 
       expect(customMetrics.isAllWallets, false);
       expect(customMetrics.selectedWalletsCount, 2);
-      expect(customMetrics.totalRealBalance, 3500000.0); // 3M + 500k
+      expect(customMetrics.totalRealBalance, 13500000.0); // Grand total of all active wallets (Total Aset)
+      expect(customMetrics.operationalBalance, 3500000.0); // 3M + 500k of selected operational wallets
       expect(customMetrics.pendingBills, 186000.0); // Only Netflix (Asuransi excluded because it's funded by SeaBank)
       expect(customMetrics.safeToSpendMonthly, 3314000.0);
 
@@ -262,6 +263,7 @@ void main() {
       expect(allMetrics.isAllWallets, true);
       expect(allMetrics.selectedWalletsCount, 3);
       expect(allMetrics.totalRealBalance, 13500000.0);
+      expect(allMetrics.operationalBalance, 13500000.0);
       expect(allMetrics.pendingBills, 1186000.0);
       expect(allMetrics.safeToSpendMonthly, 12314000.0);
     });

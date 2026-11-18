@@ -18,6 +18,7 @@ class DashboardBentoGrid extends StatelessWidget {
   final VoidCallback onNavigateToWallets;
   final VoidCallback onNavigateToSubscriptions;
   final bool isBalanceHidden;
+  final double todayExpense;
 
   const DashboardBentoGrid({
     super.key,
@@ -28,9 +29,25 @@ class DashboardBentoGrid extends StatelessWidget {
     required this.onNavigateToWallets,
     required this.onNavigateToSubscriptions,
     this.isBalanceHidden = false,
+    this.todayExpense = 0.0,
   });
 
   String _fmt(double amount) => currencyFormatter.format(amount);
+
+  String _dailyPaceSubtitle() {
+    if (metrics.safeToSpendDaily <= 0) {
+      return 'Alokasi defisit bulan ini';
+    }
+    if (todayExpense <= 0) {
+      return 'Wow, belum belanja hari ini! ✨';
+    }
+    final remaining = metrics.safeToSpendDaily - todayExpense;
+    if (remaining > 0) {
+      return isBalanceHidden ? 'Sisa alokasi aman hari ini' : 'Sisa ${_fmt(remaining)} hari ini';
+    } else {
+      return isBalanceHidden ? 'Melebihi alokasi hari ini' : 'Lewat ${_fmt(-remaining)} hari ini ⚠️';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +73,7 @@ class DashboardBentoGrid extends StatelessWidget {
               ),
               const SizedBox(width: 14),
 
-              // Card 2: Total Real Balance (TAP -> Switches to Wallets Tab)
+              // Card 2: Total Real Balance / Total Aset (TAP -> Switches to Wallets Tab)
               Expanded(
                 child: BentoFolderCard(
                   backgroundColor: AppColors.neoMint,
@@ -95,9 +112,9 @@ class DashboardBentoGrid extends StatelessWidget {
                   iconData: Icons.pie_chart_outline,
                   title: _fmt(metrics.safeToSpendDaily),
                   isBalanceHidden: isBalanceHidden,
-                  subtitle: 'Alokasi/Hari (${metrics.daysRemainingInMonth}hr)',
+                  subtitle: _dailyPaceSubtitle(),
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
-                  onTap: () => DailyPaceModal.show(context, metrics),
+                  onTap: () => DailyPaceModal.show(context, metrics, todayExpense: todayExpense),
                 ),
               ),
             ],

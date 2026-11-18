@@ -10,7 +10,8 @@ enum FinancialHealthStatus {
 }
 
 class SafeToSpendMetrics {
-  final double totalRealBalance;
+  final double totalRealBalance; // Grand total assets across all active wallets
+  final double operationalBalance; // Total balance across selected operational wallets
   final double pendingBills;
   final double safeToSpendMonthly;
   final double safeToSpendDaily;
@@ -22,6 +23,7 @@ class SafeToSpendMetrics {
 
   const SafeToSpendMetrics({
     required this.totalRealBalance,
+    double? operationalBalance,
     required this.pendingBills,
     required this.safeToSpendMonthly,
     required this.safeToSpendDaily,
@@ -30,29 +32,19 @@ class SafeToSpendMetrics {
     this.selectedWalletIds = const {},
     this.isAllWallets = true,
     this.selectedWalletsCount = 0,
-  });
+  }) : operationalBalance = operationalBalance ?? totalRealBalance;
 
-  Color get statusColor {
-    switch (healthStatus) {
-      case FinancialHealthStatus.comfortable:
-        return AppColors.statusComfortable;
-      case FinancialHealthStatus.caution:
-        return AppColors.statusCaution;
-      case FinancialHealthStatus.deficit:
-        return AppColors.statusDeficit;
-    }
-  }
+  Color get statusColor => switch (healthStatus) {
+    FinancialHealthStatus.comfortable => AppColors.statusComfortable,
+    FinancialHealthStatus.caution => AppColors.statusCaution,
+    FinancialHealthStatus.deficit => AppColors.statusDeficit,
+  };
 
-  String get statusLabel {
-    switch (healthStatus) {
-      case FinancialHealthStatus.comfortable:
-        return 'Sangat Aman';
-      case FinancialHealthStatus.caution:
-        return 'Waspada';
-      case FinancialHealthStatus.deficit:
-        return 'Defisit Tagihan';
-    }
-  }
+  String get statusLabel => switch (healthStatus) {
+    FinancialHealthStatus.comfortable => 'Sangat Aman',
+    FinancialHealthStatus.caution => 'Waspada',
+    FinancialHealthStatus.deficit => 'Defisit Tagihan',
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -60,6 +52,7 @@ class SafeToSpendMetrics {
       other is SafeToSpendMetrics &&
           runtimeType == other.runtimeType &&
           totalRealBalance == other.totalRealBalance &&
+          operationalBalance == other.operationalBalance &&
           pendingBills == other.pendingBills &&
           safeToSpendMonthly == other.safeToSpendMonthly &&
           safeToSpendDaily == other.safeToSpendDaily &&
@@ -72,6 +65,7 @@ class SafeToSpendMetrics {
   @override
   int get hashCode => Object.hash(
         totalRealBalance,
+        operationalBalance,
         pendingBills,
         safeToSpendMonthly,
         safeToSpendDaily,
@@ -98,16 +92,16 @@ class SafeToSpendService {
         selectedWalletIds.isEmpty ||
         selectedWalletIds.length >= activeWallets.length;
 
-    final targetWalletIds = isAll
-        ? <String>{}
-        : selectedWalletIds.toSet();
+    final targetWalletIds = isAll ? <String>{} : selectedWalletIds.toSet();
 
-    // 1. Calculate Real Balance across selected or all active wallets
-    double totalBalance = 0.0;
+    // 1. Calculate Grand Total Assets (all active wallets) and Operational Balance (selected wallets)
+    double grandTotalBalance = 0.0;
+    double operationalBalance = 0.0;
     int count = 0;
     for (final wallet in activeWallets) {
+      grandTotalBalance += wallet.balance;
       if (isAll || targetWalletIds.contains(wallet.id)) {
-        totalBalance += wallet.balance;
+        operationalBalance += wallet.balance;
         count++;
       }
     }
@@ -133,7 +127,7 @@ class SafeToSpendService {
       }
     }
     // 3. Compute Monthly Safe-to-Spend
-    final safeToSpendMonthly = totalBalance - pendingBills;
+    final safeToSpendMonthly = operationalBalance - pendingBills;
 
     // 4. Days remaining in current budget cycle
     final int daysRemaining;
@@ -154,12 +148,12 @@ class SafeToSpendService {
     // 5. Compute Daily Safe-to-Spend Allowance
     final safeToSpendDaily = safeToSpendMonthly > 0 ? (safeToSpendMonthly / divisor) : 0.0;
 
-    // 6. Evaluate Financial Health Status
+    // 6. Evaluate Financial Health Status based on operational balance
     final FinancialHealthStatus status;
-    if (totalBalance <= 0 || safeToSpendMonthly <= 0) {
+    if (operationalBalance <= 0 || safeToSpendMonthly <= 0) {
       status = FinancialHealthStatus.deficit;
     } else {
-      final ratio = safeToSpendMonthly / totalBalance;
+      final ratio = safeToSpendMonthly / operationalBalance;
       if (ratio >= 0.30) {
         status = FinancialHealthStatus.comfortable;
       } else {
@@ -168,7 +162,8 @@ class SafeToSpendService {
     }
 
     return SafeToSpendMetrics(
-      totalRealBalance: totalBalance,
+      totalRealBalance: grandTotalBalance,
+      operationalBalance: operationalBalance,
       pendingBills: pendingBills,
       safeToSpendMonthly: safeToSpendMonthly,
       safeToSpendDaily: safeToSpendDaily,
