@@ -69,7 +69,7 @@ fun HomeList(
         // rows of one group sit 2dp apart; headers carry their own top spacing
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
-        item(key = "hero") { HeroCard(state, Modifier.animateItem()) }
+        item(key = "hero") { HeroStack(state, Modifier.animateItem()) }
 
         item(key = "wallets-header") {
             SectionHeader("Rekening", Modifier.animateItem(), action = "Tambah") { onOpen(SheetRoute.NewWallet) }
