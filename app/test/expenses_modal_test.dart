@@ -86,7 +86,7 @@ void main() {
 
     // 3. Verify Full-Screen Expenses Modal is open
     expect(find.byType(AllTransactionsModal), findsOneWidget);
-    expect(find.text('Riwayat\nPengeluaran'), findsOneWidget);
+    expect(find.text('Riwayat\nTransaksi'), findsOneWidget);
     expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Amazon Belanja')), findsOneWidget);
     expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Spotify Family')), findsOneWidget);
     expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Taco Bell Lunch')), findsOneWidget);
@@ -661,13 +661,13 @@ void main() {
     await tester.tap(find.text('Open History'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Riwayat\nPengeluaran'), findsOneWidget);
+    expect(find.text('Riwayat\nTransaksi'), findsOneWidget);
 
     // Drag down on header by 80px -> dismisses!
-    await tester.drag(find.text('Riwayat\nPengeluaran'), const Offset(0, 80));
+    await tester.drag(find.text('Riwayat\nTransaksi'), const Offset(0, 80));
     await tester.pumpAndSettle();
 
-    expect(find.text('Riwayat\nPengeluaran'), findsNothing);
+    expect(find.text('Riwayat\nTransaksi'), findsNothing);
     expect(find.text('Open History'), findsOneWidget);
   });
 }

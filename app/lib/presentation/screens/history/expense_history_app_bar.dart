@@ -67,7 +67,7 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isEditing ? (customTitle ?? 'Edit Transaksi') : 'Riwayat\nPengeluaran',
+                          isEditing ? (customTitle ?? 'Edit Transaksi') : 'Riwayat\nTransaksi',
                           style: AppTypography.modalTitle,
                           maxLines: isEditing ? 1 : 2,
                           overflow: TextOverflow.ellipsis,

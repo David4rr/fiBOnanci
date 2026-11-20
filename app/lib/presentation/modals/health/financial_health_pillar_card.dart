@@ -97,6 +97,53 @@ class FinancialHealthPillarCard extends StatelessWidget {
               ),
             ],
           ),
+          if (metric.allocationRecommendation != null &&
+              metric.allocationRecommendation!.isNotEmpty) ...[
+            const SizedBox(height: 7),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.035),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: metric.isHealthy
+                      ? AppColors.neoChartreuse.withValues(alpha: 0.16)
+                      : AppColors.neoCoral.withValues(alpha: 0.16),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1.5),
+                    child: Icon(
+                      metric.isHealthy
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.lightbulb_outline_rounded,
+                      size: 13,
+                      color: metric.isHealthy
+                          ? AppColors.neoChartreuse
+                          : const Color(0xFFFFA439),
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      metric.allocationRecommendation!,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.82),
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -17,6 +17,9 @@ class HealthPillarMetric {
   final String displayValue;
   final String benchmark;
   final bool isHealthy;
+  final String? allocationRecommendation;
+  final double? currentNominal;
+  final double? targetNominal;
 
   const HealthPillarMetric({
     required this.title,
@@ -25,6 +28,9 @@ class HealthPillarMetric {
     required this.displayValue,
     required this.benchmark,
     required this.isHealthy,
+    this.allocationRecommendation,
+    this.currentNominal,
+    this.targetNominal,
   });
 }
 

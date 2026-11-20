@@ -80,8 +80,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 1. Initial State: shows Riwayat Pengeluaran and down arrow
-      expect(find.text('Riwayat\nPengeluaran'), findsOneWidget);
+      // 1. Initial State: shows Riwayat Transaksi and down arrow
+      expect(find.text('Riwayat\nTransaksi'), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
       expect(find.text('Makan Malam Ramen'), findsOneWidget);
 
@@ -116,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify returned to history deck and arrow morphed back to down chevron
-      expect(find.text('Riwayat\nPengeluaran'), findsOneWidget);
+      expect(find.text('Riwayat\nTransaksi'), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
     });
   });

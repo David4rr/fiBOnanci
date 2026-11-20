@@ -154,7 +154,80 @@ void main() {
       expect(report.tier, anyOf(HealthTier.caution, HealthTier.deficit));
       expect(report.overallScore, lessThan(60));
       expect(report.emergencyRunway.isHealthy, isFalse);
+      expect(report.emergencyRunway.allocationRecommendation, contains('Target 3 bln:'));
+      expect(report.fixedCommitment.allocationRecommendation, contains('Tagihan'));
+      expect(report.savingsMargin.allocationRecommendation, contains('Arus kas defisit'));
+      expect(report.spendPacing.allocationRecommendation, contains('Anggaran defisit'));
       expect(report.recommendations, isNotEmpty);
+    });
+
+    test('Generates user-friendly concrete Rupiah recommendations for 3-6 months emergency runway', () {
+      const cashflow = MonthlyCashflow(
+        income: 10000000.0,  // 10 Juta
+        expense: 4000000.0,  // 4 Juta pengeluaran bulanan
+      );
+
+      final safeToSpend = SafeToSpendService.calculate(
+        wallets: mockWallets, // Saldo: 15 Juta
+        subscriptions: mockSubscriptions, // Tagihan: 1.5 Juta
+        referenceDate: fixedNow,
+      );
+
+      // Total buffer = 15 Juta. Target 3 bln = 12 Juta. Target 6 bln = 24 Juta.
+      final report = FinancialHealthService.evaluate(
+        wallets: mockWallets,
+        pockets: const [],
+        subscriptions: mockSubscriptions,
+        monthlyCashflow: cashflow,
+        safeToSpend: safeToSpend,
+        referenceDate: fixedNow,
+      );
+
+      // Scenario A: Without dedicated emergency pocket -> tells user to lock it into pocket
+      expect(report.emergencyRunway.displayValue, '3.8 Bulan');
+      expect(report.emergencyRunway.allocationRecommendation, contains('Saldo rekening Rp 15.000.000 cukup 3 bln (Rp 12.000.000)'));
+      expect(report.emergencyRunway.allocationRecommendation, contains('Rekomendasi kunci ke Kantong Darurat agar aman'));
+
+      // Scenario B: With dedicated emergency pocket (e.g. 8 Juta, target 3 bln = 12 Juta)
+      final emergencyPocket = [
+        PocketEntry(
+          id: 'p_em',
+          name: 'Dana Darurat Siaga',
+          type: 'emergency',
+          targetAmount: 24000000.0,
+          currentAmount: 8000000.0, // 8 Juta di kantong darurat
+          colorHex: '#7DF24E',
+          iconName: 'emergency',
+          targetDate: null,
+          linkedWalletId: 'w1',
+          notes: null,
+          createdAt: fixedNow,
+          updatedAt: fixedNow,
+          isSynced: false,
+          isDeleted: false,
+        ),
+      ];
+
+      final reportWithPocket = FinancialHealthService.evaluate(
+        wallets: mockWallets, // Saldo: 15 Juta
+        pockets: emergencyPocket,
+        subscriptions: mockSubscriptions,
+        monthlyCashflow: cashflow,
+        safeToSpend: safeToSpend,
+        referenceDate: fixedNow,
+      );
+
+      expect(reportWithPocket.emergencyRunway.allocationRecommendation, contains('Di Kantong: Rp 8.000.000'));
+      expect(reportWithPocket.emergencyRunway.allocationRecommendation, contains('Rekomendasi isi Rp 4.000.000 dari rekening'));
+      expect(reportWithPocket.emergencyRunway.allocationRecommendation, contains('menuju 3 bln (Rp 12.000.000)'));
+
+      // Fixed bills: 1.5 Juta vs 30% dari 10 Juta = Maks 3 Juta
+      expect(report.fixedCommitment.allocationRecommendation, contains('Tagihan Rp 1.500.000/bln'));
+      expect(report.fixedCommitment.allocationRecommendation, contains('Maks Rp 3.000.000/bln (Sangat Aman)'));
+
+      // Net savings: 6 Juta vs 20% dari 10 Juta = 2 Juta
+      expect(report.savingsMargin.allocationRecommendation, contains('Tabungan Rp 6.000.000/bln'));
+      expect(report.savingsMargin.allocationRecommendation, contains('Target 20% (Rp 2.000.000/bln) tercapai prima!'));
     });
   });
 }

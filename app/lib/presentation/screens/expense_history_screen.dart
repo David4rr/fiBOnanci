@@ -32,19 +32,16 @@ class ExpenseHistoryScreen extends StatefulWidget {
   }) {
     return Navigator.of(context).push<void>(
       PageRouteBuilder<void>(
-        opaque: false,
-        barrierDismissible: true,
-        barrierColor: Colors.black.withValues(alpha: 0.65),
+        opaque: false, barrierDismissible: true, barrierColor: Colors.black.withValues(alpha: 0.65),
         transitionDuration: const Duration(milliseconds: 320),
         reverseTransitionDuration: const Duration(milliseconds: 260),
-        pageBuilder: (ctx, animation, secondaryAnimation) =>
-            builder?.call(ctx) ??
+        pageBuilder: (ctx, a1, a2) => builder?.call(ctx) ??
             ExpenseHistoryScreen(allTransactions: allTransactions, wallets: wallets, initialChildSize: initialChildSize),
-        transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
-          final curvedAnim = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+        transitionsBuilder: (ctx, a1, a2, child) {
+          final c = CurvedAnimation(parent: a1, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
           return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0.0, 0.08), end: Offset.zero).animate(curvedAnim),
-            child: FadeTransition(opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnim), child: child),
+            position: Tween<Offset>(begin: const Offset(0.0, 0.08), end: Offset.zero).animate(c),
+            child: FadeTransition(opacity: Tween<double>(begin: 0.0, end: 1.0).animate(c), child: child),
           );
         },
       ),
@@ -58,7 +55,7 @@ class ExpenseHistoryScreen extends StatefulWidget {
 class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   final _sheetKey = GlobalKey<ExpandableModalSheetState>();
   final _searchController = TextEditingController();
-  final _dayScrollController = ScrollController();
+  final _dayScrollController = ScrollController(initialScrollOffset: 999999.0);
   late final PageController _pageController;
   String _searchQuery = '';
   String _typeFilter = 'all';
@@ -106,6 +103,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
     final currentDayKey = sortedDays.isNotEmpty ? sortedDays[safeIndex] : '';
     final currentDayTxs = sortedDays.isNotEmpty ? (dayGroups[currentDayKey] ?? const []) : <TransactionEntry>[];
     final isIncome = _typeFilter == 'income';
+    final isFiltering = _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null;
     final totalFiltered = filtered.where((t) => isIncome ? t.type == 'income' : (t.type == 'expense' || t.type == 'transfer')).fold(0.0, (s, t) => s + t.amount);
 
     return ExpandableModalSheet(
@@ -118,10 +116,8 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
         return Column(
           children: [
             ExpenseHistoryAppBar(
-              totalFiltered: totalFiltered,
-              currencyFormatter: currencyFormatter,
-              isEditing: _currentTab != 0,
-              onReturnToHistory: _goToHistory,
+              totalFiltered: totalFiltered, currencyFormatter: currencyFormatter,
+              isEditing: _currentTab != 0, onReturnToHistory: _goToHistory,
               customTitle: _currentTab != 0 ? 'Edit Transaksi' : null,
               customSubtitle: _currentTab != 0
                   ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi')
@@ -136,50 +132,50 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
                 children: [
                   Column(
                     children: [
-                        ExpenseHistorySearchBar(
-                          searchController: _searchController,
-                          searchQuery: _searchQuery,
-                          typeFilter: _typeFilter,
-                          walletFilter: _walletFilter,
-                          wallets: liveWallets,
-                          onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
-                          onClearSearch: () => setState(() => _searchQuery = ''),
-                          onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
-                          onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
-                          onClearWalletFilter: () => setState(() => _walletFilter = null),
+                      ExpenseHistorySearchBar(
+                        searchController: _searchController, searchQuery: _searchQuery,
+                        typeFilter: _typeFilter, walletFilter: _walletFilter, wallets: liveWallets,
+                        onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
+                        onClearSearch: () => setState(() => _searchQuery = ''),
+                        onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
+                        onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
+                        onClearWalletFilter: () => setState(() => _walletFilter = null),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) => SizeTransition(
+                          sizeFactor: animation, axisAlignment: -1.0,
+                          child: FadeTransition(opacity: animation, child: child),
                         ),
-                        const SizedBox(height: 6),
-                        DailyCalendarBar(
-                          scrollController: _dayScrollController,
-                          sortedDays: sortedDays,
-                          selectedIndex: safeIndex,
-                          dayGroups: dayGroups,
-                          onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
-                        ),
-                        const SizedBox(height: 10),
-                        ExpenseHistoryDeckView(
-                          isFiltering: _searchQuery.isNotEmpty || _typeFilter != 'all' || _walletFilter != null,
-                          searchQuery: _searchQuery,
-                          filtered: filtered,
-                          sortedDays: sortedDays,
-                          currentDayKey: currentDayKey,
-                          currentDayTxs: currentDayTxs,
-                          allTransactions: liveTxs,
-                          wallets: liveWallets,
-                          categories: blocState?.categories,
-                          pockets: blocState?.pockets,
-                          onManageTransaction: _goToEditTx,
-                          onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
-                          onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
-                        ),
-                      ],
+                        child: isFiltering
+                            ? const SizedBox.shrink(key: ValueKey('calendar_collapsed'))
+                            : Padding(
+                                key: const ValueKey('calendar_expanded'),
+                                padding: const EdgeInsets.only(top: 6, bottom: 10),
+                                child: DailyCalendarBar(
+                                  scrollController: _dayScrollController, sortedDays: sortedDays,
+                                  selectedIndex: safeIndex, dayGroups: dayGroups,
+                                  onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
+                                ),
+                              ),
+                      ),
+                      ExpenseHistoryDeckView(
+                        isFiltering: isFiltering, searchQuery: _searchQuery, filtered: filtered,
+                        sortedDays: sortedDays, currentDayKey: currentDayKey, currentDayTxs: currentDayTxs,
+                        allTransactions: liveTxs, wallets: liveWallets, categories: blocState?.categories, pockets: blocState?.pockets,
+                        onManageTransaction: _goToEditTx,
+                        onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
+                        onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
+                      ),
+                    ],
                   ),
                   _selectedTransaction != null
                       ? TransactionDetailModal(
-                          transaction: _selectedTransaction!,
-                          isInline: true,
+                          transaction: _selectedTransaction!, isInline: true,
                           onClose: _goToHistory, onSaved: _goToHistory, onDeleted: _goToHistory,
-                          )
+                        )
                       : const SizedBox.shrink(),
                 ],
               ),
