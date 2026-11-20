@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,80 +6,91 @@ import 'package:path_provider/path_provider.dart';
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
-import '../../theme/app_colors.dart';
+import '../../screens/onboarding/onboarding_import_modal.dart';
+import 'backup_export_modal.dart';
+import 'backup_password_prompt_modal.dart';
 
 class SettingsBackupHelper {
-  static Future<Directory> resolveExportDir() async {
-    Directory dir = Directory.systemTemp;
+  static Future<List<Directory>> getCandidateDirs() async {
+    final List<Directory> dirs = [];
     if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+      if (Platform.isAndroid) {
+        try {
+          final dl = Directory('/storage/emulated/0/Download');
+          if (dl.existsSync()) dirs.add(dl);
+        } catch (_) {}
+        try {
+          final docs = Directory('/storage/emulated/0/Documents');
+          if (docs.existsSync()) dirs.add(docs);
+        } catch (_) {}
+        try {
+          final extDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+          if (extDirs != null) dirs.addAll(extDirs);
+        } catch (_) {}
+      }
       try {
-        final dl = Directory('/storage/emulated/0/Download');
-        dir = dl.existsSync() ? dl : (await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory());
+        final docs = await getApplicationDocumentsDirectory();
+        dirs.add(docs);
       } catch (_) {}
     }
-    return dir;
+    dirs.add(Directory.systemTemp);
+    return dirs;
+  }
+
+  static Future<Directory> resolveExportDir() async {
+    final dirs = await getCandidateDirs();
+    return dirs.first;
+  }
+
+  static Future<List<File>> scanBackupFiles() async {
+    final dirs = await getCandidateDirs();
+    final List<File> files = [];
+    for (final dir in dirs) {
+      try {
+        if (dir.existsSync()) {
+          final fList = dir.listSync().whereType<File>().where((f) {
+            final p = f.path.toLowerCase();
+            return p.endsWith('.json') || p.endsWith('.fib');
+          });
+          files.addAll(fList);
+        }
+      } catch (_) {}
+    }
+    files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+    final seen = <String>{};
+    return files.where((f) => seen.add(f.path)).toList();
   }
 
   static Future<String> saveExportFile(String fileName, String content) async {
-    final file = File('${(await resolveExportDir()).path}/$fileName');
+    final dirs = await getCandidateDirs();
+    for (final dir in dirs) {
+      try {
+        if (!dir.existsSync()) dir.createSync(recursive: true);
+        final file = File('${dir.path}/$fileName');
+        file.writeAsStringSync(content, flush: true);
+        return file.path;
+      } catch (_) {
+        continue;
+      }
+    }
+    final file = File('${Directory.systemTemp.path}/$fileName');
     file.writeAsStringSync(content, flush: true);
     return file.path;
   }
 
   static Future<void> exportJsonBackup(BuildContext context, FinanceState state) async {
-    final payload = {
-      'exportedAt': DateTime.now().toIso8601String(),
-      'profile': {'id': state.profile.id, 'username': state.profile.username, 'currency': state.profile.currency},
-      'walletsCount': state.wallets.length,
-      'pocketsCount': state.pockets.length,
-      'subscriptionsCount': state.subscriptions.length,
-      'transactionsCount': state.transactions.length,
-      'profiles': state.profiles.map((e) => e.toJson()).toList(),
-      'categories': state.categories.map((e) => e.toJson()).toList(),
-      'wallets': state.wallets.map((e) => e.toJson()).toList(),
-      'pockets': state.pockets.map((e) => e.toJson()).toList(),
-      'subscriptions': state.subscriptions.map((e) => e.toJson()).toList(),
-      'transactions': state.transactions.map((e) => e.toJson()).toList(),
-    };
-    final path = await saveExportFile(
-      'fibonanci_backup_${state.profile.username}.json',
-      const JsonEncoder.withIndent('  ').convert(payload),
-    );
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('File JSON disimpan: $path'),
-        backgroundColor: AppColors.neoChartreuse,
-        behavior: SnackBarBehavior.floating,
-      ));
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      await BackupExportModal.show(context, state: state);
+    } else {
+      await BackupPasswordPromptModal.show(context, onConfirmed: (password) {
+        BackupExportModal.show(context, state: state, password: password);
+      });
     }
   }
 
   static Future<void> importJsonBackup(BuildContext context, FinanceState state) async {
-    final dir = await resolveExportDir();
-    File target = File('${dir.path}/fibonanci_backup_${state.profile.username}.json');
-    if (!target.existsSync()) {
-      final c = dir.listSync().whereType<File>().where(
-        (f) => f.path.endsWith('.json') && f.path.contains('fibonanci_backup_'),
-      ).toList()..sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
-      if (c.isNotEmpty) target = c.first;
-    }
-    if (!target.existsSync()) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('File cadangan fibonanci_backup_*.json tidak ditemukan di Download'),
-          backgroundColor: AppColors.neoCoral,
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-      return;
-    }
-    final decoded = jsonDecode(target.readAsStringSync()) as Map<String, dynamic>;
-    if (!context.mounted) return;
-    context.read<FinanceBloc>().add(ImportJsonBackupEvent(decoded));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Cadangan dipulihkan: ${target.path.split('/').last}'),
-      backgroundColor: AppColors.neoMint,
-      behavior: SnackBarBehavior.floating,
-    ));
+    await OnboardingImportModal.show(context, onImportSuccess: () {
+      context.read<FinanceBloc>().add(const LoadFinanceData());
+    });
   }
 }

@@ -26,11 +26,12 @@ class NotificationBridge {
   static int get pendingCount => NotificationInbox.pendingCount;
 
   static Future<bool> isPermissionGranted() async {
+    if (!kIsWeb && !Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) return true;
     try { return (await _methodChannel.invokeMethod<bool>('isPermissionGranted')) ?? false; } catch (_) { return false; }
   }
 
-  static Future<void> openPermissionSettings() async {
-    try { await _methodChannel.invokeMethod('openPermissionSettings'); } catch (_) {}
+  static Future<bool> openPermissionSettings() async {
+    try { return (await _methodChannel.invokeMethod<bool>('openPermissionSettings')) ?? false; } catch (_) { return false; }
   }
 
   static Future<void> openUrl(String url) async {
@@ -39,8 +40,7 @@ class NotificationBridge {
 
   static Future<bool> downloadApk(String url, {String? fileName}) async {
     try {
-      final res = await _methodChannel.invokeMethod<bool>('downloadApk', {'url': url, 'fileName': fileName});
-      return res ?? false;
+      return (await _methodChannel.invokeMethod<bool>('downloadApk', {'url': url, 'fileName': fileName})) ?? false;
     } catch (_) { return false; }
   }
 
@@ -57,7 +57,7 @@ class NotificationBridge {
   static Future<void> rejectNotification(Map<String, dynamic> item, AppDatabase db) => NotificationInbox.rejectNotification(item, db);
   static void clearPendingNotifications() => NotificationInbox.clearPendingNotifications();
   static Future<void> syncAllowedPackages(AppDatabase db) async {
-    if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) return;
+    if (kIsWeb || !Platform.isAndroid || Platform.environment.containsKey('FLUTTER_TEST')) return;
     try {
       final activePackages = await db.getActiveNotificationPackages();
       await _methodChannel.invokeMethod('updateAllowedPackages', {'packages': activePackages});
@@ -71,8 +71,7 @@ class NotificationBridge {
     try {
       final List<dynamic>? apps = await _methodChannel.invokeMethod('getInstalledBankApps');
       if (apps != null) {
-        final parsed = apps.whereType<Map>().map((m) => Map<String, String>.from(m)).toList();
-        parsed.sort((a, b) => (a['appName'] ?? '').compareTo(b['appName'] ?? ''));
+        final parsed = apps.whereType<Map>().map((m) => Map<String, String>.from(m)).toList()..sort((a, b) => (a['appName'] ?? '').compareTo(b['appName'] ?? ''));
         if (parsed.isNotEmpty) _cachedInstalledApps = parsed;
         return parsed;
       }
@@ -83,6 +82,7 @@ class NotificationBridge {
   Future<void> startListening(
     AppDatabase db, {Function(String message)? onAutoLogged, NotificationReviewPrompt? onReviewPrompt}
   ) async {
+    if (!Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) return;
     await syncAllowedPackages(db);
     await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
     _liveSubscription?.cancel();
@@ -94,6 +94,7 @@ class NotificationBridge {
   }
 
   Future<void> onAppResumed(AppDatabase db, {Function(String message)? onAutoLogged}) async {
+    if (!Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) return;
     await syncAllowedPackages(db);
     await _processPendingNotifications(db, onAutoLogged: onAutoLogged);
   }

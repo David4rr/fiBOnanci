@@ -98,8 +98,8 @@ void main() {
       expect(find.text('Rp 50.000.000'), findsOneWidget);
       expect(find.text('3 Akun Riil'), findsOneWidget);
 
-      // Card 4: Alokasi Harian displays smart text for 0 expenses today
-      expect(find.text('Wow, belum belanja hari ini! ✨'), findsOneWidget);
+      // Card 4: Alokasi Harian displays smart psychological text for 0 expenses today
+      expect(find.text('Disiplin hari ini, tenang esok hari'), findsOneWidget);
     });
 
     testWidgets('Card 4 dynamically updates smart text when user has spent today', (tester) async {
@@ -110,10 +110,7 @@ void main() {
         referenceDate: DateTime(2026, 11, 1),
       );
 
-      // Daily allowance = 50M / 30 days ≈ 1,666,666 / day
-      final dailyAllowance = metrics.safeToSpendDaily;
-
-      // Scenario 1: User spent 500,000 today (under budget)
+      // Scenario 1: User spent 500,000 today (under budget, spend ratio <= 0.4)
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -130,16 +127,14 @@ void main() {
         ),
       );
 
-      final remaining = dailyAllowance - 500000.0;
-      final expectedRemainingStr = currencyFormatter.format(remaining);
-      expect(find.text('Sisa $expectedRemainingStr hari ini'), findsOneWidget);
+      expect(find.text('Belanja bijak, tabungan tetap aman'), findsOneWidget);
 
       // Tap Card 4 to open DailyPaceModal
-      await tester.tap(find.text('Sisa $expectedRemainingStr hari ini'));
+      await tester.tap(find.text('Belanja bijak, tabungan tetap aman'));
       await tester.pumpAndSettle();
 
       // Verify smart contextual banner in modal
-      expect(find.text('Keren! Pengeluaran hari ini masih aman di bawah batas alokasi harian.'), findsOneWidget);
+      expect(find.text('Pilihan belanjamu sangat bijak dan rapi hari ini. Sisa kuota otomatis dialihkan menjadi tabungan yang mempertebal asetmu.'), findsOneWidget);
       expect(find.text('Pengeluaran Hari Ini'), findsOneWidget);
       expect(find.text('Sisa Kuota Hari Ini'), findsOneWidget);
     });
@@ -168,7 +163,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Wow! Hari ini kamu belum melakukan pengeluaran sama sekali. Alokasi harianmu masih utuh!'), findsOneWidget);
+      expect(find.text('Belum ada pengeluaran hari ini. Setiap rupiah yang kamu jaga membawa langkahmu lebih dekat menuju kebebasan finansial.'), findsOneWidget);
       expect(find.text('Pengeluaran Hari Ini'), findsOneWidget);
       expect(find.text('Batas Aman Belanja / Hari'), findsOneWidget);
     });

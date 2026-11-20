@@ -30,6 +30,7 @@ class BentoFolderCard extends StatelessWidget {
   final Color? iconColor;
   final Color? iconBgColor;
   final bool? isBalanceHidden;
+  final int subtitleMaxLines;
 
   const BentoFolderCard({
     super.key,
@@ -52,6 +53,7 @@ class BentoFolderCard extends StatelessWidget {
     this.iconColor,
     this.iconBgColor,
     this.isBalanceHidden,
+    this.subtitleMaxLines = 1,
   });
 
   @override
@@ -101,8 +103,12 @@ class BentoFolderCard extends StatelessWidget {
               child: subtitleWidget ??
                   Text(
                     subtitle ?? '',
-                    style: AppTypography.cardMetricLabel.copyWith(color: secondaryText),
-                    maxLines: 1,
+                    style: AppTypography.cardMetricLabel.copyWith(
+                      color: secondaryText,
+                      fontSize: subtitleMaxLines > 1 ? 11 : null,
+                      height: subtitleMaxLines > 1 ? 1.2 : null,
+                    ),
+                    maxLines: subtitleMaxLines,
                     overflow: TextOverflow.ellipsis,
                   ),
             ),

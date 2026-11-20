@@ -89,6 +89,7 @@ abstract class FinanceRepository {
     required String iconName,
     String? boundPackageName,
     String? profileId,
+    bool createInitialTransaction = false,
   });
   Future<void> deleteWallet(String walletId);
 

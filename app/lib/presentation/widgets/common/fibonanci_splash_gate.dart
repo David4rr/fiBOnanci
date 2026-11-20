@@ -50,20 +50,19 @@ class _FibonanciSplashGateState extends State<FibonanciSplashGate>
 
   @override
   Widget build(BuildContext context) {
-    if (_isDone) return widget.child;
-
     return Stack(
       children: [
         RepaintBoundary(child: widget.child),
-        Positioned.fill(
-          child: RepaintBoundary(
-            child: FibonanciSplashOverlay(
-              animation: _controller,
-              targetKey: FibonanciSplashGate.dashboardLogoKey,
-              targetTextKey: FibonanciSplashGate.dashboardTextKey,
+        if (!_isDone)
+          Positioned.fill(
+            child: RepaintBoundary(
+              child: FibonanciSplashOverlay(
+                animation: _controller,
+                targetKey: FibonanciSplashGate.dashboardLogoKey,
+                targetTextKey: FibonanciSplashGate.dashboardTextKey,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

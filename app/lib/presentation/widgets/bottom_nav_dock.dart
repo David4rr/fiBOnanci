@@ -51,11 +51,12 @@ class BottomNavDock extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => RepaintBoundary(
-    child: SafeArea(
-      top: false,
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final effectiveBottom = bottomInset > 0 ? bottomInset : 12.0;
+    return RepaintBoundary(
       child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+        padding: EdgeInsets.only(left: 20, right: 20, bottom: effectiveBottom),
         child: Align(
           alignment: Alignment.bottomCenter,
           heightFactor: 1.0,
@@ -97,6 +98,6 @@ class BottomNavDock extends StatelessWidget {
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

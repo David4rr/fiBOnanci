@@ -114,59 +114,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
               walletFilter: _walletFilter,
             );
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DashboardHeader(
-                  profileId: state.profile.id,
-                  username: state.profile.username,
-                  avatarPath: state.profile.avatarPath,
-                  walletCount: wallets.length,
-                  txCount: allTransactions.length,
-                ),
-                if (!_isNotificationGranted)
-                  NotificationPermissionBanner(
-                    onDismiss: () => setState(() => _isNotificationGranted = true),
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.only(bottom: 96),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DashboardHeader(
+                    profileId: state.profile.id,
+                    username: state.profile.username,
+                    avatarPath: state.profile.avatarPath,
+                    walletCount: wallets.length,
+                    txCount: allTransactions.length,
                   ),
-                if (wallets.isEmpty)
-                  const DashboardEmptyWalletView()
-                else ...[
-                  DashboardSearchBar(
-                    searchController: _searchController,
-                    searchQuery: _searchQuery,
-                    typeFilter: _typeFilter,
-                    walletFilter: _walletFilter,
-                    wallets: wallets,
-                    onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                    onClearSearch: () { _searchController.clear(); setState(() => _searchQuery = ''); },
-                    onFilterApplied: (type, walletId) => setState(() {
-                      _typeFilter = type;
-                      _walletFilter = walletId;
-                    }),
-                    onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
-                    onClearWalletFilter: () => setState(() => _walletFilter = null),
-                  ),
-                  DashboardBentoGrid(
-                    metrics: metrics,
-                    wallets: wallets,
-                    subscriptions: subscriptions,
-                    currencyFormatter: AppCurrency.forCode(state.profile.currency),
-                    isBalanceHidden: state.isBalanceHidden,
-                    todayExpense: todayExpense,
-                    onNavigateToWallets: _onNavigateToWallets,
-                    onNavigateToSubscriptions: _onNavigateToSubscriptions,
-                  ),
-                  DashboardHistorySection(
-                    searchQuery: _searchQuery,
-                    isFiltering: isFiltering,
-                    filteredTransactions: filteredTransactions,
-                    allTransactions: allTransactions,
-                    wallets: wallets,
-                    categories: state.categories,
-                    pockets: state.pockets,
-                  ),
+                  if (!_isNotificationGranted)
+                    NotificationPermissionBanner(
+                      onDismiss: () => setState(() => _isNotificationGranted = true),
+                    ),
+                  if (wallets.isEmpty)
+                    const DashboardEmptyWalletView()
+                  else ...[
+                    DashboardSearchBar(
+                      searchController: _searchController,
+                      searchQuery: _searchQuery,
+                      typeFilter: _typeFilter,
+                      walletFilter: _walletFilter,
+                      wallets: wallets,
+                      onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                      onClearSearch: () { _searchController.clear(); setState(() => _searchQuery = ''); },
+                      onFilterApplied: (type, walletId) => setState(() {
+                        _typeFilter = type;
+                        _walletFilter = walletId;
+                      }),
+                      onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
+                      onClearWalletFilter: () => setState(() => _walletFilter = null),
+                    ),
+                    DashboardBentoGrid(
+                      metrics: metrics,
+                      wallets: wallets,
+                      subscriptions: subscriptions,
+                      currencyFormatter: AppCurrency.forCode(state.profile.currency),
+                      isBalanceHidden: state.isBalanceHidden,
+                      todayExpense: todayExpense,
+                      onNavigateToWallets: _onNavigateToWallets,
+                      onNavigateToSubscriptions: _onNavigateToSubscriptions,
+                    ),
+                    DashboardHistorySection(
+                      searchQuery: _searchQuery,
+                      isFiltering: isFiltering,
+                      filteredTransactions: filteredTransactions,
+                      allTransactions: allTransactions,
+                      wallets: wallets,
+                      categories: state.categories,
+                      pockets: state.pockets,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             );
           },
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
+import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../modals/dashboard_modals.dart';
 import '../modals/safe_to_spend_modal.dart';
@@ -35,18 +36,12 @@ class DashboardBentoGrid extends StatelessWidget {
   String _fmt(double amount) => currencyFormatter.format(amount);
 
   String _dailyPaceSubtitle() {
-    if (metrics.safeToSpendDaily <= 0) {
-      return 'Alokasi defisit bulan ini';
-    }
-    if (todayExpense <= 0) {
-      return 'Wow, belum belanja hari ini! ✨';
-    }
-    final remaining = metrics.safeToSpendDaily - todayExpense;
-    if (remaining > 0) {
-      return isBalanceHidden ? 'Sisa alokasi aman hari ini' : 'Sisa ${_fmt(remaining)} hari ini';
-    } else {
-      return isBalanceHidden ? 'Melebihi alokasi hari ini' : 'Lewat ${_fmt(-remaining)} hari ini ⚠️';
-    }
+    return DailyPacingNudgeService.getCompactSubtitle(
+      metrics: metrics,
+      todayExpense: todayExpense,
+      currencyFormatter: currencyFormatter,
+      isBalanceHidden: isBalanceHidden,
+    );
   }
 
   @override
@@ -113,6 +108,7 @@ class DashboardBentoGrid extends StatelessWidget {
                   title: _fmt(metrics.safeToSpendDaily),
                   isBalanceHidden: isBalanceHidden,
                   subtitle: _dailyPaceSubtitle(),
+                  subtitleMaxLines: 2,
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
                   onTap: () => DailyPaceModal.show(context, metrics, todayExpense: todayExpense),
                 ),

@@ -22,8 +22,11 @@ extension ProfileBlocHandlers on FinanceBloc {
 
   Future<void> handleUpdateProfile(UpdateProfileEvent event, Emitter<FinanceState> emit) async {
     try {
+      final pId = (event.profileId.isNotEmpty && event.profileId != 'default_fallback')
+          ? event.profileId
+          : (state.activeProfile?.id ?? 'default_profile_1');
       await repository.updateProfile(
-        profileId: event.profileId,
+        profileId: pId,
         username: event.username,
         fullName: event.fullName,
         email: event.email,

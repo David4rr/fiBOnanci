@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../core/native_bridge/notification_bridge.dart';
@@ -8,15 +9,22 @@ import '../widgets/common/modal_sheet_scaffold.dart';
 import '../widgets/common/primary_action_button.dart';
 
 class NotificationPermissionModal extends StatelessWidget {
+  static bool isShowing = false;
   const NotificationPermissionModal({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const NotificationPermissionModal(),
-    );
+  static Future<void> show(BuildContext context) async {
+    if (isShowing) return;
+    isShowing = true;
+    try {
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => const NotificationPermissionModal(),
+      );
+    } finally {
+      isShowing = false;
+    }
   }
 
   @override
@@ -95,9 +103,35 @@ class NotificationPermissionModal extends StatelessWidget {
             text: 'Buka Pengaturan Izin',
             icon: Icons.settings_outlined,
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
+              if (!Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Akses Notifikasi Bank (NotificationListenerService) adalah fitur native Android. Simulator / iOS tidak mendukung fitur ini.',
+                    ),
+                    backgroundColor: AppColors.canvasCardSurface,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+                return;
+              }
               await LocalNotificationService.instance.requestPermissions();
-              await NotificationBridge.openPermissionSettings();
+              final opened = await NotificationBridge.openPermissionSettings();
+              if (!opened && !Platform.environment.containsKey('FLUTTER_TEST')) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Tidak dapat membuka setelan otomatis di simulator/perangkat ini. Buka Setelan HP > Notifikasi > Akses Notifikasi.',
+                    ),
+                    backgroundColor: AppColors.neoCoral,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 10),

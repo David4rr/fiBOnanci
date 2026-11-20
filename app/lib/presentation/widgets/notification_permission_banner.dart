@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../modals/notification_permission_modal.dart';
@@ -18,6 +19,9 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
   @override
   Widget build(BuildContext context) {
     if (_dismissed) return const SizedBox.shrink();
+    if (!Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),

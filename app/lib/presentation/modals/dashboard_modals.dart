@@ -3,6 +3,7 @@ export 'profile_modal.dart';
 import 'package:flutter/material.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
+import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
@@ -126,15 +127,22 @@ class DailyPaceModal {
                 ),
                 child: Row(
                   children: [
-                    Text(hasNoExpense ? '✨' : (isUnderBudget ? '👍' : '⚠️'), style: const TextStyle(fontSize: 16)),
+                    Icon(
+                      hasNoExpense
+                          ? Icons.savings_outlined
+                          : (isUnderBudget ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded),
+                      color: hasNoExpense
+                          ? AppColors.neoMint
+                          : (isUnderBudget ? AppColors.neoCyan : AppColors.neoCoral),
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        hasNoExpense
-                            ? 'Wow! Hari ini kamu belum melakukan pengeluaran sama sekali. Alokasi harianmu masih utuh!'
-                            : (isUnderBudget
-                                ? 'Keren! Pengeluaran hari ini masih aman di bawah batas alokasi harian.'
-                                : 'Perhatian: Pengeluaran hari ini sudah melebihi batas alokasi harian.'),
+                        DailyPacingNudgeService.getDetailedNudge(
+                          metrics: metrics,
+                          todayExpense: todayExpense,
+                        ),
                         style: AppTypography.listSubtitle.copyWith(
                           color: AppColors.textWhite,
                           fontWeight: FontWeight.w600,

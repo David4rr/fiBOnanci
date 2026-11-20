@@ -15,6 +15,9 @@ extension WalletBlocHandlers on FinanceBloc {
 
   Future<void> handleAddWallet(AddWalletEvent event, Emitter<FinanceState> emit) async {
     try {
+      final pId = (state.activeProfile?.id != null && state.activeProfile!.id.isNotEmpty && state.activeProfile!.id != 'default_fallback')
+          ? state.activeProfile!.id
+          : (state.profiles.where((p) => p.isActive).firstOrNull?.id ?? 'default_profile_1');
       await repository.addWallet(
         name: event.name,
         type: event.type,
@@ -23,7 +26,8 @@ extension WalletBlocHandlers on FinanceBloc {
         colorHex: event.colorHex,
         iconName: event.iconName,
         boundPackageName: event.boundPackageName,
-        profileId: state.profile.id,
+        profileId: pId,
+        createInitialTransaction: event.createInitialTransaction,
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah rekening: $e'));

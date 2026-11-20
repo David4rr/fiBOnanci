@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 class ProfilePreferencesStorage {
   static final Map<String, Set<String>?> _stsWallets = {};
   static final Map<String, int> _cycleDays = {};
+  static bool? _onboardingCompleted;
   static bool _isLoaded = false;
   static File? _customStorageFile;
 
@@ -18,6 +19,7 @@ class ProfilePreferencesStorage {
     _isLoaded = false;
     _stsWallets.clear();
     _cycleDays.clear();
+    _onboardingCompleted = null;
   }
 
   @visibleForTesting
@@ -26,6 +28,7 @@ class ProfilePreferencesStorage {
     _isLoaded = false;
     _stsWallets.clear();
     _cycleDays.clear();
+    _onboardingCompleted = null;
   }
 
   static Future<File?> _resolveFile() async {
@@ -63,6 +66,9 @@ class ProfilePreferencesStorage {
               }
             });
           }
+          if (data['onboarding_completed'] is bool) {
+            _onboardingCompleted = data['onboarding_completed'] as bool;
+          }
         }
       }
       _isLoaded = true;
@@ -76,9 +82,21 @@ class ProfilePreferencesStorage {
       final Map<String, dynamic> data = {
         'cycle_days': _cycleDays,
         'safe_to_spend_wallets': _stsWallets.map((k, v) => MapEntry(k, v?.toList())),
+        'onboarding_completed': _onboardingCompleted ?? (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')),
       };
       await file.writeAsString(jsonEncode(data), flush: true);
     } catch (_) {}
+  }
+
+  static bool isOnboardingCompleted() {
+    if (_onboardingCompleted != null) return _onboardingCompleted!;
+    if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) return true;
+    return false;
+  }
+
+  static Future<void> setOnboardingCompleted(bool value) async {
+    _onboardingCompleted = value;
+    await _saveToDisk();
   }
 
   static Set<String>? getSafeToSpendWallets(String profileId) {

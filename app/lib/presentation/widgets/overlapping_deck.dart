@@ -24,12 +24,14 @@ class StackedCardDeckScrollList extends StatefulWidget {
   final GestureDragUpdateCallback? onDownwardDrag;
   final GestureDragEndCallback? onDownwardDragEnd;
   final double bottomPadding;
+  final bool enableInternalScroll;
 
   const StackedCardDeckScrollList({
     super.key, required this.transactions, this.allTransactions, required this.wallets,
     this.categories, this.pockets,
     this.expandedTxId, this.onToggleExpand, this.onManageTransaction,
     this.onDownwardDrag, this.onDownwardDragEnd, this.bottomPadding = 110.0,
+    this.enableInternalScroll = true,
   });
 
   @override
@@ -42,16 +44,14 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
   String? _internalExpandedId;
   late AnimationController _flingController;
   Animation<double>? _flingAnimation;
-  static const double _cardStep = 85.0, _collapsedCardHeight = 190.0, _expandedCardHeight = 295.0;
-  static const double _expandDisplacement = 190.0, _dockStep = 14.0;
+  static const double _cardStep = 85.0, _collapsedCardHeight = 190.0, _expandedCardHeight = 295.0, _expandDisplacement = 190.0, _dockStep = 14.0;
   static const int _maxDockedHeaders = 4;
 
   @override
   void initState() {
     super.initState();
     _internalExpandedId = widget.expandedTxId;
-    _flingController = AnimationController(vsync: this);
-    _flingController.addListener(() {
+    _flingController = AnimationController(vsync: this)..addListener(() {
       if (_flingAnimation != null) setState(() => _scrollOffset = _flingAnimation!.value);
     });
   }
@@ -71,9 +71,11 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
   }
 
   double _getMaxScroll(int count, String? expandedId, double viewportHeight) {
-    if (count <= 1) return 0.0;
-    final totalNatural = (count - 1) * _cardStep + (expandedId != null ? _expandDisplacement + _expandedCardHeight : _collapsedCardHeight);
-    return math.max(0.0, totalNatural - (viewportHeight - widget.bottomPadding));
+    if (count == 0) return 0.0;
+    final isExp = expandedId != null;
+    final total = (count - 1) * _cardStep + (isExp && count > 1 ? _expandDisplacement : 0.0) + (isExp ? _expandedCardHeight : _collapsedCardHeight);
+    final natural = total - (viewportHeight - widget.bottomPadding);
+    return count > 1 ? math.max(natural, isExp ? _expandDisplacement : (count - 1) * _cardStep) : math.max(0.0, natural);
   }
 
   void _onDragUpdate(DragUpdateDetails details, double maxScroll) {
@@ -100,9 +102,7 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
     }
     if (velocity.abs() > 100) {
       final double target = (_scrollOffset - velocity * 0.22).clamp(0.0, maxScroll);
-      _flingAnimation = Tween<double>(begin: _scrollOffset, end: target).animate(
-        CurvedAnimation(parent: _flingController, curve: Curves.easeOutCubic),
-      );
+      _flingAnimation = Tween<double>(begin: _scrollOffset, end: target).animate(CurvedAnimation(parent: _flingController, curve: Curves.easeOutCubic));
       _flingController.duration = const Duration(milliseconds: 320);
       _flingController.forward(from: 0.0);
     }
@@ -135,11 +135,11 @@ class _StackedCardDeckScrollListState extends State<StackedCardDeckScrollList> w
 
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onVerticalDragUpdate: (details) => _onDragUpdate(details, maxScroll),
-          onVerticalDragEnd: (details) => _onDragEnd(details, maxScroll),
-          onVerticalDragCancel: () {
+          onVerticalDragUpdate: widget.enableInternalScroll ? (details) => _onDragUpdate(details, maxScroll) : null,
+          onVerticalDragEnd: widget.enableInternalScroll ? (details) => _onDragEnd(details, maxScroll) : null,
+          onVerticalDragCancel: widget.enableInternalScroll ? () {
             if (_isDraggingDownward) { _isDraggingDownward = false; widget.onDownwardDragEnd?.call(DragEndDetails(primaryVelocity: 0.0)); }
-          },
+          } : null,
           child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, widget.bottomPadding),
             child: Stack(

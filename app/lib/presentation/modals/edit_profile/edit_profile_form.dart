@@ -53,7 +53,7 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: usernameController,
           label: 'Username / Handle',
-          hintText: 'e.g. david_arrozaqi',
+          hintText: 'e.g. alexander',
           prefixIcon: Icons.alternate_email_rounded,
           validator: (val) {
             if (val == null || val.trim().isEmpty) return 'Username wajib diisi';
@@ -73,7 +73,7 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: fullNameController,
           label: 'Nama Lengkap',
-          hintText: 'e.g. David Arrozaqi',
+          hintText: 'e.g. Alexander William',
           prefixIcon: Icons.badge_outlined,
           validator: (val) => (val == null || val.trim().isEmpty) ? 'Nama lengkap wajib diisi' : null,
         ),
@@ -81,7 +81,7 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: emailController,
           label: 'Email',
-          hintText: 'e.g. david@fibonanci.app',
+          hintText: 'e.g. nama@email.com',
           prefixIcon: Icons.mail_outline_rounded,
           keyboardType: TextInputType.emailAddress,
         ),
@@ -89,7 +89,7 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: phoneController,
           label: 'No. Handphone / WhatsApp',
-          hintText: 'e.g. +62 812-3456-7890',
+          hintText: 'e.g. +62 812-xxxx-xxxx',
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
         ),
@@ -97,7 +97,7 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: occupationController,
           label: 'Profesi / Pekerjaan',
-          hintText: 'e.g. Software Engineer',
+          hintText: 'e.g. Profesional, Wiraswasta',
           prefixIcon: Icons.work_outline_rounded,
         ),
         const SizedBox(height: 12),

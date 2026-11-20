@@ -83,7 +83,16 @@ extension DatabaseRepair on AppDatabase {
       }
       for (final item in (data['wallets'] as List? ?? const [])) {
         if (item is Map<String, dynamic>) {
-          await into(wallets).insertOnConflictUpdate(WalletEntry.fromJson(item));
+          final m = Map<String, dynamic>.from(item);
+          m.putIfAbsent('type', () => 'bank');
+          m.putIfAbsent('currency', () => 'IDR');
+          m.putIfAbsent('colorHex', () => '#0066AE');
+          m.putIfAbsent('iconName', () => 'account_balance');
+          m.putIfAbsent('createdAt', () => DateTime.now().toIso8601String());
+          m.putIfAbsent('updatedAt', () => DateTime.now().toIso8601String());
+          m.putIfAbsent('isSynced', () => false);
+          m.putIfAbsent('isDeleted', () => false);
+          await into(wallets).insertOnConflictUpdate(WalletEntry.fromJson(m));
         }
       }
       for (final item in (data['pockets'] as List? ?? const [])) {

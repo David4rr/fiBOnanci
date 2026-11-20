@@ -20,6 +20,7 @@ class AddWalletEvent extends FinanceEvent {
   final String colorHex;
   final String iconName;
   final String? boundPackageName;
+  final bool createInitialTransaction;
 
   const AddWalletEvent({
     required this.name,
@@ -29,6 +30,7 @@ class AddWalletEvent extends FinanceEvent {
     required this.colorHex,
     required this.iconName,
     this.boundPackageName,
+    this.createInitialTransaction = false,
   });
 }
 
