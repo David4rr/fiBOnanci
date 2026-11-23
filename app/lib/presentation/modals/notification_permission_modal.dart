@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notifications/local_notification_service.dart';
 import '../theme/app_colors.dart';
-import '../widgets/common/modal_grab_handle.dart';
-import '../widgets/common/modal_sheet_scaffold.dart';
-import '../widgets/common/primary_action_button.dart';
+import '../widgets/common/common_widgets.dart';
 
 class NotificationPermissionModal extends StatelessWidget {
   static bool isShowing = false;
@@ -106,30 +104,24 @@ class NotificationPermissionModal extends StatelessWidget {
               final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
               if (!Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) {
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'Akses Notifikasi Bank (NotificationListenerService) adalah fitur native Android. Simulator / iOS tidak mendukung fitur ini.',
-                    ),
-                    backgroundColor: AppColors.canvasCardSurface,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                AppSnackBar.showWithMessenger(
+                  messenger,
+                  title: 'Fitur Khusus Android',
+                  message: 'NotificationListenerService hanya didukung di perangkat native Android.',
+                  type: AppSnackBarType.info,
+                  tag: 'INFO',
                 );
                 return;
               }
               await LocalNotificationService.instance.requestPermissions();
               final opened = await NotificationBridge.openPermissionSettings();
               if (!opened && !Platform.environment.containsKey('FLUTTER_TEST')) {
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'Tidak dapat membuka setelan otomatis di simulator/perangkat ini. Buka Setelan HP > Notifikasi > Akses Notifikasi.',
-                    ),
-                    backgroundColor: AppColors.neoCoral,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                AppSnackBar.showWithMessenger(
+                  messenger,
+                  title: 'Buka Setelan Manual',
+                  message: 'Buka Setelan HP > Notifikasi > Akses Notifikasi untuk mengaktifkan.',
+                  type: AppSnackBarType.warning,
+                  tag: 'IZIN',
                 );
               }
             },

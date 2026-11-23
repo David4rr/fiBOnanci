@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'profile_morphing_menu_overlay.dart';
 
 export 'profile_morphing_menu_overlay.dart';
@@ -78,12 +79,7 @@ class _ProfileMorphingMenuState extends State<ProfileMorphingMenu>
     Clipboard.setData(ClipboardData(
       text: '${widget.profile.fullName} (@${widget.profile.username}) - fiBOnanci',
     ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Kartu profil berhasil disalin!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    AppSnackBar.showInfo(context, 'Profil Disalin', message: 'Kartu profil berhasil disalin ke clipboard!', tag: 'SALIN');
   }
 
   @override

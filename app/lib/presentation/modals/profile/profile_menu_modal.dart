@@ -62,9 +62,7 @@ void showProfileMenuModal(BuildContext context, {
               onTap: () {
                 Navigator.of(ctx).pop();
                 Clipboard.setData(ClipboardData(text: '${profile.fullName} (@${profile.username}) - fiBOnanci'));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Kartu profil berhasil disalin!'), duration: Duration(seconds: 2)),
-                );
+                AppSnackBar.showInfo(context, 'Profil Disalin', message: 'Kartu profil berhasil disalin ke clipboard!', tag: 'SALIN');
               },
             ),
           ],

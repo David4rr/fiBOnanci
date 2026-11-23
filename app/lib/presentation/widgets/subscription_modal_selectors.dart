@@ -5,6 +5,7 @@ import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'common/common_widgets.dart';
 
 export 'subscription_due_day_slider.dart';
 
@@ -103,14 +104,12 @@ void executeDeleteSubscription(BuildContext context, String subscriptionId, {Voi
   } else {
     navigator.maybePop();
   }
-  messenger.showSnackBar(
-    const SnackBar(
-      backgroundColor: AppColors.neoCoral,
-      content: Text(
-        'Tagihan berhasil dihapus & pembayaran dikembalikan ke saldo rekening.',
-        style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold),
-      ),
-    ),
+  AppSnackBar.showWithMessenger(
+    messenger,
+    title: 'Tagihan Dihapus',
+    message: 'Tagihan berhasil dihapus & saldo rekening dikembalikan.',
+    type: AppSnackBarType.error,
+    tag: 'HAPUS',
   );
 }
 

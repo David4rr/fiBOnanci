@@ -26,7 +26,7 @@ class NotificationBridge {
   static int get pendingCount => NotificationInbox.pendingCount;
 
   static Future<bool> isPermissionGranted() async {
-    if (!kIsWeb && !Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) return true;
+    if (!kIsWeb && !Platform.isAndroid && !Platform.environment.containsKey('FLUTTER_TEST')) return false;
     try { return (await _methodChannel.invokeMethod<bool>('isPermissionGranted')) ?? false; } catch (_) { return false; }
   }
 

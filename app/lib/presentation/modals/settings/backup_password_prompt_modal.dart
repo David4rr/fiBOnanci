@@ -104,10 +104,12 @@ class _BackupPasswordPromptModalState extends State<BackupPasswordPromptModal> {
                 if (_passwordCtrl.text.trim().isNotEmpty) {
                   _submit(true);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Masukkan kata sandi/PIN, atau pilih opsi tanpa sandi di bawah.'),
-                    backgroundColor: AppColors.statusCaution,
-                  ));
+                  AppSnackBar.showWarning(
+                    context,
+                    'Kata Sandi Kosong',
+                    message: 'Masukkan kata sandi/PIN, atau pilih opsi tanpa sandi.',
+                    tag: 'SANDI',
+                  );
                 }
               },
             ),

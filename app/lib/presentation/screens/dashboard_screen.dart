@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
@@ -114,27 +115,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
               walletFilter: _walletFilter,
             );
 
-            return SingleChildScrollView(
+            return CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-              padding: const EdgeInsets.only(bottom: 96),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DashboardHeader(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: DashboardHeader(
                     profileId: state.profile.id,
                     username: state.profile.username,
                     avatarPath: state.profile.avatarPath,
                     walletCount: wallets.length,
                     txCount: allTransactions.length,
                   ),
-                  if (!_isNotificationGranted)
-                    NotificationPermissionBanner(
+                ),
+                if ((Platform.isAndroid || Platform.environment.containsKey('FLUTTER_TEST')) && !_isNotificationGranted)
+                  SliverToBoxAdapter(
+                    child: NotificationPermissionBanner(
                       onDismiss: () => setState(() => _isNotificationGranted = true),
                     ),
-                  if (wallets.isEmpty)
-                    const DashboardEmptyWalletView()
-                  else ...[
-                    DashboardSearchBar(
+                  ),
+                if (wallets.isEmpty)
+                  const SliverToBoxAdapter(child: DashboardEmptyWalletView())
+                else ...[
+                  SliverToBoxAdapter(
+                    child: DashboardSearchBar(
                       searchController: _searchController,
                       searchQuery: _searchQuery,
                       typeFilter: _typeFilter,
@@ -149,17 +152,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
                       onClearWalletFilter: () => setState(() => _walletFilter = null),
                     ),
-                    DashboardBentoGrid(
+                  ),
+                  SliverToBoxAdapter(
+                    child: DashboardBentoGrid(
                       metrics: metrics,
                       wallets: wallets,
                       subscriptions: subscriptions,
                       currencyFormatter: AppCurrency.forCode(state.profile.currency),
                       isBalanceHidden: state.isBalanceHidden,
                       todayExpense: todayExpense,
+                      referenceDate: now,
+                      transactions: allTransactions,
                       onNavigateToWallets: _onNavigateToWallets,
                       onNavigateToSubscriptions: _onNavigateToSubscriptions,
                     ),
-                    DashboardHistorySection(
+                  ),
+                  SliverToBoxAdapter(
+                    child: DashboardHistorySection(
                       searchQuery: _searchQuery,
                       isFiltering: isFiltering,
                       filteredTransactions: filteredTransactions,
@@ -168,9 +177,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       categories: state.categories,
                       pockets: state.pockets,
                     ),
-                  ],
+                  ),
                 ],
-              ),
+                const SliverToBoxAdapter(child: SizedBox(height: 140)),
+              ],
             );
           },
         ),

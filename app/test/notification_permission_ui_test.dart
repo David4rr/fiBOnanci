@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fibonanci_app/core/native_bridge/notification_bridge.dart';
 import 'package:fibonanci_app/core/update/app_update_service.dart';
 import 'package:fibonanci_app/presentation/modals/app_update_modal.dart';
 import 'package:fibonanci_app/presentation/modals/notification_permission_modal.dart';
@@ -125,6 +126,21 @@ void main() {
       expect(invokedMethod, equals('downloadApk'));
       expect(invokedArguments?['fileName'], equals('fiBOnanci-v1.0.1.apk'));
       expect(find.textContaining('Mengunduh pembaruan v1.0.1'), findsOneWidget);
+    });
+
+    testWidgets('NotificationBridge.isPermissionGranted returns a valid boolean without throwing', (tester) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.fibonanci.app/notification_service'),
+        (MethodCall methodCall) async {
+          if (methodCall.method == 'isPermissionGranted') {
+            return false;
+          }
+          return null;
+        },
+      );
+
+      final granted = await NotificationBridge.isPermissionGranted();
+      expect(granted, isFalse);
     });
   });
 }

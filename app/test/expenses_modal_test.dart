@@ -293,7 +293,7 @@ void main() {
     final tuneButton = find.descendant(of: find.byType(AllTransactionsModal), matching: find.byIcon(Icons.tune));
     expect(tuneButton, findsOneWidget);
 
-    // Tap tune button -> opens TransactionFilterModal
+    // Tap tune button -> opens filter panel in search bar
     await tester.tap(tuneButton);
     await tester.pumpAndSettle();
 

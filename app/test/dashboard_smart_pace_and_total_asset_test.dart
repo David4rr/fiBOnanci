@@ -85,6 +85,7 @@ void main() {
               onNavigateToWallets: () {},
               onNavigateToSubscriptions: () {},
               todayExpense: 0.0,
+              referenceDate: DateTime(2026, 11, 1),
             ),
           ),
         ),
@@ -98,8 +99,8 @@ void main() {
       expect(find.text('Rp 50.000.000'), findsOneWidget);
       expect(find.text('3 Akun Riil'), findsOneWidget);
 
-      // Card 4: Alokasi Harian displays smart psychological text for 0 expenses today
-      expect(find.text('Disiplin hari ini, tenang esok hari'), findsOneWidget);
+      // Card 4: Alokasi Harian displays multi-vector dynamic text for 0 expenses on Day 1
+      expect(find.text('Start awal bulan rapi, kas utuh'), findsOneWidget);
     });
 
     testWidgets('Card 4 dynamically updates smart text when user has spent today', (tester) async {
@@ -122,19 +123,20 @@ void main() {
               onNavigateToWallets: () {},
               onNavigateToSubscriptions: () {},
               todayExpense: 500000.0,
+              referenceDate: DateTime(2026, 11, 1),
             ),
           ),
         ),
       );
 
-      expect(find.text('Belanja bijak, tabungan tetap aman'), findsOneWidget);
+      expect(find.text('Belanja terukur, sisa aman'), findsOneWidget);
 
       // Tap Card 4 to open DailyPaceModal
-      await tester.tap(find.text('Belanja bijak, tabungan tetap aman'));
+      await tester.tap(find.text('Belanja terukur, sisa aman'));
       await tester.pumpAndSettle();
 
       // Verify smart contextual banner in modal
-      expect(find.text('Pilihan belanjamu sangat bijak dan rapi hari ini. Sisa kuota otomatis dialihkan menjadi tabungan yang mempertebal asetmu.'), findsOneWidget);
+      expect(find.text('Belanja sangat terukur, mayoritas kuota harian terselamatkan.'), findsOneWidget);
       expect(find.text('Pengeluaran Hari Ini'), findsOneWidget);
       expect(find.text('Sisa Kuota Hari Ini'), findsOneWidget);
     });
@@ -152,7 +154,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (ctx) => ElevatedButton(
-                onPressed: () => DailyPaceModal.show(ctx, metrics, todayExpense: 0.0),
+                onPressed: () => DailyPaceModal.show(ctx, metrics, todayExpense: 0.0, referenceDate: DateTime(2026, 11, 1)),
                 child: const Text('Open Modal'),
               ),
             ),
@@ -163,7 +165,7 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada pengeluaran hari ini. Setiap rupiah yang kamu jaga membawa langkahmu lebih dekat menuju kebebasan finansial.'), findsOneWidget);
+      expect(find.text('Pondasi awal bulan kokoh, alokasi harian utuh menjaga ritme awal.'), findsOneWidget);
       expect(find.text('Pengeluaran Hari Ini'), findsOneWidget);
       expect(find.text('Batas Aman Belanja / Hari'), findsOneWidget);
     });

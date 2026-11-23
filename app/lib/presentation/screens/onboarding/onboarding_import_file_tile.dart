@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 
 class OnboardingImportFileTile extends StatelessWidget {
   final File file;
@@ -33,10 +34,12 @@ class OnboardingImportFileTile extends StatelessWidget {
             final content = file.readAsStringSync();
             onSelected(content);
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Gagal membaca file: $e'),
-              backgroundColor: AppColors.statusDeficit,
-            ));
+            AppSnackBar.showError(
+              context,
+              'Gagal Membaca File',
+              message: e.toString(),
+              tag: 'IMPORT',
+            );
           }
         },
       ),

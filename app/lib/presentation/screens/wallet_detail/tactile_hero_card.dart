@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/wallet_card.dart';
 import '../../widgets/wallet_card_deck.dart';
 
@@ -72,28 +73,12 @@ class _TactileHeroCardState extends State<TactileHeroCard> {
     final accNum = widget.wallet.accountNumber?.trim();
     final textToCopy = (accNum != null && accNum.isNotEmpty) ? accNum : widget.wallet.name;
     Clipboard.setData(ClipboardData(text: textToCopy));
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1400),
-        backgroundColor: AppColors.canvasCardSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: BorderSide(color: widget.cardColor.withValues(alpha: 0.45))),
-        content: Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: widget.cardColor, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                accNum != null && accNum.isNotEmpty ? 'Nomor rekening $accNum disalin' : 'Nama rekening ${widget.wallet.name} disalin',
-                style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
+    final title = accNum != null && accNum.isNotEmpty ? 'Nomor rekening $accNum disalin' : 'Nama rekening ${widget.wallet.name} disalin';
+    AppSnackBar.showInfo(
+      context,
+      title,
+      tag: 'SALIN',
+      duration: const Duration(milliseconds: 1800),
     );
 
     _copyTimer?.cancel();

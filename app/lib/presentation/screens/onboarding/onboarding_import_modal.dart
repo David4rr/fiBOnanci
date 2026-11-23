@@ -9,7 +9,6 @@ import '../../../bloc/finance/finance_event.dart';
 import '../../../core/security/backup_cipher.dart';
 import '../../../core/storage/profile_preferences_storage.dart';
 import '../../modals/settings/settings_backup_helper.dart';
-import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'onboarding_import_form_view.dart';
 import 'onboarding_import_password_view.dart';
@@ -150,12 +149,12 @@ class _OnboardingImportModalState extends State<OnboardingImportModal> {
   void _finishImport() {
     _autoAdvanceTimer?.cancel();
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: const Text('Cadangan data berhasil dipulihkan! Selamat datang.'),
-      backgroundColor: AppColors.neoMint,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
+    AppSnackBar.showSuccess(
+      context,
+      'Data Dipulihkan',
+      message: 'Cadangan data berhasil dipulihkan! Selamat datang.',
+      tag: 'IMPORT',
+    );
     widget.onImportSuccess();
   }
 

@@ -8,6 +8,7 @@ import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
+import 'common/common_widgets.dart';
 import 'transaction_modal_form.dart';
 import 'transaction_modal_selectors.dart';
 
@@ -109,11 +110,11 @@ class _TransactionModalState extends State<TransactionModal> {
     final state = context.read<FinanceBloc>().state;
     final isCross = _type == 'transfer' && _selectedTargetProfileId != null && _selectedTargetProfileId != state.profile.id;
     if (isCross && _selectedDestinationWalletId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih rekening tujuan di profil tujuan!')));
+      AppSnackBar.showWarning(context, 'Rekening Tujuan Kosong', message: 'Pilih rekening tujuan di profil tujuan!');
       return;
     }
     if (!isCross && _type == 'transfer' && (_selectedDestinationWalletId == null || _selectedDestinationWalletId == _selectedWalletId)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih rekening tujuan yang berbeda dari rekening asal!')));
+      AppSnackBar.showWarning(context, 'Rekening Sama', message: 'Pilih rekening tujuan yang berbeda dari rekening asal!');
       return;
     }
     final note = _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null;

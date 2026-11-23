@@ -6,7 +6,6 @@ import 'nav_dock_components.dart';
 
 export 'nav_dock_animated_row.dart';
 export 'nav_dock_components.dart';
-export 'pod_clipper.dart';
 
 class BottomNavDock extends StatelessWidget {
   final int currentIndex;

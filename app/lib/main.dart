@@ -52,6 +52,21 @@ class FiBOnanciApp extends StatelessWidget {
           textTheme: GoogleFonts.plusJakartaSansTextTheme(
             ThemeData.dark().textTheme,
           ),
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.canvasCardSurface,
+            contentTextStyle: GoogleFonts.plusJakartaSans(
+              color: AppColors.textWhite,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: AppColors.canvasBorder, width: 1.0),
+            ),
+            insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            elevation: 4,
+          ),
         ),
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();

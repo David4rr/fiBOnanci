@@ -4,9 +4,7 @@ import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/update/app_update_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import '../widgets/common/modal_grab_handle.dart';
-import '../widgets/common/modal_sheet_scaffold.dart';
-import '../widgets/common/primary_action_button.dart';
+import '../widgets/common/common_widgets.dart';
 
 class AppUpdateModal extends StatelessWidget {
   final AppUpdateInfo updateInfo;
@@ -117,18 +115,13 @@ class AppUpdateModal extends StatelessWidget {
               if (isApk) {
                 final fileName = 'fiBOnanci-v${updateInfo.latestVersion}.apk';
                 final started = await NotificationBridge.downloadApk(targetUrl, fileName: fileName);
-                if (started) {
-                  messenger?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Mengunduh pembaruan v${updateInfo.latestVersion}... Cek status di bilah notifikasi.',
-                        style: const TextStyle(color: AppColors.textWhite, fontSize: 13),
-                      ),
-                      backgroundColor: AppColors.canvasCardSurface,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      duration: const Duration(seconds: 4),
-                    ),
+                if (started && messenger != null) {
+                  AppSnackBar.showWithMessenger(
+                    messenger,
+                    title: 'Mengunduh Pembaruan',
+                    message: 'Mengunduh pembaruan v${updateInfo.latestVersion}... Cek status di bilah notifikasi.',
+                    type: AppSnackBarType.info,
+                    tag: 'UPDATE',
                   );
                   return;
                 }

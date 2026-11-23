@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
+import '../../domain/services/cashflow_calendar_service.dart';
 import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../modals/dashboard_modals.dart';
@@ -20,6 +21,9 @@ class DashboardBentoGrid extends StatelessWidget {
   final VoidCallback onNavigateToSubscriptions;
   final bool isBalanceHidden;
   final double todayExpense;
+  final int streak;
+  final DateTime? referenceDate;
+  final List<TransactionEntry>? transactions;
 
   const DashboardBentoGrid({
     super.key,
@@ -31,16 +35,29 @@ class DashboardBentoGrid extends StatelessWidget {
     required this.onNavigateToSubscriptions,
     this.isBalanceHidden = false,
     this.todayExpense = 0.0,
+    this.streak = 0,
+    this.referenceDate,
+    this.transactions,
   });
 
   String _fmt(double amount) => currencyFormatter.format(amount);
+
+  int _resolveStreak() {
+    if (streak > 0) return streak;
+    if (transactions == null || transactions!.isEmpty) return 0;
+    return CashflowCalendarService.calculateCurrentStreak(
+      transactions: transactions!,
+      dailySafePace: metrics.safeToSpendDaily,
+      referenceDate: referenceDate,
+    );
+  }
 
   String _dailyPaceSubtitle() {
     return DailyPacingNudgeService.getCompactSubtitle(
       metrics: metrics,
       todayExpense: todayExpense,
-      currencyFormatter: currencyFormatter,
-      isBalanceHidden: isBalanceHidden,
+      referenceDate: referenceDate,
+      streak: _resolveStreak(),
     );
   }
 
@@ -110,7 +127,13 @@ class DashboardBentoGrid extends StatelessWidget {
                   subtitle: _dailyPaceSubtitle(),
                   subtitleMaxLines: 2,
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
-                  onTap: () => DailyPaceModal.show(context, metrics, todayExpense: todayExpense),
+                  onTap: () => DailyPaceModal.show(
+                    context,
+                    metrics,
+                    todayExpense: todayExpense,
+                    referenceDate: referenceDate,
+                    streak: _resolveStreak(),
+                  ),
                 ),
               ),
             ],

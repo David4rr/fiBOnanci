@@ -7,6 +7,7 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../edit_profile/edit_profile_avatar_picker.dart';
 import '../edit_profile/edit_profile_form.dart';
 
@@ -75,14 +76,14 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
         currency: prev.currency, monthlyIncomeTarget: prev.monthlyIncomeTarget,
       ));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil diperbarui!'), backgroundColor: AppColors.neoMint, behavior: SnackBarBehavior.floating));
+      AppSnackBar.showSuccess(context, 'Profil Diperbarui', message: 'Profil "$username" berhasil diperbarui!');
     } else {
       bloc.add(AddProfileEvent(
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
         setActive: true,
       ));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profil $username berhasil dibuat!'), backgroundColor: AppColors.neoChartreuse, behavior: SnackBarBehavior.floating));
+      AppSnackBar.showSuccess(context, 'Profil Dibuat', message: 'Profil "$username" berhasil dibuat!');
     }
     widget.onSaved();
   }

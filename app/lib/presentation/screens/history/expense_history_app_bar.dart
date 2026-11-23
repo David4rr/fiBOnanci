@@ -13,7 +13,9 @@ class ExpenseHistoryAppBar extends StatelessWidget {
   final GestureDragEndCallback? onDragEnd;
   final VoidCallback? onDismiss;
   final bool isEditing;
+  final bool isCalendarView;
   final VoidCallback? onReturnToHistory;
+  final VoidCallback? onToggleView;
   final String? customTitle;
   final String? customSubtitle;
 
@@ -26,7 +28,9 @@ class ExpenseHistoryAppBar extends StatelessWidget {
     this.onDragEnd,
     this.onDismiss,
     this.isEditing = false,
+    this.isCalendarView = false,
     this.onReturnToHistory,
+    this.onToggleView,
     this.customTitle,
     this.customSubtitle,
   });
@@ -63,11 +67,13 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                       children: [...previousChildren, ?currentChild],
                     ),
                     child: Column(
-                      key: ValueKey('$isEditing|$customTitle|$customSubtitle'),
+                      key: ValueKey('$isEditing|$isCalendarView|$customTitle|$customSubtitle'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isEditing ? (customTitle ?? 'Edit Transaksi') : 'Riwayat\nTransaksi',
+                          isEditing
+                              ? (customTitle ?? 'Edit Transaksi')
+                              : (isCalendarView ? 'Aktivitas\nKeuangan' : 'Riwayat\nTransaksi'),
                           style: AppTypography.modalTitle,
                           maxLines: isEditing ? 1 : 2,
                           overflow: TextOverflow.ellipsis,
@@ -76,7 +82,9 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                         Text(
                           isEditing
                               ? (customSubtitle ?? 'Ubah rincian mutasi transaksi')
-                              : 'Total Terfilter: ${currencyFormatter.format(totalFiltered)}',
+                              : (isCalendarView
+                                  ? 'Kalender Aktivitas & Arus Kas'
+                                  : 'Total Terfilter: ${currencyFormatter.format(totalFiltered)}'),
                           style: AppTypography.modalSubtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -85,8 +93,22 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: isEditing ? (onReturnToHistory ?? () {}) : (onDismiss ?? () => Navigator.of(context).pop()),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isEditing && onToggleView != null)
+                      IconButton(
+                        key: const Key('expense_history_toggle_calendar_button'),
+                        onPressed: onToggleView,
+                        tooltip: isCalendarView ? 'Tampilan Kartu' : 'Kalender Aktivitas',
+                        icon: Icon(
+                          isCalendarView ? Icons.view_agenda_outlined : Icons.calendar_month_outlined,
+                          color: isCalendarView ? AppColors.neoChartreuse : AppColors.textWhite,
+                          size: 22,
+                        ),
+                      ),
+                    IconButton(
+                      onPressed: isEditing ? (onReturnToHistory ?? () {}) : (onDismiss ?? () => Navigator.of(context).pop()),
                   icon: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 320),
                     switchInCurve: Curves.easeInOutCubic,
@@ -117,9 +139,11 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 }

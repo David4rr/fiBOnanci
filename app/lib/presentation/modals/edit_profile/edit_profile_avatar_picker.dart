@@ -101,12 +101,11 @@ class EditProfileAvatarPicker {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengambil foto: $e'),
-            backgroundColor: AppColors.neoCoral,
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppSnackBar.showError(
+          context,
+          'Gagal Mengambil Foto',
+          message: e.toString(),
+          tag: 'AVATAR',
         );
       }
     }

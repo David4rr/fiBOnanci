@@ -72,4 +72,8 @@ class AppTypography {
     fontWeight: FontWeight.w700,
     letterSpacing: 0.6,
   );
+
+  static TextStyle tabularFigures = GoogleFonts.plusJakartaSans(
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 }

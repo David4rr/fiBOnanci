@@ -98,11 +98,11 @@ class TransactionDetailComponents {
     } else {
       Navigator.pop(context);
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        backgroundColor: AppColors.neoCoral,
-        content: Text('Transaksi dihapus & saldo dompet dikembalikan semula!', style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
-      ),
+    AppSnackBar.showError(
+      context,
+      'Transaksi Dihapus',
+      message: 'Transaksi dihapus & saldo dompet dikembalikan semula!',
+      tag: 'HAPUS',
     );
   }
 

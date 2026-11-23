@@ -49,16 +49,12 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
 
   void _showAutoLoggedSnackBar(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: AppColors.neoMint,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      content: Row(children: [
-        const Icon(Icons.check_circle, color: AppColors.textDarkPrimary),
-        const SizedBox(width: 12),
-        Expanded(child: Text('Notifikasi Otomatis Tercatat!\n$msg', style: const TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold))),
-      ]),
-    ));
+    AppSnackBar.showSuccess(
+      context,
+      'Notifikasi Otomatis Tercatat!',
+      message: msg,
+      tag: 'OTO-LOG',
+    );
   }
 
   @override
@@ -82,9 +78,9 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted || _isOnboarding) return;
     await LocalNotificationService.instance.requestPermissions();
-    final granted = await NotificationBridge.isPermissionGranted();
-    if (!granted && mounted) {
-      await NotificationPermissionModal.show(context);
+    if (Platform.isAndroid) {
+      final granted = await NotificationBridge.isPermissionGranted();
+      if (!granted && mounted) await NotificationPermissionModal.show(context);
     }
     if (!mounted) return;
     try {

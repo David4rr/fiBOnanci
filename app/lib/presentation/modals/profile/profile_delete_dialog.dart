@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../data/database/app_database.dart';
-import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 
 void showProfileDeleteDialog(BuildContext context, ProfileEntry profile, int totalProfiles) {
@@ -28,12 +27,11 @@ void showProfileDeleteDialog(BuildContext context, ProfileEntry profile, int tot
     ),
     onConfirm: () {
       bloc.add(DeleteProfileEvent(profile.id));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(totalProfiles > 1 ? 'Profil "${profile.username}" berhasil dihapus' : 'Profil berhasil direset'),
-          backgroundColor: AppColors.neoCoral,
-          behavior: SnackBarBehavior.floating,
-        ),
+      AppSnackBar.showError(
+        context,
+        totalProfiles > 1 ? 'Profil Dihapus' : 'Profil Direset',
+        message: totalProfiles > 1 ? 'Profil "${profile.username}" berhasil dihapus.' : 'Profil berhasil direset.',
+        tag: 'HAPUS',
       );
     },
   );

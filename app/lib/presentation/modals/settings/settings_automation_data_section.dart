@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/finance/finance_bloc.dart';
@@ -8,6 +9,7 @@ import '../../../core/native_bridge/security_bridge.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../../core/update/app_update_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../app_update_modal.dart';
 import '../notification_permission_modal.dart';
 import 'profile_settings_tab.dart';
@@ -51,22 +53,13 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
   }
 
   Future<void> _checkUpdate() async {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Memeriksa pembaruan...', style: TextStyle(color: AppColors.textDarkPrimary)),
-      backgroundColor: AppColors.neoChartreuse,
-      duration: Duration(milliseconds: 1000),
-      behavior: SnackBarBehavior.floating,
-    ));
+    AppSnackBar.showInfo(context, 'Memeriksa Pembaruan', message: 'Menghubungkan ke repositori rilis...', duration: const Duration(milliseconds: 1000));
     final update = await AppUpdateService.checkForUpdate();
     if (!mounted) return;
     if (update != null && update.hasUpdate) {
       AppUpdateModal.show(context, update);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Aplikasi sudah versi terbaru (v${AppUpdateService.currentVersion})', style: TextStyle(color: AppColors.textDarkPrimary)),
-        backgroundColor: AppColors.neoMint,
-        behavior: SnackBarBehavior.floating,
-      ));
+      AppSnackBar.showSuccess(context, 'Versi Terbaru', message: 'Aplikasi sudah versi terbaru (v${AppUpdateService.currentVersion})');
     }
   }
 
@@ -75,7 +68,10 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
     final s = widget.state;
     if (widget.isGlobal) {
       final activeCatCount = s.categories.where((c) => !c.isDeleted).length;
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        final isAndroidPlatform = Platform.isAndroid || Platform.environment.containsKey('FLUTTER_TEST');
+        final notifStatus = !isAndroidPlatform ? 'Hanya Android' : (_permissionGranted ? 'Aktif' : 'Mati');
+        final notifColor = (!isAndroidPlatform || !_permissionGranted) ? null : AppColors.neoMint;
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SettingsStyle.sectionHeader('PENGATURAN GLOBAL • SEMUA PROFIL'),
         const SizedBox(height: 6),
         SettingsStyle.switchRow(switchKey: const Key('settings_privacy_switch'), title: 'Samarkan Nominal Saldo', value: s.isBalanceHidden, onChanged: (v) => context.read<FinanceBloc>().add(ToggleBalanceVisibilityEvent(v))),
@@ -84,7 +80,14 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
         SettingsStyle.switchRow(switchKey: const Key('settings_privacy_screen_switch'), title: 'Pelindung Layar Privasi (Recent Apps)', value: _privacyScreenEnabled, onChanged: _togglePrivacyScreen),
         SettingsStyle.menuRow(key: const Key('settings_encryption_status_row'), title: 'Enkripsi Database (SQLCipher)', valueText: 'AES-256 Aktif', valueColor: AppColors.neoChartreuse, onTap: () {}),
         SettingsStyle.menuRow(key: const Key('settings_category_menu_row'), title: 'Kategori Transaksi', valueText: '$activeCatCount Kategori', onTap: () => widget.onNavigate(SettingsSubRoute.categories)),
-        SettingsStyle.menuRow(key: const Key('settings_notif_permission_row'), title: 'Listener Notifikasi Bank', valueText: _permissionGranted ? 'Aktif' : 'Mati', valueColor: _permissionGranted ? AppColors.neoMint : null, onTap: () async { await NotificationPermissionModal.show(context); await _checkPermission(); }),
+        SettingsStyle.menuRow(key: const Key('settings_notif_permission_row'), title: 'Listener Notifikasi Bank', valueText: notifStatus, valueColor: notifColor, onTap: () async {
+          if (!isAndroidPlatform) {
+            AppSnackBar.showInfo(context, 'Fitur Khusus Android', message: 'Listener Notifikasi Bank adalah fitur native Android.');
+            return;
+          }
+          await NotificationPermissionModal.show(context);
+          await _checkPermission();
+        }),
         SettingsStyle.menuRow(key: const Key('settings_bank_apps_row'), title: 'Aplikasi Bank & E-Wallet', valueText: '${kPopularBankAppPresets.length} Didukung', onTap: () => widget.onNavigate(SettingsSubRoute.bankApps)),
         SettingsStyle.menuRow(key: const Key('settings_app_update_row'), title: 'Pembaruan Aplikasi', valueText: 'v${AppUpdateService.currentVersion}', valueColor: AppColors.neoChartreuse, onTap: _checkUpdate),
       ]);

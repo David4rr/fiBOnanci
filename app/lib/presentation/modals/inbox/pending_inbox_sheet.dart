@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/repositories/finance_repository.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/common/modal_grab_handle.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'inbox_inline_edit_form.dart';
 import 'inbox_review_deck_view.dart';
 import 'inbox_wallet_reassign_sheet.dart';
@@ -41,15 +40,11 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
 
   void _showSnack(String msg, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.canvasCardSurface,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: color.withValues(alpha: 0.3))),
-        content: Text(msg, style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w600, fontSize: 13)),
-      ),
-    );
+    if (color == AppColors.neoMint) {
+      AppSnackBar.showSuccess(context, msg, tag: 'INBOX');
+    } else {
+      AppSnackBar.showError(context, msg, tag: 'INBOX');
+    }
   }
 
   void _confirmItem(Map<String, dynamic> item) {

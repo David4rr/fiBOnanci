@@ -75,7 +75,7 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
     final newAmount = AppCurrency.parseInputOf(context, _amountController.text);
     if (newAmount <= 0) return;
     if (_type == 'transfer' && !_isPocketTx && (_destinationWalletId == null || _destinationWalletId == _walletId)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rekening asal dan tujuan tidak boleh sama!')));
+      AppSnackBar.showWarning(context, 'Rekening Tidak Valid', message: 'Rekening asal dan tujuan tidak boleh sama!');
       return;
     }
     context.read<FinanceBloc>().add(UpdateTransactionEvent(
@@ -92,8 +92,10 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
     } else {
       Navigator.pop(context);
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(backgroundColor: AppColors.neoMint, content: Text('Perubahan transaksi & saldo dompet berhasil diperbarui!', style: TextStyle(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold))),
+    AppSnackBar.showSuccess(
+      context,
+      'Transaksi Diperbarui',
+      message: 'Perubahan transaksi & saldo dompet berhasil diperbarui!',
     );
   }
 

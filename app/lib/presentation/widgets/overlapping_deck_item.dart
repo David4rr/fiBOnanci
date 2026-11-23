@@ -5,7 +5,6 @@ import 'overlapping_deck_expanded_insight.dart';
 
 export 'mini_weekly_bar_chart.dart';
 export 'overlapping_deck_expanded_insight.dart';
-export 'overlapping_deck_list.dart';
 
 /// Individual pastel expense card item matching the Swiss-editorial reference.
 class OverlappingDeckItem extends StatelessWidget {

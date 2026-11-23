@@ -4,15 +4,14 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
+import '../widgets/calendar/activity_calendar_matrix.dart';
 import '../widgets/common/common_widgets.dart';
 import '../widgets/transaction_detail_modal.dart';
 import 'history/daily_calendar_bar.dart';
-import 'history/expense_history_deck_view.dart';
-import 'history/expense_history_search_bar.dart';
+import 'history/expense_history_deck_tab.dart';
 import 'history/expense_history_app_bar.dart';
 export 'history/daily_calendar_bar.dart';
-export 'history/expense_history_deck_view.dart';
-export 'history/expense_history_search_bar.dart';
+export 'history/expense_history_deck_tab.dart';
 export 'history/expense_history_app_bar.dart';
 
 class ExpenseHistoryScreen extends StatefulWidget {
@@ -62,6 +61,7 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
   String? _walletFilter;
   int? _selectedDayIndex;
   int _currentTab = 0;
+  bool _isCalendarView = false;
   TransactionEntry? _selectedTransaction;
   @override
   void initState() {
@@ -117,7 +117,10 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
           children: [
             ExpenseHistoryAppBar(
               totalFiltered: totalFiltered, currencyFormatter: currencyFormatter,
-              isEditing: _currentTab != 0, onReturnToHistory: _goToHistory,
+              isEditing: _currentTab != 0,
+              isCalendarView: _isCalendarView,
+              onToggleView: () => setState(() => _isCalendarView = !_isCalendarView),
+              onReturnToHistory: _goToHistory,
               customTitle: _currentTab != 0 ? 'Edit Transaksi' : null,
               customSubtitle: _currentTab != 0
                   ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi')
@@ -130,47 +133,42 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
               child: SmoothPageView(
                 controller: _pageController,
                 children: [
-                  Column(
-                    children: [
-                      ExpenseHistorySearchBar(
-                        searchController: _searchController, searchQuery: _searchQuery,
-                        typeFilter: _typeFilter, walletFilter: _walletFilter, wallets: liveWallets,
-                        onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
-                        onClearSearch: () => setState(() => _searchQuery = ''),
-                        onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
-                        onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
-                        onClearWalletFilter: () => setState(() => _walletFilter = null),
-                      ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 260),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) => SizeTransition(
-                          sizeFactor: animation, axisAlignment: -1.0,
-                          child: FadeTransition(opacity: animation, child: child),
+                  _isCalendarView
+                      ? ActivityCalendarMatrix(
+                          allTransactions: liveTxs,
+                          wallets: liveWallets,
+                          categories: blocState?.categories,
+                          pockets: blocState?.pockets,
+                          dailySafePace: blocState?.metrics.safeToSpendDaily ?? 0.0,
+                          trackingStartDate: blocState?.activeProfile?.createdAt,
+                          onManageTransaction: _goToEditTx,
+                        )
+                      : ExpenseHistoryDeckTab(
+                          searchController: _searchController,
+                          searchQuery: _searchQuery,
+                          typeFilter: _typeFilter,
+                          walletFilter: _walletFilter,
+                          wallets: liveWallets,
+                          allTransactions: liveTxs,
+                          filtered: filtered,
+                          sortedDays: sortedDays,
+                          selectedDayIndex: safeIndex,
+                          currentDayKey: currentDayKey,
+                          currentDayTxs: currentDayTxs,
+                          dayGroups: dayGroups,
+                          dayScrollController: _dayScrollController,
+                          isFiltering: isFiltering,
+                          categories: blocState?.categories,
+                          pockets: blocState?.pockets,
+                          onSearchChanged: (q) => setState(() => _searchQuery = q.trim().toLowerCase()),
+                          onClearSearch: () => setState(() => _searchQuery = ''),
+                          onFilterApplied: (t, w) => setState(() { _typeFilter = t; _walletFilter = w; _selectedDayIndex = null; }),
+                          onClearTypeFilter: () => setState(() => _typeFilter = 'all'),
+                          onClearWalletFilter: () => setState(() => _walletFilter = null),
+                          onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
+                          onManageTransaction: _goToEditTx,
+                          sheetKey: _sheetKey,
                         ),
-                        child: isFiltering
-                            ? const SizedBox.shrink(key: ValueKey('calendar_collapsed'))
-                            : Padding(
-                                key: const ValueKey('calendar_expanded'),
-                                padding: const EdgeInsets.only(top: 6, bottom: 10),
-                                child: DailyCalendarBar(
-                                  scrollController: _dayScrollController, sortedDays: sortedDays,
-                                  selectedIndex: safeIndex, dayGroups: dayGroups,
-                                  onDaySelected: (idx) => setState(() => _selectedDayIndex = idx),
-                                ),
-                              ),
-                      ),
-                      ExpenseHistoryDeckView(
-                        isFiltering: isFiltering, searchQuery: _searchQuery, filtered: filtered,
-                        sortedDays: sortedDays, currentDayKey: currentDayKey, currentDayTxs: currentDayTxs,
-                        allTransactions: liveTxs, wallets: liveWallets, categories: blocState?.categories, pockets: blocState?.pockets,
-                        onManageTransaction: _goToEditTx,
-                        onDownwardDrag: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),
-                        onDownwardDragEnd: (d) => _sheetKey.currentState?.handleHeaderDragEnd(d),
-                      ),
-                    ],
-                  ),
                   _selectedTransaction != null
                       ? TransactionDetailModal(
                           transaction: _selectedTransaction!, isInline: true,

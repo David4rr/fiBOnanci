@@ -2,7 +2,6 @@ export 'profile_modal.dart';
 
 import 'package:flutter/material.dart';
 import '../../core/formatters/app_currency.dart';
-import '../../data/database/app_database.dart';
 import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
@@ -16,74 +15,23 @@ Widget buildCalcRow(String label, String val, Color color, {bool isBold = false}
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 13,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(label, style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: isBold ? FontWeight.bold : FontWeight.normal), overflow: TextOverflow.ellipsis),
         ),
         const SizedBox(width: 8),
-        Text(
-          val,
-          style: TextStyle(
-            color: color,
-            fontSize: 14,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
+        Text(val, style: TextStyle(color: color, fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontFeatures: const [FontFeature.tabularFigures()])),
       ],
     ),
   );
 }
 
-class WalletsListModal {
-  static void show(BuildContext context, List<WalletEntry> wallets) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.canvasCardSurface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
-              ModalHeader(
-                title: 'Rincian Saldo Rekening',
-                subtitle: 'Ringkasan saldo riil per akun keuangan',
-                onClose: () => Navigator.pop(ctx),
-              ),
-              for (final w in wallets)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    children: [
-                      Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: Color(int.parse(w.colorHex.replaceFirst('#', '0xFF'))))),
-                      const SizedBox(width: 12),
-                      Text(w.name, style: AppTypography.listTitle),
-                      const Spacer(),
-                      Text(AppCurrency.read(ctx).format(w.balance), style: AppTypography.listAmount),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
 class DailyPaceModal {
-  static void show(BuildContext context, SafeToSpendMetrics metrics, {double todayExpense = 0.0}) {
+  static void show(
+    BuildContext context,
+    SafeToSpendMetrics metrics, {
+    double todayExpense = 0.0,
+    DateTime? referenceDate,
+    int streak = 0,
+  }) {
     final currencyFormatter = AppCurrency.read(context);
     showModalBottomSheet(
       context: context,
@@ -142,6 +90,8 @@ class DailyPaceModal {
                         DailyPacingNudgeService.getDetailedNudge(
                           metrics: metrics,
                           todayExpense: todayExpense,
+                          referenceDate: referenceDate,
+                          streak: streak,
                         ),
                         style: AppTypography.listSubtitle.copyWith(
                           color: AppColors.textWhite,
