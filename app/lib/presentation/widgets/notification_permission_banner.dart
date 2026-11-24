@@ -33,9 +33,9 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
           child: Ink(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E212D),
+              color: AppColors.canvasCardSurface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.neoChartreuse.withAlpha(90), width: 1),
+              border: Border.all(color: AppColors.canvasBorder, width: 1),
             ),
             child: Row(
               children: [
@@ -43,13 +43,13 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppColors.neoChartreuse.withAlpha(30),
+                    color: AppColors.surfaceSubtle,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.notifications_active_outlined, color: AppColors.neoChartreuse, size: 18),
+                  child: Icon(Icons.notifications_active_outlined, color: AppColors.textAccent, size: 18),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -58,7 +58,7 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                         'Akses Notifikasi Belum Aktif',
                         style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 1),
+                      const SizedBox(height: 1),
                       Text(
                         'Ketuk untuk aktifkan pencatatan otomatis bank',
                         style: TextStyle(color: AppColors.textMuted, fontSize: 11),
@@ -72,7 +72,7 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                     color: AppColors.neoChartreuse,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Aktifkan',
                     style: TextStyle(color: AppColors.textDarkPrimary, fontSize: 11, fontWeight: FontWeight.w800),
                   ),
@@ -84,8 +84,8 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                     setState(() => _dismissed = true);
                     widget.onDismiss?.call();
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
                     child: Icon(Icons.close, color: AppColors.textMuted, size: 16),
                   ),
                 ),

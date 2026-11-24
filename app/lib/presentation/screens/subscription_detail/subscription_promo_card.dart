@@ -82,10 +82,10 @@ class SubscriptionPromoCard extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: hasDiscount ? AppColors.neoMint.withValues(alpha: 0.16) : (isExpanded ? AppColors.neoChartreuse.withValues(alpha: 0.16) : AppColors.canvasInputSearch),
+                        color: hasDiscount ? AppColors.textIncome.withValues(alpha: 0.16) : (isExpanded ? AppColors.textAccent.withValues(alpha: 0.16) : AppColors.canvasInputSearch),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(hasDiscount ? Icons.discount_rounded : Icons.local_offer_rounded, size: 16, color: hasDiscount ? AppColors.neoMint : (isExpanded ? AppColors.neoChartreuse : AppColors.textMuted)),
+                      child: Icon(hasDiscount ? Icons.discount_rounded : Icons.local_offer_rounded, size: 16, color: hasDiscount ? AppColors.textIncome : (isExpanded ? AppColors.textAccent : AppColors.textMuted)),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -96,12 +96,12 @@ class SubscriptionPromoCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           if (hasDiscount)
                             Row(children: [
-                              Text('Hemat ${fmt.format(diff)}', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.neoMint)),
+                              Text('Hemat ${fmt.format(diff)}', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textIncome)),
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                decoration: BoxDecoration(color: AppColors.neoMint.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
-                                child: Text('-$savedPct%', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.neoMint)),
+                                decoration: BoxDecoration(color: AppColors.textIncome.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
+                                child: Text('-$savedPct%', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textIncome)),
                               ),
                             ])
                           else
@@ -113,11 +113,11 @@ class SubscriptionPromoCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: isExpanded ? AppColors.canvasInputSearch : AppColors.neoChartreuse.withValues(alpha: 0.12),
+                        color: isExpanded ? AppColors.canvasInputSearch : AppColors.textAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: isExpanded ? AppColors.canvasBorder : AppColors.neoChartreuse.withValues(alpha: 0.35)),
+                        border: Border.all(color: isExpanded ? AppColors.canvasBorder : AppColors.textAccent.withValues(alpha: 0.35)),
                       ),
-                      child: Text(isExpanded ? 'Tutup' : 'Pakai Promo', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: isExpanded ? AppColors.textMuted : AppColors.neoChartreuse)),
+                      child: Text(isExpanded ? 'Tutup' : 'Pakai Promo', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: isExpanded ? AppColors.textMuted : AppColors.textAccent)),
                     ),
                   ],
                 ),
@@ -133,7 +133,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Divider(color: AppColors.canvasBorder, height: 1),
+                          Divider(color: AppColors.canvasBorder, height: 1),
                           const SizedBox(height: 12),
                           Row(children: [
                             for (final pct in presets) ...[
@@ -151,7 +151,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Tarif Normal: ${fmt.format(subscription.cost)}', style: GoogleFonts.plusJakartaSans(fontSize: 11, decoration: TextDecoration.lineThrough, color: AppColors.textMuted)),
-                                  Text('Bayar: ${fmt.format(effectiveCost)}', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.neoMint, fontFeatures: const [FontFeature.tabularFigures()])),
+                                  Text('Bayar: ${fmt.format(effectiveCost)}', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textIncome, fontFeatures: const [FontFeature.tabularFigures()])),
                                 ],
                               ),
                             ),
@@ -160,7 +160,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                           CurrencyAmountField(
                             controller: controller,
                             labelText: 'Nominal Bayar Bulan Ini',
-                            prefixColor: hasDiscount ? AppColors.neoMint : AppColors.neoChartreuse,
+                            prefixColor: hasDiscount ? AppColors.textIncome : AppColors.textAccent,
                           ),
                         ],
                       ),

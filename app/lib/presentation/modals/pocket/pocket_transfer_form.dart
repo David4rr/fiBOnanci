@@ -76,7 +76,7 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
                     value: _selectedWalletId,
                     isExpanded: true,
                     dropdownColor: AppColors.canvasCardSurface,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
+                    icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
                     items: activeWallets.map((w) => DropdownMenuItem<String>(
                       value: w.id,
                       child: Text('${w.name} (${_currencyFormatter.format(w.balance)})', style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),

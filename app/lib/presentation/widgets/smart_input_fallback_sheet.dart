@@ -145,7 +145,7 @@ class _SmartInputFallbackSheetState extends State<SmartInputFallbackSheet> {
                     child: Icon(_showKeyboard ? Icons.mic_none_rounded : Icons.keyboard_alt_outlined, size: 19, color: AppColors.textMuted),
                   ),
                   const SizedBox(width: 14),
-                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close_rounded, size: 19, color: AppColors.textMuted)),
+                  GestureDetector(onTap: () => Navigator.pop(context), child: Icon(Icons.close_rounded, size: 19, color: AppColors.textMuted)),
                 ],
               ),
               const SizedBox(height: 24),

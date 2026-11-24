@@ -50,7 +50,7 @@ class AppUpdateModal extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Versi v${updateInfo.latestVersion} siap diunduh',
-                      style: AppTypography.listSubtitle.copyWith(color: AppColors.neoMint),
+                      style: AppTypography.listSubtitle.copyWith(color: AppColors.textIncome),
                     ),
                   ],
                 ),
@@ -68,20 +68,20 @@ class AppUpdateModal extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('v${updateInfo.currentVersion}', style: const TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w600)),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
+                Text('v${updateInfo.currentVersion}', style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w600)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.textMuted),
                 ),
                 Text(
                   'v${updateInfo.latestVersion}',
-                  style: const TextStyle(color: AppColors.neoChartreuse, fontSize: 13, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.textAccent, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 14),
-          const Text('Catatan Rilis:', style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700)),
+          Text('Catatan Rilis:', style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Container(
             width: double.infinity,
@@ -97,7 +97,7 @@ class AppUpdateModal extends StatelessWidget {
                 updateInfo.releaseNotes.trim().isEmpty
                     ? 'Peningkatan performa dan perbaikan sistem.'
                     : updateInfo.releaseNotes.trim(),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.45),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.45),
               ),
             ),
           ),
@@ -134,7 +134,7 @@ class AppUpdateModal extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Nanti Saja', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+              child: Text('Nanti Saja', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
             ),
           ),
         ],

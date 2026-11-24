@@ -50,7 +50,7 @@ class OnboardingHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           helper,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textMuted,
             fontSize: 14,
             height: 1.5,

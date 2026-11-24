@@ -51,7 +51,7 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
                       Icon(
                         isCurrent ? Icons.person_rounded : Icons.swap_horiz_rounded,
                         size: 18,
-                        color: isCurrent ? AppColors.neoMint : AppColors.neoChartreuse,
+                        color: isCurrent ? AppColors.textIncome : AppColors.textAccent,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -91,7 +91,7 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
                           Icon(
                             Icons.account_balance_wallet_outlined,
                             size: 18,
-                            color: isCrossProfile ? AppColors.neoChartreuse : AppColors.neoCyan,
+                            color: isCrossProfile ? AppColors.textAccent : AppColors.neoCyan,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -104,7 +104,7 @@ class TransactionTransferDestinationSelector extends StatelessWidget {
                           if (isCrossProfile)
                             Text(
                               '• Masuk Kas',
-                              style: AppTypography.listSubtitle.copyWith(fontSize: 11, color: AppColors.neoMint),
+                              style: AppTypography.listSubtitle.copyWith(fontSize: 11, color: AppColors.textIncome),
                             ),
                         ],
                       ),

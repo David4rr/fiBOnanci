@@ -35,9 +35,9 @@ class CardlessEmptyView extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.04),
+              color: AppColors.surfaceSubtle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppColors.borderSubtle,
                 width: 1.0,
               ),
             ),

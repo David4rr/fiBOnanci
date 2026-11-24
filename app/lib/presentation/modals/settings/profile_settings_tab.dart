@@ -18,6 +18,7 @@ export 'settings_budget_cycle_section.dart';
 export 'settings_category_section.dart';
 export 'settings_export_sub_page.dart';
 export 'settings_financial_section.dart';
+export 'settings_style.dart';
 
 enum SettingsSubRoute {
   currency('Mata Uang Utama', 'Pilih mata uang tampilan & atur kurs patokan IDR'),

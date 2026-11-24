@@ -54,7 +54,7 @@ class OnboardingImportFormView extends StatelessWidget {
         if (isSearching)
           const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()))
         else if (foundFiles.isNotEmpty) ...[
-          const Text(
+          Text(
             'Berkas cadangan terdeteksi di perangkat:',
             style: TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
           ),
@@ -68,11 +68,11 @@ class OnboardingImportFormView extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.canvasBorder),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline_rounded, color: AppColors.textMuted, size: 18),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Belum ada berkas cadangan otomatis di folder Download. Gunakan tombol "Pilih Berkas .JSON" di atas untuk mencari berkas di perangkat Anda.',

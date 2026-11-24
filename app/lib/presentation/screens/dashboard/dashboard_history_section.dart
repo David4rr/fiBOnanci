@@ -73,8 +73,9 @@ class _DashboardHistorySectionState extends State<DashboardHistorySection> {
                   child: Text(
                     'Lihat Semua',
                     style: AppTypography.cardMetricLabel.copyWith(
-                      color: AppColors.neoChartreuse,
+                      color: AppColors.textAccent,
                       fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),

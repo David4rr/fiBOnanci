@@ -32,18 +32,32 @@ class InboxHeaderRibbon extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.neoChartreuse.withValues(alpha: 0.12),
+                        color: AppColors.textAccent.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.3), width: 1),
+                        border: Border.all(
+                          color: AppColors.textAccent.withValues(alpha: 0.35),
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(width: 5, height: 5, decoration: const BoxDecoration(color: AppColors.neoChartreuse, shape: BoxShape.circle)),
+                          Container(
+                            width: 5,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: AppColors.textAccent,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '$pendingCount',
-                            style: GoogleFonts.plusJakartaSans(color: AppColors.neoChartreuse, fontWeight: FontWeight.w800, fontSize: 10.5),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.textAccent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10.5,
+                            ),
                           ),
                         ],
                       ),
@@ -58,7 +72,7 @@ class InboxHeaderRibbon extends StatelessWidget {
               constraints: const BoxConstraints(),
               splashRadius: 20,
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 28,
                 color: AppColors.textWhite,

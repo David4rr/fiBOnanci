@@ -27,16 +27,16 @@ class ActivityCalendarMonthNavigator extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onPrev,
-            icon: const Icon(Icons.chevron_left_rounded, color: AppColors.textWhite, size: 26),
+            icon: Icon(Icons.chevron_left_rounded, color: AppColors.textWhite, size: 26),
             splashRadius: 20,
           ),
           Text(
             monthLabel,
-            style: const TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           IconButton(
             onPressed: onNext,
-            icon: const Icon(Icons.chevron_right_rounded, color: AppColors.textWhite, size: 26),
+            icon: Icon(Icons.chevron_right_rounded, color: AppColors.textWhite, size: 26),
             splashRadius: 20,
           ),
         ],
@@ -85,7 +85,7 @@ class ActivityCalendarStreakSummaryBar extends StatelessWidget {
                   style: TextStyle(
                     color: hasStreak
                         ? const Color(0xFFFF9600)
-                        : AppColors.textSubtle.withValues(alpha: 0.6),
+                        : AppColors.textSubtle,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,
@@ -121,7 +121,7 @@ class ActivityCalendarWeekdayHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: isWeekend ? AppColors.neoCoral.withValues(alpha: 0.8) : AppColors.textSubtle.withValues(alpha: 0.6),
+                  color: isWeekend ? AppColors.neoCoral : AppColors.textSubtle,
                 ),
               ),
             ),

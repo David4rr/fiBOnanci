@@ -26,7 +26,7 @@ class WalletCashflowSummary extends StatelessWidget {
         _buildCompactFlowRow(
           label: 'Masuk',
           amount: '+${currencyFormatter.format(monthlyIncome)}',
-          color: AppColors.neoMint,
+          color: AppColors.textIncome,
         ),
         const SizedBox(height: 5),
         _buildCompactFlowRow(

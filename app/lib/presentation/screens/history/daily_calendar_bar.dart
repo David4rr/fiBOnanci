@@ -138,7 +138,7 @@ class _DailyCalendarBarState extends State<DailyCalendarBar> {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(color: isSelected ? Colors.white.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
+                          decoration: BoxDecoration(color: isSelected ? AppColors.surfaceSubtle : AppColors.borderSubtle, borderRadius: BorderRadius.circular(6)),
                           child: Text('$count', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w700, color: isSelected ? AppColors.textWhite : AppColors.textMuted)),
                         ),
                       ],

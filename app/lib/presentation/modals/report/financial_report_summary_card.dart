@@ -49,9 +49,9 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,13 +73,13 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
           Row(
             children: [
               Expanded(child: _buildMinimalMetric('Pemasukan', '+${fmt.format(data.totalIncome)}', AppColors.neoMint)),
-              Container(width: 1, height: 28, color: Colors.white.withValues(alpha: 0.06)),
+              Container(width: 1, height: 28, color: AppColors.borderSubtle),
               Expanded(child: _buildMinimalMetric('Pengeluaran', '-${fmt.format(data.totalExpense)}', AppColors.neoCoral)),
             ],
           ),
           if (slices.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+            Divider(color: AppColors.dividerSubtle, height: 1),
             const SizedBox(height: 8),
             ...List.generate(slices.length, (i) => _buildSliceRow(slices[i], i, fmt.format(slices[i].amount))),
           ],
@@ -113,7 +113,7 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
   Widget _buildSliceRow(UnifiedDonutSlice item, int index, String formattedAmt) {
     final isSelected = _selectedSliceIndex == index;
     final sign = item.isIncome ? '+' : '-';
-    final amountColor = item.isIncome ? AppColors.neoMint : AppColors.textWhite;
+    final amountColor = item.isIncome ? AppColors.textIncome : AppColors.textWhite;
     return GestureDetector(
       key: Key('report_category_row_$index'),
       behavior: HitTestBehavior.opaque,
@@ -123,7 +123,7 @@ class _FinancialReportSummaryCardState extends State<FinancialReportSummaryCard>
         margin: const EdgeInsets.symmetric(vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.06) : Colors.transparent,
+          color: isSelected ? AppColors.surfaceSubtle : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(

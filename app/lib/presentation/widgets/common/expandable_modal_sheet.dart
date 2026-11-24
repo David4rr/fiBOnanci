@@ -14,7 +14,7 @@ typedef ExpandableModalBuilder = Widget Function(
 class ExpandableModalSheet extends StatefulWidget {
   final double initialChildSize, minChildSize, maxChildSize, topRadius;
   final List<double> snapSizes;
-  final Color backgroundColor, borderColor;
+  final Color? backgroundColor, borderColor;
   final ExpandableModalBuilder builder;
   final DraggableScrollableController? controller;
 
@@ -24,8 +24,8 @@ class ExpandableModalSheet extends StatefulWidget {
     this.minChildSize = 0.25,
     this.maxChildSize = 1.0,
     this.snapSizes = const [0.85, 1.0],
-    this.backgroundColor = AppColors.canvasBg,
-    this.borderColor = AppColors.canvasBorder,
+    this.backgroundColor,
+    this.borderColor,
     this.topRadius = 28.0,
     this.controller,
     required this.builder,
@@ -159,9 +159,9 @@ class ExpandableModalSheetState extends State<ExpandableModalSheet> {
                 builder: (ctx, scrollController) => Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    color: widget.backgroundColor,
+                    color: widget.backgroundColor ?? AppColors.canvasBg,
                     borderRadius: _currentSize >= 0.99 ? BorderRadius.zero : BorderRadius.vertical(top: Radius.circular(widget.topRadius)),
-                    border: _currentSize >= 0.99 ? null : Border.all(color: widget.borderColor, width: 1),
+                    border: _currentSize >= 0.99 ? null : Border.all(color: widget.borderColor ?? AppColors.canvasBorder, width: 1),
                   ),
                   child: SafeArea(top: true, bottom: true, child: widget.builder(ctx, scrollController, _currentSize)),
                 ),

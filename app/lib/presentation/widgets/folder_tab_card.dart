@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// Custom shape clipper that renders the signature Asymmetric File Folder Tab
 class FolderTabClipper extends CustomClipper<Path> {
   final double tabWidthFactor;
@@ -55,12 +57,12 @@ class FolderTabClipper extends CustomClipper<Path> {
 /// Custom painter that strokes the exact asymmetric folder tab border path.
 class FolderTabBorderPainter extends CustomPainter {
   final FolderTabClipper clipper;
-  final Color borderColor;
+  final Color? borderColor;
   final double borderWidth;
 
   const FolderTabBorderPainter({
     this.clipper = const FolderTabClipper(),
-    this.borderColor = const Color(0xFF2E3244),
+    this.borderColor,
     this.borderWidth = 1.2,
   });
 
@@ -68,7 +70,7 @@ class FolderTabBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final path = clipper.getClip(size);
     final paint = Paint()
-      ..color = borderColor
+      ..color = borderColor ?? AppColors.canvasBorder
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth;
     canvas.drawPath(path, paint);

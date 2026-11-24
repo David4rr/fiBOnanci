@@ -84,7 +84,7 @@ class _TrendSplineChartState extends State<TrendSplineChart> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildLegendDot(AppColors.neoMint, 'Masuk'),
+                  _buildLegendDot(AppColors.textIncome, 'Masuk'),
                   const SizedBox(width: 10),
                   _buildLegendDot(AppColors.neoCoral, 'Keluar'),
                 ],
@@ -157,8 +157,8 @@ class _TrendSplineChartState extends State<TrendSplineChart> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('$dateStr • ', style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w600)),
-            Text('+${_currencyFmt.format(inAmt)} ', style: const TextStyle(color: AppColors.neoMint, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text('$dateStr • ', style: TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w600)),
+            Text('+${_currencyFmt.format(inAmt)} ', style: TextStyle(color: AppColors.textIncome, fontSize: 10, fontWeight: FontWeight.bold)),
             Text('-${_currencyFmt.format(exAmt)}', style: const TextStyle(color: AppColors.neoCoral, fontSize: 10, fontWeight: FontWeight.bold)),
           ],
         ),

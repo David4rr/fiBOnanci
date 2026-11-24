@@ -37,7 +37,7 @@ class _FinancialReportTabState extends State<FinancialReportTab> {
         Container(
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.04),
+            color: AppColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -52,7 +52,7 @@ class _FinancialReportTabState extends State<FinancialReportTab> {
                     duration: const Duration(milliseconds: 180),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
+                      color: isSelected ? (AppColors.isDark ? Colors.white.withValues(alpha: 0.10) : AppColors.pureWhite) : Colors.transparent,
                       borderRadius: BorderRadius.circular(9),
                     ),
                     alignment: Alignment.center,

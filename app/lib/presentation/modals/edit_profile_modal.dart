@@ -129,7 +129,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             EditProfileHeader(isEditing: isEditing),
-            const Divider(color: AppColors.canvasBorder, height: 16),
+            Divider(color: AppColors.canvasBorder, height: 16),
             Flexible(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),

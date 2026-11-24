@@ -21,7 +21,7 @@ class AppConfirmationDialog {
         backgroundColor: AppColors.canvasCardSurface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.canvasBorder),
+          side: BorderSide(color: AppColors.canvasBorder),
         ),
         title: titleLeading != null
             ? Row(

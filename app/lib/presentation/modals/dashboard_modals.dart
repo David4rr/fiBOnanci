@@ -109,20 +109,20 @@ class DailyPaceModal {
                 child: Column(
                   children: [
                     buildCalcRow('Sisa Hari Bulan Ini', '${metrics.daysRemainingInMonth} Hari', AppColors.textWhite),
-                    const Divider(color: AppColors.canvasBorder),
+                    Divider(color: AppColors.canvasBorder),
                     buildCalcRow('Batas Aman Belanja / Hari', currencyFormatter.format(metrics.safeToSpendDaily), AppColors.neoCyan, isBold: true),
-                    const Divider(color: AppColors.canvasBorder),
+                    Divider(color: AppColors.canvasBorder),
                     buildCalcRow(
                       'Pengeluaran Hari Ini',
                       currencyFormatter.format(todayExpense),
-                      hasNoExpense ? AppColors.textMuted : (isUnderBudget ? AppColors.neoMint : AppColors.neoCoral),
+                      hasNoExpense ? AppColors.textMuted : (isUnderBudget ? AppColors.textIncome : AppColors.neoCoral),
                     ),
                     if (todayExpense > 0) ...[
                       const SizedBox(height: 4),
                       buildCalcRow(
                         isUnderBudget ? 'Sisa Kuota Hari Ini' : 'Melebihi Kuota',
                         currencyFormatter.format(remaining.abs()),
-                        isUnderBudget ? AppColors.neoMint : AppColors.neoCoral,
+                        isUnderBudget ? AppColors.textIncome : AppColors.neoCoral,
                         isBold: true,
                       ),
                     ],

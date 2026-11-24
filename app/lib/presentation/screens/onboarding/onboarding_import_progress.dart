@@ -50,7 +50,7 @@ class OnboardingImportProgress extends StatelessWidget {
                           height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.neoChartreuse),
                         )
-                      : Text('$stepNumber', style: const TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.bold))),
+                      : Text('$stepNumber', style: TextStyle(color: AppColors.textSubtle, fontSize: 11, fontWeight: FontWeight.bold))),
             ),
           ),
           const SizedBox(width: 14),
@@ -67,7 +67,7 @@ class OnboardingImportProgress extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                Text(subtitle, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
               ],
             ),
           ),
@@ -89,7 +89,7 @@ class OnboardingImportProgress extends StatelessWidget {
         children: [
           Icon(icon, color: AppColors.neoChartreuse, size: 16),
           const SizedBox(width: 6),
-          Text(text, style: const TextStyle(color: AppColors.textWhite, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(text, style: TextStyle(color: AppColors.textWhite, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -105,7 +105,7 @@ class OnboardingImportProgress extends StatelessWidget {
           const SizedBox(height: 16),
           const Icon(Icons.error_outline_rounded, color: AppColors.neoCoral, size: 44),
           const SizedBox(height: 12),
-          const Text('Gagal Memulihkan Data', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text('Gagal Memulihkan Data', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -139,9 +139,9 @@ class OnboardingImportProgress extends StatelessWidget {
             child: const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 44),
           ),
           const SizedBox(height: 12),
-          const Text('Data Berhasil Dipulihkan!', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text('Data Berhasil Dipulihkan!', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
-          Text('Selamat datang kembali, @$uName.', style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          Text('Selamat datang kembali, @$uName.', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,

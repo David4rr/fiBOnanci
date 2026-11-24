@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'nav_dock_animated_row.dart';
 import 'nav_dock_components.dart';
 
@@ -75,10 +76,19 @@ class BottomNavDock extends StatelessWidget {
                           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xB813141C),
+                              color: AppColors.canvasCardSurface.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(28),
-                              border: Border.all(color: const Color(0x33FFFFFF), width: 1.2),
-                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 4))],
+                              border: Border.all(
+                                color: AppColors.canvasBorder,
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 6),

@@ -26,9 +26,9 @@ class OnboardingImportFileTile extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         leading: const Icon(Icons.description_outlined, color: AppColors.neoChartreuse, size: 24),
-        title: Text(fileName, style: const TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w600)),
-        subtitle: const Text('Ketuk untuk pulihkan', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 14),
+        title: Text(fileName, style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w600)),
+        subtitle: Text('Ketuk untuk pulihkan', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        trailing: Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 14),
         onTap: () {
           try {
             final content = file.readAsStringSync();

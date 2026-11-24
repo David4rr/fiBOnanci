@@ -42,7 +42,7 @@ class ProfileActiveCardBody extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: AppColors.textWhite,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -86,7 +86,7 @@ class ProfileActiveCardBody extends StatelessWidget {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFFEEEEEE),
+                          color: AppColors.textWhite,
                           letterSpacing: -0.8,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
@@ -99,7 +99,7 @@ class ProfileActiveCardBody extends StatelessWidget {
                     children: [
                       const CustomPaint(size: Size(15, 14), painter: FinancialShieldPainter()),
                       const SizedBox(height: 2),
-                      Text('Aman', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
+                      Text('Aman', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textWhite)),
                       Text('Harian', style: GoogleFonts.plusJakartaSans(fontSize: 9, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
                     ],
                   ),
@@ -121,7 +121,7 @@ class ProfileActiveCardBody extends StatelessWidget {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),

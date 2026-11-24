@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../domain/services/financial_health_service.dart';
+import '../../theme/app_colors.dart';
 import 'financial_health_pillar_card.dart';
 import 'financial_health_score_card.dart';
 
@@ -31,7 +32,7 @@ class FinancialHealthTab extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: Colors.white.withValues(alpha: 0.38),
+            color: AppColors.textSubtle,
             letterSpacing: 0.8,
           ),
         ),

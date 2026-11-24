@@ -45,7 +45,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                 if (isFiltering)
                   Text(
                     searchQuery.isNotEmpty ? 'Hasil Pencarian: ${filtered.length} Transaksi' : 'Hasil Filter: ${filtered.length} Transaksi',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.neoChartreuse),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textAccent),
                   )
                 else if (sortedDays.isNotEmpty) ...[
                   Text(
@@ -54,7 +54,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.0,
-                      color: isToday ? AppColors.neoChartreuse : AppColors.textWhite,
+                      color: isToday ? AppColors.textAccent : AppColors.textWhite,
                     ),
                   ),
                   Text(
@@ -63,7 +63,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
-                      color: isToday ? AppColors.neoChartreuse : AppColors.textMuted,
+                      color: isToday ? AppColors.textAccent : AppColors.textMuted,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),

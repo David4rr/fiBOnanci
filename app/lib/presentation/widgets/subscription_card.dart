@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
+import '../theme/app_colors.dart';
 import 'billing_card_layout.dart';
 import 'installment_card_layout.dart';
 import 'modernist_card_painter.dart';
@@ -62,9 +63,9 @@ class SubscriptionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.45),
+              color: Colors.black.withValues(alpha: AppColors.isDark ? 0.45 : 0.08),
               blurRadius: 18,
-              offset: const Offset(0, 8),
+              offset: Offset(0, AppColors.isDark ? 8 : 4),
               spreadRadius: 1,
             ),
           ],

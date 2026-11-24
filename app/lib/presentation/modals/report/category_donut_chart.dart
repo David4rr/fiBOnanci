@@ -167,7 +167,7 @@ class _DonutRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final baseRadius = math.min(size.width, size.height) / 2 - 14;
-    final trackPaint = Paint()..style = PaintingStyle.stroke..strokeWidth = 12..color = Colors.white.withValues(alpha: 0.04);
+    final trackPaint = Paint()..style = PaintingStyle.stroke..strokeWidth = 12..color = AppColors.surfaceSubtle;
     canvas.drawCircle(center, baseRadius, trackPaint);
     if (slices.isEmpty || totalFlow <= 0) return;
 

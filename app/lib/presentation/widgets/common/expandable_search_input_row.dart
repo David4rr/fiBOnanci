@@ -33,16 +33,16 @@ class ExpandableSearchInputRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textMuted, size: 18),
+            Icon(Icons.search, color: AppColors.textMuted, size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: TextField(
                 controller: searchController,
-                style: const TextStyle(color: AppColors.textWhite, fontSize: 13.5),
+                style: TextStyle(color: AppColors.textWhite, fontSize: 13.5),
                 onChanged: onSearchChanged,
                 decoration: InputDecoration(
                   hintText: hintText,
-                  hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                  hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
@@ -53,8 +53,8 @@ class ExpandableSearchInputRow extends StatelessWidget {
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: onClearSearch,
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
                   child: Icon(Icons.close, color: AppColors.textMuted, size: 16),
                 ),
               ),

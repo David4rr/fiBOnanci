@@ -19,7 +19,7 @@ class FinancialHealthPillarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double progress = (metric.score / 100.0).clamp(0.0, 1.0);
-    final Color barColor = metric.isHealthy ? AppColors.neoChartreuse : AppColors.neoCoral;
+    final Color barColor = metric.isHealthy ? AppColors.textAccent : AppColors.neoCoral;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -65,7 +65,7 @@ class FinancialHealthPillarCard extends StatelessWidget {
               height: 3,
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withValues(alpha: 0.06),
+                backgroundColor: AppColors.surfaceSubtle,
                 valueColor: AlwaysStoppedAnimation<Color>(barColor),
               ),
             ),
@@ -90,7 +90,7 @@ class FinancialHealthPillarCard extends StatelessWidget {
                 '${metric.benchmark} • ${metric.score.toStringAsFixed(0)}/100',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.45),
+                  color: AppColors.textSubtle,
                   fontWeight: FontWeight.w500,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
@@ -104,11 +104,11 @@ class FinancialHealthPillarCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.035),
+                color: AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: metric.isHealthy
-                      ? AppColors.neoChartreuse.withValues(alpha: 0.16)
+                      ? AppColors.textAccent.withValues(alpha: 0.16)
                       : AppColors.neoCoral.withValues(alpha: 0.16),
                   width: 0.8,
                 ),
@@ -124,7 +124,7 @@ class FinancialHealthPillarCard extends StatelessWidget {
                           : Icons.lightbulb_outline_rounded,
                       size: 13,
                       color: metric.isHealthy
-                          ? AppColors.neoChartreuse
+                          ? AppColors.textAccent
                           : const Color(0xFFFFA439),
                     ),
                   ),
@@ -134,7 +134,7 @@ class FinancialHealthPillarCard extends StatelessWidget {
                       metric.allocationRecommendation!,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
-                        color: Colors.white.withValues(alpha: 0.82),
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
                         height: 1.35,
                       ),

@@ -175,7 +175,7 @@ class _ProfileCardCarouselState extends State<ProfileCardCarousel> {
               width: isCurrent ? 24 : 6,
               height: 5,
               decoration: BoxDecoration(
-                color: isCurrent ? AppColors.neoChartreuse : Colors.white.withValues(alpha: 0.22),
+                color: isCurrent ? AppColors.textAccent : AppColors.borderSubtle,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),

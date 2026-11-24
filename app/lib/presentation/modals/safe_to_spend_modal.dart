@@ -52,22 +52,22 @@ class SafeToSpendModal {
                             children: [
                               Text(
                                 'Total Aset (${wallets.length} Akun)',
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                               ),
                               Text(
                                 currencyFormatter.format(metrics.totalRealBalance),
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                               ),
                             ],
                           ),
                         ],
-                        const Divider(color: AppColors.canvasBorder),
+                        Divider(color: AppColors.canvasBorder),
                         _buildCalcRow(
                           isAll ? 'Sisa Tagihan Bulan Ini' : 'Tagihan Terkait Terpilih',
                           '-${currencyFormatter.format(metrics.pendingBills)}',
                           AppColors.neoCoral,
                         ),
-                        const Divider(color: AppColors.canvasBorder, height: 16),
+                        Divider(color: AppColors.canvasBorder, height: 16),
                         _buildCalcRow('Sisa Aman Bulan Ini', currencyFormatter.format(metrics.safeToSpendMonthly), metrics.statusColor, isBold: true),
                         const SizedBox(height: 8),
                         _buildCalcRow('Alokasi Harian (${metrics.daysRemainingInMonth} hr)', '${currencyFormatter.format(metrics.safeToSpendDaily)} / hr', AppColors.neoCyan),
@@ -84,7 +84,7 @@ class SafeToSpendModal {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.tune, size: 12, color: AppColors.textMuted),
+                      Icon(Icons.tune, size: 12, color: AppColors.textMuted),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(

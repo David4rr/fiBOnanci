@@ -83,7 +83,7 @@ class _OnboardingStepIncomeState extends State<OnboardingStepIncome> {
                       const SizedBox(width: 8),
                       Text(
                         '≈ $formattedDaily per hari',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textWhite,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,

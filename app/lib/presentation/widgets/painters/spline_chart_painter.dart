@@ -114,7 +114,7 @@ class SplineChartPainter extends CustomPainter {
 class SplineCanvasHelper {
   SplineCanvasHelper._();
 
-  static const _labelStyle = TextStyle(color: AppColors.textMuted, fontSize: 9.2, fontWeight: FontWeight.w600);
+  static final _labelStyle = TextStyle(color: AppColors.textMuted, fontSize: 9.2, fontWeight: FontWeight.w600);
   static final _scrubPaint = Paint()..color = AppColors.canvasBorder..strokeWidth = 1.1..style = PaintingStyle.stroke;
 
   static void drawScrubLine(Canvas canvas, double x, double chartHeight) {

@@ -40,10 +40,10 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2E3244), width: 1.2),
+        border: Border.all(color: AppColors.canvasBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.65),
+            color: Colors.black.withValues(alpha: AppColors.isDark ? 0.65 : 0.12),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -55,14 +55,14 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.more_horiz_rounded, color: AppColors.neoChartreuse, size: 16),
+              Icon(Icons.more_horiz_rounded, color: AppColors.textAccent, size: 16),
               const SizedBox(width: 8),
               Text(
                 'Menu Profil',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const Spacer(),
@@ -72,9 +72,9 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: AppColors.surfaceSubtle,
                   ),
-                  child: const Icon(Icons.close_rounded, size: 14, color: AppColors.textMuted),
+                  child: Icon(Icons.close_rounded, size: 14, color: AppColors.textMuted),
                 ),
               ),
             ],
@@ -152,9 +152,9 @@ class ProfileMorphingMenuItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: AppColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: AppColors.borderSubtle),
         ),
         child: Row(
           children: [
@@ -162,23 +162,23 @@ class ProfileMorphingMenuItem extends StatelessWidget {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                color: (iconColor ?? AppColors.neoChartreuse).withValues(alpha: 0.12),
+                color: (iconColor ?? AppColors.textAccent).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: iconColor ?? AppColors.neoChartreuse, size: 15),
+              child: Icon(icon, color: iconColor ?? AppColors.textAccent, size: 15),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: titleColor ?? Colors.white)),
+                  Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: titleColor ?? AppColors.textPrimary)),
                   const SizedBox(height: 2),
                   Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w500, color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 15),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 15),
           ],
         ),
       ),

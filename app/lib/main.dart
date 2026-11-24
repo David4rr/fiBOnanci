@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'bloc/finance/finance_bloc.dart';
@@ -10,6 +9,8 @@ import 'data/database/app_database.dart';
 import 'data/repositories/finance_repository.dart';
 import 'presentation/screens/main_shell.dart';
 import 'presentation/theme/app_colors.dart';
+import 'presentation/theme/app_theme.dart';
+import 'presentation/theme/theme_circle_reveal.dart';
 import 'presentation/widgets/common/common_widgets.dart';
 
 void main() async {
@@ -40,39 +41,30 @@ class FiBOnanciApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<FinanceBloc>(
       create: (context) => FinanceBloc(repository: repository)..add(const LoadFinanceData()),
-      child: MaterialApp(
-        title: 'fiBOnanci',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: AppColors.canvasBg,
-          colorScheme: const ColorScheme.dark().copyWith(
-            primary: AppColors.neoChartreuse,
-            surface: AppColors.canvasCardSurface,
-          ),
-          textTheme: GoogleFonts.plusJakartaSansTextTheme(
-            ThemeData.dark().textTheme,
-          ),
-          snackBarTheme: SnackBarThemeData(
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.canvasCardSurface,
-            contentTextStyle: GoogleFonts.plusJakartaSans(
-              color: AppColors.textWhite,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: const BorderSide(color: AppColors.canvasBorder, width: 1.0),
-            ),
-            insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            elevation: 4,
-          ),
-        ),
-        builder: (context, child) {
-          if (child == null) return const SizedBox.shrink();
-          return IPhoneViewportContainer(child: child);
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: themeModeNotifier,
+        builder: (context, themeMode, _) {
+          return MaterialApp(
+            title: 'fiBOnanci',
+            debugShowCheckedModeBanner: false,
+            themeMode: themeMode,
+            themeAnimationDuration: Duration.zero,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            builder: (context, child) {
+              if (child == null) return const SizedBox.shrink();
+              final platformBrightness = MediaQuery.platformBrightnessOf(context);
+              final effectiveBrightness = themeMode == ThemeMode.system
+                  ? platformBrightness
+                  : (themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
+              AppColors.updateBrightness(effectiveBrightness);
+              return ThemeCircleReveal(
+                child: IPhoneViewportContainer(child: child),
+              );
+            },
+            home: FibonanciSplashGate(child: MainShell(db: database)),
+          );
         },
-        home: FibonanciSplashGate(child: MainShell(db: database)),
       ),
     );
   }

@@ -46,13 +46,13 @@ class InboxNotificationCard extends StatelessWidget {
         color: AppColors.canvasCardSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isTopCard ? AppColors.canvasBorder : Colors.white.withValues(alpha: 0.08),
+          color: isTopCard ? AppColors.canvasBorder : AppColors.borderSubtle,
           width: 0.8,
         ),
         boxShadow: isTopCard
             ? [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.45),
+                  color: Colors.black.withValues(alpha: AppColors.isDark ? 0.45 : 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -73,7 +73,7 @@ class InboxNotificationCard extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.8,
-                    color: isIncome ? AppColors.neoMint : AppColors.textSubtle,
+                    color: isIncome ? AppColors.textIncome : AppColors.textSubtle,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -110,7 +110,7 @@ class InboxNotificationCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                         fontFeatures: const [FontFeature.tabularFigures()],
-                        color: isIncome ? AppColors.neoMint : AppColors.neoCoral,
+                        color: isIncome ? AppColors.textIncome : AppColors.neoCoral,
                       ),
                     ),
                   ),
@@ -119,7 +119,7 @@ class InboxNotificationCard extends StatelessWidget {
                   Icon(
                     Icons.edit_outlined,
                     size: 14,
-                    color: isIncome ? AppColors.neoMint.withValues(alpha: 0.6) : AppColors.neoCoral.withValues(alpha: 0.6),
+                    color: isIncome ? AppColors.textIncome.withValues(alpha: 0.6) : AppColors.neoCoral.withValues(alpha: 0.6),
                   ),
                 ],
               ],
@@ -139,7 +139,7 @@ class InboxNotificationCard extends StatelessWidget {
           const SizedBox(height: 14),
           Container(
             height: 0.5,
-            color: Colors.white.withValues(alpha: 0.07),
+            color: AppColors.dividerSubtle,
           ),
           const SizedBox(height: 12),
           Text(

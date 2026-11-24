@@ -35,7 +35,7 @@ class OnboardingTopBar extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textWhite, size: 22),
+                icon: Icon(Icons.arrow_back_rounded, color: AppColors.textWhite, size: 22),
                 onPressed: onBack,
               ),
               const Spacer(),
@@ -43,7 +43,7 @@ class OnboardingTopBar extends StatelessWidget {
                 currentStep == totalSteps - 1
                     ? 'Siap!'
                     : 'Langkah ${currentStep + 1} dari $totalSteps',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,

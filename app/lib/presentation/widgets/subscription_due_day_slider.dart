@@ -51,18 +51,18 @@ class SubscriptionDueDaySlider extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.neoChartreuse.withValues(alpha: 0.12),
+                color: AppColors.textAccent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.35)),
+                border: Border.all(color: AppColors.textAccent.withValues(alpha: 0.35)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.event_repeat_rounded, size: 12, color: AppColors.neoChartreuse),
+                  Icon(Icons.event_repeat_rounded, size: 12, color: AppColors.textAccent),
                   const SizedBox(width: 5),
                   Text(
                     'Tgl $dueDay setiap bulan',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.neoChartreuse, fontFeatures: const [FontFeature.tabularFigures()]),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.textAccent, fontFeatures: const [FontFeature.tabularFigures()]),
                   ),
                 ],
               ),
@@ -156,7 +156,7 @@ class SubscriptionDueDaySlider extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: m == dueDay ? FontWeight.w800 : FontWeight.w600,
-                      color: m == dueDay ? AppColors.neoChartreuse : AppColors.textMuted.withValues(alpha: 0.6),
+                      color: m == dueDay ? AppColors.textAccent : AppColors.textMuted.withValues(alpha: 0.6),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),

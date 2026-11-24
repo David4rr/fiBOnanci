@@ -108,7 +108,7 @@ class _SettingsCurrencySubPageState extends State<SettingsCurrencySubPage> {
                   inputFormatters: [RupiahInputFormatter()], style: SettingsStyle.title,
                   decoration: InputDecoration(
                     prefixText: 'Rp ', prefixStyle: SettingsStyle.sub, hintText: '16.000', hintStyle: SettingsStyle.sub, isDense: true,
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.canvasBorder)),
                     focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.neoChartreuse)),
                   ),
                 ),
@@ -166,7 +166,7 @@ class _SettingsIncomeTargetSubPageState extends State<SettingsIncomeTargetSubPag
             inputFormatters: [RupiahInputFormatter()], style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textWhite),
             decoration: InputDecoration(
               prefixText: AppCurrency.symbolFor(c), prefixStyle: SettingsStyle.value, hintText: '0', hintStyle: SettingsStyle.sub,
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15))),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.canvasBorder)),
               focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.neoChartreuse)),
             ),
           ),

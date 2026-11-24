@@ -48,7 +48,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.tune_rounded, size: 15, color: AppColors.textWhite),
+                          Icon(Icons.tune_rounded, size: 15, color: AppColors.textWhite),
                           const SizedBox(width: 8),
                           Text('Ubah Saldo', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
                         ],

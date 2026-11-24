@@ -55,8 +55,8 @@ class OnboardingStepUsername extends StatelessWidget {
           },
         ),
         const SizedBox(height: 6),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'Huruf kecil a–z, angka 0–9, dan garis bawah _',
             style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),

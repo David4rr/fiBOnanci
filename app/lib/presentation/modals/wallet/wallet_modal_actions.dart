@@ -28,7 +28,7 @@ class WalletModalActions extends StatelessWidget {
             height: 52,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.canvasBorder),
+                side: BorderSide(color: AppColors.canvasBorder),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: onCancel,

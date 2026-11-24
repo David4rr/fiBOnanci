@@ -110,14 +110,14 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CustomPaint(
-                        foregroundPainter: const FolderTabBorderPainter(
-                          borderColor: Color(0xFF262936),
+                        foregroundPainter: FolderTabBorderPainter(
+                          borderColor: AppColors.canvasBorder,
                           borderWidth: 1.1,
                         ),
                         child: ClipPath(
                           clipper: const FolderTabClipper(),
                           child: Container(
-                            color: AppColors.carbonBlack,
+                            color: AppColors.canvasCardSurface,
                             padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -128,9 +128,9 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
                                     Container(
                                       width: 6,
                                       height: 6,
-                                      decoration: const BoxDecoration(
+                                      decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: AppColors.neoChartreuse,
+                                        color: AppColors.textAccent,
                                       ),
                                     ),
                                     const SizedBox(width: 7),
@@ -139,7 +139,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
-                                        color: AppColors.neoChartreuse,
+                                        color: AppColors.textAccent,
                                         letterSpacing: 0.9,
                                       ),
                                     ),

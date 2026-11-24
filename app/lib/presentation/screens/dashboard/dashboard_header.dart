@@ -55,13 +55,13 @@ class DashboardHeader extends StatelessWidget {
                         child: Text.rich(
                           TextSpan(
                             style: AppTypography.heroGreeting,
-                            children: const [
-                              TextSpan(text: 'fi'),
+                            children: [
+                              const TextSpan(text: 'fi'),
                               TextSpan(
                                 text: 'BO',
-                                style: TextStyle(color: AppColors.neoChartreuse),
+                                style: TextStyle(color: AppColors.textAccent),
                               ),
-                              TextSpan(text: 'nanci'),
+                              const TextSpan(text: 'nanci'),
                             ],
                           ),
                           key: FibonanciSplashGate.dashboardTextKey,
@@ -92,10 +92,10 @@ class DashboardHeader extends StatelessWidget {
                           height: 42,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF1E212D),
+                            color: AppColors.canvasCardSurface,
                             border: Border.all(color: AppColors.canvasBorder, width: 1.5),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
                           ),
                         ),

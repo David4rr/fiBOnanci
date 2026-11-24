@@ -37,19 +37,19 @@ class OnboardingWelcomeChoice extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.canvasBorder),
           ),
-          child: const Text(
+          child: Text(
             'OFFLINE-FIRST & ZERO-LATENCY',
-            style: TextStyle(color: AppColors.neoChartreuse, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2),
+            style: TextStyle(color: AppColors.textAccent, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2),
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'fiBOnanci',
           style: TextStyle(color: AppColors.textWhite, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5),
         ),
         const SizedBox(height: 8),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Kelola keuangan pribadi dengan kecerdasan Safe-to-Spend & privasi 100% on-device.',
             textAlign: TextAlign.center,
@@ -86,9 +86,9 @@ class OnboardingWelcomeChoice extends StatelessWidget {
               color: AppColors.neoMint.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Text(
+            child: Text(
               '.JSON',
-              style: TextStyle(color: AppColors.neoMint, fontSize: 10, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.textIncome, fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -133,9 +133,9 @@ class OnboardingWelcomeChoice extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: AppColors.textWhite, fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text(title, style: TextStyle(color: AppColors.textWhite, fontSize: 14, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                  Text(subtitle, style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                 ],
               ),
             ),

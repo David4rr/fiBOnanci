@@ -84,7 +84,7 @@ class WalletTotalBalanceCard extends StatelessWidget {
             ),
             if (showChart) ...[
               const SizedBox(height: 12),
-              Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+              Divider(color: AppColors.dividerSubtle, height: 1),
               const SizedBox(height: 10),
               TrendSplineChart(
                 incomeValues: incomeSeries,

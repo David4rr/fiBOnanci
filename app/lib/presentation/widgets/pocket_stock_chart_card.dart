@@ -104,7 +104,7 @@ class _PocketStockChartCardState extends State<PocketStockChartCard> with Single
 
     final values = trend.values;
     final isUpward = trend.isUpward;
-    final themeColor = isUpward ? AppColors.neoMint : AppColors.statusDeficit;
+    final themeColor = isUpward ? AppColors.textIncome : AppColors.statusDeficit;
 
     final displayBalance = (_scrubbedIndex != null && _scrubbedIndex! < values.length)
         ? values[_scrubbedIndex!]

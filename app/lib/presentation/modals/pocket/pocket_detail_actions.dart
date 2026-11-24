@@ -32,7 +32,7 @@ class PocketDetailActions extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),
-              icon: const Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
+              icon: Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
               label: Text(
                 'Isi Dana',
                 style: GoogleFonts.plusJakartaSans(
@@ -54,7 +54,7 @@ class PocketDetailActions extends StatelessWidget {
                 backgroundColor: pocket.currentAmount > 0 ? AppColors.neoCoral : AppColors.canvasInputSearch,
                 disabledBackgroundColor: AppColors.canvasInputSearch,
                 disabledForegroundColor: AppColors.textMuted,
-                side: pocket.currentAmount > 0 ? null : const BorderSide(color: AppColors.canvasBorder, width: 0.8),
+                side: pocket.currentAmount > 0 ? null : BorderSide(color: AppColors.canvasBorder, width: 0.8),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),

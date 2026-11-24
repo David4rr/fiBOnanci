@@ -113,7 +113,7 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
             decoration: InputDecoration(
               hintText: 'Cari nama app atau package...',
               hintStyle: AppTypography.listSubtitle,
-              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
+              prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted),
               filled: true,
               fillColor: AppColors.canvasInputSearch,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -137,7 +137,7 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
                         final name = app['appName'] ?? 'App';
                         final pkg = app['packageName'] ?? '';
                         return DecoratedBox(
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             border: Border(bottom: BorderSide(color: AppColors.canvasBorder, width: 0.8)),
                           ),
                           child: Material(
@@ -155,7 +155,7 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
                               ),
                               title: Text(name, style: AppTypography.listTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
                               subtitle: Text(pkg, style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
-                              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                              trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
                               onTap: () {
                                 if (widget.onAppSelected != null) {
                                   widget.onAppSelected!(pkg);
@@ -187,9 +187,9 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
     final height = MediaQuery.of(context).size.height * 0.75;
     return Container(
       height: height,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.canvasCardSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: _buildContent(context),
     );

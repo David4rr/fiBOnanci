@@ -73,7 +73,7 @@ class ProfileAvatarPresets {
       id: 'preset:avatar_8',
       label: 'Klasik',
       icon: Icons.person_rounded,
-      color: AppColors.textWhite,
+      color: AppColors.pureWhite,
       bgTint: Color(0xFF1E212D),
     ),
   ];
@@ -146,7 +146,7 @@ class ProfileAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color(0xFF1E212D),
+        color: AppColors.canvasCardSurface,
         border: border ?? Border.all(color: AppColors.canvasBorder, width: 1.5),
       ),
       child: Center(

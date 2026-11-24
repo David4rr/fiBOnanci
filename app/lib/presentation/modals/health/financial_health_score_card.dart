@@ -16,15 +16,15 @@ class FinancialHealthScoreCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = AppCurrency.of(context);
     final isHealthyTier = report.overallScore >= 70;
-    final accent = isHealthyTier ? AppColors.neoChartreuse : (report.overallScore >= 50 ? const Color(0xFFFBBF24) : AppColors.neoCoral);
+    final accent = isHealthyTier ? AppColors.textAccent : (report.overallScore >= 50 ? const Color(0xFFFBBF24) : AppColors.neoCoral);
     const clipper = FolderTabClipper(tabWidthFactor: 0.56, cornerRadius: 24.0, stepDepth: 18.0);
 
     return CustomPaint(
-      foregroundPainter: const FolderTabBorderPainter(clipper: clipper, borderColor: Color(0xFF262936), borderWidth: 1.1),
+      foregroundPainter: FolderTabBorderPainter(clipper: clipper, borderColor: AppColors.canvasBorder, borderWidth: 1.1),
       child: ClipPath(
         clipper: clipper,
         child: Container(
-          color: AppColors.carbonBlack,
+          color: AppColors.canvasCardSurface,
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class FinancialHealthScoreCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(report.tierHeadline, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.78), height: 1.35)),
+                        Text(report.tierHeadline, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary, height: 1.35)),
                       ],
                     ),
                   ),
@@ -124,7 +124,7 @@ class FinancialHealthRecommendationsSection extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
-            color: Colors.white.withValues(alpha: 0.38),
+            color: AppColors.textSubtle,
             letterSpacing: 1.0,
           ),
         ),
@@ -138,7 +138,7 @@ class FinancialHealthRecommendationsSection extends StatelessWidget {
                 Text(
                   '0${i + 1}',
                   style: GoogleFonts.plusJakartaSans(
-                    color: AppColors.neoChartreuse,
+                    color: AppColors.textAccent,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     fontFeatures: const [FontFeature.tabularFigures()],
@@ -150,7 +150,7 @@ class FinancialHealthRecommendationsSection extends StatelessWidget {
                     recommendations[i],
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12.5,
-                      color: Colors.white.withValues(alpha: 0.82),
+                      color: AppColors.textPrimary,
                       height: 1.45,
                       fontWeight: FontWeight.w400,
                     ),

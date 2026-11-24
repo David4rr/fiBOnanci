@@ -127,9 +127,9 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0C0D11),
+        color: AppColors.canvasBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1)),
+        border: Border(top: BorderSide(color: AppColors.borderSubtle, width: 1)),
       ),
       padding: EdgeInsets.fromLTRB(20, 14, 20, 28 + bottomInset),
       child: Column(

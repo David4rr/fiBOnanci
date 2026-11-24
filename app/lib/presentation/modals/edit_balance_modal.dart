@@ -114,7 +114,7 @@ class EditBalanceModal {
                                       child: SizedBox(
                                         height: 52,
                                         child: OutlinedButton(
-                                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                          style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                                           onPressed: () => Navigator.pop(modalContext),
                                           child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                                         ),

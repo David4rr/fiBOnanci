@@ -52,8 +52,8 @@ class _TactileToastCardState extends State<TactileToastCard> with SingleTickerPr
   }
 
   (Color primary, Color secondary, String defaultTag, IconData defaultIcon) _resolveTheme() => switch (widget.type) {
-        AppSnackBarType.success => (AppColors.neoMint, const Color(0xFF10B981), 'SUKSES', Icons.check_circle_rounded),
-        AppSnackBarType.info => (AppColors.neoChartreuse, AppColors.neoCyan, 'INFO', Icons.info_outline_rounded),
+        AppSnackBarType.success => (AppColors.textIncome, const Color(0xFF10B981), 'SUKSES', Icons.check_circle_rounded),
+        AppSnackBarType.info => (AppColors.textAccent, AppColors.neoCyan, 'INFO', Icons.info_outline_rounded),
         AppSnackBarType.warning => (AppColors.statusCaution, const Color(0xFFFBBF24), 'PERHATIAN', Icons.warning_amber_rounded),
         AppSnackBarType.error => (AppColors.neoCoral, const Color(0xFFEF4444), 'HAPUS', Icons.delete_outline_rounded),
       };
@@ -77,10 +77,10 @@ class _TactileToastCardState extends State<TactileToastCard> with SingleTickerPr
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF161820),
+                color: AppColors.canvasCardSurface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF282B38), width: 1.0),
-                boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 10, offset: Offset(0, 4))],
+                border: Border.all(color: AppColors.canvasBorder, width: 1.0),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark ? 0.25 : 0.08), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: Row(
                 children: [
@@ -142,9 +142,9 @@ class _TactileToastCardState extends State<TactileToastCard> with SingleTickerPr
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF222533),
+                          color: AppColors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF33374A)),
+                          border: Border.all(color: AppColors.borderSubtle),
                         ),
                         child: Text(widget.actionLabel!, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: primary)),
                       ),

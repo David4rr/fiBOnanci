@@ -20,9 +20,9 @@ class FinancialReportBreakdownCards extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
+            color: AppColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            border: Border.all(color: AppColors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class FinancialReportBreakdownCards extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _buildAssetRow('Total Kekayaan Bersih', fmt.format(data.totalNetWorth), AppColors.textWhite, isBold: true),
-              Divider(color: Colors.white.withValues(alpha: 0.06), height: 20),
+              Divider(color: AppColors.dividerSubtle, height: 20),
               _buildAssetRow('Saldo Rekening Aktif', fmt.format(data.totalWalletBalance), AppColors.textWhite),
               const SizedBox(height: 8),
               _buildAssetRow('Dana Kantong Tabungan', fmt.format(data.totalPocketBalance), AppColors.textMuted),
@@ -46,9 +46,9 @@ class FinancialReportBreakdownCards extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
+            color: AppColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            border: Border.all(color: AppColors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +117,7 @@ class FinancialReportBreakdownCards extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('+$inStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoMint, fontFeatures: const [FontFeature.tabularFigures()])),
+              Text('+$inStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textIncome, fontFeatures: const [FontFeature.tabularFigures()])),
               const SizedBox(height: 2),
               Text('-$outStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoCoral, fontFeatures: const [FontFeature.tabularFigures()])),
             ],

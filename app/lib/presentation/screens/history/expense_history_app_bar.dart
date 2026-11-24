@@ -103,7 +103,7 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                         tooltip: isCalendarView ? 'Tampilan Kartu' : 'Kalender Aktivitas',
                         icon: Icon(
                           isCalendarView ? Icons.view_agenda_outlined : Icons.calendar_month_outlined,
-                          color: isCalendarView ? AppColors.neoChartreuse : AppColors.textWhite,
+                          color: isCalendarView ? AppColors.textAccent : AppColors.textWhite,
                           size: 22,
                         ),
                       ),

@@ -38,14 +38,14 @@ class SubscriptionDetailActions extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.canvasBorder),
+                side: BorderSide(color: AppColors.canvasBorder),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.textWhite),
+              icon: Icon(Icons.edit_outlined, size: 18, color: AppColors.textWhite),
               label: Text(
                 isInstallment ? 'Edit Cicilan' : 'Edit Tagihan',
-                style: const TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 if (onEdit != null) {

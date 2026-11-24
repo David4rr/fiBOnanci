@@ -55,18 +55,18 @@ class _BackupPasswordPromptModalState extends State<BackupPasswordPromptModal> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.neoChartreuse.withValues(alpha: 0.15),
+                    color: AppColors.textAccent.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.enhanced_encryption_rounded, color: AppColors.neoChartreuse, size: 22),
+                  child: Icon(Icons.enhanced_encryption_rounded, color: AppColors.textAccent, size: 22),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Proteksi Cadangan (AES-256)', style: TextStyle(color: AppColors.textWhite, fontSize: 15, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text('Amankan data saldo & transaksi dari pencurian berkas', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
                     ],
                   ),
@@ -77,14 +77,14 @@ class _BackupPasswordPromptModalState extends State<BackupPasswordPromptModal> {
             TextField(
               controller: _passwordCtrl,
               obscureText: _obscureText,
-              style: const TextStyle(color: AppColors.textWhite, fontSize: 13),
+              style: TextStyle(color: AppColors.textWhite, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Kata Sandi / PIN Cadangan (Disarankan)',
-                hintStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 13),
+                hintStyle: TextStyle(color: AppColors.textSubtle, fontSize: 13),
                 filled: true,
                 fillColor: AppColors.canvasBg,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textMuted, size: 18),
+                prefixIcon: Icon(Icons.lock_outline_rounded, color: AppColors.textMuted, size: 18),
                 suffixIcon: IconButton(
                   icon: Icon(_obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: AppColors.textMuted, size: 20),
                   onPressed: () => setState(() => _obscureText = !_obscureText),
@@ -92,7 +92,7 @@ class _BackupPasswordPromptModalState extends State<BackupPasswordPromptModal> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Dengan enkripsi AES-256, berkas cadangan terkunci rapat dan mustahil dibaca oleh pihak lain tanpa kata sandi ini.',
               style: TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
@@ -117,7 +117,7 @@ class _BackupPasswordPromptModalState extends State<BackupPasswordPromptModal> {
             Center(
               child: TextButton(
                 onPressed: () => _submit(false),
-                child: const Text('Simpan Tanpa Sandi (JSON Polos)', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                child: Text('Simpan Tanpa Sandi (JSON Polos)', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
               ),
             ),
             const SizedBox(height: 8),

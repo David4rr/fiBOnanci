@@ -47,7 +47,7 @@ class InboxEmptyView extends StatelessWidget {
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: () => NotificationBridge.openPermissionSettings(),
-              icon: const Icon(Icons.settings_suggest_rounded, size: 16, color: AppColors.textMuted),
+              icon: Icon(Icons.settings_suggest_rounded, size: 16, color: AppColors.textMuted),
               label: Text(
                 'Buka Setelan Akses Notifikasi Android',
                 style: GoogleFonts.plusJakartaSans(

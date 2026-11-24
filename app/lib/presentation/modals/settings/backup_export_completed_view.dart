@@ -26,7 +26,7 @@ class BackupExportCompletedView extends StatelessWidget {
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, color: AppColors.neoChartreuse, size: 14),
         const SizedBox(width: 6),
-        Text(text, style: const TextStyle(color: AppColors.textWhite, fontSize: 11, fontWeight: FontWeight.w600)),
+        Text(text, style: TextStyle(color: AppColors.textWhite, fontSize: 11, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -57,7 +57,7 @@ class BackupExportCompletedView extends StatelessWidget {
           child: const Icon(Icons.check_circle_rounded, color: AppColors.neoMint, size: 36),
         ),
         const SizedBox(height: 10),
-        const Text('Cadangan Berhasil Disimpan!', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text('Cadangan Berhasil Disimpan!', style: TextStyle(color: AppColors.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -66,16 +66,16 @@ class BackupExportCompletedView extends StatelessWidget {
             if (isEncrypted) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.neoMint.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                child: const Row(children: [
-                  Icon(Icons.lock_rounded, color: AppColors.neoMint, size: 12),
-                  SizedBox(width: 4),
-                  Text('Terenkripsi AES-256', style: TextStyle(color: AppColors.neoMint, fontSize: 11, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(color: AppColors.textIncome.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                child: Row(children: [
+                  Icon(Icons.lock_rounded, color: AppColors.textIncome, size: 12),
+                  const SizedBox(width: 4),
+                  Text('Terenkripsi AES-256', style: TextStyle(color: AppColors.textIncome, fontSize: 11, fontWeight: FontWeight.bold)),
                 ]),
               ),
               const SizedBox(width: 6),
             ],
-            const Text('Aman & Offline', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            Text('Aman & Offline', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
           ],
         ),
         const SizedBox(height: 12),
@@ -85,31 +85,31 @@ class BackupExportCompletedView extends StatelessWidget {
           decoration: BoxDecoration(color: AppColors.canvasBg, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.canvasBorder)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              const Icon(Icons.folder_outlined, color: AppColors.neoChartreuse, size: 16),
+              Icon(Icons.folder_outlined, color: AppColors.textAccent, size: 16),
               const SizedBox(width: 6),
-              const Text('LOKASI PENYIMPANAN:', style: TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              Text('LOKASI PENYIMPANAN:', style: TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.neoMint.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
-                child: const Text('Otomatis Tersimpan', style: TextStyle(color: AppColors.neoMint, fontSize: 9.5, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(color: AppColors.textIncome.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
+                child: Text('Otomatis Tersimpan', style: TextStyle(color: AppColors.textIncome, fontSize: 9.5, fontWeight: FontWeight.bold)),
               ),
             ]),
             const SizedBox(height: 8),
-            Text(fileName, style: const TextStyle(color: AppColors.neoChartreuse, fontSize: 12.5, fontWeight: FontWeight.bold)),
+            Text(fileName, style: TextStyle(color: AppColors.textAccent, fontSize: 12.5, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.subdirectory_arrow_right_rounded, color: AppColors.textMuted, size: 14),
+              Icon(Icons.subdirectory_arrow_right_rounded, color: AppColors.textMuted, size: 14),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   friendlyLocation,
-                  style: const TextStyle(color: AppColors.textWhite, fontSize: 11, fontWeight: FontWeight.w600, height: 1.3),
+                  style: TextStyle(color: AppColors.textWhite, fontSize: 11, fontWeight: FontWeight.w600, height: 1.3),
                 ),
               ),
             ]),
             const SizedBox(height: 4),
-            Text(savedPath, style: const TextStyle(color: AppColors.textSubtle, fontSize: 9.5, fontFamily: 'monospace')),
+            Text(savedPath, style: TextStyle(color: AppColors.textSubtle, fontSize: 9.5, fontFamily: 'monospace')),
           ]),
         ),
         const SizedBox(height: 12),
@@ -129,8 +129,8 @@ class BackupExportCompletedView extends StatelessWidget {
         Center(
           child: TextButton.icon(
             key: const Key('export_share_btn'),
-            icon: const Icon(Icons.folder_shared_outlined, color: AppColors.neoChartreuse, size: 16),
-            label: const Text('Pilih Lokasi Lain / Bagikan Berkas', style: TextStyle(color: AppColors.neoChartreuse, fontSize: 12.5, fontWeight: FontWeight.w600)),
+            icon: Icon(Icons.folder_shared_outlined, color: AppColors.textAccent, size: 16),
+            label: Text('Pilih Lokasi Lain / Bagikan Berkas', style: TextStyle(color: AppColors.textAccent, fontSize: 12.5, fontWeight: FontWeight.w600)),
             onPressed: _shareFile,
           ),
         ),

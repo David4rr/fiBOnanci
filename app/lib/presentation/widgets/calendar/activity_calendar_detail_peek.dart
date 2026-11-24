@@ -55,14 +55,14 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
               Expanded(
                 child: Text(
                   dateLabel,
-                  style: const TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700),
+                  style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (isNoSpend)
-                _buildBadge(label: 'No-Spend Day', icon: Icons.star_rounded, color: AppColors.neoChartreuse)
+                _buildBadge(label: 'No-Spend Day', icon: Icons.star_rounded, color: AppColors.textAccent)
               else if (isHemat)
-                _buildBadge(label: 'Hemat (Aman)', icon: Icons.local_fire_department_rounded, color: AppColors.neoChartreuse)
+                _buildBadge(label: 'Hemat (Aman)', icon: Icons.local_fire_department_rounded, color: AppColors.textAccent)
               else if (summary.status == DayActivityStatus.overPace)
                 _buildBadge(label: 'Melebihi Alokasi', icon: Icons.error_outline_rounded, color: AppColors.neoCoral),
             ],
@@ -70,18 +70,18 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildMetricCol(label: 'Pemasukan', amount: summary.totalIncome, color: AppColors.neoMint, prefix: '+')),
+              Expanded(child: _buildMetricCol(label: 'Pemasukan', amount: summary.totalIncome, color: AppColors.textIncome, prefix: '+')),
               Container(width: 1, height: 26, color: AppColors.canvasBorder.withValues(alpha: 0.35)),
               Expanded(child: _buildMetricCol(label: 'Pengeluaran', amount: summary.totalExpense, color: summary.totalExpense > 0 ? AppColors.neoCoral : AppColors.textSubtle, prefix: summary.totalExpense > 0 ? '-' : '')),
               Container(width: 1, height: 26, color: AppColors.canvasBorder.withValues(alpha: 0.35)),
-              Expanded(child: _buildMetricCol(label: 'Alokasi Harian', amount: summary.dailySafePace, color: AppColors.neoChartreuse, prefix: '')),
+              Expanded(child: _buildMetricCol(label: 'Alokasi Harian', amount: summary.dailySafePace, color: AppColors.textAccent, prefix: '')),
             ],
           ),
           Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 2),
             child: Text(
               '✨ ${insight.text}',
-              style: TextStyle(color: AppColors.textSubtle.withValues(alpha: 0.75), fontSize: 10.5, fontStyle: FontStyle.italic),
+              style: TextStyle(color: AppColors.textSubtle, fontSize: 10.5, fontStyle: FontStyle.italic),
             ),
           ),
           if (hasTxs) ...[
@@ -111,7 +111,7 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
               child: Center(
                 child: Text(
                   'Tidak ada aktivitas transaksi tercatat',
-                  style: TextStyle(color: AppColors.textSubtle.withValues(alpha: 0.5), fontSize: 11),
+                  style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
                 ),
               ),
             ),
@@ -141,7 +141,7 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSubtle, fontSize: 10)),
+          Text(label, style: TextStyle(color: AppColors.textSubtle, fontSize: 10)),
           const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,

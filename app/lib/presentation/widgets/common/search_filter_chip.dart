@@ -7,14 +7,14 @@ class SearchFilterChip extends StatelessWidget {
   final String label;
   final VoidCallback onClear;
   final Color color;
-  final Color backgroundColor;
+  final Color? backgroundColor;
 
   const SearchFilterChip({
     super.key,
     required this.label,
     required this.onClear,
     this.color = AppColors.neoChartreuse,
-    this.backgroundColor = AppColors.canvasInputSearch,
+    this.backgroundColor,
   });
 
   @override
@@ -22,7 +22,7 @@ class SearchFilterChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: backgroundColor ?? AppColors.canvasInputSearch,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color, width: 1),
       ),

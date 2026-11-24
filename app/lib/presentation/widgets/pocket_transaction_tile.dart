@@ -25,7 +25,7 @@ class PocketTransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final n = (transaction.notes ?? '').toLowerCase();
     final isDeposit = n.contains('setoran') || transaction.type == 'transfer';
-    final themeColor = isDeposit ? AppColors.neoMint : AppColors.neoCoral;
+    final themeColor = isDeposit ? AppColors.textIncome : AppColors.neoCoral;
     final sign = isDeposit ? '+' : '-';
 
     final wallet = wallets.where((w) => w.id == transaction.walletId).firstOrNull;

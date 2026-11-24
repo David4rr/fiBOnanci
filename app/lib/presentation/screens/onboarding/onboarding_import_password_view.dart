@@ -54,12 +54,12 @@ class _OnboardingImportPasswordViewState extends State<OnboardingImportPasswordV
               child: const Icon(Icons.lock_rounded, color: AppColors.neoChartreuse, size: 22),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Cadangan Terenkripsi (AES-256)', style: TextStyle(color: AppColors.textWhite, fontSize: 15, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text('Masukkan kata sandi atau PIN untuk membuka', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
                 ],
               ),
@@ -81,14 +81,14 @@ class _OnboardingImportPasswordViewState extends State<OnboardingImportPasswordV
         TextField(
           controller: _passwordCtrl,
           obscureText: _obscureText,
-          style: const TextStyle(color: AppColors.textWhite, fontSize: 13),
+          style: TextStyle(color: AppColors.textWhite, fontSize: 13),
           decoration: InputDecoration(
             hintText: 'Kata Sandi / PIN Cadangan',
-            hintStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 13),
+            hintStyle: TextStyle(color: AppColors.textSubtle, fontSize: 13),
             filled: true,
             fillColor: AppColors.canvasBg,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            prefixIcon: const Icon(Icons.key_rounded, color: AppColors.textMuted, size: 18),
+            prefixIcon: Icon(Icons.key_rounded, color: AppColors.textMuted, size: 18),
             suffixIcon: IconButton(
               icon: Icon(_obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: AppColors.textMuted, size: 20),
               onPressed: () => setState(() => _obscureText = !_obscureText),
@@ -106,7 +106,7 @@ class _OnboardingImportPasswordViewState extends State<OnboardingImportPasswordV
         Center(
           child: TextButton(
             onPressed: widget.onCancel,
-            child: const Text('Batal & Pilih Berkas Lain', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            child: Text('Batal & Pilih Berkas Lain', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
           ),
         ),
         const SizedBox(height: 8),

@@ -68,7 +68,7 @@ class PocketDetailTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(8)),
-                  child: Text('${transactions.length} mutasi', style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+                  child: Text('${transactions.length} mutasi', style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
             ],
           ),
@@ -85,10 +85,10 @@ class PocketDetailTab extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.04),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        color: AppColors.surfaceSubtle,
+                        border: Border.all(color: AppColors.borderSubtle),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(Icons.receipt_long_outlined, size: 20, color: AppColors.textSubtle),
                       ),
                     ),

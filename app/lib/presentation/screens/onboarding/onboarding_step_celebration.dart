@@ -90,7 +90,7 @@ class _OnboardingStepCelebrationState extends State<OnboardingStepCelebration>
           Text(
             'Selamat datang, $firstName!',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textWhite,
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -98,7 +98,7 @@ class _OnboardingStepCelebrationState extends State<OnboardingStepCelebration>
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Brankas dan rekening pertamamu sudah aktif.\nSemua siap, ayo mulai atur keuanganmu!',
             textAlign: TextAlign.center,
             style: TextStyle(

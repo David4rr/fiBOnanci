@@ -47,11 +47,11 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildRow('Rekening Pembayaran', wallet.name, Icons.account_balance_wallet_outlined),
-          const Divider(color: AppColors.canvasBorder, height: 20),
+          Divider(color: AppColors.canvasBorder, height: 20),
           _buildRow('Saldo Rekening Saat Ini', currencyFormatter.format(wallet.balance), Icons.account_balance_outlined),
-          const Divider(color: AppColors.canvasBorder, height: 20),
+          Divider(color: AppColors.canvasBorder, height: 20),
           _buildRow('Metode Pembayaran', subscription.autoDeduct ? 'Auto-Deduct Aktif' : 'Manual Transfer / QRIS', Icons.sync_rounded),
-          const Divider(color: AppColors.canvasBorder, height: 20),
+          Divider(color: AppColors.canvasBorder, height: 20),
           _buildRow(
             'Status Periode Ini',
             isCompleted ? 'Cicilan Selesai' : (isPaidThisMonth ? 'Sudah Lunas' : 'Belum Dibayar'),
@@ -59,7 +59,7 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
             valueColor: (isPaidThisMonth || isCompleted) ? AppColors.neoMint : AppColors.neoCoral,
           ),
           if (isInstallment) ...[
-            const Divider(color: AppColors.canvasBorder, height: 20),
+            Divider(color: AppColors.canvasBorder, height: 20),
             _buildRow(
               'Rencana Cicilan',
               '$paidCycles dari $totalCycles bulan lunas',
@@ -69,17 +69,17 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
             const SizedBox(height: 10),
             _buildProgressBar(paidCycles: paidCycles, totalCycles: totalCycles),
             if (!isCompleted) ...[
-              const Divider(color: AppColors.canvasBorder, height: 20),
+              Divider(color: AppColors.canvasBorder, height: 20),
               _buildRow('Sisa Tagihan Pokok', currencyFormatter.format(remainingCost), Icons.payments_outlined, valueColor: AppColors.neoCoral),
             ],
             if (subscription.deadlineDate != null) ...[
-              const Divider(color: AppColors.canvasBorder, height: 20),
+              Divider(color: AppColors.canvasBorder, height: 20),
               _buildRow('Tenggat Selesai', DateFormat('MMMM yyyy', 'id_ID').format(subscription.deadlineDate!), Icons.event_available_rounded),
             ],
           ] else ...[
-            const Divider(color: AppColors.canvasBorder, height: 20),
+            Divider(color: AppColors.canvasBorder, height: 20),
             _buildRow('Siklus Tagihan', subscription.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan', Icons.repeat_rounded),
-            const Divider(color: AppColors.canvasBorder, height: 20),
+            Divider(color: AppColors.canvasBorder, height: 20),
             _buildRow('Jatuh Tempo', 'Setiap tanggal ${subscription.dueDay}', Icons.calendar_today_rounded),
           ],
         ],

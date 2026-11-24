@@ -129,9 +129,9 @@ class OnboardingStepWallet extends StatelessWidget {
                 child: Text(
                   s.name,
                   style: TextStyle(
-                    color: isSelected ? AppColors.neoChartreuse : AppColors.textMuted,
+                    color: isSelected ? AppColors.textAccent : AppColors.textMuted,
                     fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                 ),
               ),
@@ -139,7 +139,7 @@ class OnboardingStepWallet extends StatelessWidget {
           }).toList(),
         ),
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'Jenis rekening',
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600),
         ),
@@ -160,8 +160,8 @@ class OnboardingStepWallet extends StatelessWidget {
           hintText: '0',
         ),
         const SizedBox(height: 6),
-        const Padding(
-          padding: EdgeInsets.only(left: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             'Opsional. Biarkan 0 jika ingin mulai dari nol.',
             style: TextStyle(

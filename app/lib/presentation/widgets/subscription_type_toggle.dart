@@ -67,7 +67,7 @@ class SubscriptionTypeToggle extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 15, color: isSelected ? AppColors.neoChartreuse : AppColors.textMuted),
+            Icon(icon, size: 15, color: isSelected ? AppColors.textAccent : AppColors.textMuted),
             const SizedBox(width: 6),
             Flexible(
               child: Text(

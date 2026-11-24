@@ -27,18 +27,18 @@ class WalletDetailTransactionTile extends StatelessWidget {
     final isIncomingTransfer = tx.type == 'transfer' && tx.destinationWalletId == walletId && tx.walletId != walletId;
     final isExpense = tx.type == 'expense' || (tx.type == 'transfer' && !isIncomingTransfer);
     final prefix = isExpense ? '- ' : '+ ';
-    final typeColor = isExpense ? AppColors.textWhite : AppColors.neoMint;
+    final typeColor = isExpense ? AppColors.textWhite : AppColors.textIncome;
 
     final iconData = (tx.type == 'income' || isIncomingTransfer)
         ? Icons.south_west_rounded
         : (tx.type == 'transfer' ? Icons.swap_horiz_rounded : Icons.north_east_rounded);
 
     final iconBgColor = (tx.type == 'income' || isIncomingTransfer)
-        ? AppColors.neoMint.withValues(alpha: 0.15)
+        ? AppColors.textIncome.withValues(alpha: 0.15)
         : (tx.type == 'transfer' ? AppColors.neoPurple.withValues(alpha: 0.15) : AppColors.canvasInputSearch);
 
     final iconColor = (tx.type == 'income' || isIncomingTransfer)
-        ? AppColors.neoMint
+        ? AppColors.textIncome
         : (tx.type == 'transfer' ? AppColors.neoPurple : AppColors.textWhite);
     final dateFormatted = _dateFormat.format(tx.transactionDate);
 

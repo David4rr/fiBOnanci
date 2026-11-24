@@ -12,11 +12,11 @@ class AppChoiceChip extends StatelessWidget {
   final ValueChanged<bool>? onSelected;
   final VoidCallback? onTap;
   final Color selectedColor;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Color selectedTextColor;
-  final Color unselectedTextColor;
+  final Color? unselectedTextColor;
   final Color? selectedBorderColor;
-  final Color unselectedBorderColor;
+  final Color? unselectedBorderColor;
   final double borderRadius;
 
   const AppChoiceChip({
@@ -26,11 +26,11 @@ class AppChoiceChip extends StatelessWidget {
     this.onSelected,
     this.onTap,
     this.selectedColor = AppColors.neoChartreuse,
-    this.backgroundColor = AppColors.canvasInputSearch,
+    this.backgroundColor,
     this.selectedTextColor = AppColors.textDarkPrimary,
-    this.unselectedTextColor = AppColors.textWhite,
+    this.unselectedTextColor,
     this.selectedBorderColor,
-    this.unselectedBorderColor = AppColors.canvasBorder,
+    this.unselectedBorderColor,
     this.borderRadius = 14,
   });
 
@@ -44,9 +44,12 @@ class AppChoiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBg = backgroundColor ?? AppColors.canvasInputSearch;
+    final effectiveUnselectedText = unselectedTextColor ?? AppColors.textPrimary;
+    final effectiveUnselectedBorder = unselectedBorderColor ?? AppColors.canvasBorder;
     final borderColor = selected
         ? (selectedBorderColor ?? selectedColor)
-        : unselectedBorderColor;
+        : effectiveUnselectedBorder;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -54,14 +57,14 @@ class AppChoiceChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8.5),
         decoration: BoxDecoration(
-          color: selected ? selectedColor : backgroundColor,
+          color: selected ? selectedColor : effectiveBg,
           borderRadius: BorderRadius.circular(borderRadius),
           border: Border.all(color: borderColor, width: 1),
         ),
         child: Text(
           label,
           style: GoogleFonts.plusJakartaSans(
-            color: selected ? selectedTextColor : unselectedTextColor,
+            color: selected ? selectedTextColor : effectiveUnselectedText,
             fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
             fontSize: 12.5,
           ),

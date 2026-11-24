@@ -43,7 +43,7 @@ class EditProfileAvatarPicker {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.neoChartreuse,
-                      border: Border.all(color: const Color(0xFF17181F), width: 2),
+                      border: Border.all(color: AppColors.canvasCardSurface, width: 2),
                     ),
                     child: const Icon(Icons.camera_alt, size: 11, color: AppColors.textDarkPrimary),
                   ),
@@ -74,7 +74,7 @@ class EditProfileAvatarPicker {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
+            Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
           ],
         ),
       ),
@@ -120,7 +120,7 @@ class EditProfileAvatarPicker {
   }) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF17181F),
+      backgroundColor: AppColors.canvasCardSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => SafeArea(
         child: Material(
@@ -146,7 +146,7 @@ class EditProfileAvatarPicker {
                   onSelectSource(ImageSource.gallery);
                 },
               ),
-              const Divider(color: AppColors.canvasBorder, height: 20),
+              Divider(color: AppColors.canvasBorder, height: 20),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.neoCyan.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.camera_alt_outlined, color: AppColors.neoCyan, size: 20)),
@@ -158,7 +158,7 @@ class EditProfileAvatarPicker {
                 },
               ),
               if (hasPhoto) ...[
-                const Divider(color: AppColors.canvasBorder, height: 20),
+                Divider(color: AppColors.canvasBorder, height: 20),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),

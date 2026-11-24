@@ -88,9 +88,9 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0C0D11),
+        color: AppColors.canvasBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1)),
+        border: Border(top: BorderSide(color: AppColors.borderSubtle, width: 1)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
       child: Column(
@@ -103,7 +103,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: -0.3,
             ),
           ),
@@ -134,10 +134,10 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.neoChartreuse.withValues(alpha: 0.08) : const Color(0xFF161822),
+                        color: isSelected ? AppColors.neoChartreuse.withValues(alpha: 0.08) : AppColors.canvasCardSurface,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isSelected ? AppColors.neoChartreuse.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.04),
+                          color: isSelected ? AppColors.neoChartreuse.withValues(alpha: 0.4) : AppColors.borderSubtle,
                           width: 1.2,
                         ),
                       ),
@@ -147,13 +147,13 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.neoChartreuse : const Color(0xFF232738),
+                              color: isSelected ? AppColors.neoChartreuse : AppColors.surfaceSubtle,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               Icons.account_balance_wallet_rounded,
                               size: 18,
-                              color: isSelected ? Colors.black : Colors.white70,
+                              color: isSelected ? Colors.black : AppColors.textMuted,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -166,7 +166,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -174,7 +174,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
                                   '${prof?.fullName ?? prof?.username ?? 'Akun Utama'} • ${w.accountNumber?.isNotEmpty == true ? w.accountNumber : w.type.toUpperCase()}',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
-                                    color: isSelected ? AppColors.neoChartreuse : AppColors.textMuted,
+                                    color: isSelected ? AppColors.textAccent : AppColors.textMuted,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

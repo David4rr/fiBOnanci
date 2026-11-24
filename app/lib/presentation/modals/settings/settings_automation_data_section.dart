@@ -14,6 +14,7 @@ import '../app_update_modal.dart';
 import '../notification_permission_modal.dart';
 import 'profile_settings_tab.dart';
 import 'settings_backup_helper.dart';
+import 'settings_theme_selector.dart';
 
 class SettingsAutomationDataSection extends StatefulWidget {
   final FinanceState state;
@@ -70,7 +71,7 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
       final activeCatCount = s.categories.where((c) => !c.isDeleted).length;
         final isAndroidPlatform = Platform.isAndroid || Platform.environment.containsKey('FLUTTER_TEST');
         final notifStatus = !isAndroidPlatform ? 'Hanya Android' : (_permissionGranted ? 'Aktif' : 'Mati');
-        final notifColor = (!isAndroidPlatform || !_permissionGranted) ? null : AppColors.neoMint;
+        final notifColor = (!isAndroidPlatform || !_permissionGranted) ? null : AppColors.textIncome;
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SettingsStyle.sectionHeader('PENGATURAN GLOBAL • SEMUA PROFIL'),
         const SizedBox(height: 6),
@@ -78,7 +79,8 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
         SettingsStyle.switchRow(switchKey: const Key('settings_refresh_rate_switch'), title: 'Mode Layar 120Hz (High FPS)', value: s.isHighRefreshRate, onChanged: (v) => context.read<FinanceBloc>().add(SetHighRefreshRateEvent(v))),
         SettingsStyle.switchRow(switchKey: const Key('settings_biometric_switch'), title: 'Kunci Biometrik / PIN Aplikasi', value: _biometricEnabled, onChanged: _toggleBiometric),
         SettingsStyle.switchRow(switchKey: const Key('settings_privacy_screen_switch'), title: 'Pelindung Layar Privasi (Recent Apps)', value: _privacyScreenEnabled, onChanged: _togglePrivacyScreen),
-        SettingsStyle.menuRow(key: const Key('settings_encryption_status_row'), title: 'Enkripsi Database (SQLCipher)', valueText: 'AES-256 Aktif', valueColor: AppColors.neoChartreuse, onTap: () {}),
+        const SettingsThemeSelector(),
+        SettingsStyle.menuRow(key: const Key('settings_encryption_status_row'), title: 'Enkripsi Database (SQLCipher)', valueText: 'AES-256 Aktif', valueColor: AppColors.textAccent, onTap: () {}),
         SettingsStyle.menuRow(key: const Key('settings_category_menu_row'), title: 'Kategori Transaksi', valueText: '$activeCatCount Kategori', onTap: () => widget.onNavigate(SettingsSubRoute.categories)),
         SettingsStyle.menuRow(key: const Key('settings_notif_permission_row'), title: 'Listener Notifikasi Bank', valueText: notifStatus, valueColor: notifColor, onTap: () async {
           if (!isAndroidPlatform) {
@@ -89,7 +91,7 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
           await _checkPermission();
         }),
         SettingsStyle.menuRow(key: const Key('settings_bank_apps_row'), title: 'Aplikasi Bank & E-Wallet', valueText: '${kPopularBankAppPresets.length} Didukung', onTap: () => widget.onNavigate(SettingsSubRoute.bankApps)),
-        SettingsStyle.menuRow(key: const Key('settings_app_update_row'), title: 'Pembaruan Aplikasi', valueText: 'v${AppUpdateService.currentVersion}', valueColor: AppColors.neoChartreuse, onTap: _checkUpdate),
+        SettingsStyle.menuRow(key: const Key('settings_app_update_row'), title: 'Pembaruan Aplikasi', valueText: 'v${AppUpdateService.currentVersion}', valueColor: AppColors.textAccent, onTap: _checkUpdate),
       ]);
     }
 
@@ -109,7 +111,7 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
       ),
       SettingsStyle.menuRow(
         key: const Key('settings_import_json_row'), title: 'Pulihkan Cadangan (Import JSON)',
-        valueText: 'Pulihkan', valueColor: AppColors.neoMint, onTap: () => SettingsBackupHelper.importJsonBackup(context, s),
+        valueText: 'Pulihkan', valueColor: AppColors.textIncome, onTap: () => SettingsBackupHelper.importJsonBackup(context, s),
       ),
       const SizedBox(height: 28),
       SettingsStyle.sectionHeader('ZONA BAHAYA • @$uUpper', color: AppColors.neoCoral.withValues(alpha: 0.85)),

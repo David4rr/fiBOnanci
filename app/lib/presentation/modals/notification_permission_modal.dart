@@ -47,15 +47,15 @@ class NotificationPermissionModal extends StatelessWidget {
                 child: const Icon(Icons.notifications_active_rounded, color: AppColors.neoMint, size: 24),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Akses Notifikasi Bank', style: TextStyle(color: AppColors.textWhite, fontSize: 18, fontWeight: FontWeight.w700)),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       'Pencatatan Otomatis 100% Offline',
-                      style: TextStyle(color: AppColors.neoMint, fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: AppColors.textIncome, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -130,7 +130,7 @@ class NotificationPermissionModal extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Nanti Saja', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+              child: Text('Nanti Saja', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
             ),
           ),
         ],
@@ -155,9 +155,9 @@ class NotificationPermissionModal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(title, style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.35)),
+                Text(subtitle, style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.35)),
               ],
             ),
           ),

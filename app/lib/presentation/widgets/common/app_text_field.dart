@@ -16,7 +16,7 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final bool autofocus;
   final double borderRadius;
-  final Color fillColor;
+  final Color? fillColor;
   final String? errorText;
 
   const AppTextField({
@@ -33,12 +33,13 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.autofocus = false,
     this.borderRadius = 16,
-    this.fillColor = AppColors.canvasInputSearch,
+    this.fillColor,
     this.errorText,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveFill = fillColor ?? AppColors.canvasInputSearch;
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
@@ -54,7 +55,7 @@ class AppTextField extends StatelessWidget {
         suffixIcon: suffixIcon,
         errorText: errorText,
         filled: true,
-        fillColor: fillColor,
+        fillColor: effectiveFill,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide.none,

@@ -10,7 +10,7 @@ class ModalHeader extends StatelessWidget {
   final VoidCallback? onClose;
   final bool showCloseButton;
   final IconData closeIcon;
-  final Color closeIconColor;
+  final Color? closeIconColor;
   final double closeIconSize;
   final Widget? leading;
   final Widget? trailing;
@@ -25,7 +25,7 @@ class ModalHeader extends StatelessWidget {
     this.onClose,
     this.showCloseButton = true,
     this.closeIcon = Icons.keyboard_arrow_down_rounded,
-    this.closeIconColor = AppColors.textWhite,
+    this.closeIconColor,
     this.closeIconSize = 28,
     this.leading,
     this.trailing,
@@ -36,6 +36,7 @@ class ModalHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveCloseColor = closeIconColor ?? AppColors.textPrimary;
     return Padding(
       padding: padding,
       child: Row(
@@ -97,7 +98,7 @@ class ModalHeader extends StatelessWidget {
                 child: Icon(
                   closeIcon,
                   key: ValueKey<IconData>(closeIcon),
-                  color: closeIconColor,
+                  color: effectiveCloseColor,
                   size: closeIconSize,
                 ),
               ),

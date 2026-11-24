@@ -64,16 +64,16 @@ class _CategoryColorPickerState extends State<CategoryColorPicker> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Colors.white.withValues(alpha: 0.4),
+                color: AppColors.textSubtle,
                 letterSpacing: 0.8,
               ),
             ),
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => setState(() => _customHexOpen = !_customHexOpen),
-              child: Text(
-                _customHexOpen ? 'Tutup HEX' : '# Custom HEX',
-                style: const TextStyle(
+              child: const Text(
+                '# Custom HEX',
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: AppColors.neoChartreuse,
@@ -92,21 +92,21 @@ class _CategoryColorPickerState extends State<CategoryColorPicker> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: CategoryColorPicker.parseColor(widget.selectedColor),
-                  border: Border.all(color: Colors.white24, width: 1.5),
+                  border: Border.all(color: AppColors.borderSubtle, width: 1.5),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _hexCtrl,
-                  style: const TextStyle(fontSize: 12, color: Colors.white, fontFamily: 'monospace'),
+                  style: TextStyle(fontSize: 12, color: AppColors.textPrimary, fontFamily: 'monospace'),
                   decoration: InputDecoration(
                     hintText: 'Misal: #FF6B6B',
-                    hintStyle: const TextStyle(fontSize: 12, color: Colors.white38),
+                    hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: AppColors.canvasInputSearch,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                   ),
                   onChanged: _onHexSubmitted,
@@ -133,7 +133,7 @@ class _CategoryColorPickerState extends State<CategoryColorPicker> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: CategoryColorPicker.parseColor(hex),
-                  border: active ? Border.all(color: Colors.white, width: 2.2) : null,
+                  border: active ? Border.all(color: AppColors.textPrimary, width: 2.2) : null,
                   boxShadow: active
                       ? [BoxShadow(color: CategoryColorPicker.parseColor(hex).withValues(alpha: 0.5), blurRadius: 6)]
                       : null,

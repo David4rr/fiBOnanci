@@ -14,7 +14,7 @@ class CurrencyAmountField extends StatelessWidget {
   final TextStyle? style;
   final TextStyle? prefixStyle;
   final double borderRadius;
-  final Color fillColor;
+  final Color? fillColor;
   final String? labelText;
   final String? hintText;
   final TextStyle? labelStyle;
@@ -30,7 +30,7 @@ class CurrencyAmountField extends StatelessWidget {
     this.style,
     this.prefixStyle,
     this.borderRadius = 16,
-    this.fillColor = AppColors.canvasInputSearch,
+    this.fillColor,
     this.labelText,
     this.hintText,
     this.labelStyle,
@@ -39,6 +39,7 @@ class CurrencyAmountField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveFill = fillColor ?? AppColors.canvasInputSearch;
     final effectivePrefixColor = prefixColor ?? AppColors.neoChartreuse;
     final effectiveStyle = style ?? AppTypography.heroGreeting.copyWith(color: AppColors.textWhite);
     final effectivePrefixStyle = prefixStyle ?? AppTypography.heroGreeting.copyWith(color: effectivePrefixColor);
@@ -59,7 +60,7 @@ class CurrencyAmountField extends StatelessWidget {
         prefixText: AppCurrency.symbolOf(context),
         prefixStyle: effectivePrefixStyle,
         filled: true,
-        fillColor: fillColor,
+        fillColor: effectiveFill,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           borderSide: BorderSide.none,

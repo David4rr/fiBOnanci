@@ -65,16 +65,16 @@ class ProfileHeaderCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 14),
               child: CustomPaint(
-                foregroundPainter: const FolderTabBorderPainter(
+                foregroundPainter: FolderTabBorderPainter(
                   clipper: clipper,
-                  borderColor: Color(0xFF2E3244),
+                  borderColor: AppColors.canvasBorder,
                   borderWidth: 1.2,
                 ),
                 child: ClipPath(
                   clipper: clipper,
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.carbonBlack,
+                    decoration: BoxDecoration(
+                      color: AppColors.canvasCardSurface,
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
                     child: Column(
@@ -95,7 +95,7 @@ class ProfileHeaderCard extends StatelessWidget {
                                     name: profile.username,
                                     size: 58,
                                     iconSize: 28,
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1.5),
+                                    border: Border.all(color: AppColors.borderSubtle, width: 1.5),
                                   ),
                                 ),
                               ),
@@ -111,13 +111,13 @@ class ProfileHeaderCard extends StatelessWidget {
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                      color: AppColors.textWhite,
                                       letterSpacing: -0.4,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 1),
-                                  Text(profile.email?.isNotEmpty == true ? profile.email! : '—', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.white.withValues(alpha: 0.75), fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                                  Text(profile.email?.isNotEmpty == true ? profile.email! : '—', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 1),
                                   Text('@${profile.username}', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                                 ],

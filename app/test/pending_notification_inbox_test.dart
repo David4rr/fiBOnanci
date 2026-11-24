@@ -612,7 +612,7 @@ void main() {
       // Card in inbox is updated to +Rp 5.000 (Income green)
       final incomeNominal = find.descendant(of: find.byType(InboxNotificationCard), matching: find.text('+Rp 5.000'));
       expect(incomeNominal, findsOneWidget);
-      expect(tester.widget<Text>(incomeNominal).style?.color, AppColors.neoMint);
+      expect(tester.widget<Text>(incomeNominal).style?.color, AppColors.textIncome);
       // Verify database record is updated atomically
       final txs = await db.select(db.transactions).get();
       final updatedTx = txs.firstWhere((t) => !t.isDeleted);

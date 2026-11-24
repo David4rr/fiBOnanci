@@ -96,7 +96,7 @@ class AddPocketModal {
                                 value: selectedWalletId,
                                 isExpanded: true,
                                 dropdownColor: AppColors.canvasCardSurface,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
+                                icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMuted),
                                 items: activeWallets.map((w) => DropdownMenuItem(value: w.id, child: Text('${w.name} (${currencyFormatter.format(w.balance)})', style: AppTypography.listSubtitle.copyWith(color: AppColors.textWhite), overflow: TextOverflow.ellipsis))).toList(),
                                 onChanged: (val) {
                                   if (val != null) setModalState(() => selectedWalletId = val);
@@ -113,7 +113,7 @@ class AddPocketModal {
                               child: SizedBox(
                                 height: 52,
                                 child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                  style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                                   onPressed: () => Navigator.pop(ctx),
                                   child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                                 ),

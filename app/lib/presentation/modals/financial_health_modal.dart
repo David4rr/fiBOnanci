@@ -32,9 +32,9 @@ class FinancialHealthModal {
               expand: false,
               builder: (sheetContext, scrollController) {
                 return Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.canvasBg,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                   ),
                   child: Column(
                     children: [

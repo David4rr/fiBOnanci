@@ -1,71 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../theme/app_colors.dart';
 import 'profile_settings_tab.dart';
-class SettingsStyle {
-  static final title = GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.90));
-  static final sub = GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w400, color: AppColors.textMuted);
-  static final value = GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.55), fontFeatures: const [FontFeature.tabularFigures()]);
-  static final accent = GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.neoChartreuse, fontFeatures: const [FontFeature.tabularFigures()]);
 
-  static Widget sectionHeader(String text, {Color? color}) => Text(
-    text, style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w700, color: color ?? Colors.white.withValues(alpha: 0.36), letterSpacing: 1.0),
-  );
-  static Widget hairline([double vertical = 0]) => SizedBox(height: vertical);
-  static Widget segmentedTrack({required List<Widget> children}) => Container(
-    padding: const EdgeInsets.all(3), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.035), borderRadius: BorderRadius.circular(10)), child: Row(children: children),
-  );
-  static Widget switchRow({required Key switchKey, required String title, required bool value, required ValueChanged<bool> onChanged}) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(title, style: SettingsStyle.title),
-      Transform.scale(scale: 0.85, alignment: Alignment.centerRight, child: Switch.adaptive(key: switchKey, value: value, activeTrackColor: AppColors.neoChartreuse, onChanged: onChanged)),
-    ]),
-  );
-  static Widget menuRow({
-    Key? key, required String title, required String valueText,
-    required VoidCallback onTap, Color? titleColor, Color? valueColor, Widget? trailingAction,
-  }) => GestureDetector(
-    key: key, behavior: HitTestBehavior.opaque, onTap: onTap,
-    child: Padding(padding: const EdgeInsets.symmetric(vertical: 13), child: Row(children: [
-      Expanded(child: Text(title, style: SettingsStyle.title.copyWith(color: titleColor))),
-      if (trailingAction != null) ...[trailingAction, const SizedBox(width: 10)],
-      Text(valueText, style: value.copyWith(color: valueColor)), const SizedBox(width: 4),
-      Icon(Icons.chevron_right_rounded, size: 17, color: valueColor ?? Colors.white24),
-    ])),
-  );
-  static Widget optionRow({
-    Key? key, required String title, String? subtitle, required bool selected, required VoidCallback onTap,
-  }) => GestureDetector(
-    key: key, behavior: HitTestBehavior.opaque, onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 13),
-      child: Row(children: [
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: SettingsStyle.title.copyWith(color: selected ? AppColors.textWhite : Colors.white70, fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
-          if (subtitle != null) ...[const SizedBox(height: 2), Text(subtitle, style: sub)],
-        ])),
-        if (selected) const Icon(Icons.check_rounded, size: 18, color: AppColors.neoChartreuse),
-      ]),
-    ),
-  );
-  static Widget flatChip({Key? key, required String label, required bool selected, required VoidCallback onTap}) => GestureDetector(
-    key: key, behavior: HitTestBehavior.opaque, onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-      decoration: BoxDecoration(
-        color: selected ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(8), border: Border.all(color: selected ? Colors.white.withValues(alpha: 0.22) : Colors.transparent, width: 0.8),
-      ),
-      child: Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: selected ? AppColors.textWhite : AppColors.textMuted)),
-    ),
-  );
-}
+export 'settings_style.dart';
 
 class SettingsBudgetCycleSection extends StatelessWidget {
   final FinanceState state;
@@ -135,7 +77,7 @@ class _SettingsCycleDaySubPageState extends State<SettingsCycleDaySubPage> {
             key: const Key('settings_custom_cycle_day_input'), controller: _ctrl, keyboardType: TextInputType.number, style: SettingsStyle.title,
             decoration: InputDecoration(
               prefixText: 'Tanggal ', prefixStyle: SettingsStyle.sub, hintText: '1 - 31', hintStyle: SettingsStyle.sub, isDense: true,
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.canvasBorder)),
               focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.neoChartreuse)),
             ),
           ),

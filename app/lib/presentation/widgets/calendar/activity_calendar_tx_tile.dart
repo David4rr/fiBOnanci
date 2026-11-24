@@ -61,13 +61,13 @@ class ActivityCalendarTxTile extends StatelessWidget {
                 children: [
                   Text(
                     tx.notes?.isNotEmpty == true ? tx.notes! : visuals.title,
-                    style: const TextStyle(color: AppColors.textWhite, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: AppColors.textWhite, fontSize: 12, fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     '${visuals.categoryLabel} • ${wallet?.name ?? "Rekening"}',
-                    style: TextStyle(color: AppColors.textSubtle.withValues(alpha: 0.8), fontSize: 10),
+                    style: TextStyle(color: AppColors.textSubtle, fontSize: 10.5, fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -77,7 +77,7 @@ class ActivityCalendarTxTile extends StatelessWidget {
             Text(
               '${isIncome ? '+' : '-'}${currencyFormatter.format(tx.amount)}',
               style: AppTypography.tabularFigures.copyWith(
-                color: isIncome ? AppColors.neoMint : AppColors.textWhite,
+                color: isIncome ? AppColors.textIncome : AppColors.textWhite,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),

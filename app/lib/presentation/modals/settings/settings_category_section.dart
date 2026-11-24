@@ -96,7 +96,7 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
                 decoration: InputDecoration(
                   hintText: 'Nama kategori baru...', hintStyle: SettingsStyle.sub, isDense: true,
                   contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.canvasBorder)),
                   focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.neoChartreuse)),
                 ),
               ),
@@ -121,7 +121,7 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
           spacing: 6, runSpacing: 6,
           children: filtered.map((cat) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: AppColors.surfaceSubtle, borderRadius: BorderRadius.circular(8)),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(
                 CategoryIconResolver.mapCategoryIcon(cat.iconName),
@@ -129,13 +129,13 @@ class _SettingsCategorySectionState extends State<SettingsCategorySection> {
                 color: _parseColor(cat.colorHex),
               ),
               const SizedBox(width: 6),
-              Text(cat.name, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.85))),
+              Text(cat.name, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
               if (filtered.length > 1) ...[
                 const SizedBox(width: 6),
                 GestureDetector(
                   key: Key('settings_delete_cat_${cat.id}'), behavior: HitTestBehavior.opaque,
                   onTap: () => context.read<FinanceBloc>().add(DeleteCategoryEvent(cat.id)),
-                  child: const Icon(Icons.close_rounded, size: 13, color: Colors.white38),
+                  child: Icon(Icons.close_rounded, size: 13, color: AppColors.textMuted),
                 ),
               ],
             ]),

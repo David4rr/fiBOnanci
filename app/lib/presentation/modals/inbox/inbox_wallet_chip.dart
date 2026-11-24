@@ -49,7 +49,7 @@ class InboxWalletChip extends StatelessWidget {
                   ),
                 ),
               ),
-              const Text(' · ', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+              Text(' · ', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
             ],
             Flexible(
               child: Text(

@@ -106,7 +106,7 @@ class _BackupExportModalState extends State<BackupExportModal> {
   Widget _buildStepItem(int stepNumber, String title, String subtitle) {
     final bool isDone = _step > stepNumber || _isComplete;
     final bool isCurrent = _step == stepNumber && !_isComplete;
-    final Color iconColor = isDone ? AppColors.neoMint : (isCurrent ? AppColors.neoChartreuse : AppColors.textSubtle);
+    final Color iconColor = isDone ? AppColors.textIncome : (isCurrent ? AppColors.textAccent : AppColors.textSubtle);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
@@ -123,17 +123,17 @@ class _BackupExportModalState extends State<BackupExportModal> {
             ),
             child: Center(
               child: isDone
-                  ? const Icon(Icons.check_rounded, color: AppColors.neoMint, size: 15)
+                  ? Icon(Icons.check_rounded, color: AppColors.textIncome, size: 15)
                   : (isCurrent
-                      ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.neoChartreuse))
-                      : Text('$stepNumber', style: const TextStyle(color: AppColors.textSubtle, fontSize: 10, fontWeight: FontWeight.bold))),
+                      ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textAccent))
+                      : Text('$stepNumber', style: TextStyle(color: AppColors.textSubtle, fontSize: 10, fontWeight: FontWeight.bold))),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title, style: TextStyle(color: isDone || isCurrent ? AppColors.textWhite : AppColors.textMuted, fontSize: 13, fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600)),
-              Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+              Text(subtitle, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
             ]),
           ),
         ],

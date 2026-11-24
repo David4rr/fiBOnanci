@@ -32,7 +32,7 @@ class CategoryIconPicker extends StatelessWidget {
             Text(
               'PILIH IKON',
               style: AppTypography.badgeLabel.copyWith(
-                color: Colors.white38,
+                color: AppColors.textSubtle,
                 letterSpacing: 1.2,
                 fontSize: 10,
               ),
@@ -75,10 +75,10 @@ class CategoryIconPicker extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? activeColor.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.04),
+                        : AppColors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? activeColor : Colors.white.withValues(alpha: 0.08),
+                      color: isSelected ? activeColor : AppColors.borderSubtle,
                       width: isSelected ? 1.5 : 1.0,
                     ),
                   ),
@@ -86,7 +86,7 @@ class CategoryIconPicker extends StatelessWidget {
                     child: Icon(
                       item.icon,
                       size: 20,
-                      color: isSelected ? activeColor : Colors.white60,
+                      color: isSelected ? activeColor : AppColors.textMuted,
                     ),
                   ),
                 ),

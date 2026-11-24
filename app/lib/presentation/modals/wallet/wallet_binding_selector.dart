@@ -90,7 +90,7 @@ class WalletBindingSelector extends StatelessWidget {
               value: dropdownValue,
               isExpanded: true,
               dropdownColor: AppColors.canvasCardSurface,
-              icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textMuted),
+              icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textMuted),
               style: AppTypography.listTitle,
               hint: Text('Tidak Terhubung (Input Manual)', style: AppTypography.listSubtitle),
               items: [

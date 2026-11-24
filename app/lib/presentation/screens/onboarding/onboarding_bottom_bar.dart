@@ -28,7 +28,7 @@ class OnboardingBottomBar extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: TextButton(
                 onPressed: onSkip,
-                child: const Text(
+                child: Text(
                   'Lewati',
                   style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
                 ),

@@ -5,8 +5,8 @@ import '../../theme/app_colors.dart';
 class ModalSheetScaffold extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
-  final Color backgroundColor;
-  final Color borderColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
   final double topRadius;
   final bool applyKeyboardInset;
 
@@ -14,8 +14,8 @@ class ModalSheetScaffold extends StatelessWidget {
     super.key,
     required this.child,
     this.padding,
-    this.backgroundColor = AppColors.canvasCardSurface,
-    this.borderColor = AppColors.canvasBorder,
+    this.backgroundColor,
+    this.borderColor,
     this.topRadius = 28,
     this.applyKeyboardInset = true,
   });
@@ -28,9 +28,9 @@ class ModalSheetScaffold extends StatelessWidget {
     return Container(
       padding: padding ?? defaultPadding,
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: backgroundColor ?? AppColors.canvasCardSurface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-        border: Border.all(color: borderColor, width: 1),
+        border: Border.all(color: borderColor ?? AppColors.canvasBorder, width: 1),
       ),
       child: SafeArea(
         top: false,

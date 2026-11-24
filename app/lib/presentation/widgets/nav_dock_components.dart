@@ -68,9 +68,7 @@ class _NavItemWidgetState extends State<NavItemWidget> {
               children: [
                 Icon(
                   widget.isActive ? widget.activeIcon : widget.icon,
-                  color: widget.isActive
-                      ? AppColors.neoChartreuse
-                      : AppColors.textMuted,
+                  color: widget.isActive ? AppColors.neoChartreuse : AppColors.textMuted,
                   size: 20,
                 ),
                 if (widget.isActive) ...[

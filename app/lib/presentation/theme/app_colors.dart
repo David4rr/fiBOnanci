@@ -1,41 +1,56 @@
 import 'package:flutter/material.dart';
 
+import 'app_palette.dart';
+
+export 'app_palette.dart' show AppPalette, DarkAppPalette, LightAppPalette;
+
+/// Central design tokens delegating dynamically to the active [AppPalette].
 class AppColors {
-  // ===========================================================================
-  // CANVAS & SURFACES (Deep Obsidian Matte)
-  // ===========================================================================
-  static const Color canvasBg = Color(0xFF0C0D11);
-  static const Color canvasCardSurface = Color(0xFF17181F);
-  static const Color canvasInputSearch = Color(0xFF1C1E26);
-  static const Color canvasBorder = Color(0xFF2A2C38);
-  static const Color canvasBorderSubtle = Color(0xFF1F2230);
+  static AppPalette _palette = const DarkAppPalette();
+
+  static void updateBrightness(Brightness brightness) {
+    _palette = brightness == Brightness.dark ? const DarkAppPalette() : const LightAppPalette();
+  }
+
+  static bool get isDark => _palette is DarkAppPalette;
+  static AppPalette get palette => _palette;
+
+  // Dynamic Theme-Adaptive Canvas & Surfaces
+  static Color get canvasBg => _palette.canvasBg;
+  static Color get canvasCardSurface => _palette.canvasCardSurface;
+  static Color get canvasInputSearch => _palette.canvasInputSearch;
+  static Color get canvasBorder => _palette.canvasBorder;
+  static Color get canvasBorderSubtle => _palette.canvasBorderSubtle;
+
+  // Dynamic Theme-Adaptive Typography & Text
+  static Color get textWhite => _palette.textPrimary;
+  static Color get textPrimary => _palette.textPrimary;
+  static Color get textMuted => _palette.textMuted;
+  static Color get textSubtle => _palette.textSubtle;
+  static Color get textIncome => _palette.textIncome;
+  static Color get textAccent => _palette.textAccent;
+  static Color get cardIconBadgeBg => _palette.cardIconBadgeBg;
+
+  // Dynamic Subtle Structural Helpers
+  static Color get surfaceSubtle => _palette.surfaceSubtle;
+  static Color get borderSubtle => _palette.borderSubtle;
+  static Color get dividerSubtle => _palette.dividerSubtle;
+  static const Color pureWhite = Color(0xFFFFFFFF);
+
+  // Constant Brand & Accent Palette (Identical in both themes)
   static const Color carbonBlack = Color(0xFF0C0A00);
+  static const Color neoChartreuse = Color(0xFFD4F442);
+  static const Color neoMint = Color(0xFF7DF24E);
+  static const Color neoCoral = Color(0xFFFF7052);
+  static const Color neoCyan = Color(0xFF26D9D9);
+  static const Color neoPurple = Color(0xFFA855F7);
 
-  // ===========================================================================
-  // VIBRANT NEO-PASTEL PALETTE (Card & Folder Accents)
-  // ===========================================================================
-  static const Color neoChartreuse = Color(0xFFD4F442); // Safe-to-Spend & Rekening/Dompet Accent
-  static const Color neoMint = Color(0xFF7DF24E);       // Total Real Balance
-  static const Color neoCoral = Color(0xFFFF7052);      // Pending Monthly Bills
-  static const Color neoCyan = Color(0xFF26D9D9);       // Daily Budget Allowance
-  static const Color neoPurple = Color(0xFFA855F7);     // E-Wallet / OVO
-
-  // ===========================================================================
-  // TYPOGRAPHY & CONTRAST TOKENS
-  // ===========================================================================
-  static const Color textWhite = Color(0xFFFFFFFF);
-  static const Color textMuted = Color(0xFF8E92A0);
-  static const Color textSubtle = Color(0xFF525666);
-
+  // Constant Contrast Text on Accent Cards
   static const Color textDarkPrimary = Color(0xFF0A0B0E);
   static const Color textDarkSecondary = Color(0xFF2C303E);
 
-  static const Color cardIconBadgeBg = Color(0x1F000000); // 12% Black overlay
-
-  // ===========================================================================
-  // FINANCIAL STATUS COLORS
-  // ===========================================================================
-  static const Color statusComfortable = neoChartreuse;
+  // Dynamic Financial Status Indicators
+  static Color get statusComfortable => _palette.statusComfortable;
   static const Color statusCaution = Color(0xFFF59E0B);
   static const Color statusDeficit = Color(0xFFEF4444);
 
