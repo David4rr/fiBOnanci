@@ -5,6 +5,7 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/finance_repository.dart';
+import '../theme/app_colors.dart';
 import 'inbox/pending_inbox_sheet.dart';
 
 export 'inbox/inbox_cards_list.dart';
@@ -12,7 +13,10 @@ export 'inbox/inbox_edit_transaction_sheet.dart';
 export 'inbox/inbox_empty_view.dart';
 export 'inbox/inbox_header_ribbon.dart';
 export 'inbox/inbox_notification_card.dart';
+export 'inbox/inbox_reminder_card.dart';
+export 'inbox/inbox_reminders_view.dart';
 export 'inbox/inbox_stacked_deck.dart';
+export 'inbox/inbox_tab_selector.dart';
 export 'inbox/inbox_wallet_chip.dart';
 export 'inbox/inbox_wallet_reassign_sheet.dart';
 export 'inbox/pending_inbox_sheet.dart';
@@ -32,7 +36,8 @@ class PendingInboxModal {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.canvasCardSurface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       clipBehavior: Clip.antiAlias,
       builder: (ctx) => PendingInboxSheet(initialPending: initialPending, database: db),
     );

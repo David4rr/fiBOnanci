@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../theme/app_colors.dart';
 import 'inbox_cards_list.dart';
 import 'inbox_empty_view.dart';
-import 'inbox_header_ribbon.dart';
 
 class InboxReviewDeckView extends StatelessWidget {
   final List<Map<String, dynamic>> pending;
@@ -22,14 +23,25 @@ class InboxReviewDeckView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InboxHeaderRibbon(pendingCount: pending.length),
-        if (pending.isEmpty)
-          const InboxEmptyView()
-        else
+    if (pending.isEmpty) {
+      return const Center(child: InboxEmptyView());
+    }
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2, bottom: 12),
+            child: Text(
+              'Geser kanan untuk terima, kiri untuk tolak',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ),
           InboxCardsList(
             items: pending,
             onConfirm: onConfirm,
@@ -37,7 +49,8 @@ class InboxReviewDeckView extends StatelessWidget {
             onReassign: onReassign,
             onEdit: onEdit,
           ),
-      ],
+        ],
+      ),
     );
   }
 }

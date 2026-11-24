@@ -11,6 +11,7 @@ class ProfilePreferencesStorage {
   static final Map<String, int> _cycleDays = {};
   static bool? _onboardingCompleted;
   static String _themeMode = 'system';
+  static bool _autoUpdateCheck = true;
   static bool _isLoaded = false;
   static File? _customStorageFile;
 
@@ -22,6 +23,7 @@ class ProfilePreferencesStorage {
     _cycleDays.clear();
     _onboardingCompleted = null;
     _themeMode = 'system';
+    _autoUpdateCheck = true;
   }
 
   @visibleForTesting
@@ -32,6 +34,7 @@ class ProfilePreferencesStorage {
     _cycleDays.clear();
     _onboardingCompleted = null;
     _themeMode = 'system';
+    _autoUpdateCheck = true;
   }
 
   static Future<File?> _resolveFile() async {
@@ -75,6 +78,9 @@ class ProfilePreferencesStorage {
           if (data['theme_mode'] is String) {
             _themeMode = data['theme_mode'] as String;
           }
+          if (data['auto_update_check'] is bool) {
+            _autoUpdateCheck = data['auto_update_check'] as bool;
+          }
         }
       }
       _isLoaded = true;
@@ -90,6 +96,7 @@ class ProfilePreferencesStorage {
         'safe_to_spend_wallets': _stsWallets.map((k, v) => MapEntry(k, v?.toList())),
         'onboarding_completed': _onboardingCompleted ?? (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')),
         'theme_mode': _themeMode,
+        'auto_update_check': _autoUpdateCheck,
       };
       await file.writeAsString(jsonEncode(data), flush: true);
     } catch (_) {}
@@ -99,6 +106,13 @@ class ProfilePreferencesStorage {
 
   static Future<void> setThemeMode(String mode) async {
     _themeMode = mode;
+    await _saveToDisk();
+  }
+
+  static bool getAutoUpdateCheck() => _autoUpdateCheck;
+
+  static Future<void> setAutoUpdateCheck(bool enabled) async {
+    _autoUpdateCheck = enabled;
     await _saveToDisk();
   }
 

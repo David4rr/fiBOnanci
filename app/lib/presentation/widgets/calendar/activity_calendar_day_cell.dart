@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../domain/services/cashflow_calendar_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-import 'duolingo_animated_flame.dart';
 
 class ActivityCalendarDayCell extends StatelessWidget {
   final int dayNumber;
@@ -24,8 +23,6 @@ class ActivityCalendarDayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = summary?.status ?? DayActivityStatus.neutral;
-    final isStreakDay = summary?.isHematDay == true;
-    final isOverPace = status == DayActivityStatus.overPace;
 
     final cellBg = isSelected
         ? AppColors.neoChartreuse.withValues(alpha: 0.15)
@@ -38,6 +35,19 @@ class ActivityCalendarDayCell extends StatelessWidget {
         : (isToday
             ? Border.all(color: AppColors.textWhite.withValues(alpha: 0.3), width: 1.0)
             : null);
+
+    String expenseText = '';
+    Color expenseColor = AppColors.textSubtle;
+
+    if (summary != null && status != DayActivityStatus.neutral) {
+      if (summary!.totalExpense > 0) {
+        expenseText = CashflowCalendarService.formatCompactAmount(summary!.totalExpense);
+        expenseColor = AppColors.neoCoral;
+      } else if (summary!.isNoSpendDay) {
+        expenseText = '0';
+        expenseColor = isSelected ? AppColors.neoChartreuse : AppColors.textSubtle;
+      }
+    }
 
     return InkWell(
       onTap: onTap,
@@ -67,22 +77,21 @@ class ActivityCalendarDayCell extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 2),
-            if (isStreakDay)
-              const DuolingoAnimatedFlame(
-                size: 13,
-                isLit: true,
-              )
-            else if (isOverPace)
-              Container(
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: AppColors.neoCoral,
-                  shape: BoxShape.circle,
+            if (expenseText.isNotEmpty)
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  expenseText,
+                  style: AppTypography.tabularFigures.copyWith(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w700,
+                    color: expenseColor,
+                  ),
+                  maxLines: 1,
                 ),
               )
             else
-              const SizedBox(height: 15),
+              const SizedBox(height: 11),
           ],
         ),
       ),

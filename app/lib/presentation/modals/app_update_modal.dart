@@ -35,11 +35,13 @@ class AppUpdateModal extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.neoChartreuse.withAlpha(30),
+                  color: AppColors.canvasBg,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.neoChartreuse.withAlpha(60)),
+                  border: Border.all(color: AppColors.canvasBorder),
                 ),
-                child: const Icon(Icons.system_update_rounded, color: AppColors.neoChartreuse, size: 24),
+                child: const Center(
+                  child: FibonanciLogoMark(size: 28, showGlow: true),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -81,11 +83,11 @@ class AppUpdateModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Text('Catatan Rilis:', style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 6),
+          Text('Catatan Rilis (Changelog):', style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
           Container(
             width: double.infinity,
-            constraints: const BoxConstraints(maxHeight: 140),
+            constraints: const BoxConstraints(maxHeight: 180),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.canvasBg,
@@ -93,12 +95,8 @@ class AppUpdateModal extends StatelessWidget {
               border: Border.all(color: AppColors.canvasBorder),
             ),
             child: SingleChildScrollView(
-              child: Text(
-                updateInfo.releaseNotes.trim().isEmpty
-                    ? 'Peningkatan performa dan perbaikan sistem.'
-                    : updateInfo.releaseNotes.trim(),
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.45),
-              ),
+              physics: const BouncingScrollPhysics(),
+              child: UserFriendlyChangelogView(releaseNotes: updateInfo.releaseNotes, isCompact: true),
             ),
           ),
           const SizedBox(height: 20),

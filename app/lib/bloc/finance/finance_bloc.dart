@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notifications/local_notification_service.dart';
+import '../../core/notifications/spending_streak_notifier.dart';
 import '../../core/storage/profile_preferences_storage.dart';
 import '../../data/repositories/finance_repository.dart';
 import '../../domain/services/safe_to_spend_service.dart';
@@ -79,7 +80,10 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       emit(state.copyWith(wallets: event.wallets, safeToSpendWalletIds: safeWallets, metrics: metrics));
     });
     on<_CategoriesUpdated>((event, emit) => emit(state.copyWith(categories: event.categories)));
-    on<_TransactionsUpdated>((event, emit) => emit(state.copyWith(transactions: event.transactions)));
+    on<_TransactionsUpdated>((event, emit) {
+      emit(state.copyWith(transactions: event.transactions));
+      SpendingStreakNotifier.checkAndNotify(transactions: event.transactions, dailySafePace: state.metrics.safeToSpendDaily);
+    });
     on<_SubscriptionsUpdated>((event, emit) {
       final metrics = SafeToSpendService.calculate(
         wallets: state.wallets,

@@ -67,10 +67,10 @@ void main() {
       // Day 1 exists
       expect(find.text('1'), findsWidgets);
 
-      // Day 1 does NOT show nominal badges (+2.4M) on day cell, as requested (focus on pure icon)
-      expect(find.text('+2.4M'), findsNothing);
+      // Day 1 shows compact expense nominal (75k) rather than fire icon
+      expect(find.text('75k'), findsOneWidget);
 
-      // Day 1 is a streak day, so Duolingo animated flame vector is present!
+      // Duolingo animated flame vector is present on header streak banner
       expect(find.byType(DuolingoAnimatedFlame), findsWidgets);
     });
 

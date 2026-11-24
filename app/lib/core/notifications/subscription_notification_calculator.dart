@@ -137,8 +137,8 @@ class SubscriptionNotificationCalculator {
         id: getH3Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h3Time,
-        title: 'Pengingat Tagihan: $title',
-        body: 'Tagihan $formattedCost akan jatuh tempo 3 hari lagi (Tgl ${nextDueDate.day}).',
+        title: 'Tagihan $title (H-3)',
+        body: '$formattedCost jatuh tempo 3 hari lagi (Tgl ${nextDueDate.day}).',
         payload: subscriptionId,
         daysBefore: 3,
       ));
@@ -150,8 +150,8 @@ class SubscriptionNotificationCalculator {
         id: getH1Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h1Time,
-        title: 'Besok Jatuh Tempo: $title',
-        body: 'Besok batas pembayaran $formattedCost. Pastikan saldo mencukupi.',
+        title: 'Tagihan $title Besok',
+        body: '$formattedCost jatuh tempo besok. Pastikan saldo cukup.',
         payload: subscriptionId,
         daysBefore: 1,
       ));
@@ -163,8 +163,8 @@ class SubscriptionNotificationCalculator {
         id: getH0Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h0Time,
-        title: 'Jatuh Tempo Hari Ini: $title',
-        body: 'Hari ini batas pembayaran $formattedCost. Ketuk untuk menandai lunas.',
+        title: 'Tagihan $title Hari Ini',
+        body: '$formattedCost jatuh tempo hari ini. Buka untuk tandai lunas.',
         payload: subscriptionId,
         daysBefore: 0,
       ));

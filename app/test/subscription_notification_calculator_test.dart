@@ -85,7 +85,7 @@ void main() {
       expect(reminders.length, 3);
       expect(reminders[0].daysBefore, 3);
       expect(reminders[0].scheduledTime, DateTime(2026, 10, 17, 9, 0));
-      expect(reminders[0].title, 'Pengingat Tagihan: Netflix');
+      expect(reminders[0].title, 'Tagihan Netflix (H-3)');
 
       expect(reminders[1].daysBefore, 1);
       expect(reminders[1].scheduledTime, DateTime(2026, 10, 19, 9, 0));

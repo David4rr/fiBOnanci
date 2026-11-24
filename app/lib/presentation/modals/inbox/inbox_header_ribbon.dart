@@ -24,6 +24,7 @@ class InboxHeaderRibbon extends StatelessWidget {
                     child: Text(
                       'Kotak Masuk Notifikasi',
                       style: AppTypography.modalTitle,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -80,20 +81,7 @@ class InboxHeaderRibbon extends StatelessWidget {
             ),
           ],
         ),
-        if (pendingCount > 0)
-          Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 12),
-            child: Text(
-              'Geser kanan untuk terima, kiri untuk tolak',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textMuted,
-              ),
-            ),
-          )
-        else
-          const SizedBox(height: 12),
+        const SizedBox(height: 12),
       ],
     );
   }

@@ -83,12 +83,14 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
       if (!granted && mounted) await NotificationPermissionModal.show(context);
     }
     if (!mounted) return;
-    try {
-      final update = await AppUpdateService.checkForUpdate();
-      if (update != null && update.hasUpdate && mounted) {
-        await AppUpdateModal.show(context, update);
-      }
-    } catch (_) {}
+    if (ProfilePreferencesStorage.getAutoUpdateCheck()) {
+      try {
+        final update = await AppUpdateService.checkForUpdate();
+        if (update != null && update.hasUpdate && mounted) {
+          await AppUpdateModal.show(context, update);
+        }
+      } catch (_) {}
+    }
   }
 
   @override

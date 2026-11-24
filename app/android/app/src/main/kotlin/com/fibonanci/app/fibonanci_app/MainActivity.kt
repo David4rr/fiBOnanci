@@ -98,8 +98,24 @@ class MainActivity : FlutterActivity() {
                     val url = call.argument<String>("url")
                     val fileName = call.argument<String>("fileName") ?: "fiBOnanci-update.apk"
                     if (!url.isNullOrBlank()) {
-                        val ok = downloadApkViaDownloadManager(url, fileName)
-                        result.success(ok)
+                        val downloadId = downloadApkViaDownloadManager(url, fileName)
+                        result.success(downloadId)
+                    } else {
+                        result.success(-1L)
+                    }
+                }
+                "getDownloadProgress" -> {
+                    val downloadId = call.argument<Number>("downloadId")?.toLong()
+                    if (downloadId != null && downloadId > 0) {
+                        result.success(getDownloadProgress(downloadId))
+                    } else {
+                        result.success(null)
+                    }
+                }
+                "installApk" -> {
+                    val downloadId = call.argument<Number>("downloadId")?.toLong()
+                    if (downloadId != null && downloadId > 0) {
+                        result.success(installDownloadedApk(downloadId))
                     } else {
                         result.success(false)
                     }
@@ -113,7 +129,7 @@ class MainActivity : FlutterActivity() {
                     if (!url.isNullOrBlank()) {
                         if (isApkUrl(url)) {
                             val fileName = url.substringAfterLast("/").substringBefore("?").ifBlank { "fiBOnanci-update.apk" }
-                            if (downloadApkViaDownloadManager(url, fileName)) {
+                            if (downloadApkViaDownloadManager(url, fileName) > 0) {
                                 result.success(true)
                                 return@setMethodCallHandler
                             }
@@ -211,9 +227,19 @@ class MainActivity : FlutterActivity() {
         return clean.endsWith(".apk")
     }
 
-    private fun downloadApkViaDownloadManager(url: String, fileName: String): Boolean {
+    private fun cleanupStaleApks() {
+        try {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            downloadsDir?.listFiles { file ->
+                file.name.startsWith("fiBOnanci", ignoreCase = true) && file.name.endsWith(".apk", ignoreCase = true)
+            }?.forEach { it.delete() }
+        } catch (_: Exception) {}
+    }
+
+    private fun downloadApkViaDownloadManager(url: String, fileName: String): Long {
         return try {
-            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager ?: return false
+            cleanupStaleApks()
+            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager ?: return -1L
             val uri = Uri.parse(url)
             val request = DownloadManager.Request(uri).apply {
                 setTitle("Pembaruan fiBOnanci")
@@ -225,6 +251,62 @@ class MainActivity : FlutterActivity() {
                 setAllowedOverRoaming(true)
             }
             downloadManager.enqueue(request)
+        } catch (_: Exception) {
+            -1L
+        }
+    }
+
+    private fun getDownloadProgress(downloadId: Long): Map<String, Any?>? {
+        val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager ?: return null
+        val query = DownloadManager.Query().setFilterById(downloadId)
+        val cursor = downloadManager.query(query) ?: return null
+        return cursor.use {
+            if (it.moveToFirst()) {
+                val bytesDownloadedIndex = it.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                val totalBytesIndex = it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                val statusIndex = it.getColumnIndex(DownloadManager.COLUMN_STATUS)
+
+                val bytesDownloaded = if (bytesDownloadedIndex != -1) it.getLong(bytesDownloadedIndex) else 0L
+                val totalBytes = if (totalBytesIndex != -1) it.getLong(totalBytesIndex) else -1L
+                val status = if (statusIndex != -1) it.getInt(statusIndex) else -1
+
+                val statusStr = when (status) {
+                    DownloadManager.STATUS_PENDING -> "pending"
+                    DownloadManager.STATUS_RUNNING -> "running"
+                    DownloadManager.STATUS_PAUSED -> "paused"
+                    DownloadManager.STATUS_SUCCESSFUL -> "successful"
+                    DownloadManager.STATUS_FAILED -> "failed"
+                    else -> "unknown"
+                }
+
+                val progress = if (totalBytes > 0) {
+                    (bytesDownloaded.toDouble() / totalBytes.toDouble()).coerceIn(0.0, 1.0)
+                } else {
+                    0.0
+                }
+
+                mapOf(
+                    "status" to statusStr,
+                    "bytesDownloaded" to bytesDownloaded,
+                    "totalBytes" to totalBytes,
+                    "progress" to progress
+                )
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun installDownloadedApk(downloadId: Long): Boolean {
+        return try {
+            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager ?: return false
+            val uri = downloadManager.getUriForDownloadedFile(downloadId) ?: return false
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
             true
         } catch (_: Exception) {
             false

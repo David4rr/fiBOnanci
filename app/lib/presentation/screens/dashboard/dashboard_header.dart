@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
+import '../../../core/notifications/in_app_notification_storage.dart';
 import '../../modals/pending_inbox_modal.dart';
 import '../../modals/profile_modal.dart';
 import '../../theme/app_colors.dart';
@@ -83,37 +84,43 @@ class DashboardHeader extends StatelessWidget {
                 onTap: () => PendingInboxModal.show(context),
                 child: ValueListenableBuilder<int>(
                   valueListenable: NotificationBridge.pendingCountNotifier,
-                  builder: (context, pendingCount, child) {
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.canvasCardSurface,
-                            border: Border.all(color: AppColors.canvasBorder, width: 1.5),
-                          ),
-                          child: Center(
-                            child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
-                          ),
-                        ),
-                        if (pendingCount > 0)
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 10,
-                              height: 10,
+                  builder: (context, pendingCount, _) {
+                    return ValueListenableBuilder<int>(
+                      valueListenable: InAppNotificationStorage.unreadCountNotifier,
+                      builder: (context, unreadCount, _) {
+                        final totalBadge = pendingCount + unreadCount;
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
-                                color: AppColors.neoChartreuse,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.canvasBg, width: 1.5),
+                                color: AppColors.canvasCardSurface,
+                                border: Border.all(color: AppColors.canvasBorder, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Icon(Icons.inbox_outlined, color: AppColors.textWhite, size: 20),
                               ),
                             ),
-                          ),
-                      ],
+                            if (totalBadge > 0)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.neoChartreuse,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.canvasBg, width: 1.5),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),

@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'bloc/finance/finance_bloc.dart';
 import 'bloc/finance/finance_event.dart';
+import 'core/notifications/in_app_notification_storage.dart';
 import 'core/storage/profile_preferences_storage.dart';
 import 'data/database/app_database.dart';
 import 'data/repositories/finance_repository.dart';
@@ -17,6 +18,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await ProfilePreferencesStorage.load();
+  await InAppNotificationStorage.init();
 
   final database = AppDatabase();
   final repository = DriftFinanceRepository(database);

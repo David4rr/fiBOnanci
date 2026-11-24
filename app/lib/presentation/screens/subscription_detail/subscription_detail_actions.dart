@@ -7,7 +7,7 @@ import '../../widgets/common/common_widgets.dart';
 import 'subscription_detail_pay_button.dart';
 
 /// Interactive action buttons for subscription detail modal:
-/// Mark as paid (with morph animation), edit subscription, and confirmation delete dialog.
+/// Mark as paid (with morph animation), edit subscription, and delete.
 class SubscriptionDetailActions extends StatelessWidget {
   final SubscriptionEntry subscription;
   final WalletEntry wallet;

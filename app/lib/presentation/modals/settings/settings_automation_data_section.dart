@@ -10,7 +10,6 @@ import '../../../core/notification_parser/bank_presets.dart';
 import '../../../core/update/app_update_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
-import '../app_update_modal.dart';
 import '../notification_permission_modal.dart';
 import 'profile_settings_tab.dart';
 import 'settings_backup_helper.dart';
@@ -53,17 +52,6 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
     if (mounted) setState(() => _privacyScreenEnabled = v);
   }
 
-  Future<void> _checkUpdate() async {
-    AppSnackBar.showInfo(context, 'Memeriksa Pembaruan', message: 'Menghubungkan ke repositori rilis...', duration: const Duration(milliseconds: 1000));
-    final update = await AppUpdateService.checkForUpdate();
-    if (!mounted) return;
-    if (update != null && update.hasUpdate) {
-      AppUpdateModal.show(context, update);
-    } else {
-      AppSnackBar.showSuccess(context, 'Versi Terbaru', message: 'Aplikasi sudah versi terbaru (v${AppUpdateService.currentVersion})');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final s = widget.state;
@@ -91,7 +79,13 @@ class _SettingsAutomationDataSectionState extends State<SettingsAutomationDataSe
           await _checkPermission();
         }),
         SettingsStyle.menuRow(key: const Key('settings_bank_apps_row'), title: 'Aplikasi Bank & E-Wallet', valueText: '${kPopularBankAppPresets.length} Didukung', onTap: () => widget.onNavigate(SettingsSubRoute.bankApps)),
-        SettingsStyle.menuRow(key: const Key('settings_app_update_row'), title: 'Pembaruan Aplikasi', valueText: 'v${AppUpdateService.currentVersion}', valueColor: AppColors.textAccent, onTap: _checkUpdate),
+        SettingsStyle.menuRow(
+          key: const Key('settings_app_update_row'),
+          title: 'Tentang Aplikasi & Pembaruan',
+          valueText: 'v${AppUpdateService.currentVersion}',
+          valueColor: AppColors.textAccent,
+          onTap: () => widget.onNavigate(SettingsSubRoute.aboutApp),
+        ),
       ]);
     }
 

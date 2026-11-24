@@ -3,12 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
+import '../../../core/notifications/in_app_notification_storage.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/repositories/finance_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import 'inbox_header_ribbon.dart';
 import 'inbox_inline_edit_form.dart';
+import 'inbox_reminders_view.dart';
 import 'inbox_review_deck_view.dart';
+import 'inbox_tab_selector.dart';
 import 'inbox_wallet_reassign_sheet.dart';
 
 class PendingInboxSheet extends StatefulWidget {
@@ -25,11 +29,15 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
   late List<Map<String, dynamic>> _pending;
   bool _isEditing = false;
   Map<String, dynamic>? _editingItem;
+  int _selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
     _pending = List<Map<String, dynamic>>.from(widget.initialPending);
+    if (_pending.isEmpty && InAppNotificationStorage.unreadCountNotifier.value > 0) {
+      _selectedTab = 1;
+    }
   }
 
   AppDatabase? _resolveDb() {
@@ -125,31 +133,48 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final modalHeight = (screenHeight * 0.82).clamp(480.0, 750.0);
+
     return Container(
+      height: modalHeight,
       decoration: BoxDecoration(
-        color: AppColors.canvasBg,
+        color: AppColors.canvasCardSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(top: BorderSide(color: AppColors.borderSubtle, width: 1)),
       ),
-      padding: EdgeInsets.fromLTRB(20, 14, 20, 28 + bottomInset),
+      padding: EdgeInsets.fromLTRB(20, 14, 20, 24 + bottomInset),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const ModalGrabHandle(padding: EdgeInsets.only(bottom: 18)),
-          AnimatedCrossFade(
-            duration: const Duration(milliseconds: 260),
-            firstCurve: Curves.easeOutCubic,
-            secondCurve: Curves.easeInCubic,
-            crossFadeState: _isEditing ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-            firstChild: InboxReviewDeckView(
-              pending: _pending,
-              onConfirm: _confirmItem,
-              onReject: _rejectItem,
-              onReassign: _reassignWallet,
-              onEdit: _editItem,
+          const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
+          InboxHeaderRibbon(pendingCount: _pending.length),
+          ValueListenableBuilder<int>(
+            valueListenable: InAppNotificationStorage.unreadCountNotifier,
+            builder: (context, unreadCount, _) => InboxTabSelector(
+              selectedTab: _selectedTab,
+              pendingCount: _pending.length,
+              unreadCount: unreadCount,
+              onTabSelected: (idx) => setState(() => _selectedTab = idx),
             ),
-            secondChild: _buildInlineEdit(),
+          ),
+          Expanded(
+            child: _selectedTab == 0
+                ? AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 260),
+                    firstCurve: Curves.easeOutCubic,
+                    secondCurve: Curves.easeInCubic,
+                    crossFadeState: _isEditing ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    firstChild: InboxReviewDeckView(
+                      pending: _pending,
+                      onConfirm: _confirmItem,
+                      onReject: _rejectItem,
+                      onReassign: _reassignWallet,
+                      onEdit: _editItem,
+                    ),
+                    secondChild: _buildInlineEdit(),
+                  )
+                : const InboxRemindersView(),
           ),
         ],
       ),
