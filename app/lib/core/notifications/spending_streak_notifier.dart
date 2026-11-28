@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_calendar_service.dart';
+import '../l10n/locale_notifier.dart';
 import 'local_notification_service.dart';
 
 class SpendingStreakAlert {
@@ -31,13 +32,14 @@ class SpendingStreakNotifier {
     required int streak,
   }) {
     if (dailySafePace <= 0) return null;
+    final l10n = AppL10n.current;
 
     if (todayExpense >= dailySafePace) {
       final body = streak > 1
-          ? 'Pengeluaran hari ini telah melampaui kuota harian. Pertahankan kendali agar streak hemat $streak hari tidak terhenti.'
-          : 'Pengeluaran hari ini telah melampaui kuota harian Safe-to-Spend. Tahan pengeluaran sebelum siklus berganti.';
+          ? l10n.notifStreakExceededWithStreak(streak)
+          : l10n.notifStreakExceededBody;
       return SpendingStreakAlert(
-        title: 'Batas Belanja Harian Terlampaui',
+        title: l10n.notifStreakExceededTitle,
         body: body,
         alertLevel: 2,
       );
@@ -46,10 +48,10 @@ class SpendingStreakNotifier {
     if (todayExpense >= dailySafePace * 0.8) {
       final percent = (todayExpense / dailySafePace * 100).round();
       final body = streak > 1
-          ? 'Pengeluaran hari ini mencapai $percent% dari kuota. Batasi belanja agar streak hemat $streak hari tetap terjaga.'
-          : 'Pengeluaran hari ini telah mencapai $percent% dari alokasi harian Safe-to-Spend.';
+          ? l10n.notifStreakNearWithStreak(percent, streak)
+          : l10n.notifStreakNearBody(percent);
       return SpendingStreakAlert(
-        title: 'Mendekati Batas Belanja Harian',
+        title: l10n.notifStreakNearTitle,
         body: body,
         alertLevel: 1,
       );

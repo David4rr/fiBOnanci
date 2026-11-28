@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/locale_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import 'nav_dock_animated_row.dart';
 import 'nav_dock_components.dart';
@@ -29,29 +31,16 @@ class BottomNavDock extends StatelessWidget {
 
   VoidCallback get _action => onAddAction ?? onCenterAction!;
 
-  static const _navItems = [
-    DockItemData(
-      index: 0,
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard,
-      label: 'Home',
-    ),
-    DockItemData(
-      index: 1,
-      icon: Icons.receipt_long_outlined,
-      activeIcon: Icons.receipt_long,
-      label: 'Tagihan',
-    ),
-    DockItemData(
-      index: 2,
-      icon: Icons.account_balance_wallet_outlined,
-      activeIcon: Icons.account_balance_wallet,
-      label: 'Wallets',
-    ),
+  List<DockItemData> _buildNavItems(AppLocalizations l10n) => [
+    DockItemData(index: 0, icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: l10n.navDashboard),
+    DockItemData(index: 1, icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long, label: l10n.navSubscriptions),
+    DockItemData(index: 2, icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet, label: l10n.navWallets),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final navItems = _buildNavItems(l10n);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final effectiveBottom = bottomInset > 0 ? bottomInset : 12.0;
     return RepaintBoundary(
@@ -92,7 +81,7 @@ class BottomNavDock extends StatelessWidget {
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 6),
-                              child: AnimatedNavDockRow(currentIndex: currentIndex, onTapIndex: onTapIndex, items: _navItems),
+                              child: AnimatedNavDockRow(currentIndex: currentIndex, onTapIndex: onTapIndex, items: navItems),
                             ),
                           ),
                         ),

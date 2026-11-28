@@ -91,4 +91,51 @@ extension ProfileBlocHandlers on FinanceBloc {
       emit(state.copyWith(errorMessage: 'Gagal mengganti profil aktif: $e'));
     }
   }
+
+  Future<void> handleOnboardNewProfile(
+    OnboardNewProfileEvent event,
+    Emitter<FinanceState> emit,
+  ) async {
+    try {
+      final newProfileId = await repository.addProfile(
+        username: event.username,
+        fullName: event.fullName,
+        occupation: event.occupation,
+        monthlyIncomeTarget: event.monthlyIncomeTarget,
+        avatarPath: event.avatarPath,
+        currency: event.currency,
+        setActive: true,
+      );
+      await repository.addWallet(
+        name: event.walletName,
+        type: event.walletType,
+        initialBalance: event.initialBalance,
+        colorHex: event.colorHex,
+        iconName: event.iconName,
+        profileId: newProfileId,
+        createInitialTransaction: event.createInitialTransaction,
+      );
+      _initStreamListeners(newProfileId);
+      final profiles = await repository.getProfiles();
+      final active = profiles.where((p) => p.id == newProfileId).firstOrNull;
+      final wallets = await repository.getWallets(profileId: newProfileId);
+      final transactions = await repository.getTransactions(profileId: newProfileId, limit: 5000);
+      final subscriptions = await repository.getSubscriptions(profileId: newProfileId);
+      final pockets = await repository.getPockets(profileId: newProfileId);
+      final metrics = SafeToSpendService.calculate(wallets: wallets, subscriptions: subscriptions);
+      emit(state.copyWith(
+        activeProfile: active,
+        profiles: profiles,
+        wallets: wallets,
+        transactions: transactions,
+        subscriptions: subscriptions,
+        pockets: pockets,
+        budgetCycleDay: 1,
+        clearSafeToSpendWallets: true,
+        metrics: metrics,
+      ));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal membuat profil baru: $e'));
+    }
+  }
 }

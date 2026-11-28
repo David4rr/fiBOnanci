@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../widgets/common/expandable_search_filter_bar.dart';
 
 class DashboardSearchBar extends StatelessWidget {
@@ -31,12 +32,16 @@ class DashboardSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return ExpandableSearchFilterBar(
       searchController: searchController,
       searchQuery: searchQuery,
       typeFilter: typeFilter,
       walletFilter: walletFilter,
       wallets: wallets,
+      hintText: l10n.searchTransactionsHint,
+      headerTitle: l10n.searchFilterTitle,
+      primaryFilterTitle: l10n.searchFilterTypeHeader,
       onSearchChanged: onSearchChanged,
       onClearSearch: onClearSearch,
       onFilterApplied: onFilterApplied,

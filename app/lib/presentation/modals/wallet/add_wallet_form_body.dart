@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../widgets/common/common_widgets.dart';
 
 class AddWalletHeader extends StatelessWidget {
@@ -13,6 +14,7 @@ class AddWalletHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Column(
@@ -20,8 +22,8 @@ class AddWalletHeader extends StatelessWidget {
         children: [
           isForm ? const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)) : const SizedBox(height: 18),
           ModalHeader(
-            title: isForm ? 'Tambah Rekening Baru' : 'Pilih Aplikasi',
-            subtitle: isForm ? 'Bank, E-Wallet, atau Kas Tunai' : 'Cari bank atau e-wallet di HP Anda',
+            title: isForm ? l10n.addWalletTitle : l10n.pickAppTitle,
+            subtitle: isForm ? l10n.addWalletSubtitle : l10n.pickAppSubtitle,
             closeIcon: isForm ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
             onClose: onBack,
           ),

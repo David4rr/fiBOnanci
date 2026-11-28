@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
@@ -33,7 +34,7 @@ class WalletModalActions extends StatelessWidget {
               ),
               onPressed: onCancel,
               child: Text(
-                cancelLabel,
+                cancelLabel == 'Batal' ? AppL10n.of(context).catCancelBtn : cancelLabel,
                 style: AppTypography.listTitle.copyWith(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,

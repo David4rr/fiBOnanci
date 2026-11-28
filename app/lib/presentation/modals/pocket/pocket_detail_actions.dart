@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import 'pocket_transfer_dialog.dart';
@@ -34,7 +35,7 @@ class PocketDetailActions extends StatelessWidget {
               ),
               icon: Icon(Icons.south_west_rounded, color: AppColors.canvasBg, size: 18),
               label: Text(
-                'Isi Dana',
+                AppL10n.of(context).pocketDepositBtn,
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.canvasBg,
                   fontWeight: FontWeight.w800,
@@ -64,7 +65,7 @@ class PocketDetailActions extends StatelessWidget {
                 size: 18,
               ),
               label: Text(
-                'Tarik Dana',
+                AppL10n.of(context).pocketWithdrawBtn,
                 style: GoogleFonts.plusJakartaSans(
                   color: pocket.currentAmount > 0 ? AppColors.canvasBg : AppColors.textMuted,
                   fontWeight: FontWeight.w800,

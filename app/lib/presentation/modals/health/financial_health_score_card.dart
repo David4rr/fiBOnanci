@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../domain/services/financial_health_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/folder_tab_card.dart';
 import '../profile/profile_card_painters.dart';
+import 'financial_health_l10n.dart';
 
 class FinancialHealthScoreCard extends StatelessWidget {
   final FinancialHealthReport report;
@@ -14,6 +17,7 @@ class FinancialHealthScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final fmt = AppCurrency.of(context);
     final isHealthyTier = report.overallScore >= 70;
     final accent = isHealthyTier ? AppColors.textAccent : (report.overallScore >= 50 ? const Color(0xFFFBBF24) : AppColors.neoCoral);
@@ -32,7 +36,7 @@ class FinancialHealthScoreCard extends StatelessWidget {
               Row(children: [
                 Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: accent)),
                 const SizedBox(width: 7),
-                Text('INDEKS • ${report.tierLabel.toUpperCase()}', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: accent, letterSpacing: 0.9)),
+                Text('${l10n.healthIndexPrefix} • ${FinancialHealthL10n.tierLabel(l10n, report.tier).toUpperCase()}', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: accent, letterSpacing: 0.9)),
               ]),
               const SizedBox(height: 18),
               Row(
@@ -46,16 +50,19 @@ class FinancialHealthScoreCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
-                            Text(
-                              '${report.overallScore}',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 44, fontWeight: FontWeight.w800, color: AppColors.textWhite, letterSpacing: -1.6, height: 1.0, fontFeatures: const [FontFeature.tabularFigures()]),
+                            AnimatedCountingText(
+                              value: report.overallScore.toDouble(),
+                              formatter: (v) => '${v.round()}',
+                              respectPrivacyMask: false,
+                              duration: const Duration(milliseconds: 620),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 44, fontWeight: FontWeight.w800, color: AppColors.textWhite, letterSpacing: -1.6, height: 1.0),
                             ),
                             const SizedBox(width: 6),
                             Text('/ 100', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted, fontFeatures: const [FontFeature.tabularFigures()])),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(report.tierHeadline, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary, height: 1.35)),
+                        Text(FinancialHealthL10n.tierHeadline(l10n, report.tier), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary, height: 1.35)),
                       ],
                     ),
                   ),
@@ -73,9 +80,9 @@ class FinancialHealthScoreCard extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Row(children: [
-                Expanded(child: _buildAssetStat('Likuiditas Rekening', fmt.format(report.totalLiquidAssets))),
+                Expanded(child: _buildAssetStat(l10n.healthLiquidAssets, report.totalLiquidAssets, fmt.format)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildAssetStat('Cadangan Kantong', fmt.format(report.totalPocketsAmount))),
+                Expanded(child: _buildAssetStat(l10n.healthPocketReserves, report.totalPocketsAmount, fmt.format)),
               ]),
             ],
           ),
@@ -84,21 +91,20 @@ class FinancialHealthScoreCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAssetStat(String label, String value) {
+  Widget _buildAssetStat(String label, double value, String Function(double) formatter) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
         const SizedBox(height: 3),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        AnimatedCountingText(
+          value: value,
+          formatter: formatter,
+          respectPrivacyMask: false,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: AppColors.textWhite,
-            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
@@ -120,7 +126,7 @@ class FinancialHealthRecommendationsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CATATAN & TINDAKAN',
+          AppL10n.of(context).healthNotesActions,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10.5,
             fontWeight: FontWeight.w700,

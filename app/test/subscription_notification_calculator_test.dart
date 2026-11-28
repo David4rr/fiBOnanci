@@ -78,7 +78,7 @@ void main() {
         subscriptionId: 'sub-netflix',
         title: 'Netflix',
         cost: 186000,
-        dueDay: 20,
+        nextDueDate: DateTime(2026, 10, 20),
         referenceDate: now,
       );
 
@@ -100,7 +100,7 @@ void main() {
         subscriptionId: 'sub-spotify',
         title: 'Spotify',
         cost: 54990,
-        dueDay: 20,
+        nextDueDate: DateTime(2026, 10, 20),
         referenceDate: now,
       );
 
@@ -114,7 +114,7 @@ void main() {
         subscriptionId: 'sub-macbook',
         title: 'MacBook',
         cost: 2500000,
-        dueDay: 25,
+        nextDueDate: DateTime(2026, 10, 25),
         isInstallment: true,
         totalCycles: 12,
         paidCycles: 12, // fully paid
@@ -130,7 +130,7 @@ void main() {
         subscriptionId: 'sub-macbook',
         title: 'MacBook',
         cost: 2500000,
-        dueDay: 25,
+        nextDueDate: DateTime(2026, 10, 25),
         isInstallment: true,
         totalCycles: 6,
         paidCycles: 3,

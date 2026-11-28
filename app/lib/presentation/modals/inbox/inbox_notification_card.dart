@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import 'inbox_wallet_chip.dart';
 
@@ -127,7 +128,7 @@ class InboxNotificationCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            counterparty.isNotEmpty ? counterparty : (isIncome ? 'Pemasukan' : 'Pengeluaran'),
+            counterparty.isNotEmpty ? counterparty : (isIncome ? AppL10n.of(context).txTypeIncome : AppL10n.of(context).txTypeExpense),
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w500,

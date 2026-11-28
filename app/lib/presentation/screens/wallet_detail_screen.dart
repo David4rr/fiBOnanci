@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import '../widgets/wallet_card.dart';
 import '../widgets/common/common_widgets.dart';
@@ -124,11 +125,11 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                     isEditing: _currentTab != 0,
                     onReturnToDetails: (_currentTab == 1 && _isPickingApp) ? () => setState(() => _isPickingApp = false) : _goToDetailsTab,
                     customTitle: (_currentTab == 1 && _isPickingApp)
-                        ? 'Pilih Aplikasi'
-                        : (_currentTab == 1 ? 'Penyesuaian Saldo: ${wallet.name}' : (_currentTab == 2 ? 'Catat Transaksi' : (_currentTab == 3 ? 'Edit Transaksi' : null))),
+                        ? AppL10n.of(context).walletDetailPickAppTitle
+                        : (_currentTab == 1 ? AppL10n.of(context).walletDetailAdjustTitle(wallet.name) : (_currentTab == 2 ? AppL10n.of(context).walletDetailTxTitle : (_currentTab == 3 ? AppL10n.of(context).txEditTitle : null))),
                     customSubtitle: (_currentTab == 1 && _isPickingApp)
-                        ? 'Cari bank atau e-wallet di HP Anda'
-                        : (_currentTab == 1 ? 'Ubah saldo awal & preferensi rekening' : (_currentTab == 2 ? 'Rekening: ${wallet.name}' : (_currentTab == 3 ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi') : null))),
+                        ? AppL10n.of(context).walletDetailPickAppSub
+                        : (_currentTab == 1 ? AppL10n.of(context).walletDetailAdjustSub : (_currentTab == 2 ? AppL10n.of(context).walletDetailTxSub(wallet.name) : (_currentTab == 3 ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : AppL10n.of(context).txEditSubDefault) : null))),
                   ),
                 ),
                 Expanded(

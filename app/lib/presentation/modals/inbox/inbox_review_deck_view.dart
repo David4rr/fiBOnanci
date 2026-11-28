@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import 'inbox_cards_list.dart';
 import 'inbox_empty_view.dart';
@@ -34,7 +35,7 @@ class InboxReviewDeckView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 2, bottom: 12),
             child: Text(
-              'Geser kanan untuk terima, kiri untuk tolak',
+              AppL10n.of(context).inboxSwipeHint,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

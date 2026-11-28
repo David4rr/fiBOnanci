@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/search_filter_chip.dart';
 import '../../theme/app_colors.dart';
@@ -39,12 +40,13 @@ class WalletDetailHistorySection extends StatelessWidget {
     this.onEditTransaction,
   });
 
-  String _getFilterTypeLabel(WalletTxFilter filter) {
+  String _getFilterTypeLabel(WalletTxFilter filter, BuildContext context) {
+    final l10n = AppL10n.of(context);
     switch (filter) {
-      case WalletTxFilter.income: return 'Masuk';
-      case WalletTxFilter.expense: return 'Keluar';
-      case WalletTxFilter.transfer: return 'Transfer';
-      case WalletTxFilter.all: return 'Semua';
+      case WalletTxFilter.income: return l10n.walletsFlowIn;
+      case WalletTxFilter.expense: return l10n.walletsFlowOut;
+      case WalletTxFilter.transfer: return l10n.txTypeTransfer;
+      case WalletTxFilter.all: return l10n.filterAll;
     }
   }
 
@@ -73,7 +75,7 @@ class WalletDetailHistorySection extends StatelessWidget {
               child: Row(
                 children: [
                   SearchFilterChip(
-                    label: 'Tipe: ${_getFilterTypeLabel(selectedFilter).toUpperCase()}',
+                    label: _getFilterTypeLabel(selectedFilter, context).toUpperCase(),
                     onClear: () => onFilterChanged(WalletTxFilter.all),
                   ),
                 ],
@@ -88,13 +90,13 @@ class WalletDetailHistorySection extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    searchQuery.isNotEmpty ? 'Hasil Pencarian (${filteredTx.length})' : 'Riwayat Transaksi',
+                    searchQuery.isNotEmpty ? AppL10n.of(context).walletDetailSearchResults(filteredTx.length) : AppL10n.of(context).walletDetailHistoryTitle,
                     style: AppTypography.sectionTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text('${filteredTx.length} transaksi', style: AppTypography.listSubtitle.copyWith(fontSize: 12)),
+                Text(AppL10n.of(context).walletDetailTxCount(filteredTx.length), style: AppTypography.listSubtitle.copyWith(fontSize: 12)),
               ],
             ),
           ),
@@ -125,7 +127,7 @@ class WalletDetailHistorySection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    searchQuery.isNotEmpty ? 'Tidak ada transaksi yang cocok' : 'Belum ada mutasi transaksi',
+                    searchQuery.isNotEmpty ? AppL10n.of(context).walletDetailNoMatch : AppL10n.of(context).walletDetailNoMutations,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.0,
                       fontWeight: FontWeight.w600,
@@ -165,7 +167,7 @@ class WalletDetailHistorySection extends StatelessWidget {
                   children: [
                     Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.neoMint)),
                     const SizedBox(width: 8),
-                    Text('Offline & Terenkripsi', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+                    Text(AppL10n.of(context).walletDetailOfflineBadge, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
                   ],
                 ),
               ),

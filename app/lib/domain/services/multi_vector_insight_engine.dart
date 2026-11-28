@@ -47,6 +47,7 @@ class MultiVectorInsightEngine {
     int streak = 0,
     DateTime? date,
     bool isDeficit = false,
+    String localeCode = 'id',
   }) {
     final ref = date ?? DateTime.now();
     final velocity = resolveVelocity(
@@ -65,6 +66,7 @@ class MultiVectorInsightEngine {
       dayContext: dayContext,
       date: ref,
       streak: streak,
+      localeCode: localeCode,
     );
 
     return DailyInsightResult(
@@ -82,6 +84,7 @@ class MultiVectorInsightEngine {
     int streak = 0,
     DateTime? date,
     bool isDeficit = false,
+    String localeCode = 'id',
   }) {
     final ref = date ?? DateTime.now();
     final velocity = resolveVelocity(
@@ -100,6 +103,7 @@ class MultiVectorInsightEngine {
       dayContext: dayContext,
       date: ref,
       streak: streak,
+      localeCode: localeCode,
     );
   }
 }

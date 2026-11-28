@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -48,7 +49,7 @@ class WalletBindingSelector extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Hubungkan Notifikasi Aplikasi',
+                AppL10n.of(context).walletBindHeader,
                 style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -65,7 +66,7 @@ class WalletBindingSelector extends StatelessWidget {
                     const Icon(Icons.search_rounded, size: 14, color: AppColors.neoCyan),
                     const SizedBox(width: 4),
                     Text(
-                      'Cari App',
+                      AppL10n.of(context).walletBindSearchApp,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -92,11 +93,11 @@ class WalletBindingSelector extends StatelessWidget {
               dropdownColor: AppColors.canvasCardSurface,
               icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textMuted),
               style: AppTypography.listTitle,
-              hint: Text('Tidak Terhubung (Input Manual)', style: AppTypography.listSubtitle),
+              hint: Text(AppL10n.of(context).walletBindManual, style: AppTypography.listSubtitle),
               items: [
                 DropdownMenuItem<String?>(
                   value: null,
-                  child: Text('Tidak Terhubung (Input Manual)', style: AppTypography.listSubtitle),
+                  child: Text(AppL10n.of(context).walletBindManual, style: AppTypography.listSubtitle),
                 ),
                 ...kPopularBankAppPresets.map((p) => DropdownMenuItem<String?>(
                   value: p.packageName,
@@ -114,16 +115,16 @@ class WalletBindingSelector extends StatelessWidget {
                     ],
                   ),
                 )),
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: '__custom__',
                   child: Row(
                     children: [
-                      Icon(Icons.edit_note, size: 18, color: AppColors.neoCyan),
-                      SizedBox(width: 8),
+                      const Icon(Icons.edit_note, size: 18, color: AppColors.neoCyan),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Cari / Input Package Lain...',
-                          style: TextStyle(color: AppColors.neoCyan),
+                          AppL10n.of(context).walletBindOther,
+                          style: const TextStyle(color: AppColors.neoCyan),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -149,7 +150,7 @@ class WalletBindingSelector extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Notifikasi transaksi otomatis terhubung ($selectedPackage)',
+                  AppL10n.of(context).walletBindConnected(selectedPackage!),
                   style: AppTypography.badgeLabel.copyWith(
                     color: AppColors.neoChartreuse,
                     fontWeight: FontWeight.w700,
@@ -166,13 +167,13 @@ class WalletBindingSelector extends StatelessWidget {
             controller: customPackageController,
             style: AppTypography.listTitle,
             decoration: InputDecoration(
-              hintText: 'Package Name (contoh: id.krom.bank)',
+              hintText: AppL10n.of(context).walletBindHint,
               hintStyle: AppTypography.listSubtitle,
               filled: true,
               fillColor: AppColors.canvasInputSearch,
               suffixIcon: IconButton(
                 icon: const Icon(Icons.apps_rounded, size: 18, color: AppColors.neoCyan),
-                tooltip: 'Pilih dari Aplikasi Terpasang',
+                tooltip: AppL10n.of(context).walletBindTooltip,
                 onPressed: () => _openPicker(context),
               ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),

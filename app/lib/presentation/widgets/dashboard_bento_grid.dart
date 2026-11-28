@@ -5,10 +5,13 @@ import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_calendar_service.dart';
 import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../modals/dashboard_modals.dart';
 import '../modals/safe_to_spend_modal.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 import 'bento_folder_card.dart';
+import 'common/common_widgets.dart';
 
 /// 2x2 Bento Folder Grid for Dashboard.
 /// Displays Safe-to-Spend, Total Real Balance, Committed Bills, and Daily Pace.
@@ -42,6 +45,17 @@ class DashboardBentoGrid extends StatelessWidget {
 
   String _fmt(double amount) => currencyFormatter.format(amount);
 
+  Widget _countingMetric(double value) {
+    return AnimatedCountingText(
+      value: value,
+      formatter: _fmt,
+      animateOnMount: false,
+      respectPrivacyMask: false,
+      duration: const Duration(milliseconds: 380),
+      style: AppTypography.cardMetricValue.copyWith(color: AppColors.textDarkPrimary),
+    );
+  }
+
   int _resolveStreak() {
     if (streak > 0) return streak;
     if (transactions == null || transactions!.isEmpty) return 0;
@@ -52,17 +66,19 @@ class DashboardBentoGrid extends StatelessWidget {
     );
   }
 
-  String _dailyPaceSubtitle() {
+  String _dailyPaceSubtitle(BuildContext context) {
     return DailyPacingNudgeService.getCompactSubtitle(
       metrics: metrics,
       todayExpense: todayExpense,
       referenceDate: referenceDate,
       streak: _resolveStreak(),
+      localeCode: AppL10n.of(context).localeName,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
       child: Column(
@@ -75,10 +91,11 @@ class DashboardBentoGrid extends StatelessWidget {
                   backgroundColor: AppColors.neoChartreuse,
                   iconData: Icons.shield_outlined,
                   title: _fmt(metrics.safeToSpendMonthly),
+                  titleWidget: _countingMetric(metrics.safeToSpendMonthly),
                   isBalanceHidden: isBalanceHidden,
                   subtitle: metrics.isAllWallets
                       ? 'Safe to Spend'
-                      : 'Safe to Spend (${metrics.selectedWalletsCount} Akun)',
+                      : l10n.dashboardSafeToSpendFiltered(metrics.selectedWalletsCount),
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
                   onTap: () => SafeToSpendModal.show(context, wallets),
                 ),
@@ -91,8 +108,9 @@ class DashboardBentoGrid extends StatelessWidget {
                   backgroundColor: AppColors.neoMint,
                   iconData: Icons.account_balance_wallet_outlined,
                   title: _fmt(metrics.totalRealBalance),
+                  titleWidget: _countingMetric(metrics.totalRealBalance),
                   isBalanceHidden: isBalanceHidden,
-                  subtitle: '${wallets.length} Akun Riil',
+                  subtitle: l10n.dashboardRealAccounts(wallets.length),
                   trailingIcon: const Icon(Icons.chevron_right, color: AppColors.textDarkSecondary, size: 14),
                   onTap: onNavigateToWallets,
                 ),
@@ -109,8 +127,9 @@ class DashboardBentoGrid extends StatelessWidget {
                   backgroundColor: AppColors.neoCoral,
                   iconData: Icons.receipt_long_outlined,
                   title: _fmt(metrics.pendingBills),
+                  titleWidget: _countingMetric(metrics.pendingBills),
                   isBalanceHidden: isBalanceHidden,
-                  subtitle: '${subscriptions.length} Tagihan Bln Ini',
+                  subtitle: l10n.dashboardBillsThisMonth(metrics.pendingBillsCount),
                   trailingIcon: const Icon(Icons.chevron_right, color: AppColors.textDarkSecondary, size: 14),
                   onTap: onNavigateToSubscriptions,
                 ),
@@ -123,8 +142,9 @@ class DashboardBentoGrid extends StatelessWidget {
                   backgroundColor: AppColors.neoCyan,
                   iconData: Icons.pie_chart_outline,
                   title: _fmt(metrics.safeToSpendDaily),
+                  titleWidget: _countingMetric(metrics.safeToSpendDaily),
                   isBalanceHidden: isBalanceHidden,
-                  subtitle: _dailyPaceSubtitle(),
+                  subtitle: _dailyPaceSubtitle(context),
                   subtitleMaxLines: 2,
                   trailingIcon: const Icon(Icons.info_outline, color: AppColors.textDarkSecondary, size: 13),
                   onTap: () => DailyPaceModal.show(

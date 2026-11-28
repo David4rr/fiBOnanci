@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class WalletSegmentedToggle extends StatelessWidget {
@@ -43,6 +44,7 @@ class WalletSegmentedToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       height: 48,
       padding: const EdgeInsets.all(4),
@@ -70,8 +72,8 @@ class WalletSegmentedToggle extends StatelessWidget {
           ),
           Row(
             children: [
-              _buildSegmentButton(index: 0, label: 'Rekening Utama ($walletCount)', isSelected: selectedSegment == 0),
-              _buildSegmentButton(index: 1, label: 'Kantong Tabungan ($pocketCount)', isSelected: selectedSegment == 1),
+              _buildSegmentButton(index: 0, label: l10n.walletsMainAccounts(walletCount), isSelected: selectedSegment == 0),
+              _buildSegmentButton(index: 1, label: l10n.walletsSavingsPockets(pocketCount), isSelected: selectedSegment == 1),
             ],
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/subscription_stacked_deck.dart';
@@ -36,6 +37,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final now = DateTime.now();
 
     return Scaffold(
@@ -74,27 +76,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Tagihan & Langganan',
+                        l10n.subsTitle,
                         style: AppTypography.modalTitle,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${subscriptions.length} Kartu Terdaftar • Diurutkan jatuh tempo',
+                        l10n.subsRegisteredCount(subscriptions.length),
                         style: AppTypography.modalSubtitle,
                       ),
                     ],
                   ),
                 ),
                 if (subscriptions.isEmpty)
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(24, 0, 24, 80),
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
                         child: CardlessEmptyView(
                           icon: Icons.receipt_long_outlined,
-                          title: 'Belum Ada Tagihan Rutin',
-                          description: 'Daftarkan langganan Netflix, Spotify, atau cicilan agar jatuh tempo tercatat rapi.',
-                          hint: 'Ketuk tombol + di bawah untuk menambahkan',
+                          title: l10n.subsEmptyTitle,
+                          description: l10n.subsEmptyDesc,
+                          hint: l10n.subsEmptyHint,
                         ),
                       ),
                     ),
@@ -125,10 +127,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
                               child: CardlessEmptyView(
                                 icon: Icons.search_off_rounded,
-                                title: 'Tagihan Tidak Ditemukan',
+                                title: AppL10n.of(context).subsNotFoundTitle,
                                 description: _searchQuery.isNotEmpty
-                                    ? 'Tidak ada tagihan yang cocok dengan "$_searchQuery".'
-                                    : 'Tidak ada tagihan dalam filter ini.',
+                                    ? AppL10n.of(context).subsNotFoundQuery(_searchQuery)
+                                    : AppL10n.of(context).subsNotFoundFilter,
                               ),
                             ),
                           )

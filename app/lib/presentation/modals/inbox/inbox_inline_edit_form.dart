@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 
@@ -61,14 +62,15 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final isIncome = _type == 'income';
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ModalHeader(
-          title: 'Sesuaikan Transaksi',
-          subtitle: widget.walletName != null ? 'Rekening: ${widget.walletName}' : 'Ubah nominal & tipe transaksi',
+          title: l10n.inboxEditTitle,
+          subtitle: widget.walletName != null ? l10n.inboxEditSubWallet(widget.walletName!) : l10n.inboxEditSubDefault,
           closeIcon: Icons.keyboard_arrow_left_rounded,
           onClose: widget.onCancel,
         ),
@@ -77,7 +79,7 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
           children: [
             Expanded(
               child: _buildTypeButton(
-                label: 'Pengeluaran',
+                label: l10n.txTypeExpense,
                 isSelected: !isIncome,
                 activeColor: AppColors.neoCoral,
                 onTap: () => setState(() => _type = 'expense'),
@@ -86,7 +88,7 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
             const SizedBox(width: 10),
             Expanded(
               child: _buildTypeButton(
-                label: 'Pemasukan',
+                label: l10n.txTypeIncome,
                 isSelected: isIncome,
                 activeColor: AppColors.neoMint,
                 onTap: () => setState(() => _type = 'income'),
@@ -96,7 +98,7 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'NOMINAL TRANSAKSI',
+          l10n.inboxEditAmountLabel,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -112,7 +114,7 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
         ),
         const SizedBox(height: 14),
         Text(
-          'MERCHANT / PENERIMA / CATATAN',
+          l10n.inboxEditMerchantLabel,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -123,11 +125,11 @@ class _InboxInlineEditFormState extends State<InboxInlineEditForm> {
         const SizedBox(height: 6),
         AppTextField(
           controller: _notesController,
-          hintText: 'Contoh: Kopi Kenangan, Transfer Budi',
+          hintText: l10n.inboxEditMerchantHint,
         ),
         const SizedBox(height: 18),
         PrimaryActionButton(
-          text: 'Simpan Perubahan',
+          text: l10n.inboxEditSaveBtn,
           onPressed: _submit,
         ),
       ],

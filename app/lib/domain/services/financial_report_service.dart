@@ -1,64 +1,57 @@
 import 'dart:math' as math;
+import 'package:flutter/material.dart' show DateTimeRange;
+import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
+import 'financial_report_models.dart';
 
-enum ReportPeriod {
-  thisMonth('Bulan Ini'),
-  lastMonth('Bulan Lalu'),
-  threeMonths('3 Bulan'),
-  allTime('Semua');
-
-  final String label;
-  const ReportPeriod(this.label);
-}
-
-class CategorySpendItem {
-  final String categoryId;
-  final String name;
-  final String colorHex;
-  final double amount;
-  final double percentage;
-  final int txCount;
-
-  const CategorySpendItem({required this.categoryId, required this.name, required this.colorHex, required this.amount, required this.percentage, required this.txCount});
-}
-
-class WalletReportItem {
-  final String walletId;
-  final String name;
-  final String colorHex;
-  final double balance;
-  final double income;
-  final double expense;
-
-  const WalletReportItem({required this.walletId, required this.name, required this.colorHex, required this.balance, required this.income, required this.expense});
-}
-
-class FinancialReportData {
-  final ReportPeriod period;
-  final double totalIncome;
-  final double totalExpense;
-  final double netCashflow;
-  final double savingsRate;
-  final double dailyAverageExpense;
-  final int totalTxCount;
-  final double totalWalletBalance;
-  final double totalPocketBalance;
-  final double totalNetWorth;
-  final double monthlyCommittedBills;
-  final List<CategorySpendItem> expenseByCategory;
-  final List<CategorySpendItem> incomeByCategory;
-  final List<WalletReportItem> walletBreakdown;
-
-  const FinancialReportData({
-    required this.period, required this.totalIncome, required this.totalExpense,
-    required this.netCashflow, required this.savingsRate, required this.dailyAverageExpense,
-    required this.totalTxCount, required this.totalWalletBalance, required this.totalPocketBalance,
-    required this.totalNetWorth, required this.monthlyCommittedBills,
-    required this.expenseByCategory, required this.incomeByCategory, required this.walletBreakdown,
-  });
-}
+export 'financial_report_models.dart';
 
 class FinancialReportService {
+  static DateTimeRange resolveGranularityRange(ReportGranularity granularity, int offset, DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    switch (granularity) {
+      case ReportGranularity.week:
+        final monday = today.subtract(Duration(days: today.weekday - 1));
+        final start = monday.add(Duration(days: offset * 7));
+        return DateTimeRange(start: start, end: start.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59)));
+      case ReportGranularity.month:
+        final start = DateTime(now.year, now.month + offset, 1);
+        return DateTimeRange(start: start, end: DateTime(start.year, start.month + 1, 0, 23, 59, 59));
+      case ReportGranularity.quarter:
+        final currentQ = ((now.month - 1) ~/ 3);
+        final totalQ = now.year * 4 + currentQ + offset;
+        final year = (totalQ / 4).floor();
+        final q = totalQ - year * 4;
+        final startMonth = q * 3 + 1;
+        final start = DateTime(year, startMonth, 1);
+        final end = DateTime(year, startMonth + 3, 0, 23, 59, 59);
+        return DateTimeRange(start: start, end: end);
+    }
+  }
+
+  static String formatGranularityLabel(
+    ReportGranularity granularity,
+    int offset,
+    DateTime now, {
+    String localeCode = 'id',
+  }) {
+    final range = resolveGranularityRange(granularity, offset, now);
+    final isEn = localeCode == 'en';
+    final intlLocale = isEn ? 'en_US' : 'id_ID';
+    switch (granularity) {
+      case ReportGranularity.week:
+        if (offset == 0) return isEn ? 'This Week' : 'Minggu Ini';
+        if (offset == -1) return isEn ? 'Last Week' : 'Minggu Lalu';
+        return DateFormat('d MMM', intlLocale).format(range.start);
+      case ReportGranularity.month:
+        final label = DateFormat('MMMM', intlLocale).format(range.start);
+        return range.start.year == now.year ? label : '$label ${range.start.year}';
+      case ReportGranularity.quarter:
+        final q = ((range.start.month - 1) ~/ 3) + 1;
+        return 'Q$q ${range.start.year}';
+    }
+  }
+
   static FinancialReportData generate({
     required List<WalletEntry> wallets,
     required List<PocketEntry> pockets,
@@ -66,6 +59,8 @@ class FinancialReportService {
     required List<TransactionEntry> transactions,
     required List<SubscriptionEntry> subscriptions,
     ReportPeriod period = ReportPeriod.thisMonth,
+    ReportGranularity? granularity,
+    int periodOffset = 0,
     DateTime? referenceDate,
   }) {
     final now = (referenceDate ?? DateTime.now()).toLocal();
@@ -75,14 +70,16 @@ class FinancialReportService {
 
     final totalWalletBalance = activeWallets.fold<double>(0.0, (s, w) => s + w.balance);
     final totalPocketBalance = activePockets.fold<double>(0.0, (s, p) => s + p.currentAmount);
-    final monthlyCommitted = subscriptions
-        .where((s) => !s.isDeleted && s.status == 'active')
-        .fold<double>(0.0, (sum, s) => sum + s.cost);
+    final monthlyCommitted = subscriptions.where((s) => !s.isDeleted && s.status == 'active').fold<double>(0.0, (sum, s) => sum + s.cost);
+    final customRange = granularity != null ? resolveGranularityRange(granularity, periodOffset, now) : null;
 
     final filteredTxs = transactions.where((tx) {
       if (tx.isDeleted) return false;
       if (tx.externalRef?.startsWith('pocket_') == true) return false;
       final d = tx.transactionDate.toLocal();
+      if (customRange != null) {
+        return !d.isBefore(customRange.start) && !d.isAfter(customRange.end);
+      }
       switch (period) {
         case ReportPeriod.thisMonth:
           return d.year == now.year && d.month == now.month;
@@ -129,11 +126,13 @@ class FinancialReportService {
         ? ((netCashflow / totalIncome) * 100.0).clamp(-100.0, 100.0)
         : 0.0;
 
-    final daysCount = _resolveActiveDays(period, now, filteredTxs);
+    final daysCount = customRange != null
+        ? math.max(1, customRange.end.difference(customRange.start).inDays + 1)
+        : _resolveActiveDays(period, now, filteredTxs);
     final dailyAvg = daysCount > 0 ? totalExpense / daysCount : 0.0;
 
     List<CategorySpendItem> buildCatList(Map<String, double> sums, Map<String, int> counts, double total) {
-      final items = sums.entries.map((e) {
+      return sums.entries.map((e) {
         final cat = catMap[e.key];
         return CategorySpendItem(
           categoryId: e.key,
@@ -145,7 +144,6 @@ class FinancialReportService {
         );
       }).toList()
         ..sort((a, b) => b.amount.compareTo(a.amount));
-      return items;
     }
 
     final walletItems = activeWallets.map((w) {

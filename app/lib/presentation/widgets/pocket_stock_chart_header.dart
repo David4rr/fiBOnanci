@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/formatters/app_currency.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'common/peekable_balance_text.dart';
+import 'common/common_widgets.dart';
 
 class PocketStockChartHeader extends StatelessWidget {
   final double displayBalance;
@@ -52,14 +52,16 @@ class PocketStockChartHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              PeekableBalanceText(
-                text: AppCurrency.of(context).format(displayBalance),
+              AnimatedCountingText(
+                value: displayBalance,
+                formatter: AppCurrency.of(context).format,
+                animateOnMount: false,
+                duration: const Duration(milliseconds: 340),
                 style: GoogleFonts.plusJakartaSans(
                   color: themeColor,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
               const SizedBox(height: 4),

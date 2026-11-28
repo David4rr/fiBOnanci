@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/currency_amount_field.dart';
@@ -89,18 +90,19 @@ class OnboardingStepWallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OnboardingHeader(
-          icon: Icons.account_balance_wallet_outlined,
-          question: 'Di mana uangmu sekarang?',
-          helper: 'Tambahkan rekening pertamamu. Rekening lainnya bisa ditambahkan nanti.',
+        OnboardingHeader(
+          lottieAsset: 'assets/lottie/onb_wallet.json',
+          question: l10n.onboardingWalletQuestion,
+          helper: l10n.onboardingWalletHelper,
           iconColor: AppColors.neoCoral,
         ),
         AppTextField(
           controller: walletNameController,
-          hintText: 'Misal: BCA, Jago, atau Kas Dompet',
+          hintText: l10n.onboardingWalletHint,
           prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
           textCapitalization: TextCapitalization.words,
         ),
@@ -109,11 +111,12 @@ class OnboardingStepWallet extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: kWalletSuggestions.map((s) {
-            final isSelected = walletNameController.text == s.name;
+            final label = s.type == 'cash' ? l10n.onboardingWalletTypeCash : s.name;
+            final isSelected = walletNameController.text == label;
             return InkWell(
               onTap: () {
                 HapticFeedback.selectionClick();
-                walletNameController.text = s.name;
+                walletNameController.text = label;
                 onWalletTypeChanged(s.type);
               },
               borderRadius: BorderRadius.circular(20),
@@ -127,7 +130,7 @@ class OnboardingStepWallet extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  s.name,
+                  label,
                   style: TextStyle(
                     color: isSelected ? AppColors.textAccent : AppColors.textMuted,
                     fontSize: 12,
@@ -140,7 +143,7 @@ class OnboardingStepWallet extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          'Jenis rekening',
+          l10n.onboardingWalletTypeLabel,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
@@ -150,20 +153,20 @@ class OnboardingStepWallet extends StatelessWidget {
             const SizedBox(width: 8),
             _buildTypeToggle('ewallet', 'E-wallet', Icons.smartphone_rounded),
             const SizedBox(width: 8),
-            _buildTypeToggle('cash', 'Tunai', Icons.payments_rounded),
+            _buildTypeToggle('cash', l10n.onboardingWalletTypeCash, Icons.payments_rounded),
           ],
         ),
         const SizedBox(height: 20),
         CurrencyAmountField(
           controller: balanceController,
-          labelText: 'Saldo saat ini',
+          labelText: l10n.onboardingWalletBalanceLabel,
           hintText: '0',
         ),
         const SizedBox(height: 6),
         Padding(
           padding: const EdgeInsets.only(left: 4),
           child: Text(
-            'Opsional. Biarkan 0 jika ingin mulai dari nol.',
+            l10n.onboardingWalletBalanceHelper,
             style: TextStyle(
               color: AppColors.textMuted,
               fontSize: 11.5,

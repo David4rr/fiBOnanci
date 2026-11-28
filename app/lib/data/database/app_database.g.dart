@@ -3235,6 +3235,17 @@ class $SubscriptionsTable extends Subscriptions
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _nextDueDateMeta = const VerificationMeta(
+    'nextDueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextDueDate = GeneratedColumn<DateTime>(
+    'next_due_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _autoDeductMeta = const VerificationMeta(
     'autoDeduct',
   );
@@ -3334,6 +3345,7 @@ class $SubscriptionsTable extends Subscriptions
     cost,
     billingCycle,
     dueDay,
+    nextDueDate,
     autoDeduct,
     status,
     lastPaidDate,
@@ -3441,6 +3453,17 @@ class $SubscriptionsTable extends Subscriptions
       );
     } else if (isInserting) {
       context.missing(_dueDayMeta);
+    }
+    if (data.containsKey('next_due_date')) {
+      context.handle(
+        _nextDueDateMeta,
+        nextDueDate.isAcceptableOrUnknown(
+          data['next_due_date']!,
+          _nextDueDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nextDueDateMeta);
     }
     if (data.containsKey('auto_deduct')) {
       context.handle(
@@ -3553,6 +3576,10 @@ class $SubscriptionsTable extends Subscriptions
         DriftSqlType.int,
         data['${effectivePrefix}due_day'],
       )!,
+      nextDueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_due_date'],
+      )!,
       autoDeduct: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}auto_deduct'],
@@ -3604,6 +3631,7 @@ class SubscriptionEntry extends DataClass
   final double cost;
   final String billingCycle;
   final int dueDay;
+  final DateTime nextDueDate;
   final bool autoDeduct;
   final String status;
   final DateTime? lastPaidDate;
@@ -3624,6 +3652,7 @@ class SubscriptionEntry extends DataClass
     required this.cost,
     required this.billingCycle,
     required this.dueDay,
+    required this.nextDueDate,
     required this.autoDeduct,
     required this.status,
     this.lastPaidDate,
@@ -3649,6 +3678,7 @@ class SubscriptionEntry extends DataClass
     map['cost'] = Variable<double>(cost);
     map['billing_cycle'] = Variable<String>(billingCycle);
     map['due_day'] = Variable<int>(dueDay);
+    map['next_due_date'] = Variable<DateTime>(nextDueDate);
     map['auto_deduct'] = Variable<bool>(autoDeduct);
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || lastPaidDate != null) {
@@ -3681,6 +3711,7 @@ class SubscriptionEntry extends DataClass
       cost: Value(cost),
       billingCycle: Value(billingCycle),
       dueDay: Value(dueDay),
+      nextDueDate: Value(nextDueDate),
       autoDeduct: Value(autoDeduct),
       status: Value(status),
       lastPaidDate: lastPaidDate == null && nullToAbsent
@@ -3715,6 +3746,7 @@ class SubscriptionEntry extends DataClass
       cost: serializer.fromJson<double>(json['cost']),
       billingCycle: serializer.fromJson<String>(json['billingCycle']),
       dueDay: serializer.fromJson<int>(json['dueDay']),
+      nextDueDate: serializer.fromJson<DateTime>(json['nextDueDate']),
       autoDeduct: serializer.fromJson<bool>(json['autoDeduct']),
       status: serializer.fromJson<String>(json['status']),
       lastPaidDate: serializer.fromJson<DateTime?>(json['lastPaidDate']),
@@ -3740,6 +3772,7 @@ class SubscriptionEntry extends DataClass
       'cost': serializer.toJson<double>(cost),
       'billingCycle': serializer.toJson<String>(billingCycle),
       'dueDay': serializer.toJson<int>(dueDay),
+      'nextDueDate': serializer.toJson<DateTime>(nextDueDate),
       'autoDeduct': serializer.toJson<bool>(autoDeduct),
       'status': serializer.toJson<String>(status),
       'lastPaidDate': serializer.toJson<DateTime?>(lastPaidDate),
@@ -3763,6 +3796,7 @@ class SubscriptionEntry extends DataClass
     double? cost,
     String? billingCycle,
     int? dueDay,
+    DateTime? nextDueDate,
     bool? autoDeduct,
     String? status,
     Value<DateTime?> lastPaidDate = const Value.absent(),
@@ -3783,6 +3817,7 @@ class SubscriptionEntry extends DataClass
     cost: cost ?? this.cost,
     billingCycle: billingCycle ?? this.billingCycle,
     dueDay: dueDay ?? this.dueDay,
+    nextDueDate: nextDueDate ?? this.nextDueDate,
     autoDeduct: autoDeduct ?? this.autoDeduct,
     status: status ?? this.status,
     lastPaidDate: lastPaidDate.present ? lastPaidDate.value : this.lastPaidDate,
@@ -3809,6 +3844,9 @@ class SubscriptionEntry extends DataClass
           ? data.billingCycle.value
           : this.billingCycle,
       dueDay: data.dueDay.present ? data.dueDay.value : this.dueDay,
+      nextDueDate: data.nextDueDate.present
+          ? data.nextDueDate.value
+          : this.nextDueDate,
       autoDeduct: data.autoDeduct.present
           ? data.autoDeduct.value
           : this.autoDeduct,
@@ -3846,6 +3884,7 @@ class SubscriptionEntry extends DataClass
           ..write('cost: $cost, ')
           ..write('billingCycle: $billingCycle, ')
           ..write('dueDay: $dueDay, ')
+          ..write('nextDueDate: $nextDueDate, ')
           ..write('autoDeduct: $autoDeduct, ')
           ..write('status: $status, ')
           ..write('lastPaidDate: $lastPaidDate, ')
@@ -3871,6 +3910,7 @@ class SubscriptionEntry extends DataClass
     cost,
     billingCycle,
     dueDay,
+    nextDueDate,
     autoDeduct,
     status,
     lastPaidDate,
@@ -3895,6 +3935,7 @@ class SubscriptionEntry extends DataClass
           other.cost == this.cost &&
           other.billingCycle == this.billingCycle &&
           other.dueDay == this.dueDay &&
+          other.nextDueDate == this.nextDueDate &&
           other.autoDeduct == this.autoDeduct &&
           other.status == this.status &&
           other.lastPaidDate == this.lastPaidDate &&
@@ -3917,6 +3958,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
   final Value<double> cost;
   final Value<String> billingCycle;
   final Value<int> dueDay;
+  final Value<DateTime> nextDueDate;
   final Value<bool> autoDeduct;
   final Value<String> status;
   final Value<DateTime?> lastPaidDate;
@@ -3938,6 +3980,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     this.cost = const Value.absent(),
     this.billingCycle = const Value.absent(),
     this.dueDay = const Value.absent(),
+    this.nextDueDate = const Value.absent(),
     this.autoDeduct = const Value.absent(),
     this.status = const Value.absent(),
     this.lastPaidDate = const Value.absent(),
@@ -3960,6 +4003,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     required double cost,
     this.billingCycle = const Value.absent(),
     required int dueDay,
+    required DateTime nextDueDate,
     this.autoDeduct = const Value.absent(),
     this.status = const Value.absent(),
     this.lastPaidDate = const Value.absent(),
@@ -3975,7 +4019,8 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
        categoryId = Value(categoryId),
        title = Value(title),
        cost = Value(cost),
-       dueDay = Value(dueDay);
+       dueDay = Value(dueDay),
+       nextDueDate = Value(nextDueDate);
   static Insertable<SubscriptionEntry> custom({
     Expression<String>? id,
     Expression<DateTime>? createdAt,
@@ -3989,6 +4034,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     Expression<double>? cost,
     Expression<String>? billingCycle,
     Expression<int>? dueDay,
+    Expression<DateTime>? nextDueDate,
     Expression<bool>? autoDeduct,
     Expression<String>? status,
     Expression<DateTime>? lastPaidDate,
@@ -4011,6 +4057,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
       if (cost != null) 'cost': cost,
       if (billingCycle != null) 'billing_cycle': billingCycle,
       if (dueDay != null) 'due_day': dueDay,
+      if (nextDueDate != null) 'next_due_date': nextDueDate,
       if (autoDeduct != null) 'auto_deduct': autoDeduct,
       if (status != null) 'status': status,
       if (lastPaidDate != null) 'last_paid_date': lastPaidDate,
@@ -4035,6 +4082,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     Value<double>? cost,
     Value<String>? billingCycle,
     Value<int>? dueDay,
+    Value<DateTime>? nextDueDate,
     Value<bool>? autoDeduct,
     Value<String>? status,
     Value<DateTime?>? lastPaidDate,
@@ -4057,6 +4105,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
       cost: cost ?? this.cost,
       billingCycle: billingCycle ?? this.billingCycle,
       dueDay: dueDay ?? this.dueDay,
+      nextDueDate: nextDueDate ?? this.nextDueDate,
       autoDeduct: autoDeduct ?? this.autoDeduct,
       status: status ?? this.status,
       lastPaidDate: lastPaidDate ?? this.lastPaidDate,
@@ -4107,6 +4156,9 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
     if (dueDay.present) {
       map['due_day'] = Variable<int>(dueDay.value);
     }
+    if (nextDueDate.present) {
+      map['next_due_date'] = Variable<DateTime>(nextDueDate.value);
+    }
     if (autoDeduct.present) {
       map['auto_deduct'] = Variable<bool>(autoDeduct.value);
     }
@@ -4149,6 +4201,7 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
           ..write('cost: $cost, ')
           ..write('billingCycle: $billingCycle, ')
           ..write('dueDay: $dueDay, ')
+          ..write('nextDueDate: $nextDueDate, ')
           ..write('autoDeduct: $autoDeduct, ')
           ..write('status: $status, ')
           ..write('lastPaidDate: $lastPaidDate, ')
@@ -8986,6 +9039,7 @@ typedef $$SubscriptionsTableCreateCompanionBuilder =
       required double cost,
       Value<String> billingCycle,
       required int dueDay,
+      required DateTime nextDueDate,
       Value<bool> autoDeduct,
       Value<String> status,
       Value<DateTime?> lastPaidDate,
@@ -9009,6 +9063,7 @@ typedef $$SubscriptionsTableUpdateCompanionBuilder =
       Value<double> cost,
       Value<String> billingCycle,
       Value<int> dueDay,
+      Value<DateTime> nextDueDate,
       Value<bool> autoDeduct,
       Value<String> status,
       Value<DateTime?> lastPaidDate,
@@ -9131,6 +9186,11 @@ class $$SubscriptionsTableFilterComposer
 
   ColumnFilters<int> get dueDay => $composableBuilder(
     column: $table.dueDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextDueDate => $composableBuilder(
+    column: $table.nextDueDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9293,6 +9353,11 @@ class $$SubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get nextDueDate => $composableBuilder(
+    column: $table.nextDueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get autoDeduct => $composableBuilder(
     column: $table.autoDeduct,
     builder: (column) => ColumnOrderings(column),
@@ -9435,6 +9500,11 @@ class $$SubscriptionsTableAnnotationComposer
 
   GeneratedColumn<int> get dueDay =>
       $composableBuilder(column: $table.dueDay, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextDueDate => $composableBuilder(
+    column: $table.nextDueDate,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get autoDeduct => $composableBuilder(
     column: $table.autoDeduct,
@@ -9583,6 +9653,7 @@ class $$SubscriptionsTableTableManager
                 Value<double> cost = const Value.absent(),
                 Value<String> billingCycle = const Value.absent(),
                 Value<int> dueDay = const Value.absent(),
+                Value<DateTime> nextDueDate = const Value.absent(),
                 Value<bool> autoDeduct = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> lastPaidDate = const Value.absent(),
@@ -9604,6 +9675,7 @@ class $$SubscriptionsTableTableManager
                 cost: cost,
                 billingCycle: billingCycle,
                 dueDay: dueDay,
+                nextDueDate: nextDueDate,
                 autoDeduct: autoDeduct,
                 status: status,
                 lastPaidDate: lastPaidDate,
@@ -9627,6 +9699,7 @@ class $$SubscriptionsTableTableManager
                 required double cost,
                 Value<String> billingCycle = const Value.absent(),
                 required int dueDay,
+                required DateTime nextDueDate,
                 Value<bool> autoDeduct = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> lastPaidDate = const Value.absent(),
@@ -9648,6 +9721,7 @@ class $$SubscriptionsTableTableManager
                 cost: cost,
                 billingCycle: billingCycle,
                 dueDay: dueDay,
+                nextDueDate: nextDueDate,
                 autoDeduct: autoDeduct,
                 status: status,
                 lastPaidDate: lastPaidDate,

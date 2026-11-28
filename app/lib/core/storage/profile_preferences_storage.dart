@@ -11,6 +11,8 @@ class ProfilePreferencesStorage {
   static final Map<String, int> _cycleDays = {};
   static bool? _onboardingCompleted;
   static String _themeMode = 'system';
+  static String _localeCode = 'id';
+  static bool _isBalanceHidden = false;
   static bool _autoUpdateCheck = true;
   static bool _isLoaded = false;
   static File? _customStorageFile;
@@ -23,6 +25,8 @@ class ProfilePreferencesStorage {
     _cycleDays.clear();
     _onboardingCompleted = null;
     _themeMode = 'system';
+    _localeCode = 'id';
+    _isBalanceHidden = false;
     _autoUpdateCheck = true;
   }
 
@@ -34,6 +38,8 @@ class ProfilePreferencesStorage {
     _cycleDays.clear();
     _onboardingCompleted = null;
     _themeMode = 'system';
+    _localeCode = 'id';
+    _isBalanceHidden = false;
     _autoUpdateCheck = true;
   }
 
@@ -78,6 +84,12 @@ class ProfilePreferencesStorage {
           if (data['theme_mode'] is String) {
             _themeMode = data['theme_mode'] as String;
           }
+          if (data['locale_code'] is String) {
+            _localeCode = data['locale_code'] as String;
+          }
+          if (data['is_balance_hidden'] is bool) {
+            _isBalanceHidden = data['is_balance_hidden'] as bool;
+          }
           if (data['auto_update_check'] is bool) {
             _autoUpdateCheck = data['auto_update_check'] as bool;
           }
@@ -96,6 +108,8 @@ class ProfilePreferencesStorage {
         'safe_to_spend_wallets': _stsWallets.map((k, v) => MapEntry(k, v?.toList())),
         'onboarding_completed': _onboardingCompleted ?? (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')),
         'theme_mode': _themeMode,
+        'locale_code': _localeCode,
+        'is_balance_hidden': _isBalanceHidden,
         'auto_update_check': _autoUpdateCheck,
       };
       await file.writeAsString(jsonEncode(data), flush: true);
@@ -106,6 +120,20 @@ class ProfilePreferencesStorage {
 
   static Future<void> setThemeMode(String mode) async {
     _themeMode = mode;
+    await _saveToDisk();
+  }
+
+  static String getLocaleCode() => _localeCode;
+
+  static Future<void> setLocaleCode(String code) async {
+    _localeCode = code;
+    await _saveToDisk();
+  }
+
+  static bool getIsBalanceHidden() => _isBalanceHidden;
+
+  static Future<void> setIsBalanceHidden(bool hidden) async {
+    _isBalanceHidden = hidden;
     await _saveToDisk();
   }
 

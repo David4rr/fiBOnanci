@@ -71,6 +71,7 @@ class Subscriptions extends Table with SyncableTable {
   RealColumn get cost => real()();
   TextColumn get billingCycle => text().withDefault(const Constant('monthly'))();
   IntColumn get dueDay => integer()();
+  DateTimeColumn get nextDueDate => dateTime()();
   BoolColumn get autoDeduct => boolean().withDefault(const Constant(false))();
   TextColumn get status => text().withDefault(const Constant('active'))();
   DateTimeColumn get lastPaidDate => dateTime().nullable()();

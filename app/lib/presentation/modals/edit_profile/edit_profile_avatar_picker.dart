@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/profile_avatar.dart';
@@ -56,7 +57,7 @@ class EditProfileAvatarPicker {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Foto Profil',
+                    AppL10n.of(context).avatarTitle,
                     style: GoogleFonts.plusJakartaSans(
                       color: AppColors.textWhite,
                       fontWeight: FontWeight.w700,
@@ -65,7 +66,7 @@ class EditProfileAvatarPicker {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    hasPhoto ? 'Foto kustom aktif • Ketuk untuk ganti' : 'Ketuk untuk pilih dari galeri atau kamera',
+                    hasPhoto ? AppL10n.of(context).avatarActiveSub : AppL10n.of(context).avatarEmptySub,
                     style: AppTypography.listSubtitle.copyWith(
                       fontSize: 11.5,
                       color: hasPhoto ? AppColors.neoMint : AppColors.textMuted,
@@ -103,7 +104,7 @@ class EditProfileAvatarPicker {
       if (context.mounted) {
         AppSnackBar.showError(
           context,
-          'Gagal Mengambil Foto',
+          AppL10n.of(context).avatarErrorTitle,
           message: e.toString(),
           tag: 'AVATAR',
         );
@@ -132,15 +133,15 @@ class EditProfileAvatarPicker {
             children: [
               const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
               ModalHeader(
-                title: 'Pilih Sumber Foto',
-                subtitle: 'Galeri perangkat atau kamera',
+                title: AppL10n.of(ctx).avatarPickerTitle,
+                subtitle: AppL10n.of(ctx).avatarPickerSub,
                 onClose: () => Navigator.of(ctx).pop(),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.neoChartreuse.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.photo_library_outlined, color: AppColors.neoChartreuse, size: 20)),
-                title: Text('Galeri Foto', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text('Pilih gambar dari galeri perangkat', style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
+                title: Text(AppL10n.of(ctx).avatarGalleryTitle, style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 14)),
+                subtitle: Text(AppL10n.of(ctx).avatarGallerySub, style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   onSelectSource(ImageSource.gallery);
@@ -150,8 +151,8 @@ class EditProfileAvatarPicker {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.neoCyan.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.camera_alt_outlined, color: AppColors.neoCyan, size: 20)),
-                title: Text('Kamera', style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text('Ambil foto baru langsung dari kamera', style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
+                title: Text(AppL10n.of(ctx).avatarCameraTitle, style: GoogleFonts.plusJakartaSans(color: AppColors.textWhite, fontWeight: FontWeight.w600, fontSize: 14)),
+                subtitle: Text(AppL10n.of(ctx).avatarCameraSub, style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   onSelectSource(ImageSource.camera);
@@ -162,8 +163,8 @@ class EditProfileAvatarPicker {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20)),
-                  title: Text('Hapus Foto Profil', style: GoogleFonts.plusJakartaSans(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600, fontSize: 14)),
-                  subtitle: Text('Gunakan inisial nama sebagai avatar', style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
+                  title: Text(AppL10n.of(ctx).avatarRemoveTitle, style: GoogleFonts.plusJakartaSans(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600, fontSize: 14)),
+                  subtitle: Text(AppL10n.of(ctx).avatarRemoveSub, style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
                   onTap: () {
                     Navigator.of(ctx).pop();
                     onRemovePhoto();

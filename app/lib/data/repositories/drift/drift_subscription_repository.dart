@@ -14,6 +14,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     required String title,
     required double cost,
     required int dueDay,
+    required DateTime nextDueDate,
     required String walletId,
     required String categoryId,
     bool autoDeduct = false,
@@ -24,6 +25,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     String? profileId,
   }) async {
     final now = DateTime.now().toUtc();
+    final normalizedDue = DateTime(nextDueDate.year, nextDueDate.month, nextDueDate.day);
     final wallet = await (db.select(db.wallets)..where((t) => t.id.equals(walletId))).getSingleOrNull();
     final effProfileId = profileId ?? wallet?.profileId ?? (await db.getActiveProfile())?.id ?? 'default_profile_1';
     await db.into(db.subscriptions).insert(
@@ -36,6 +38,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
         cost: drift.Value(cost),
         billingCycle: drift.Value(billingCycle),
         dueDay: drift.Value(dueDay),
+        nextDueDate: drift.Value(normalizedDue),
         autoDeduct: drift.Value(autoDeduct),
         status: const drift.Value('active'),
         isInstallment: drift.Value(isInstallment),
@@ -53,6 +56,7 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     required String title,
     required double cost,
     required int dueDay,
+    required DateTime nextDueDate,
     required String walletId,
     required String categoryId,
     bool autoDeduct = false,
@@ -64,11 +68,13 @@ mixin DriftSubscriptionRepository on DriftRepoBase {
     DateTime? deadlineDate,
   }) async {
     final now = DateTime.now().toUtc();
+    final normalizedDue = DateTime(nextDueDate.year, nextDueDate.month, nextDueDate.day);
     await (db.update(db.subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
       SubscriptionsCompanion(
         title: drift.Value(title),
         cost: drift.Value(cost),
         dueDay: drift.Value(dueDay),
+        nextDueDate: drift.Value(normalizedDue),
         walletId: drift.Value(walletId),
         categoryId: drift.Value(categoryId),
         autoDeduct: drift.Value(autoDeduct),

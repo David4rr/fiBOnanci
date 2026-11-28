@@ -1,8 +1,14 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import 'confetti_overlay.dart';
 import 'onboarding_celebration_card.dart';
+
+bool get _isFlutterTest => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
 class OnboardingStepCelebration extends StatefulWidget {
   final String fullName;
@@ -68,27 +74,26 @@ class _OnboardingStepCelebrationState extends State<OnboardingStepCelebration>
     return ConfettiOverlay(
       child: Column(
         children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.neoChartreuse.withValues(alpha: 0.35),
-                width: 1.5,
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 156,
+            width: 200,
+            child: Lottie.asset(
+              'assets/lottie/onb_ready.json',
+              height: 156,
+              animate: !_isFlutterTest,
+              repeat: true,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(
+                Icons.celebration_rounded,
+                color: AppColors.neoChartreuse,
+                size: 56,
               ),
             ),
-            child: const Icon(
-              Icons.celebration_rounded,
-              color: AppColors.neoChartreuse,
-              size: 28,
-            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Text(
-            'Selamat datang, $firstName!',
+            AppL10n.of(context).onbCelebrationTitle(firstName),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textWhite,
@@ -99,7 +104,7 @@ class _OnboardingStepCelebrationState extends State<OnboardingStepCelebration>
           ),
           const SizedBox(height: 6),
           Text(
-            'Brankas dan rekening pertamamu sudah aktif.\nSemua siap, ayo mulai atur keuanganmu!',
+            AppL10n.of(context).onbCelebrationDesc,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textMuted,

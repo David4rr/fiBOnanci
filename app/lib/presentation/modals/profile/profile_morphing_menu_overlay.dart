@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
+import '../../screens/onboarding/onboarding_submit.dart';
 import '../../theme/app_colors.dart';
-import '../edit_profile_modal.dart';
 import '../financial_health_modal.dart';
 
 class ProfileMorphingMenuOverlay extends StatelessWidget {
@@ -58,7 +59,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
               Icon(Icons.more_horiz_rounded, color: AppColors.textAccent, size: 16),
               const SizedBox(width: 8),
               Text(
-                'Menu Profil',
+                AppL10n.of(context).profileMenuTitle,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -83,14 +84,14 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
           ProfileMorphingMenuItem(
             icon: Icons.person_add_alt_1_outlined,
             title: 'New Profile',
-            subtitle: 'Tambah akun profil baru',
-            onTap: () => onAction(onNewProfile ?? () => EditProfileModal.show(context)),
+            subtitle: AppL10n.of(context).profileMenuNew,
+            onTap: () => onAction(onNewProfile ?? () => OnboardingSubmit.openNewProfile(context)),
           ),
           const SizedBox(height: 8),
           ProfileMorphingMenuItem(
             icon: Icons.favorite_outline_rounded,
             title: 'Health Finance Details',
-            subtitle: 'Audit komprehensif keuangan',
+            subtitle: AppL10n.of(context).profileMenuHealth,
             onTap: () => onAction(onHealthDetails ?? () => FinancialHealthModal.show(context)),
           ),
           if (onFinancialReport != null) ...[
@@ -98,8 +99,8 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
             ProfileMorphingMenuItem(
               key: const Key('profile_financial_report_button'),
               icon: Icons.pie_chart_outline_rounded,
-              title: 'Laporan Keuangan',
-              subtitle: 'Ringkasan arus kas & kategori',
+              title: AppL10n.of(context).financialReportTitle,
+              subtitle: AppL10n.of(context).profileMenuReport,
               onTap: () => onAction(onFinancialReport),
             ),
           ],
@@ -108,8 +109,8 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
             ProfileMorphingMenuItem(
               key: const Key('profile_settings_button'),
               icon: Icons.tune_rounded,
-              title: 'Pengaturan',
-              subtitle: 'Mata uang, kategori, & data lokal',
+              title: AppL10n.of(context).settingsTitle,
+              subtitle: AppL10n.of(context).profileMenuSettings,
               onTap: () => onAction(onSettings),
             ),
           ],
@@ -117,7 +118,7 @@ class ProfileMorphingMenuOverlay extends StatelessWidget {
           ProfileMorphingMenuItem(
             icon: Icons.share_outlined,
             title: 'Share Profile',
-            subtitle: 'Bagikan kartu profil finansial',
+            subtitle: AppL10n.of(context).profileMenuShare,
             onTap: () => onAction(onShareProfile),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
 import 'health/financial_health_tab.dart';
@@ -42,8 +43,8 @@ class FinancialHealthModal {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                         child: ModalHeader(
-                          title: 'Audit Kesehatan Finansial',
-                          subtitle: 'Berdasarkan rasio arus kas, aset, & tagihan riil',
+                          title: AppL10n.of(sheetContext).financialHealthTitle,
+                          subtitle: AppL10n.of(sheetContext).financialHealthSubtitle,
                           padding: EdgeInsets.zero,
                           onClose: () => Navigator.of(ctx).pop(),
                         ),

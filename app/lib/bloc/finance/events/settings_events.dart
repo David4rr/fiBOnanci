@@ -14,6 +14,20 @@ class AddCategoryEvent extends FinanceEvent {
   });
 }
 
+class UpdateCategoryEvent extends FinanceEvent {
+  final String categoryId;
+  final String name;
+  final String iconName;
+  final String colorHex;
+
+  const UpdateCategoryEvent({
+    required this.categoryId,
+    required this.name,
+    required this.iconName,
+    required this.colorHex,
+  });
+}
+
 class DeleteCategoryEvent extends FinanceEvent {
   final String categoryId;
 

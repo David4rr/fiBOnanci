@@ -43,6 +43,7 @@ extension SettingsBlocHandlers on FinanceBloc {
     Emitter<FinanceState> emit,
   ) {
     final nextHidden = event.hidden ?? !state.isBalanceHidden;
+    ProfilePreferencesStorage.setIsBalanceHidden(nextHidden);
     emit(state.copyWith(isBalanceHidden: nextHidden));
   }
 
@@ -83,6 +84,24 @@ extension SettingsBlocHandlers on FinanceBloc {
       emit(state.copyWith(categories: categories));
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Gagal menambah kategori: $e'));
+    }
+  }
+
+  Future<void> handleUpdateCategory(
+    UpdateCategoryEvent event,
+    Emitter<FinanceState> emit,
+  ) async {
+    try {
+      await repository.updateCategory(
+        categoryId: event.categoryId,
+        name: event.name,
+        iconName: event.iconName,
+        colorHex: event.colorHex,
+      );
+      final categories = await repository.getCategories();
+      emit(state.copyWith(categories: categories));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Gagal memperbarui kategori: $e'));
     }
   }
 

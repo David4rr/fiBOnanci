@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notification_parser/bank_presets.dart';
 import '../../data/database/app_database.dart';
@@ -80,8 +81,8 @@ class EditBalanceModal {
                         children: [
                           isForm ? const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)) : const SizedBox(height: 18),
                           ModalHeader(
-                            title: isForm ? 'Penyesuaian Saldo: ${wallet.name}' : 'Pilih Aplikasi',
-                            subtitle: isForm ? 'Ubah saldo awal rekening sesuai saldo riil saat ini di m-banking.' : 'Cari bank atau e-wallet di HP Anda',
+                            title: isForm ? AppL10n.of(context).walletBalanceAdjustTitle(wallet.name) : AppL10n.of(context).pickAppTitle,
+                            subtitle: isForm ? AppL10n.of(context).walletEditBalanceSubtitle : AppL10n.of(context).pickAppSubtitle,
                             closeIcon: isForm ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
                             onClose: isForm ? () => Navigator.pop(modalContext) : () => switchTab(0),
                           ),
@@ -99,7 +100,7 @@ class EditBalanceModal {
                               children: [
                                 CurrencyAmountField(controller: controller),
                                 const SizedBox(height: 12),
-                                AppTextField(controller: accountNumberController, hintText: 'Nomor Rekening (Opsional, cth: 5410982341)'),
+                                AppTextField(controller: accountNumberController, hintText: AppL10n.of(context).hintAccountNumber),
                                 const SizedBox(height: 14),
                                 WalletBindingSelector(
                                   selectedPackage: selectedPackage, isCustomPackage: isCustomPackage,
@@ -116,7 +117,7 @@ class EditBalanceModal {
                                         child: OutlinedButton(
                                           style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                                           onPressed: () => Navigator.pop(modalContext),
-                                          child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                                          child: Text(AppL10n.of(context).txCancel, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                                         ),
                                       ),
                                     ),
@@ -140,7 +141,7 @@ class EditBalanceModal {
                                             }
                                             Navigator.pop(ctx);
                                           },
-                                          child: Text('Perbarui Saldo', style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
+                                          child: Text(AppL10n.of(context).walletUpdateBalanceBtn, style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
                                         ),
                                       ),
                                     ),
@@ -150,7 +151,7 @@ class EditBalanceModal {
                                 Center(
                                   child: TextButton.icon(
                                     icon: const Icon(Icons.delete_outline_rounded, color: AppColors.neoCoral, size: 18),
-                                    label: Text('Hapus Rekening', style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                                    label: Text(AppL10n.of(context).walletDeleteAccountBtn, style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13.5, fontWeight: FontWeight.w600)),
                                     onPressed: () => WalletDeleteDialog.show(context, modalContext, wallet),
                                   ),
                                 ),

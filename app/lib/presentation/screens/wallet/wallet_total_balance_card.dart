@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-import '../../widgets/common/peekable_balance_text.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/trend_spline_chart.dart';
 import '../../widgets/wallet_cashflow_summary.dart';
 
@@ -31,6 +32,7 @@ class WalletTotalBalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       child: Container(
@@ -53,7 +55,7 @@ class WalletTotalBalanceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'TOTAL SALDO RIIL',
+                        l10n.walletsTotalRealBalance,
                         style: AppTypography.badgeLabel.copyWith(
                           color: AppColors.textMuted,
                           fontSize: 9.5,
@@ -61,14 +63,16 @@ class WalletTotalBalanceCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      PeekableBalanceText(
-                        text: currencyFormatter.format(totalRealBalance),
+                      AnimatedCountingText(
+                        value: totalRealBalance,
+                        formatter: currencyFormatter.format,
+                        animateOnMount: false,
+                        duration: const Duration(milliseconds: 400),
                         style: GoogleFonts.plusJakartaSans(
                           color: AppColors.neoChartreuse,
                           fontSize: 21,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
-                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -90,8 +94,8 @@ class WalletTotalBalanceCard extends StatelessWidget {
                 incomeValues: incomeSeries,
                 expenseValues: expenseSeries,
                 labels: dateLabels,
-                headline: 'Tren Arus Kas (Semua Rekening)',
-                subtitle: '30 Hari',
+                headline: l10n.walletTrendHeadline,
+                subtitle: l10n.walletTrendSubtitle,
                 height: 74,
                 embedded: true,
               ),

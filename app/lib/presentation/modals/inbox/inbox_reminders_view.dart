@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/notifications/in_app_notification_storage.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -60,11 +61,12 @@ class _InboxRemindersViewState extends State<InboxRemindersView> {
   }
 
   Widget _buildFilterChips(List<InAppNotificationItem> all) {
+    final l10n = AppL10n.of(context);
     final categories = [
-      {'key': 'all', 'label': 'Semua', 'count': all.length},
-      {'key': 'bill', 'label': 'Tagihan', 'count': all.where((i) => i.category == 'bill').length},
-      {'key': 'streak', 'label': 'Peringatan', 'count': all.where((i) => i.category == 'streak').length},
-      {'key': 'system', 'label': 'Sistem', 'count': all.where((i) => i.category == 'system').length},
+      {'key': 'all', 'label': l10n.filterAll, 'count': all.length},
+      {'key': 'bill', 'label': l10n.navSubscriptions, 'count': all.where((i) => i.category == 'bill').length},
+      {'key': 'streak', 'label': l10n.inboxFilterWarning, 'count': all.where((i) => i.category == 'streak').length},
+      {'key': 'system', 'label': l10n.inboxFilterSystem, 'count': all.where((i) => i.category == 'system').length},
     ];
 
     return SingleChildScrollView(
@@ -96,7 +98,7 @@ class _InboxRemindersViewState extends State<InboxRemindersView> {
             GestureDetector(
               onTap: () => InAppNotificationStorage.markAllAsRead(),
               child: Text(
-                'Tandai Semua Dibaca',
+                AppL10n.of(context).inboxMarkAllRead,
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.textAccent,
                   fontSize: 11.5,
@@ -109,7 +111,7 @@ class _InboxRemindersViewState extends State<InboxRemindersView> {
           GestureDetector(
             onTap: () => _handleClearAll(context),
             child: Text(
-              'Hapus Semua',
+              AppL10n.of(context).inboxClearAll,
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.red.withAlpha(200),
                 fontSize: 11.5,
@@ -123,11 +125,12 @@ class _InboxRemindersViewState extends State<InboxRemindersView> {
   }
 
   Future<void> _handleClearAll(BuildContext context) async {
+    final l10n = AppL10n.of(context);
     final confirm = await AppConfirmationDialog.show(
       context,
-      title: 'Hapus Semua Pengingat?',
-      content: 'Semua riwayat pengingat akan dihapus secara permanen.',
-      confirmText: 'Hapus',
+      title: l10n.inboxClearAllTitle,
+      content: l10n.inboxClearAllContent,
+      confirmText: l10n.txDeleteConfirm,
     );
     if (confirm == true) {
       await InAppNotificationStorage.clearAll();
@@ -154,7 +157,7 @@ class _InboxRemindersViewState extends State<InboxRemindersView> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Belum ada pengingat atau tagihan tercatat.',
+              AppL10n.of(context).inboxRemindersEmpty,
               style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted, fontSize: 12.5),
             ),
           ],

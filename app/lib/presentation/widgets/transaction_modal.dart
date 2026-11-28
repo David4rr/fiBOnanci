@@ -7,6 +7,7 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import 'common/common_widgets.dart';
 import 'transaction_modal_form.dart';
@@ -21,9 +22,7 @@ class TransactionModal extends StatefulWidget {
   final VoidCallback? onClose, onSaved;
   final bool isInline;
 
-  const TransactionModal({
-    super.key, this.initialWalletId, this.initialInputSource, this.initialDraft, this.onClose, this.onSaved, this.isInline = false,
-  });
+  const TransactionModal({super.key, this.initialWalletId, this.initialInputSource, this.initialDraft, this.onClose, this.onSaved, this.isInline = false});
 
   static Future<void> show(BuildContext context, {String? initialWalletId, SmartInputSource? initialInputSource, SmartTransactionDraft? initialDraft}) =>
       showModalBottomSheet<void>(
@@ -107,14 +106,15 @@ class _TransactionModalState extends State<TransactionModal> {
   void _onSave() {
     final amount = AppCurrency.parseInputOf(context, _amountController.text);
     if (amount <= 0 || _selectedWalletId == null || (_type != 'transfer' && _selectedCategoryId == null)) return;
+    final l10n = AppL10n.of(context);
     final state = context.read<FinanceBloc>().state;
     final isCross = _type == 'transfer' && _selectedTargetProfileId != null && _selectedTargetProfileId != state.profile.id;
     if (isCross && _selectedDestinationWalletId == null) {
-      AppSnackBar.showWarning(context, 'Rekening Tujuan Kosong', message: 'Pilih rekening tujuan di profil tujuan!');
+      AppSnackBar.showWarning(context, l10n.txErrDestEmptyTitle, message: l10n.txErrDestEmptyMsg);
       return;
     }
     if (!isCross && _type == 'transfer' && (_selectedDestinationWalletId == null || _selectedDestinationWalletId == _selectedWalletId)) {
-      AppSnackBar.showWarning(context, 'Rekening Sama', message: 'Pilih rekening tujuan yang berbeda dari rekening asal!');
+      AppSnackBar.showWarning(context, l10n.txErrSameAccountTitle, message: l10n.txErrSameAccountMsg);
       return;
     }
     final note = _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null;

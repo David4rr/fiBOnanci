@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/locale_notifier.dart';
+import '../../domain/services/subscription_schedule_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'subscription_custom_tenor_row.dart';
@@ -13,6 +15,8 @@ class SubscriptionInstallmentSelector extends StatefulWidget {
   final bool isInstallment;
   final int totalCycles;
   final int dueDay;
+  final DateTime firstDueDate;
+  final int paidCycles;
   final ValueChanged<bool> onToggleInstallment;
   final ValueChanged<int> onCyclesChanged;
 
@@ -21,6 +25,8 @@ class SubscriptionInstallmentSelector extends StatefulWidget {
     required this.isInstallment,
     required this.totalCycles,
     required this.dueDay,
+    required this.firstDueDate,
+    this.paidCycles = 0,
     required this.onToggleInstallment,
     required this.onCyclesChanged,
   });
@@ -30,16 +36,23 @@ class SubscriptionInstallmentSelector extends StatefulWidget {
   static DateTime calculateDeadlineDate({
     required int dueDay,
     required int totalCycles,
+    DateTime? firstDueDate,
+    int paidCycles = 0,
     DateTime? referenceDate,
   }) {
     final now = referenceDate ?? DateTime.now();
-    final startMonth = now.day <= dueDay ? now.month : now.month + 1;
-    final totalMonths = startMonth + totalCycles - 1;
-    final targetYear = now.year + ((totalMonths - 1) ~/ 12);
-    final targetMonth = ((totalMonths - 1) % 12) + 1;
-    final maxDays = DateTime(targetYear, targetMonth + 1, 0).day;
-    final clampedDay = dueDay.clamp(1, maxDays);
-    return DateTime(targetYear, targetMonth, clampedDay, 23, 59, 59);
+    final effectiveFirst = firstDueDate ??
+        SubscriptionScheduleService.resolveFirstDueDate(
+          dueDay: dueDay,
+          monthOffset: SubscriptionScheduleService.defaultMonthOffset(dueDay: dueDay, referenceDate: now),
+          referenceDate: now,
+        );
+    return SubscriptionScheduleService.calculateInstallmentDeadline(
+      firstDueDate: effectiveFirst,
+      dueDay: dueDay,
+      totalCycles: totalCycles,
+      paidCycles: paidCycles,
+    );
   }
 
   @override
@@ -84,11 +97,14 @@ class _SubscriptionInstallmentSelectorState extends State<SubscriptionInstallmen
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final deadline = SubscriptionInstallmentSelector.calculateDeadlineDate(
       dueDay: widget.dueDay,
       totalCycles: widget.totalCycles,
+      firstDueDate: widget.firstDueDate,
+      paidCycles: widget.paidCycles,
     );
-    final deadlineStr = DateFormat('MMMM yyyy', 'id_ID').format(deadline);
+    final deadlineStr = DateFormat('MMMM yyyy', l10n.localeName).format(deadline);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +120,7 @@ class _SubscriptionInstallmentSelectorState extends State<SubscriptionInstallmen
             children: [
               Expanded(
                 child: Text(
-                  'TENGGAT WAKTU CICILAN (WAJIB)',
+                  l10n.subInstallmentDeadlineHeader,
                   style: AppTypography.badgeLabel.copyWith(color: AppColors.neoCoral, letterSpacing: 0.8),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -117,7 +133,7 @@ class _SubscriptionInstallmentSelectorState extends State<SubscriptionInstallmen
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Selesai $deadlineStr',
+                  l10n.subInstallmentFinishDate(deadlineStr),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -145,7 +161,7 @@ class _SubscriptionInstallmentSelectorState extends State<SubscriptionInstallmen
               ],
               Expanded(
                 child: SubscriptionTenorPresetButton(
-                  label: 'Custom',
+                  label: l10n.subInstallmentCustomBtn,
                   isSelected: _isCustom,
                   onTap: () {
                     HapticFeedback.selectionClick();

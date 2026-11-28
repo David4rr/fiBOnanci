@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -62,13 +63,13 @@ class PocketDetailTab extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text('Riwayat Mutasi', style: AppTypography.sectionTitle.copyWith(fontSize: 15.5)),
+                child: Text(AppL10n.of(context).pocketHistoryTitle, style: AppTypography.sectionTitle.copyWith(fontSize: 15.5)),
               ),
               if (transactions.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(8)),
-                  child: Text('${transactions.length} mutasi', style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+                  child: Text(AppL10n.of(context).pocketMutationsCount(transactions.length), style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
             ],
           ),
@@ -93,7 +94,7 @@ class PocketDetailTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text('Belum ada riwayat mutasi', style: AppTypography.listSubtitle, textAlign: TextAlign.center),
+                    Text(AppL10n.of(context).pocketHistoryEmpty, style: AppTypography.listSubtitle, textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -115,7 +116,7 @@ class PocketDetailTab extends StatelessWidget {
             ),
           const SizedBox(height: 24),
           SlideToDeleteButton(
-            label: 'Hapus Kantong',
+            label: AppL10n.of(context).pocketDeleteLabel,
             onSlideComplete: () => showPocketDeleteDialog(context, pocket),
           ),
         ],

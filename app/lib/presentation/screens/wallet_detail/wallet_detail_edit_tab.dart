@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../../data/database/app_database.dart';
@@ -136,7 +137,7 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
               children: [
                 CurrencyAmountField(controller: _controller),
                 const SizedBox(height: 12),
-                AppTextField(controller: _accountNumberController, hintText: 'Nomor Rekening (Opsional, cth: 5410982341)'),
+                AppTextField(controller: _accountNumberController, hintText: AppL10n.of(context).hintAccountNumber),
                 const SizedBox(height: 14),
                 WalletBindingSelector(
                   selectedPackage: _selectedPackage, isCustomPackage: _isCustomPackage,
@@ -153,7 +154,7 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                           onPressed: widget.onReturnToDetails,
-                          child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                          child: Text(AppL10n.of(context).txCancel, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ),
@@ -165,14 +166,14 @@ class _WalletDetailEditTabState extends State<WalletDetailEditTab> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
                           onPressed: _saveWallet,
-                          child: Text('Perbarui Saldo', style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
+                          child: Text(AppL10n.of(context).walletUpdateBalanceBtn, style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                SlideToDeleteButton(label: 'Hapus Rekening', onSlideComplete: () => WalletDeleteDialog.show(context, context, widget.wallet)),
+                SlideToDeleteButton(label: AppL10n.of(context).walletDeleteAccountBtn, onSlideComplete: () => WalletDeleteDialog.show(context, context, widget.wallet)),
               ],
             ),
           ),

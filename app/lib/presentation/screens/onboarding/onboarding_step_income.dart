@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/currency_amount_field.dart';
 import 'onboarding_header.dart';
@@ -49,15 +50,15 @@ class _OnboardingStepIncomeState extends State<OnboardingStepIncome> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OnboardingHeader(
-          icon: Icons.payments_outlined,
-          question: 'Berapa pemasukanmu per bulan?',
-          helper: 'Gaji, uang saku, atau rata-rata penghasilan. Bisa diubah nanti di pengaturan.',
+        OnboardingHeader(
+          lottieAsset: 'assets/lottie/onb_income.json',
+          question: AppL10n.of(context).onbIncomeQuestion,
+          helper: AppL10n.of(context).onbIncomeHelper,
           iconColor: AppColors.neoCyan,
         ),
         CurrencyAmountField(
           controller: widget.incomeController,
-          labelText: 'Pemasukan bulanan',
+          labelText: AppL10n.of(context).onbIncomeLabel,
           hintText: '0',
         ),
         const SizedBox(height: 12),
@@ -82,7 +83,7 @@ class _OnboardingStepIncomeState extends State<OnboardingStepIncome> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '≈ $formattedDaily per hari',
+                        AppL10n.of(context).onbIncomePerDay(formattedDaily),
                         style: TextStyle(
                           color: AppColors.textWhite,
                           fontSize: 13,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/notification_parser/bank_presets.dart';
 import '../../theme/app_colors.dart';
@@ -99,8 +100,8 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
         if (!widget.isInline) ...[
           const ModalGrabHandle(),
           ModalHeader(
-            title: 'Pilih Aplikasi',
-            subtitle: 'Cari bank atau e-wallet di HP Anda',
+            title: AppL10n.of(context).pickAppTitle,
+            subtitle: AppL10n.of(context).pickAppSubtitle,
             onClose: widget.onClose ?? () => Navigator.of(context).pop(),
           ),
         ],
@@ -111,7 +112,7 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
             onChanged: _onSearch,
             style: AppTypography.listTitle,
             decoration: InputDecoration(
-              hintText: 'Cari nama app atau package...',
+              hintText: AppL10n.of(context).appPickerSearchHint,
               hintStyle: AppTypography.listSubtitle,
               prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted),
               filled: true,
@@ -125,7 +126,7 @@ class _InstalledAppPickerModalState extends State<InstalledAppPickerModal>
               ? const Center(child: CircularProgressIndicator(color: AppColors.neoMint))
               : _filteredApps.isEmpty
                   ? Center(
-                      child: Text('Aplikasi tidak ditemukan', style: AppTypography.listSubtitle),
+                      child: Text(AppL10n.of(context).appPickerNotFound, style: AppTypography.listSubtitle),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),

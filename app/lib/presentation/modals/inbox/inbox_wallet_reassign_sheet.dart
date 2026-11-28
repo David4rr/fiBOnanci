@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
@@ -54,8 +55,9 @@ class InboxWalletReassignSheet extends StatefulWidget {
     item['profileId'] = newWallet.profileId;
     item['profileName'] = prof?.fullName ?? prof?.username;
     NotificationInbox.updatePending(item);
-    final pName = prof?.fullName ?? prof?.username ?? 'Akun Utama';
-    return 'Dialihkan ke $pName • ${newWallet.name}';
+    final l10n = context.mounted ? AppL10n.of(context) : null;
+    final pName = prof?.fullName ?? prof?.username ?? (l10n?.inboxReassignMainAccount ?? 'Main Account');
+    return l10n?.inboxReassignSuccess(pName, newWallet.name) ?? '$pName • ${newWallet.name}';
   }
   @override
   State<InboxWalletReassignSheet> createState() => _InboxWalletReassignSheetState();
@@ -99,7 +101,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
         children: [
           const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
           Text(
-            'Pilih Dompet / Workspace',
+            AppL10n.of(context).inboxReassignTitle,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -109,7 +111,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Alihkan transaksi auto-log ini ke rekening atau akun yang benar.',
+            AppL10n.of(context).inboxReassignSub,
             style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted),
           ),
           const SizedBox(height: 16),
@@ -171,7 +173,7 @@ class _InboxWalletReassignSheetState extends State<InboxWalletReassignSheet> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${prof?.fullName ?? prof?.username ?? 'Akun Utama'} • ${w.accountNumber?.isNotEmpty == true ? w.accountNumber : w.type.toUpperCase()}',
+                                  '${prof?.fullName ?? prof?.username ?? AppL10n.of(context).inboxReassignMainAccount} • ${w.accountNumber?.isNotEmpty == true ? w.accountNumber : w.type.toUpperCase()}',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
                                     color: isSelected ? AppColors.textAccent : AppColors.textMuted,

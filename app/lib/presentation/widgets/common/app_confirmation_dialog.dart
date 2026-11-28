@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
@@ -8,13 +9,16 @@ class AppConfirmationDialog {
     BuildContext context, {
     required String title,
     required String content,
-    String confirmText = 'Hapus',
-    String cancelText = 'Batal',
+    String? confirmText,
+    String? cancelText,
     Color confirmColor = AppColors.neoCoral,
     Color confirmTextColor = AppColors.textDarkPrimary,
     Widget? titleLeading,
     VoidCallback? onConfirm,
   }) {
+    final l10n = AppL10n.of(context);
+    final effectiveConfirm = confirmText ?? l10n.txDeleteConfirm;
+    final effectiveCancel = cancelText ?? l10n.txCancel;
     return showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -48,7 +52,7 @@ class AppConfirmationDialog {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: Text(cancelText, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontSize: 14)),
+            child: Text(effectiveCancel, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontSize: 14)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -61,7 +65,7 @@ class AppConfirmationDialog {
               Navigator.of(dialogCtx).pop(true);
               onConfirm?.call();
             },
-            child: Text(confirmText, style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(effectiveConfirm, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

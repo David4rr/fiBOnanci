@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'edit_profile_input_field.dart';
 
@@ -15,7 +16,7 @@ class EditProfileHeader extends StatelessWidget {
         children: [
           const ModalGrabHandle(),
           ModalHeader(
-            title: isEditing ? 'Edit Profil' : 'Tambah Profil Baru',
+            title: isEditing ? AppL10n.of(context).editProfileTitle : AppL10n.of(context).newProfileTitle,
             padding: EdgeInsets.zero,
             onClose: () => Navigator.of(context).pop(),
           ),
@@ -47,6 +48,7 @@ class EditProfileForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -72,7 +74,7 @@ class EditProfileForm extends StatelessWidget {
         const SizedBox(height: 12),
         EditProfileInputField(
           controller: fullNameController,
-          label: 'Nama Lengkap',
+          label: l10n.editProfileFullName,
           hintText: 'e.g. Alexander William',
           prefixIcon: Icons.badge_outlined,
           validator: (val) => (val == null || val.trim().isEmpty) ? 'Nama lengkap wajib diisi' : null,
@@ -81,14 +83,14 @@ class EditProfileForm extends StatelessWidget {
         EditProfileInputField(
           controller: emailController,
           label: 'Email',
-          hintText: 'e.g. nama@email.com',
+          hintText: l10n.editProfileEmailHint,
           prefixIcon: Icons.mail_outline_rounded,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 12),
         EditProfileInputField(
           controller: phoneController,
-          label: 'No. Handphone / WhatsApp',
+          label: l10n.editProfilePhone,
           hintText: 'e.g. +62 812-xxxx-xxxx',
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
@@ -96,15 +98,15 @@ class EditProfileForm extends StatelessWidget {
         const SizedBox(height: 12),
         EditProfileInputField(
           controller: occupationController,
-          label: 'Profesi / Pekerjaan',
-          hintText: 'e.g. Profesional, Wiraswasta',
+          label: l10n.editProfileOccupation,
+          hintText: l10n.editProfileOccHint,
           prefixIcon: Icons.work_outline_rounded,
         ),
         const SizedBox(height: 12),
         EditProfileInputField(
           controller: bioController,
-          label: 'Bio / Catatan Pribadi',
-          hintText: 'e.g. Membangun kebebasan finansial',
+          label: l10n.editProfileBio,
+          hintText: l10n.editProfileBioHint,
           prefixIcon: Icons.notes_rounded,
           maxLines: 2,
         ),

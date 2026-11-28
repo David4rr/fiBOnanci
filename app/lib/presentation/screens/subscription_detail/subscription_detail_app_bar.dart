@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/common_widgets.dart';
 
@@ -28,14 +29,13 @@ class SubscriptionDetailAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final isInstallment = subscription.isInstallment;
     final title = isEditing
-        ? (isInstallment ? 'Edit Cicilan' : 'Edit Tagihan Rutin')
-        : (isInstallment ? 'Detail Cicilan' : 'Detail Tagihan');
+        ? (isInstallment ? l10n.subModalEditInstallment : l10n.subModalEditBill)
+        : (isInstallment ? l10n.subDetailInstallmentTitle : l10n.subDetailBillTitle);
     final subtitle = isEditing
-        ? (isInstallment
-            ? 'Rencana cicilan tenor & jatuh tempo'
-            : 'Langganan, tagihan rutin, atau tagihan berkala')
+        ? (isInstallment ? l10n.subModalSubInstallment : l10n.subModalSubBill)
         : subscription.title;
     final closeIcon = isEditing
         ? Icons.keyboard_arrow_left_rounded

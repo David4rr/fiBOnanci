@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -35,13 +36,14 @@ class _SubscriptionDetailPayButtonState extends State<SubscriptionDetailPayButto
     _morphController = AnimationController(vsync: this, duration: const Duration(milliseconds: 950))
       ..addStatusListener((status) {
         if (status != AnimationStatus.completed || !mounted) return;
+        final l10n = AppL10n.of(context);
         final messenger = ScaffoldMessenger.of(context);
         Navigator.of(context).maybePop();
         AppSnackBar.showWithMessenger(
           messenger,
-          title: 'Tagihan ${widget.subscription.title} Lunas',
-          message: 'Saldo ${widget.wallet.name} terpotong otomatis.',
-          tag: 'LUNAS',
+          title: l10n.subPaySnackTitle(widget.subscription.title),
+          message: l10n.subPaySnackMsg(widget.wallet.name),
+          tag: l10n.subBadgePaid,
         );
       });
   }
@@ -118,8 +120,8 @@ class _SubscriptionDetailPayButtonState extends State<SubscriptionDetailPayButto
           Expanded(
             child: Text(
               isCompleted
-                  ? 'Semua cicilan telah lunas! Rencana pembiayaan ini telah selesai.'
-                  : 'Tagihan periode bulan ini telah lunas tercatat di buku kas.',
+                  ? AppL10n.of(context).subPayCompletedMsg
+                  : AppL10n.of(context).subPayPeriodDoneMsg,
               style: GoogleFonts.plusJakartaSans(
                   color: AppColors.textWhite, fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.35),
             ),
@@ -131,14 +133,15 @@ class _SubscriptionDetailPayButtonState extends State<SubscriptionDetailPayButto
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: _customAmountCtrl,
       builder: (context, value, _) {
+        final l10n = AppL10n.of(context);
         final fmt = AppCurrency.of(context);
         final parsed = _useCustomAmount ? AppCurrency.parseInputOf(context, value.text) : sub.cost;
         final effectiveCost = parsed > 0 ? parsed : sub.cost;
         final baseLabel = sub.isInstallment
-            ? 'Bayar Cicilan Bulan Ini (${sub.paidCycles + 1}/${totalCycles > 0 ? totalCycles : "?"})'
-            : 'Tandai Sudah Lunas Bulan Ini';
+            ? l10n.subPayInstallmentBtn(sub.paidCycles + 1, totalCycles > 0 ? '$totalCycles' : '?')
+            : l10n.subPayMarkPaidBtn;
         final buttonText = (_useCustomAmount && (effectiveCost - sub.cost).abs() > 0.01)
-            ? 'Bayar ${fmt.format(effectiveCost)} Bulan Ini'
+            ? l10n.subPayCustomBtn(fmt.format(effectiveCost))
             : baseLabel;
 
         return Column(
@@ -153,7 +156,7 @@ class _SubscriptionDetailPayButtonState extends State<SubscriptionDetailPayButto
               onSelectPreset: _applyPreset,
             ),
             PrimaryActionButton(
-              text: _isMorphed ? 'Berhasil Dibayar!' : buttonText,
+              text: _isMorphed ? l10n.subPaySuccessBtn : buttonText,
               icon: _isMorphed ? Icons.check_circle_rounded : Icons.check_circle_outline,
               backgroundColor: _isMorphed ? AppColors.neoMint : AppColors.neoChartreuse,
               onPressed: _handlePay,

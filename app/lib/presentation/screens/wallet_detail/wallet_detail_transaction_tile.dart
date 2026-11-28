@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/transaction_detail_modal.dart';
@@ -74,10 +75,10 @@ class WalletDetailTransactionTile extends StatelessWidget {
                       (tx.notes != null && tx.notes!.isNotEmpty)
                           ? tx.notes!
                           : (tx.type == 'income'
-                              ? 'Pemasukan'
+                              ? AppL10n.of(context).txTypeIncome
                               : (tx.type == 'transfer'
-                                  ? (isIncomingTransfer ? 'Transfer Masuk' : 'Transfer Keluar')
-                                  : 'Pengeluaran')),
+                                  ? (isIncomingTransfer ? AppL10n.of(context).txTransferIn : AppL10n.of(context).txTransferOut)
+                                  : AppL10n.of(context).txTypeExpense)),
                       style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textWhite),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

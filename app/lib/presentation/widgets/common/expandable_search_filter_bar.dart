@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import 'expandable_search_active_chips.dart';
 import 'expandable_search_dropdown_overlay.dart';
@@ -128,13 +129,9 @@ class _ExpandableSearchFilterBarState extends State<ExpandableSearchFilterBar>
     _closeOverlay();
   }
 
-  String get _typeChipLabel => widget.primaryFilterChoices
-      .cast<FilterChoice?>()
-      .firstWhere((c) => c?.value == widget.typeFilter, orElse: () => null)
-      ?.chipLabel ?? 'Tipe: ${widget.typeFilter.toUpperCase()}';
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final hasActiveFilter = widget.typeFilter != 'all' || widget.walletFilter != null;
 
     return LayoutBuilder(
@@ -169,7 +166,7 @@ class _ExpandableSearchFilterBarState extends State<ExpandableSearchFilterBar>
                   child: ExpandableSearchRestingBar(
                     searchController: widget.searchController,
                     searchQuery: widget.searchQuery,
-                    hintText: widget.hintText,
+                    hintText: widget.hintText == 'Cari transaksi, rekening, merchant...' ? l10n.searchTxHint : widget.hintText,
                     borderRadius: widget.borderRadius,
                     isExpanded: _isExpanded,
                     hasActiveFilter: hasActiveFilter,
@@ -182,7 +179,7 @@ class _ExpandableSearchFilterBarState extends State<ExpandableSearchFilterBar>
             ),
             if (widget.showActiveChipsBelow && hasActiveFilter && !_isExpanded)
               ExpandableSearchActiveChips(
-                typeChipLabel: _typeChipLabel,
+                typeChipLabel: FilterChoice.localizedChipLabel(l10n, widget.typeFilter, widget.primaryFilterChoices),
                 hasTypeFilter: widget.typeFilter != 'all',
                 walletFilter: widget.walletFilter,
                 wallets: widget.wallets,

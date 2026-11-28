@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class OnboardingTopBar extends StatelessWidget {
@@ -15,45 +16,28 @@ class OnboardingTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: (currentStep + 1) / totalSteps.toDouble(),
-              minHeight: 4,
-              backgroundColor: AppColors.canvasCardSurface,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.neoChartreuse),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: AppColors.textWhite, size: 22),
+            onPressed: onBack,
+          ),
+          const Spacer(),
+          Text(
+            currentStep == totalSteps - 1
+                ? AppL10n.of(context).onbTopBarReady
+                : AppL10n.of(context).onbTopBarStep(currentStep + 1, totalSteps),
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back_rounded, color: AppColors.textWhite, size: 22),
-                onPressed: onBack,
-              ),
-              const Spacer(),
-              Text(
-                currentStep == totalSteps - 1
-                    ? 'Siap!'
-                    : 'Langkah ${currentStep + 1} dari $totalSteps',
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-          ),
-        ),
-      ],
+          const SizedBox(width: 12),
+        ],
+      ),
     );
   }
 }

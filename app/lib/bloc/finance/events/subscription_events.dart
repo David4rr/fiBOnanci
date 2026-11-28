@@ -4,6 +4,7 @@ class AddSubscriptionEvent extends FinanceEvent {
   final String title;
   final double cost;
   final int dueDay;
+  final DateTime nextDueDate;
   final String walletId;
   final String categoryId;
   final bool autoDeduct;
@@ -16,6 +17,7 @@ class AddSubscriptionEvent extends FinanceEvent {
     required this.title,
     required this.cost,
     required this.dueDay,
+    required this.nextDueDate,
     required this.walletId,
     required this.categoryId,
     this.autoDeduct = false,
@@ -31,6 +33,7 @@ class UpdateSubscriptionEvent extends FinanceEvent {
   final String title;
   final double cost;
   final int dueDay;
+  final DateTime nextDueDate;
   final String walletId;
   final String categoryId;
   final bool autoDeduct;
@@ -46,6 +49,7 @@ class UpdateSubscriptionEvent extends FinanceEvent {
     required this.title,
     required this.cost,
     required this.dueDay,
+    required this.nextDueDate,
     required this.walletId,
     required this.categoryId,
     this.autoDeduct = false,

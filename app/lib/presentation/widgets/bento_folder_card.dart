@@ -17,6 +17,7 @@ class BentoFolderCard extends StatelessWidget {
   final IconData? iconData;
   final Widget? topTrailing;
   final String title;
+  final Widget? titleWidget;
   final String? subtitle;
   final Widget? subtitleWidget;
   final Widget? trailingIcon;
@@ -40,6 +41,7 @@ class BentoFolderCard extends StatelessWidget {
     this.iconData,
     this.topTrailing,
     required this.title,
+    this.titleWidget,
     this.subtitle,
     this.subtitleWidget,
     this.trailingIcon,
@@ -90,11 +92,13 @@ class BentoFolderCard extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: PeekableBalanceText(
-            text: title,
-            isHidden: isBalanceHidden,
-            style: AppTypography.cardMetricValue.copyWith(color: primaryText),
-          ),
+          child: (titleWidget != null && isBalanceHidden != true)
+              ? titleWidget!
+              : PeekableBalanceText(
+                  text: title,
+                  isHidden: isBalanceHidden,
+                  style: AppTypography.cardMetricValue.copyWith(color: primaryText),
+                ),
         ),
         const SizedBox(height: 2),
         Row(

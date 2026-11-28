@@ -33,6 +33,7 @@ void main() {
         cost: 1500000.0, // 1.5 Juta
         billingCycle: 'monthly',
         dueDay: 1,
+        nextDueDate: DateTime(2026, 8, 1),
         autoDeduct: false,
         status: 'active',
         lastPaidDate: null,
@@ -119,6 +120,7 @@ void main() {
           cost: 5000000.0, // 5 Juta
           billingCycle: 'monthly',
           dueDay: 5,
+          nextDueDate: DateTime(2026, 8, 5),
           autoDeduct: false,
           status: 'active',
           lastPaidDate: null,

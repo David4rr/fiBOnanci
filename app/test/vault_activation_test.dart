@@ -42,6 +42,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.byKey(const Key('onb_lang_continue_btn')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb_lang_continue_btn')));
+      await tester.pumpAndSettle();
+
       expect(find.byKey(const Key('welcome_start_new_btn')), findsOneWidget);
       await tester.tap(find.byKey(const Key('welcome_start_new_btn')));
       await tester.pumpAndSettle();
@@ -85,6 +89,10 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('onb_lang_continue_btn')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb_lang_continue_btn')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('welcome_start_new_btn')), findsOneWidget);
@@ -172,6 +180,18 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('onb_lang_en_btn')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb_lang_en_btn')));
+      await tester.pumpAndSettle();
+      expect(find.text('Choose Your Language'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('onb_lang_id_btn')));
+      await tester.pumpAndSettle();
+      expect(find.text('Pilih Bahasa'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('onb_lang_continue_btn')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('welcome_import_backup_btn')), findsOneWidget);

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/formatters/app_currency.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
+import 'category_donut_painter.dart';
 
 class UnifiedDonutSlice {
   final String categoryId;
@@ -13,28 +15,47 @@ class UnifiedDonutSlice {
   final bool isIncome;
   final Color color;
 
-  const UnifiedDonutSlice({required this.categoryId, required this.name, required this.amount, required this.percentage, required this.txCount, required this.isIncome, required this.color});
+  const UnifiedDonutSlice({
+    required this.categoryId,
+    required this.name,
+    required this.amount,
+    required this.percentage,
+    required this.txCount,
+    required this.isIncome,
+    required this.color,
+  });
 }
 
 class CategoryDonutChart extends StatelessWidget {
   final List<UnifiedDonutSlice> slices;
-  final double totalIncome;
-  final double totalExpense;
-  final double savingsRate;
+  final double centerTotal;
+  final String centerLabel;
+  final String centerSublabel;
+  final Color? centerSublabelColor;
   final int? selectedIndex;
   final ValueChanged<int?> onSelectIndex;
 
   const CategoryDonutChart({
     super.key,
     required this.slices,
-    required this.totalIncome,
-    required this.totalExpense,
-    required this.savingsRate,
+    required this.centerTotal,
+    required this.centerLabel,
+    required this.centerSublabel,
+    this.centerSublabelColor,
     required this.selectedIndex,
     required this.onSelectIndex,
   });
+
   static const _incomePalette = [AppColors.neoMint, AppColors.neoCyan, AppColors.neoChartreuse];
-  static const _expensePalette = [AppColors.neoCoral, Color(0xFFF59E0B), AppColors.neoPurple, Color(0xFFEC4899), Color(0xFFEF4444)];
+  static const _expensePalette = [
+    Color(0xFFF59E0B),
+    Color(0xFFA855F7),
+    Color(0xFF38BDF8),
+    Color(0xFF84CC16),
+    Color(0xFF6366F1),
+    AppColors.neoCoral,
+    Color(0xFFEC4899),
+  ];
 
   static Color resolveSliceColor(String hex, bool isIncome, int index) {
     if (isIncome) return _incomePalette[index % _incomePalette.length];
@@ -49,14 +70,14 @@ class CategoryDonutChart extends StatelessWidget {
   }
 
   void _handleTapDown(TapDownDetails details, Size size) {
-    final totalFlow = totalIncome + totalExpense;
-    if (slices.isEmpty || totalFlow <= 0) return;
+    final totalSliceSum = slices.fold<double>(0.0, (s, e) => s + e.amount);
+    if (slices.isEmpty || totalSliceSum <= 0) return;
     final center = Offset(size.width / 2, size.height / 2);
     final dx = details.localPosition.dx - center.dx;
     final dy = details.localPosition.dy - center.dy;
     final dist = math.sqrt(dx * dx + dy * dy);
     final outerR = math.min(size.width, size.height) / 2;
-    if (dist < outerR * 0.45 || dist > outerR * 1.05) {
+    if (dist < outerR * 0.42 || dist > outerR * 1.05) {
       onSelectIndex(null);
       return;
     }
@@ -65,7 +86,7 @@ class CategoryDonutChart extends StatelessWidget {
 
     double cumulative = 0.0;
     for (int i = 0; i < slices.length; i++) {
-      final sweep = (slices[i].amount / totalFlow) * 2 * math.pi;
+      final sweep = (slices[i].amount / totalSliceSum) * 2 * math.pi;
       if (angle >= cumulative && angle <= cumulative + sweep) {
         onSelectIndex(selectedIndex == i ? null : i);
         return;
@@ -77,69 +98,75 @@ class CategoryDonutChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = AppCurrency.of(context);
-    final totalFlow = totalIncome + totalExpense;
+    final totalSliceSum = slices.fold<double>(0.0, (s, e) => s + e.amount);
     final activeIdx = (selectedIndex != null && selectedIndex! < slices.length) ? selectedIndex : null;
     final selected = activeIdx != null ? slices[activeIdx] : null;
-    final netCashflow = totalIncome - totalExpense;
-    final netColor = netCashflow >= 0 ? AppColors.neoMint : AppColors.neoCoral;
+    final targetAmount = selected?.amount ?? centerTotal;
 
     return SizedBox(
-      height: 176,
+      height: 224,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final size = Size(constraints.maxWidth, 176);
+          final size = Size(constraints.maxWidth, 224);
           return GestureDetector(
             key: const Key('category_donut_chart'),
             behavior: HitTestBehavior.opaque,
             onTapDown: (d) => _handleTapDown(d, size),
             child: TweenAnimationBuilder<double>(
-              key: ValueKey('${totalFlow}_${slices.length}'),
+              key: ValueKey('${totalSliceSum.toStringAsFixed(0)}_${slices.length}_$centerLabel'),
               tween: Tween<double>(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 420),
+              duration: const Duration(milliseconds: 620),
               curve: Curves.easeOutCubic,
               builder: (context, progress, child) => CustomPaint(
                 size: size,
-                painter: _DonutRingPainter(slices: slices, totalFlow: totalFlow, progress: progress, selectedIndex: activeIdx),
+                painter: DonutRingPainter(
+                  slices: slices,
+                  totalSliceSum: totalSliceSum,
+                  progress: progress,
+                  selectedIndex: activeIdx,
+                ),
                 child: child,
               ),
               child: Center(
                 child: SizedBox(
-                  width: 124,
+                  width: 146,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        selected?.name ?? 'Arus Kas Bersih',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w500, color: AppColors.textMuted),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        selected != null
-                            ? '${selected.isIncome ? "+" : "-"}${fmt.format(selected.amount)}'
-                            : '${netCashflow > 0 ? "+" : ""}${fmt.format(netCashflow)}',
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textWhite,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                      if (selected != null) ...[
+                        Text(
+                          selected.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedCountingText(
+                          value: targetAmount,
+                          formatter: (v) => fmt.format(v),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textWhite,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         selected != null
-                            ? '${selected.percentage.toStringAsFixed(1)}% Arus Kas'
-                            : 'Tabungan ${savingsRate.toStringAsFixed(0)}%',
+                            ? '${selected.percentage.toStringAsFixed(1)}% • ${selected.txCount}x'
+                            : centerSublabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: selected != null ? selected.color : netColor,
+                          color: selected?.color ?? centerSublabelColor ?? AppColors.textMuted,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
@@ -153,42 +180,4 @@ class CategoryDonutChart extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DonutRingPainter extends CustomPainter {
-  final List<UnifiedDonutSlice> slices;
-  final double totalFlow;
-  final double progress;
-  final int? selectedIndex;
-
-  const _DonutRingPainter({required this.slices, required this.totalFlow, required this.progress, required this.selectedIndex});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final baseRadius = math.min(size.width, size.height) / 2 - 14;
-    final trackPaint = Paint()..style = PaintingStyle.stroke..strokeWidth = 12..color = AppColors.surfaceSubtle;
-    canvas.drawCircle(center, baseRadius, trackPaint);
-    if (slices.isEmpty || totalFlow <= 0) return;
-
-    final gapRadians = slices.length > 1 ? 0.045 : 0.0;
-    double startAngle = -math.pi / 2;
-    for (int i = 0; i < slices.length; i++) {
-      final item = slices[i];
-      final rawSweep = (item.amount / totalFlow) * 2 * math.pi * progress;
-      final sweep = math.max(0.01, rawSweep - gapRadians);
-      final isSelected = selectedIndex == i;
-      final isDimmed = selectedIndex != null && !isSelected;
-      final paint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSelected ? 16.0 : 12.0
-        ..strokeCap = StrokeCap.butt
-        ..color = isDimmed ? item.color.withValues(alpha: 0.25) : item.color;
-      canvas.drawArc(Rect.fromCircle(center: center, radius: isSelected ? baseRadius + 2.0 : baseRadius), startAngle + gapRadians / 2, sweep, false, paint);
-      startAngle += rawSweep;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DonutRingPainter old) => old.progress != progress || old.selectedIndex != selectedIndex || old.totalFlow != totalFlow;
 }

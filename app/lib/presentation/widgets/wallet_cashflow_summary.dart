@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
-import 'common/peekable_balance_text.dart';
+import 'common/common_widgets.dart';
 
-/// Compact minimalist monthly income & expense summary strip.
+/// Compact minimalist monthly income & expense summary strip with counting animation.
 class WalletCashflowSummary extends StatelessWidget {
   final double monthlyIncome;
   final double monthlyExpense;
@@ -19,19 +20,22 @@ class WalletCashflowSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildCompactFlowRow(
-          label: 'Masuk',
-          amount: '+${currencyFormatter.format(monthlyIncome)}',
+          label: l10n.walletsFlowIn,
+          value: monthlyIncome,
+          prefix: '+',
           color: AppColors.textIncome,
         ),
         const SizedBox(height: 5),
         _buildCompactFlowRow(
-          label: 'Keluar',
-          amount: '-${currencyFormatter.format(monthlyExpense)}',
+          label: l10n.walletsFlowOut,
+          value: monthlyExpense,
+          prefix: '-',
           color: AppColors.neoCoral,
         ),
       ],
@@ -40,7 +44,8 @@ class WalletCashflowSummary extends StatelessWidget {
 
   Widget _buildCompactFlowRow({
     required String label,
-    required String amount,
+    required double value,
+    required String prefix,
     required Color color,
   }) {
     return Row(
@@ -62,14 +67,13 @@ class WalletCashflowSummary extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: PeekableBalanceText(
-            text: amount,
-            iconSize: 12,
+          child: AnimatedCountingText(
+            value: value,
+            formatter: (v) => '$prefix${currencyFormatter.format(v)}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: color,
-              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ),

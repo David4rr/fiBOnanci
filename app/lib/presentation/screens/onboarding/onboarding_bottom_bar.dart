@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/common/common_widgets.dart';
 
 class OnboardingBottomBar extends StatelessWidget {
   final int currentStep;
+  final int totalSteps;
   final bool canContinue;
   final VoidCallback onNext;
   final VoidCallback onSkip;
@@ -11,6 +12,7 @@ class OnboardingBottomBar extends StatelessWidget {
   const OnboardingBottomBar({
     super.key,
     required this.currentStep,
+    this.totalSteps = 5,
     required this.canContinue,
     required this.onNext,
     required this.onSkip,
@@ -18,28 +20,57 @@ class OnboardingBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final label = currentStep == totalSteps - 1 ? l10n.onbStartApp : l10n.onbContinue;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsets.fromLTRB(24, 10, 20, 22),
+      child: Row(
         children: [
-          if (currentStep == 2)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: TextButton(
-                onPressed: onSkip,
-                child: Text(
-                  'Lewati',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(totalSteps, (idx) {
+              final active = idx == currentStep;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                margin: const EdgeInsets.only(right: 6),
+                width: active ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: active
+                      ? AppColors.neoChartreuse
+                      : AppColors.textMuted.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(3),
                 ),
+              );
+            }),
+          ),
+          const Spacer(),
+          if (currentStep == 2)
+            TextButton(
+              onPressed: onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textMuted,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
+              child: Text(l10n.onbSkip, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
             ),
-          PrimaryActionButton(
-            text: currentStep == 4 ? 'Mulai Aplikasi' : 'Lanjut',
-            icon: currentStep == 4
-                ? Icons.check_circle_rounded
-                : Icons.arrow_forward_rounded,
+          TextButton(
             onPressed: canContinue ? onNext : null,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.neoChartreuse,
+              disabledForegroundColor: AppColors.textMuted.withValues(alpha: 0.35),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(width: 6),
+                const Icon(Icons.play_arrow_rounded, size: 18),
+              ],
+            ),
           ),
         ],
       ),

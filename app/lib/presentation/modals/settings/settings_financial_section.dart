@@ -6,6 +6,7 @@ import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../../core/formatters/app_currency.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import 'profile_settings_tab.dart';
 
@@ -17,20 +18,21 @@ class SettingsFinancialSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final profile = state.profile;
     final target = profile.monthlyIncomeTarget;
     final hasTarget = target != null && target > 0;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SettingsStyle.sectionHeader('PENGATURAN PROFIL • @${profile.username.toUpperCase()}'),
+      SettingsStyle.sectionHeader(l10n.settingsProfileHeader(profile.username.toUpperCase())),
       const SizedBox(height: 6),
       SettingsStyle.menuRow(
-        key: const Key('settings_currency_menu_row'), title: 'Mata Uang Utama',
+        key: const Key('settings_currency_menu_row'), title: l10n.profilePrimaryCurrency,
         valueText: profile.currency, onTap: () => onNavigate(SettingsSubRoute.currency),
       ),
       SettingsStyle.menuRow(
-        key: const Key('settings_income_target_row'), title: 'Target Pemasukan Bulanan',
-        valueText: hasTarget ? AppCurrency.forCode(profile.currency).format(target) : 'Atur',
+        key: const Key('settings_income_target_row'), title: l10n.settingsIncomeTargetTitle,
+        valueText: hasTarget ? AppCurrency.forCode(profile.currency).format(target) : l10n.settingsSetAction,
         onTap: () => onNavigate(SettingsSubRoute.incomeTarget),
       ),
     ]);
@@ -114,7 +116,7 @@ class _SettingsCurrencySubPageState extends State<SettingsCurrencySubPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              GestureDetector(key: const Key('settings_exchange_rate_save'), onTap: _saveRate, child: Text('Simpan', style: SettingsStyle.accent)),
+              GestureDetector(key: const Key('settings_exchange_rate_save'), onTap: _saveRate, child: Text(AppL10n.of(context).catSaveBtn, style: SettingsStyle.accent)),
             ]),
         ],
       ],
@@ -155,9 +157,10 @@ class _SettingsIncomeTargetSubPageState extends State<SettingsIncomeTargetSubPag
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final c = widget.state.profile.currency;
     return ListView(padding: const EdgeInsets.fromLTRB(24, 12, 24, 48), children: [
-      SettingsStyle.sectionHeader('NOMINAL TARGET BULANAN ($c)'),
+      SettingsStyle.sectionHeader(l10n.settingsMonthlyTargetHeader(c)),
       const SizedBox(height: 12),
       Row(children: [
         Expanded(
@@ -172,7 +175,7 @@ class _SettingsIncomeTargetSubPageState extends State<SettingsIncomeTargetSubPag
           ),
         ),
         const SizedBox(width: 14),
-        GestureDetector(key: const Key('settings_income_target_save'), onTap: _save, child: Text('Simpan', style: SettingsStyle.accent)),
+        GestureDetector(key: const Key('settings_income_target_save'), onTap: _save, child: Text(l10n.catSaveBtn, style: SettingsStyle.accent)),
       ]),
     ]);
   }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/formatters/app_currency.dart';
 import '../../../domain/services/financial_report_service.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 import 'category_donut_chart.dart';
 
 class FinancialReportBreakdownCards extends StatelessWidget {
@@ -12,6 +14,7 @@ class FinancialReportBreakdownCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final fmt = AppCurrency.of(context);
     final wallets = data.walletBreakdown;
     return Column(
@@ -28,17 +31,17 @@ class FinancialReportBreakdownCards extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'POSISI ASET & KEWAJIBAN',
+                l10n.reportAssetsTitle,
                 style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted, letterSpacing: 0.6),
               ),
               const SizedBox(height: 12),
-              _buildAssetRow('Total Kekayaan Bersih', fmt.format(data.totalNetWorth), AppColors.textWhite, isBold: true),
+              _buildAssetRow(l10n.reportTotalNetWorth, data.totalNetWorth, fmt.format, AppColors.textWhite, isBold: true),
               Divider(color: AppColors.dividerSubtle, height: 20),
-              _buildAssetRow('Saldo Rekening Aktif', fmt.format(data.totalWalletBalance), AppColors.textWhite),
+              _buildAssetRow(l10n.reportActiveWalletBalance, data.totalWalletBalance, fmt.format, AppColors.textWhite),
               const SizedBox(height: 8),
-              _buildAssetRow('Dana Kantong Tabungan', fmt.format(data.totalPocketBalance), AppColors.textMuted),
+              _buildAssetRow(l10n.reportPocketBalance, data.totalPocketBalance, fmt.format, AppColors.textMuted),
               const SizedBox(height: 8),
-              _buildAssetRow('Komitmen Tagihan Bulanan', fmt.format(data.monthlyCommittedBills), AppColors.neoCoral),
+              _buildAssetRow(l10n.reportCommittedBills, data.monthlyCommittedBills, fmt.format, AppColors.neoCoral),
             ],
           ),
         ),
@@ -54,17 +57,17 @@ class FinancialReportBreakdownCards extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'AKTIVITAS PER REKENING',
+                l10n.reportWalletActivityTitle,
                 style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted, letterSpacing: 0.6),
               ),
               const SizedBox(height: 8),
               if (wallets.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Center(child: Text('Belum ada rekening aktif', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted))),
+                  child: Center(child: Text(l10n.reportEmptyWallets, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColors.textMuted))),
                 )
               else
-                ...wallets.map((w) => _buildWalletRow(w, fmt.format(w.balance), fmt.format(w.income), fmt.format(w.expense))),
+                ...wallets.map((w) => _buildWalletRow(w, fmt.format)),
             ],
           ),
         ),
@@ -72,7 +75,13 @@ class FinancialReportBreakdownCards extends StatelessWidget {
     );
   }
 
-  Widget _buildAssetRow(String label, String value, Color valueColor, {bool isBold = false}) {
+  Widget _buildAssetRow(
+    String label,
+    double value,
+    String Function(double) formatFn,
+    Color valueColor, {
+    bool isBold = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -81,23 +90,30 @@ class FinancialReportBreakdownCards extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: isBold ? AppColors.textWhite : AppColors.textMuted, fontWeight: isBold ? FontWeight.w600 : FontWeight.w400),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12.5,
+              color: isBold ? AppColors.textWhite : AppColors.textMuted,
+              fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+            ),
           ),
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.plusJakartaSans(fontSize: isBold ? 13.5 : 12.5, fontWeight: isBold ? FontWeight.w700 : FontWeight.w600, color: valueColor, fontFeatures: const [FontFeature.tabularFigures()]),
+          child: AnimatedCountingText(
+            value: value,
+            formatter: formatFn,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isBold ? 13.5 : 12.5,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+              color: valueColor,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildWalletRow(WalletReportItem w, String balStr, String inStr, String outStr) {
+  Widget _buildWalletRow(WalletReportItem w, String Function(double) formatFn) {
     final dotColor = CategoryDonutChart.resolveSliceColor(w.colorHex, false, 1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -110,16 +126,28 @@ class FinancialReportBreakdownCards extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(w.name, style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textWhite)),
-                Text(balStr, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColors.textMuted, fontFeatures: const [FontFeature.tabularFigures()])),
+                AnimatedCountingText(
+                  value: w.balance,
+                  formatter: formatFn,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColors.textMuted),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('+$inStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textIncome, fontFeatures: const [FontFeature.tabularFigures()])),
+              AnimatedCountingText(
+                value: w.income,
+                formatter: (v) => '+${formatFn(v)}',
+                style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textIncome),
+              ),
               const SizedBox(height: 2),
-              Text('-$outStr', style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoCoral, fontFeatures: const [FontFeature.tabularFigures()])),
+              AnimatedCountingText(
+                value: w.expense,
+                formatter: (v) => '-${formatFn(v)}',
+                style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.neoCoral),
+              ),
             ],
           ),
         ],

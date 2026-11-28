@@ -2,38 +2,121 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'painters/telescope_slider_painter.dart';
+import 'telescope_date_badge.dart';
 
-/// Bespoke tactile obsidian & neon glowing track slider for due day selection (1..31).
-class SubscriptionDueDaySlider extends StatelessWidget {
+/// Minimalist parallax ruler slider for due-day selection (1..31):
+/// active indicator moves directly with touch while graduation lines glide smoothly in parallax.
+class SubscriptionDueDaySlider extends StatefulWidget {
   final int dueDay;
+  final String? badgeText;
+  final VoidCallback? onBadgeTap;
+  final bool isFutureCycle;
   final ValueChanged<int> onDayChanged;
 
   const SubscriptionDueDaySlider({
     super.key,
     required this.dueDay,
     required this.onDayChanged,
+    this.badgeText,
+    this.onBadgeTap,
+    this.isFutureCycle = false,
   });
 
+  @override
+  State<SubscriptionDueDaySlider> createState() => _SubscriptionDueDaySliderState();
+}
+
+class _SubscriptionDueDaySliderState extends State<SubscriptionDueDaySlider>
+    with TickerProviderStateMixin {
   static const _milestones = [1, 5, 10, 15, 20, 25, 31];
+  late final AnimationController _posController;
+  late final AnimationController _dragController;
+  late double _fromDay;
+  late double _toDay;
+  bool _isDragging = false;
+  double? _dragFractionDay;
 
-  void _handleInteraction(Offset localPosition, double trackWidth) {
-    const thumbRadius = 14.0;
-    final usableWidth = trackWidth - (thumbRadius * 2);
-    if (usableWidth <= 0) return;
+  @override
+  void initState() {
+    super.initState();
+    _fromDay = widget.dueDay.toDouble();
+    _toDay = widget.dueDay.toDouble();
+    _posController = AnimationController(vsync: this, duration: const Duration(milliseconds: 240))
+      ..addListener(() => setState(() {}));
+    _dragController = AnimationController(vsync: this, duration: const Duration(milliseconds: 140))
+      ..addListener(() => setState(() {}));
+  }
 
-    final dx = (localPosition.dx - thumbRadius).clamp(0.0, usableWidth);
-    final fraction = dx / usableWidth;
-    final day = (1 + fraction * 30).round().clamp(1, 31);
-    if (day != dueDay) {
-      HapticFeedback.selectionClick();
-      onDayChanged(day);
+  @override
+  void didUpdateWidget(covariant SubscriptionDueDaySlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dueDay != widget.dueDay && !_isDragging) {
+      _fromDay = _currentAnimatedDay();
+      _toDay = widget.dueDay.toDouble();
+      _posController.forward(from: 0.0);
     }
   }
 
   @override
+  void dispose() {
+    _posController.dispose();
+    _dragController.dispose();
+    super.dispose();
+  }
+
+  double _currentAnimatedDay() {
+    if (_isDragging && _dragFractionDay != null) return _dragFractionDay!;
+    final t = Curves.easeOutCubic.transform(_posController.value);
+    return _fromDay + (_toDay - _fromDay) * t;
+  }
+
+  double _fractionDayFromOffset(Offset localPosition, double trackWidth) {
+    const pad = 18.0;
+    final usable = (trackWidth - pad * 2).clamp(1.0, double.infinity);
+    final dx = (localPosition.dx - pad).clamp(0.0, usable);
+    return (1.0 + (dx / usable) * 30.0).clamp(1.0, 31.0);
+  }
+
+  void _selectDay(int day) {
+    final clamped = day.clamp(1, 31);
+    if (clamped != widget.dueDay) {
+      HapticFeedback.selectionClick();
+      widget.onDayChanged(clamped);
+    }
+  }
+
+  void _applyDrag(Offset pos, double width, {required bool start}) {
+    if (start) {
+      _isDragging = true;
+      _dragController.forward();
+    }
+    final frac = _fractionDayFromOffset(pos, width);
+    setState(() => _dragFractionDay = frac);
+    _selectDay(frac.round());
+  }
+
+  void _onDragEnd() {
+    if (!_isDragging) return;
+    _fromDay = _dragFractionDay ?? widget.dueDay.toDouble();
+    _toDay = widget.dueDay.toDouble();
+    _isDragging = false;
+    _dragFractionDay = null;
+    _dragController.reverse();
+    _posController.forward(from: 0.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final accent = widget.isFutureCycle ? AppColors.neoMint : AppColors.neoCoral;
+    final animatedDay = _currentAnimatedDay();
+    final dragProgress = Curves.easeOutCubic.transform(_dragController.value);
+    final badgeLabel = widget.badgeText ?? l10n.subDueDayEveryMonth(widget.dueDay);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,124 +124,59 @@ class SubscriptionDueDaySlider extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(
-                'TANGGAL JATUH TEMPO',
-                style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, letterSpacing: 0.8),
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(l10n.subDueDateHeader, style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, letterSpacing: 0.8), overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.textAccent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.textAccent.withValues(alpha: 0.35)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.event_repeat_rounded, size: 12, color: AppColors.textAccent),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Tgl $dueDay setiap bulan',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.textAccent, fontFeatures: const [FontFeature.tabularFigures()]),
-                  ),
-                ],
-              ),
-            ),
+            TelescopeDateBadge(label: badgeLabel, accent: accent, isHighlighted: _isDragging || widget.isFutureCycle, onTap: widget.onBadgeTap),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
-            final trackWidth = constraints.maxWidth;
-            const thumbRadius = 14.0;
-            final usableWidth = trackWidth - (thumbRadius * 2);
-            final fraction = ((dueDay - 1) / 30.0).clamp(0.0, 1.0);
-            final thumbX = thumbRadius + (fraction * usableWidth);
-
+            final width = constraints.maxWidth;
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onHorizontalDragStart: (d) => _handleInteraction(d.localPosition, trackWidth),
-              onHorizontalDragUpdate: (d) => _handleInteraction(d.localPosition, trackWidth),
-              onTapDown: (d) => _handleInteraction(d.localPosition, trackWidth),
+              onHorizontalDragStart: (d) => _applyDrag(d.localPosition, width, start: true),
+              onHorizontalDragUpdate: (d) => _applyDrag(d.localPosition, width, start: false),
+              onHorizontalDragEnd: (_) => _onDragEnd(),
+              onHorizontalDragCancel: _onDragEnd,
+              onTapDown: (d) => _selectDay(_fractionDayFromOffset(d.localPosition, width).round()),
               child: SizedBox(
-                height: 40,
-                child: Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [
-                    Container(
-                      height: 12,
-                      width: trackWidth,
-                      decoration: BoxDecoration(
-                        color: AppColors.canvasInputSearch,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.canvasBorder),
-                      ),
-                    ),
-                    Container(
-                      height: 12,
-                      width: thumbX,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0x33D4F442), AppColors.neoChartreuse]),
-                        borderRadius: BorderRadius.horizontal(left: const Radius.circular(6), right: Radius.circular(thumbX >= trackWidth - 2 ? 6 : 2)),
-                      ),
-                    ),
-                    for (final m in _milestones)
-                      Positioned(
-                        left: thumbRadius + (((m - 1) / 30.0) * usableWidth) - 1.5,
-                        child: Container(
-                          width: 3,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: m <= dueDay ? AppColors.textDarkPrimary.withValues(alpha: 0.6) : AppColors.textMuted.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(1.5),
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      left: thumbX - thumbRadius,
-                      child: Container(
-                        width: thumbRadius * 2,
-                        height: thumbRadius * 2,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.neoChartreuse,
-                          boxShadow: [BoxShadow(color: AppColors.neoChartreuse.withValues(alpha: 0.45), blurRadius: 10, spreadRadius: 1)],
-                          border: Border.all(color: AppColors.textDarkPrimary, width: 2),
-                        ),
-                        child: Center(
-                          child: Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.textDarkPrimary)),
-                        ),
-                      ),
-                    ),
-                  ],
+                height: 44,
+                width: width,
+                child: CustomPaint(
+                  painter: TelescopeSliderPainter(
+                    animatedDay: animatedDay,
+                    dragProgress: dragProgress,
+                    accentColor: accent,
+                    trackColor: AppColors.canvasInputSearch,
+                    majorTickColor: AppColors.textWhite.withValues(alpha: 0.78),
+                    minorTickColor: AppColors.textMuted.withValues(alpha: 0.28),
+                  ),
                 ),
               ),
             );
           },
         ),
+        const SizedBox(height: 6),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               for (final m in _milestones)
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    onDayChanged(m);
-                  },
-                  child: Text(
-                    '$m',
+                  onTap: () => _selectDay(m),
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 160),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
-                      fontWeight: m == dueDay ? FontWeight.w800 : FontWeight.w600,
-                      color: m == dueDay ? AppColors.textAccent : AppColors.textMuted.withValues(alpha: 0.6),
+                      fontWeight: m == widget.dueDay ? FontWeight.w800 : FontWeight.w600,
+                      color: m == widget.dueDay ? accent : AppColors.textMuted.withValues(alpha: 0.6),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
+                    child: Text('$m'),
                   ),
                 ),
             ],

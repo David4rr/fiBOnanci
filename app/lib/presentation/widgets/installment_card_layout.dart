@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import 'contactless_painter.dart';
 import 'subscription_card_badges.dart';
@@ -57,7 +58,7 @@ class InstallmentCardLayout extends StatelessWidget {
               const SizedBox(width: 10),
               SubscriptionCardBadges.buildStatusBadge(
                 isPaidThisMonth,
-                subscription.dueDay,
+                subscription.nextDueDate,
                 config,
                 isInstallment: true,
                 totalCycles: totalCycles,
@@ -88,7 +89,7 @@ class InstallmentCardLayout extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'cicilan /bulan (tenor $totalCycles bln)',
+                    AppL10n.of(context).subInstallmentCardSubtitle(totalCycles),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,

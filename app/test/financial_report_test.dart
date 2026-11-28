@@ -8,6 +8,7 @@ import 'package:fibonanci_app/data/repositories/finance_repository.dart';
 import 'package:fibonanci_app/domain/services/financial_report_service.dart';
 import 'package:fibonanci_app/main.dart';
 import 'package:fibonanci_app/presentation/modals/profile_modal.dart';
+import 'package:fibonanci_app/presentation/widgets/common/common_widgets.dart';
 
 void main() {
   setUpAll(() async {
@@ -59,6 +60,7 @@ void main() {
       SubscriptionEntry(
         id: 's-1', profileId: 'p-1', walletId: 'w-bca', categoryId: 'c-food',
         title: 'Netflix', cost: 186000, billingCycle: 'monthly', dueDay: 20,
+        nextDueDate: DateTime(2026, 10, 20),
         autoDeduct: true, status: 'active', lastPaidDate: null,
         isInstallment: false, totalCycles: null, paidCycles: 0, deadlineDate: null,
         createdAt: refDate, updatedAt: refDate, isSynced: false, isDeleted: false,
@@ -187,18 +189,60 @@ void main() {
       expect(find.text('Total Kekayaan Bersih'), findsOneWidget);
       expect(find.text('POSISI ASET & KEWAJIBAN'), findsOneWidget);
       expect(find.byKey(const Key('category_donut_chart')), findsOneWidget);
-      expect(find.text('Arus Kas Bersih'), findsOneWidget);
+      expect(find.text('1 Transaksi'), findsOneWidget);
       expect(find.text('AKTIVITAS PER REKENING'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('report_period_threeMonths')));
+      expect(find.byKey(const Key('report_history_button')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('report_granularity_quarter')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('ARUS KAS BERSIH (3 BULAN)'), findsOneWidget);
+      expect(find.byKey(const Key('report_period_prev')), findsOneWidget);
 
       await tester.ensureVisible(find.byKey(const Key('report_category_row_0')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('report_category_row_0')));
       await tester.pumpAndSettle();
-      expect(find.text('100.0% Arus Kas'), findsOneWidget);
+      expect(find.text('100.0% • 1x'), findsOneWidget);
       await db.close();
+    });
+
+    testWidgets('AnimatedCountingText handles 0, negative, NaN, Infinity, and value transitions safely', (tester) async {
+      double current = double.nan;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => Column(
+                children: [
+                  AnimatedCountingText(
+                    value: current,
+                    respectPrivacyMask: false,
+                    formatter: (v) => 'Rp ${v.round()}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => current = -50000),
+                    child: const Text('GoNegative'),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => current = double.infinity),
+                    child: const Text('GoInf'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Rp 0'), findsOneWidget);
+
+      await tester.tap(find.text('GoNegative'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rp -50000'), findsOneWidget);
+
+      await tester.tap(find.text('GoInf'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rp 0'), findsOneWidget);
     });
   });
 }

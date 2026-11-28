@@ -48,6 +48,7 @@ abstract class FinanceRepository {
     required String title,
     required double cost,
     required int dueDay,
+    required DateTime nextDueDate,
     required String walletId,
     required String categoryId,
     bool autoDeduct = false,
@@ -63,6 +64,7 @@ abstract class FinanceRepository {
     required String title,
     required double cost,
     required int dueDay,
+    required DateTime nextDueDate,
     required String walletId,
     required String categoryId,
     bool autoDeduct = false,
@@ -146,7 +148,7 @@ abstract class FinanceRepository {
   Future<List<ProfileEntry>> getProfiles();
   Future<ProfileEntry?> getActiveProfile();
 
-  Future<void> addProfile({
+  Future<String> addProfile({
     required String username,
     required String fullName,
     String? email,
@@ -180,6 +182,12 @@ abstract class FinanceRepository {
     required String type,
     String iconName = 'category',
     String colorHex = '#D4F442',
+  });
+  Future<void> updateCategory({
+    required String categoryId,
+    required String name,
+    required String iconName,
+    required String colorHex,
   });
   Future<void> deleteCategory(String categoryId);
   Future<void> clearProfileTransactions(String profileId);

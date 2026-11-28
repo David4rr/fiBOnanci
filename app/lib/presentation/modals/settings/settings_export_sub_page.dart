@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../bloc/finance/finance_state.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import 'profile_settings_tab.dart';
 import 'settings_backup_helper.dart';
 
@@ -43,11 +44,14 @@ class _SettingsExportSubPageState extends State<SettingsExportSubPage> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.fromLTRB(24, 12, 24, 48), children: [
-    SettingsStyle.sectionHeader('PILIH FORMAT FILE LAPORAN'),
-    const SizedBox(height: 6),
-    SettingsStyle.optionRow(key: const Key('settings_export_csv_file_btn'), title: 'Simpan File CSV (.csv)', subtitle: 'Format koma terpisah (UTF-8 BOM), kompatibel semua spreadsheet', selected: _savedPath?.endsWith('.csv') ?? false, onTap: () => _export(asExcel: false)),
-    SettingsStyle.optionRow(key: const Key('settings_export_excel_file_btn'), title: 'Simpan File Excel (.xls)', subtitle: 'Format tabel buku kerja Microsoft Excel / Google Sheets', selected: _savedPath?.endsWith('.xls') ?? false, onTap: () => _export(asExcel: true)),
-    if (_savedPath != null) ...[const SizedBox(height: 16), Text('Berhasil disimpan ke:\n$_savedPath', key: const Key('settings_export_saved_path'), style: SettingsStyle.accent)],
-  ]);
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return ListView(padding: const EdgeInsets.fromLTRB(24, 12, 24, 48), children: [
+      SettingsStyle.sectionHeader(l10n.exportFormatHeader),
+      const SizedBox(height: 6),
+      SettingsStyle.optionRow(key: const Key('settings_export_csv_file_btn'), title: l10n.exportCsvTitle, subtitle: l10n.exportCsvSub, selected: _savedPath?.endsWith('.csv') ?? false, onTap: () => _export(asExcel: false)),
+      SettingsStyle.optionRow(key: const Key('settings_export_excel_file_btn'), title: l10n.exportExcelTitle, subtitle: l10n.exportExcelSub, selected: _savedPath?.endsWith('.xls') ?? false, onTap: () => _export(asExcel: true)),
+      if (_savedPath != null) ...[const SizedBox(height: 16), Text(l10n.exportSavedTo(_savedPath!), key: const Key('settings_export_saved_path'), style: SettingsStyle.accent)],
+    ]);
+  }
 }

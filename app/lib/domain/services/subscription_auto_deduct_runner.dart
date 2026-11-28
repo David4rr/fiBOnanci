@@ -1,9 +1,10 @@
-import 'dart:math';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../core/notifications/local_notification_service.dart';
 import '../../core/notifications/subscription_notification_calculator.dart';
 import '../../data/database/app_database.dart';
+import 'subscription_schedule_service.dart';
 class SubscriptionAutoDeductRunner {
   static bool _isRunning = false;
 
@@ -23,26 +24,21 @@ class SubscriptionAutoDeductRunner {
       if (sub.deadlineDate != null && now.isAfter(sub.deadlineDate!)) return false;
     }
 
-    if (sub.billingCycle == 'yearly') {
-      final isCycleDue = sub.lastPaidDate == null ||
-          (sub.lastPaidDate!.year < now.year &&
-              now.difference(sub.lastPaidDate!).inDays >= 365);
-      if (!isCycleDue) return false;
-    } else if (sub.billingCycle == 'weekly') {
-      final isCycleDue = sub.lastPaidDate == null ||
-          now.difference(sub.lastPaidDate!).inDays >= 7;
-      if (!isCycleDue) return false;
-      return true;
-    } else {
-      final isPaidThisMonth = sub.lastPaidDate != null &&
-          sub.lastPaidDate!.year == now.year &&
-          sub.lastPaidDate!.month == now.month;
-      if (isPaidThisMonth) return false;
-    }
+    final today = SubscriptionScheduleService.dateOnly(now);
+    final due = SubscriptionScheduleService.dateOnly(sub.nextDueDate);
+    if (today.isBefore(due)) return false;
 
-    final maxDaysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final clampedDueDay = min(sub.dueDay, maxDaysInMonth);
-    if (now.day < clampedDueDay) return false;
+    if (sub.billingCycle == 'yearly') {
+      if (sub.lastPaidDate != null && sub.lastPaidDate!.year >= due.year) return false;
+    } else if (sub.billingCycle == 'weekly') {
+      if (sub.lastPaidDate != null && now.difference(sub.lastPaidDate!).inDays < 7) return false;
+    } else {
+      if (sub.lastPaidDate != null &&
+          sub.lastPaidDate!.year == due.year &&
+          sub.lastPaidDate!.month == due.month) {
+        return false;
+      }
+    }
 
     return true;
   }
@@ -77,10 +73,11 @@ class SubscriptionAutoDeductRunner {
         final receiptId = SubscriptionNotificationCalculator.getAutoDeductId(sub.id);
         final formattedAmount = SubscriptionNotificationCalculator.formatRupiah(sub.cost);
 
+        final l10n = AppL10n.current;
         await LocalNotificationService.instance.showInstantReceipt(
           id: receiptId,
-          title: 'Tagihan Berhasil Didebet: ${sub.title}',
-          body: 'Pembayaran $formattedAmount telah otomatis dipotong dari dompet.',
+          title: l10n.notifAutoDeductTitle(sub.title),
+          body: l10n.notifAutoDeductBody(formattedAmount),
           payload: sub.id,
         );
       } catch (_) {}

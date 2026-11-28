@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -92,11 +93,11 @@ class SubscriptionPromoCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Diskon & Promo Tagihan', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
+                          Text(AppL10n.of(context).promoTitle, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
                           const SizedBox(height: 2),
                           if (hasDiscount)
                             Row(children: [
-                              Text('Hemat ${fmt.format(diff)}', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textIncome)),
+                              Text(AppL10n.of(context).promoSaved(fmt.format(diff)), style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textIncome)),
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -105,7 +106,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                               ),
                             ])
                           else
-                            Text('Punya voucher atau diskon bulan ini?', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+                            Text(AppL10n.of(context).promoSubtitle, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
                         ],
                       ),
                     ),
@@ -117,7 +118,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: isExpanded ? AppColors.canvasBorder : AppColors.textAccent.withValues(alpha: 0.35)),
                       ),
-                      child: Text(isExpanded ? 'Tutup' : 'Pakai Promo', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: isExpanded ? AppColors.textMuted : AppColors.textAccent)),
+                      child: Text(isExpanded ? AppL10n.of(context).promoClose : AppL10n.of(context).promoUse, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: isExpanded ? AppColors.textMuted : AppColors.textAccent)),
                     ),
                   ],
                 ),
@@ -150,8 +151,8 @@ class SubscriptionPromoCard extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('Tarif Normal: ${fmt.format(subscription.cost)}', style: GoogleFonts.plusJakartaSans(fontSize: 11, decoration: TextDecoration.lineThrough, color: AppColors.textMuted)),
-                                  Text('Bayar: ${fmt.format(effectiveCost)}', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textIncome, fontFeatures: const [FontFeature.tabularFigures()])),
+                                  Text(AppL10n.of(context).promoNormalPrice(fmt.format(subscription.cost)), style: GoogleFonts.plusJakartaSans(fontSize: 11, decoration: TextDecoration.lineThrough, color: AppColors.textMuted)),
+                                  Text(AppL10n.of(context).promoPayAmount(fmt.format(effectiveCost)), style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textIncome, fontFeatures: const [FontFeature.tabularFigures()])),
                                 ],
                               ),
                             ),
@@ -159,7 +160,7 @@ class SubscriptionPromoCard extends StatelessWidget {
                           const SizedBox(height: 12),
                           CurrencyAmountField(
                             controller: controller,
-                            labelText: 'Nominal Bayar Bulan Ini',
+                            labelText: AppL10n.of(context).promoInputLabel,
                             prefixColor: hasDiscount ? AppColors.textIncome : AppColors.textAccent,
                           ),
                         ],

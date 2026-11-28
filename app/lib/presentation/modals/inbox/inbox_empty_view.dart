@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../theme/app_colors.dart';
 
@@ -34,7 +35,7 @@ class InboxEmptyView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Tidak ada antrean notifikasi tertunda.\nSemua transaksi bank Anda sudah rapi tercatat!',
+              AppL10n.of(context).inboxEmptyDesc,
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
@@ -49,7 +50,7 @@ class InboxEmptyView extends StatelessWidget {
               onPressed: () => NotificationBridge.openPermissionSettings(),
               icon: Icon(Icons.settings_suggest_rounded, size: 16, color: AppColors.textMuted),
               label: Text(
-                'Buka Setelan Akses Notifikasi Android',
+                AppL10n.of(context).inboxOpenNotifSettings,
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.textMuted,
                   fontSize: 11.5,

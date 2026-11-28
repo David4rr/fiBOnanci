@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../core/l10n/locale_notifier.dart';
 import 'mini_weekly_bar_chart.dart';
 
 class OverlappingDeckExpandedInsight extends StatelessWidget {
@@ -41,7 +42,7 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Tren ${category.toLowerCase()} (Sen–Min)',
+                AppL10n.of(context).cardCategoryTrend(category.toLowerCase()),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
@@ -87,7 +88,7 @@ class OverlappingDeckExpandedInsight extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Kelola', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w800, color: categoryColor)),
+                      Text(AppL10n.of(context).manageLabel, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w800, color: categoryColor)),
                       const SizedBox(width: 6),
                       Icon(Icons.arrow_forward_rounded, size: 15, color: categoryColor),
                     ],

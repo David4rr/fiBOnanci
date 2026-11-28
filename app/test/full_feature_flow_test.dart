@@ -66,6 +66,7 @@ void main() {
         cost: const drift.Value(186000.0),
         billingCycle: const drift.Value('monthly'),
         dueDay: const drift.Value(15),
+        nextDueDate: drift.Value(DateTime(now.year, now.month, 15)),
         autoDeduct: const drift.Value(false),
         status: const drift.Value('active'),
         createdAt: drift.Value(now),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/notifications/in_app_notification_storage.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../modals/pending_inbox_modal.dart';
 import '../../modals/profile_modal.dart';
 import '../../theme/app_colors.dart';
@@ -73,7 +74,7 @@ class DashboardHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('Hallo $username selamat datang kembali!', style: AppTypography.listSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(AppL10n.of(context).dashboardWelcome(username), style: AppTypography.listSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),

@@ -17,6 +17,7 @@ void main() {
         cost: 186000,
         billingCycle: 'monthly',
         dueDay: 20,
+        nextDueDate: DateTime(now.year, now.month, 20),
         autoDeduct: false,
         status: 'active',
         isInstallment: false,

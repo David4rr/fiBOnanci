@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class InboxTabSelector extends StatelessWidget {
@@ -92,13 +93,13 @@ class InboxTabSelector extends StatelessWidget {
         children: [
           _buildTab(
             index: 0,
-            label: 'Transaksi',
+            label: AppL10n.of(context).inboxTabTransactions,
             count: pendingCount,
             icon: Icons.receipt_long_rounded,
           ),
           _buildTab(
             index: 1,
-            label: 'Pengingat',
+            label: AppL10n.of(context).inboxTabReminders,
             count: unreadCount,
             icon: Icons.notifications_none_rounded,
           ),

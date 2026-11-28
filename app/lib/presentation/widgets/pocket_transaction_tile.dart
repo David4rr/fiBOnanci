@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -28,10 +29,11 @@ class PocketTransactionTile extends StatelessWidget {
     final themeColor = isDeposit ? AppColors.textIncome : AppColors.neoCoral;
     final sign = isDeposit ? '+' : '-';
 
+    final l10n = AppL10n.of(context);
     final wallet = wallets.where((w) => w.id == transaction.walletId).firstOrNull;
-    final walletName = wallet?.name ?? 'Rekening';
-    final dateStr = DateFormat('d MMM, HH:mm', 'id_ID').format(transaction.transactionDate.toLocal());
-    final subtitleText = isDeposit ? 'Dari $walletName • $dateStr' : 'Ke $walletName • $dateStr';
+    final walletName = wallet?.name ?? l10n.txWalletDefault;
+    final dateStr = DateFormat('d MMM, HH:mm', l10n.localeName).format(transaction.transactionDate.toLocal());
+    final subtitleText = isDeposit ? l10n.pocketTxFrom(walletName, dateStr) : l10n.pocketTxTo(walletName, dateStr);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -64,7 +66,7 @@ class PocketTransactionTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    transaction.notes ?? (isDeposit ? 'Setoran Kantong' : 'Penarikan Kantong'),
+                    transaction.notes ?? (isDeposit ? l10n.pocketTxDepositDefault : l10n.pocketTxWithdrawDefault),
                     style: AppTypography.listTitle.copyWith(fontSize: 13.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

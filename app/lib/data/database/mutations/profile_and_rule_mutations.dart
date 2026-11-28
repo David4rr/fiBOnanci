@@ -135,6 +135,24 @@ extension ProfileAndRuleMutations on AppDatabase {
     );
   }
 
+  Future<void> updateCategory({
+    required String categoryId,
+    required String name,
+    required String iconName,
+    required String colorHex,
+  }) {
+    final now = DateTime.now().toUtc();
+    return (update(categories)..where((t) => t.id.equals(categoryId))).write(
+      CategoriesCompanion(
+        name: Value(name.trim()),
+        iconName: Value(iconName),
+        colorHex: Value(colorHex),
+        updatedAt: Value(now),
+        isSynced: const Value(false),
+      ),
+    );
+  }
+
   Future<void> softDeleteCategory(String categoryId) {
     final now = DateTime.now().toUtc();
     return (update(categories)..where((t) => t.id.equals(categoryId))).write(

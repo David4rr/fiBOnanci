@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../core/smart_input/smart_input_bridge.dart';
 import '../../core/smart_input/smart_transaction_draft.dart';
 import '../theme/app_colors.dart';
@@ -172,14 +173,14 @@ class _SmartInputFallbackSheetState extends State<SmartInputFallbackSheet> {
                 ),
                 const SizedBox(height: 16),
                 _transcript.isEmpty
-                    ? Text('Ucapkan transaksi Anda...', textAlign: TextAlign.center, style: AppTypography.listSubtitle.copyWith(fontSize: 14, color: AppColors.textMuted))
+                    ? Text(AppL10n.of(context).smartInputSpeakHint, textAlign: TextAlign.center, style: AppTypography.listSubtitle.copyWith(fontSize: 14, color: AppColors.textMuted))
                     : Text.rich(_NominalHighlightController.buildHighlightedSpan(_transcript, AppTypography.listTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w600)), textAlign: TextAlign.center),
               ] else ...[
-                AppTextField(controller: _controller, maxLines: 2, hintText: 'Ketik kalimat transaksi...', onChanged: (v) => setState(() => _transcript = v)),
+                AppTextField(controller: _controller, maxLines: 2, hintText: AppL10n.of(context).smartInputTypeHint, onChanged: (v) => setState(() => _transcript = v)),
               ],
               if (hasText) ...[
                 const SizedBox(height: 20),
-                PrimaryActionButton(text: 'Lanjutkan', onPressed: _submit),
+                PrimaryActionButton(text: AppL10n.of(context).smartInputContinue, onPressed: _submit),
               ],
             ],
           ),

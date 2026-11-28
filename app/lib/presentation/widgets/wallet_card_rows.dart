@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import 'common/peekable_balance_text.dart';
 import 'modernist_card_theme.dart';
 import 'wallet_card_atm_components.dart';
@@ -55,13 +56,15 @@ class WalletCardRows {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'SALDO TERSEDIA',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-            color: config.textColor.withValues(alpha: 0.65),
+        Builder(
+          builder: (context) => Text(
+            AppL10n.of(context).walletCardAvailableBalance,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: config.textColor.withValues(alpha: 0.65),
+            ),
           ),
         ),
         const SizedBox(width: 8),
@@ -111,12 +114,14 @@ class WalletCardRows {
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                'Saldo Tersedia',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: config.textColor.withValues(alpha: 0.65),
+              Builder(
+                builder: (context) => Text(
+                  AppL10n.of(context).walletAvailableBalance,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: config.textColor.withValues(alpha: 0.65),
+                  ),
                 ),
               ),
             ],

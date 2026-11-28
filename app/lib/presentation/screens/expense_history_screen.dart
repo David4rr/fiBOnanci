@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
 import '../widgets/calendar/activity_calendar_matrix.dart';
@@ -121,9 +122,9 @@ class _ExpenseHistoryScreenState extends State<ExpenseHistoryScreen> {
               isCalendarView: _isCalendarView,
               onToggleView: () => setState(() => _isCalendarView = !_isCalendarView),
               onReturnToHistory: _goToHistory,
-              customTitle: _currentTab != 0 ? 'Edit Transaksi' : null,
+              customTitle: _currentTab != 0 ? AppL10n.of(ctx).txEditTitle : null,
               customSubtitle: _currentTab != 0
-                  ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : 'Ubah rincian mutasi transaksi')
+                  ? (_selectedTransaction?.notes?.isNotEmpty == true ? _selectedTransaction!.notes! : AppL10n.of(ctx).txEditSubDefault)
                   : null,
               onDragStart: (d) => _sheetKey.currentState?.handleHeaderDragStart(d),
               onDragUpdate: (d) => _sheetKey.currentState?.handleHeaderDragUpdate(d),

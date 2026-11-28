@@ -133,7 +133,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Active filter chip appears only when filter is active!
-      expect(find.text('Tipe: MASUK'), findsOneWidget);
+      expect(find.text('MASUK'), findsOneWidget);
       expect(find.text('Bonus Proyek Freelance'), findsOneWidget);
       expect(find.text('Makan Siang Resto'), findsNothing);
       await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));

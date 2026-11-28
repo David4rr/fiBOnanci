@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../widgets/common/common_widgets.dart';
 
 /// Minimalist expandable search bar with morphing dropdown filters for SubscriptionScreen.
@@ -32,15 +33,16 @@ class SubscriptionSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return ExpandableSearchFilterBar(
       searchController: searchController,
       searchQuery: searchQuery,
       typeFilter: filter,
       walletFilter: walletFilter,
       wallets: wallets,
-      hintText: 'Cari tagihan, langganan, rekening...',
-      headerTitle: 'Filter Tagihan',
-      primaryFilterTitle: 'STATUS PEMBAYARAN',
+      hintText: l10n.subsSearchHint,
+      headerTitle: l10n.subsFilterTitle,
+      primaryFilterTitle: l10n.subsFilterStatusHeader,
       primaryFilterChoices: kDefaultSubscriptionStatusChoices,
       borderRadius: 10,
       onSearchChanged: onSearchChanged,

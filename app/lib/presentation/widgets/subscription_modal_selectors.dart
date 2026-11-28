@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
+import '../../domain/services/subscription_schedule_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
 
 export 'subscription_due_day_slider.dart';
+export 'subscription_start_cycle_selector.dart';
 
 class SubscriptionWalletDropdown extends StatelessWidget {
   final List<WalletEntry> wallets;
@@ -26,7 +29,7 @@ class SubscriptionWalletDropdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('SUMBER DANA PEMBAYARAN', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
+        Text(AppL10n.of(context).subModalPaymentSource, style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -77,9 +80,9 @@ class SubscriptionAutoDeductSwitch extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Auto-Deduct Saldo', style: AppTypography.listTitle),
+                Text(AppL10n.of(context).subModalAutoDeductTitle, style: AppTypography.listTitle),
                 const SizedBox(height: 2),
-                Text('Potong saldo otomatis saat tgl jatuh tempo', style: AppTypography.listSubtitle, overflow: TextOverflow.ellipsis),
+                Text(AppL10n.of(context).subModalAutoDeductSubtitle, style: AppTypography.listSubtitle, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -97,6 +100,7 @@ class SubscriptionAutoDeductSwitch extends StatelessWidget {
 
 void executeDeleteSubscription(BuildContext context, String subscriptionId, {VoidCallback? onDeleted}) {
   final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppL10n.of(context);
   final navigator = Navigator.of(context);
   context.read<FinanceBloc>().add(DeleteSubscriptionEvent(subscriptionId));
   if (onDeleted != null) {
@@ -106,13 +110,83 @@ void executeDeleteSubscription(BuildContext context, String subscriptionId, {Voi
   }
   AppSnackBar.showWithMessenger(
     messenger,
-    title: 'Tagihan Dihapus',
-    message: 'Tagihan berhasil dihapus & saldo rekening dikembalikan.',
+    title: l10n.subDeletedSnackTitle,
+    message: l10n.subDeletedSnackMsg,
     type: AppSnackBarType.error,
-    tag: 'HAPUS',
+    tag: l10n.subDeletedSnackTag,
   );
 }
 
 void showSubscriptionDeleteDialog(BuildContext context, String subscriptionId) {
   executeDeleteSubscription(context, subscriptionId);
+}
+
+class SubscriptionDeleteButton extends StatelessWidget {
+  final String subscriptionId;
+  const SubscriptionDeleteButton({super.key, required this.subscriptionId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: TextButton.icon(
+        style: TextButton.styleFrom(foregroundColor: AppColors.neoCoral),
+        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+        label: Text(AppL10n.of(context).subDeleteThisBtn, style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13, fontWeight: FontWeight.w700)),
+        onPressed: () => showSubscriptionDeleteDialog(context, subscriptionId),
+      ),
+    );
+  }
+}
+
+void dispatchSaveSubscription(
+  BuildContext context, {
+  SubscriptionEntry? existing,
+  required String title,
+  required double cost,
+  required int dueDay,
+  required DateTime nextDueDate,
+  required String walletId,
+  required String categoryId,
+  required bool autoDeduct,
+  required bool isInstallment,
+  required int totalCycles,
+}) {
+  final bloc = context.read<FinanceBloc>();
+  final deadline = isInstallment
+      ? SubscriptionScheduleService.calculateInstallmentDeadline(
+          firstDueDate: nextDueDate,
+          dueDay: dueDay,
+          totalCycles: totalCycles,
+          paidCycles: existing?.paidCycles ?? 0,
+        )
+      : null;
+  if (existing != null) {
+    bloc.add(UpdateSubscriptionEvent(
+      subscriptionId: existing.id,
+      title: title,
+      cost: cost,
+      dueDay: dueDay,
+      nextDueDate: nextDueDate,
+      walletId: walletId,
+      categoryId: categoryId,
+      autoDeduct: autoDeduct,
+      isInstallment: isInstallment,
+      totalCycles: isInstallment ? totalCycles : null,
+      paidCycles: existing.paidCycles,
+      deadlineDate: deadline,
+    ));
+  } else {
+    bloc.add(AddSubscriptionEvent(
+      title: title,
+      cost: cost,
+      dueDay: dueDay,
+      nextDueDate: nextDueDate,
+      walletId: walletId,
+      categoryId: categoryId,
+      autoDeduct: autoDeduct,
+      isInstallment: isInstallment,
+      totalCycles: isInstallment ? totalCycles : null,
+      deadlineDate: deadline,
+    ));
+  }
 }

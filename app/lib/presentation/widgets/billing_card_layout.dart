@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
 import 'contactless_painter.dart';
 import 'subscription_card_badges.dart';
 import 'subscription_card_theme.dart';
@@ -55,7 +56,7 @@ class BillingCardLayout extends StatelessWidget {
               const SizedBox(width: 10),
               SubscriptionCardBadges.buildStatusBadge(
                 isPaidThisMonth,
-                subscription.dueDay,
+                subscription.nextDueDate,
                 config,
                 isInstallment: false,
               ),
@@ -82,7 +83,9 @@ class BillingCardLayout extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    isMonthly ? 'tagihan rutin /bulan' : 'tagihan rutin /tahun',
+                    isMonthly
+                        ? AppL10n.of(context).subRecurringMonthly
+                        : AppL10n.of(context).subRecurringYearly,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,

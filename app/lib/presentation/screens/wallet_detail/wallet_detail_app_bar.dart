@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -32,12 +33,13 @@ class WalletDetailAppBar extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final title = customTitle ?? (isEditing
-        ? 'Penyesuaian Saldo: ${wallet.name}'
-        : 'Detail Rekening');
+        ? l10n.walletBalanceAdjustTitle(wallet.name)
+        : l10n.walletDetailTitle);
     final subtitle = customSubtitle ?? (isEditing
-        ? 'Ubah saldo awal & preferensi rekening'
-        : 'Informasi & Mutasi');
+        ? l10n.walletBalanceAdjustSubtitle
+        : l10n.walletDetailSubtitle);
     final closeIcon = isEditing
         ? Icons.keyboard_arrow_left_rounded
         : Icons.keyboard_arrow_down_rounded;

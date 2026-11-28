@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../bloc/finance/finance_state.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'settings_about_app_sub_page.dart';
 import 'settings_automation_data_section.dart';
@@ -33,6 +34,32 @@ enum SettingsSubRoute {
   final String title;
   final String subtitle;
   const SettingsSubRoute(this.title, this.subtitle);
+
+  String localizedTitle(AppLocalizations l10n) => switch (this) {
+    SettingsSubRoute.currency => l10n.settingsRouteCurrencyTitle,
+    SettingsSubRoute.incomeTarget => l10n.settingsRouteIncomeTargetTitle,
+    SettingsSubRoute.cycleDay => l10n.settingsRouteCycleDayTitle,
+    SettingsSubRoute.stsWallets => l10n.settingsRouteStsWalletsTitle,
+    SettingsSubRoute.categories => l10n.settingsRouteCategoriesTitle,
+    SettingsSubRoute.bankApps => l10n.settingsRouteBankAppsTitle,
+    SettingsSubRoute.exportData => l10n.settingsRouteExportDataTitle,
+    SettingsSubRoute.clearTransactions => l10n.settingsRouteClearTxTitle,
+    SettingsSubRoute.deleteProfile => l10n.settingsRouteDeleteProfileTitle,
+    SettingsSubRoute.aboutApp => l10n.settingsRouteAboutAppTitle,
+  };
+
+  String localizedSubtitle(AppLocalizations l10n) => switch (this) {
+    SettingsSubRoute.currency => l10n.settingsRouteCurrencySub,
+    SettingsSubRoute.incomeTarget => l10n.settingsRouteIncomeTargetSub,
+    SettingsSubRoute.cycleDay => l10n.settingsRouteCycleDaySub,
+    SettingsSubRoute.stsWallets => l10n.settingsRouteStsWalletsSub,
+    SettingsSubRoute.categories => l10n.settingsRouteCategoriesSub,
+    SettingsSubRoute.bankApps => l10n.settingsRouteBankAppsSub,
+    SettingsSubRoute.exportData => l10n.settingsRouteExportDataSub,
+    SettingsSubRoute.clearTransactions => l10n.settingsRouteClearTxSub,
+    SettingsSubRoute.deleteProfile => l10n.settingsRouteDeleteProfileSub,
+    SettingsSubRoute.aboutApp => l10n.settingsRouteAboutAppSub,
+  };
 }
 
 class ProfileSettingsTab extends StatefulWidget {

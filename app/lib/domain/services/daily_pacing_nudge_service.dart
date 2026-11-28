@@ -11,6 +11,7 @@ class DailyPacingNudgeService {
     required double todayExpense,
     DateTime? referenceDate,
     int streak = 0,
+    String localeCode = 'id',
   }) {
     final dailyQuota = metrics.safeToSpendDaily;
     final isDeficit = metrics.healthStatus == FinancialHealthStatus.deficit || dailyQuota <= 0;
@@ -21,6 +22,7 @@ class DailyPacingNudgeService {
       streak: streak,
       date: referenceDate,
       isDeficit: isDeficit,
+      localeCode: localeCode,
     );
   }
 
@@ -30,6 +32,7 @@ class DailyPacingNudgeService {
     required double todayExpense,
     DateTime? referenceDate,
     int streak = 0,
+    String localeCode = 'id',
   }) {
     final dailyQuota = metrics.safeToSpendDaily;
     final isDeficit = metrics.healthStatus == FinancialHealthStatus.deficit || dailyQuota <= 0;
@@ -40,6 +43,7 @@ class DailyPacingNudgeService {
       streak: streak,
       date: referenceDate,
       isDeficit: isDeficit,
+      localeCode: localeCode,
     ).text;
   }
 }

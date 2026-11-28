@@ -1,67 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
+import '../../domain/services/subscription_schedule_service.dart';
 import 'subscription_card_theme.dart';
 class SubscriptionCardBadges {
   static Widget buildStatusBadge(
     bool isPaid,
-    int dueDay,
+    DateTime nextDueDate,
     SubscriptionCardThemeConfig config, {
     bool isInstallment = false,
     int? totalCycles,
     int paidCycles = 0,
     bool isCompleted = false,
-  }) {
-    final today = DateTime.now().day;
+  }) => Builder(builder: (context) {
+    final l10n = AppL10n.of(context);
+    final now = DateTime.now();
+    final today = SubscriptionScheduleService.dateOnly(now);
+    final due = SubscriptionScheduleService.dateOnly(nextDueDate);
     final isDarkBg = config.backgroundColor.computeLuminance() < 0.35;
-    final isPaidState = isCompleted || isPaid || (isInstallment && totalCycles != null && paidCycles >= totalCycles);
+    final isCompletedPlan = isCompleted || (isInstallment && totalCycles != null && paidCycles >= totalCycles);
+    final isPaidState = isCompletedPlan || isPaid;
 
-    late final Color badgeBg;
-    late final Color borderColor;
-    late final Color accentColor;
-    late final Color textColor;
+    late final Color badgeBg, borderColor, accentColor, textColor;
     late final String statusText;
 
-    if (isCompleted || (isInstallment && totalCycles != null && paidCycles >= totalCycles)) {
+    if (isPaidState) {
       badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
       borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
       accentColor = const Color(0xFFD4F442);
       textColor = const Color(0xFFF8FAFC);
-      statusText = 'CICILAN LUNAS ($paidCycles/${totalCycles ?? paidCycles})';
-    } else if (isInstallment && isPaid) {
-      badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
-      borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
-      accentColor = const Color(0xFFD4F442);
-      textColor = const Color(0xFFF8FAFC);
-      statusText = 'CICILAN $paidCycles/${totalCycles ?? "?"} • LUNAS';
-    } else if (isPaid) {
-      badgeBg = const Color(0xFF0E1015).withValues(alpha: isDarkBg ? 0.82 : 0.92);
-      borderColor = const Color(0xFFD4F442).withValues(alpha: isDarkBg ? 0.38 : 0.25);
-      accentColor = const Color(0xFFD4F442);
-      textColor = const Color(0xFFF8FAFC);
-      statusText = 'LUNAS BULAN INI';
+      statusText = isCompletedPlan
+          ? l10n.subBadgeInstallmentCompleted(paidCycles, totalCycles ?? paidCycles)
+          : isInstallment
+              ? l10n.subBadgeInstallmentPaid(paidCycles, '${totalCycles ?? "?"}')
+              : l10n.subBadgePaidThisMonth;
     } else {
       final currentStep = (paidCycles + 1).clamp(1, totalCycles ?? 99);
-      final prefix = isInstallment ? 'CICILAN $currentStep/$totalCycles • ' : 'JATUH TEMPO ';
-      if (today == dueDay) {
+      final prefix = isInstallment ? l10n.subBadgeInstallmentPrefix(currentStep, '${totalCycles ?? "?"}') : l10n.subBadgeDuePrefix;
+      final diff = due.difference(today).inDays;
+      final dateLabel = DateFormat('d MMM', l10n.localeName).format(due).toUpperCase();
+      if (diff <= 0) {
         badgeBg = const Color(0xFF141115).withValues(alpha: 0.90);
         borderColor = const Color(0xFFFF6B6B).withValues(alpha: 0.45);
         accentColor = const Color(0xFFFF6B6B);
         textColor = const Color(0xFFFFF1F2);
-        statusText = '${prefix}HARI INI';
-      } else if (today < dueDay && (dueDay - today) <= 3) {
-        final diff = dueDay - today;
+        statusText = '$prefix${diff == 0 ? l10n.subBadgeToday : dateLabel}';
+      } else if (diff <= 3) {
         badgeBg = const Color(0xFF121318).withValues(alpha: 0.88);
         borderColor = const Color(0xFFFBBF24).withValues(alpha: 0.38);
         accentColor = const Color(0xFFFBBF24);
         textColor = const Color(0xFFFEF3C7);
-        statusText = '${prefix}H-$diff';
+        statusText = '$prefix${l10n.subBadgeInDays(diff)}';
       } else {
         badgeBg = isDarkBg ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08);
         borderColor = config.textColor.withValues(alpha: 0.14);
         accentColor = config.textColor.withValues(alpha: 0.70);
         textColor = config.textColor;
-        statusText = '${prefix}TGL $dueDay';
+        final isSameMonth = due.year == today.year && due.month == today.month;
+        statusText = '$prefix${isSameMonth ? l10n.subBadgeOnDay(due.day) : dateLabel}';
       }
     }
 
@@ -97,7 +95,7 @@ class SubscriptionCardBadges {
         ],
       ),
     );
-  }
+  });
 
   static Widget buildNetworkBadge(SubscriptionCardThemeConfig config) {
     return Container(
@@ -129,7 +127,7 @@ class SubscriptionCardBadges {
           children: [
             buildStatusBadge(
               isPaidThisMonth,
-              subscription.dueDay,
+              subscription.nextDueDate,
               config,
               isInstallment: true,
               totalCycles: totalCycles,
@@ -139,9 +137,14 @@ class SubscriptionCardBadges {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
               decoration: BoxDecoration(color: config.textColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
-              child: Text(
-                isCompleted ? 'LUNAS' : 'Sisa $remainingCycles bln',
-                style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: config.textColor),
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppL10n.of(context);
+                  return Text(
+                    isCompleted ? l10n.subBadgePaid : l10n.subBadgeMonthsLeft(remainingCycles),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: config.textColor),
+                  );
+                },
               ),
             ),
           ],
@@ -172,16 +175,21 @@ class SubscriptionCardBadges {
       children: [
         buildStatusBadge(
           isPaidThisMonth,
-          subscription.dueDay,
+          subscription.nextDueDate,
           config,
           isInstallment: false,
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
           decoration: BoxDecoration(color: config.textColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
-          child: Text(
-            subscription.billingCycle == 'monthly' ? 'BULANAN' : 'TAHUNAN',
-            style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.6, color: config.textColor),
+          child: Builder(
+            builder: (context) {
+              final l10n = AppL10n.of(context);
+              return Text(
+                subscription.billingCycle == 'monthly' ? l10n.subBadgeCycleMonthly : l10n.subBadgeCycleYearly,
+                style: GoogleFonts.plusJakartaSans(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.6, color: config.textColor),
+              );
+            },
           ),
         ),
       ],

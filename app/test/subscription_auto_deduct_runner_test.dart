@@ -28,6 +28,7 @@ void main() {
         cost: 350000,
         billingCycle: 'monthly',
         dueDay: 10, // already passed
+        nextDueDate: DateTime(2026, 10, 10),
         autoDeduct: true,
         status: 'active',
         isInstallment: false,
@@ -39,7 +40,7 @@ void main() {
       );
       expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(eligibleSub, referenceDate: now), isTrue);
 
-      final notDueYetSub = eligibleSub.copyWith(dueDay: 20);
+      final notDueYetSub = eligibleSub.copyWith(dueDay: 20, nextDueDate: DateTime(2026, 10, 20));
       expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(notDueYetSub, referenceDate: now), isFalse);
 
       final manualSub = eligibleSub.copyWith(autoDeduct: false);
@@ -77,6 +78,7 @@ void main() {
           cost: const drift.Value(cost),
           billingCycle: const drift.Value('monthly'),
           dueDay: const drift.Value(5),
+          nextDueDate: drift.Value(DateTime(2026, 10, 5)),
           autoDeduct: const drift.Value(true),
           status: const drift.Value('active'),
           createdAt: drift.Value(now),
@@ -136,6 +138,7 @@ void main() {
           cost: const drift.Value(cost),
           billingCycle: const drift.Value('monthly'),
           dueDay: const drift.Value(5),
+          nextDueDate: drift.Value(DateTime(2026, 10, 5)),
           autoDeduct: const drift.Value(true),
           status: const drift.Value('active'),
           createdAt: drift.Value(now),
@@ -166,6 +169,7 @@ void main() {
         cost: 50000,
         billingCycle: 'monthly',
         dueDay: 31,
+        nextDueDate: DateTime(2026, 2, 28),
         autoDeduct: true,
         status: 'active',
         isInstallment: false,
@@ -178,8 +182,9 @@ void main() {
 
       expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31, referenceDate: DateTime(2026, 2, 27)), isFalse);
       expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31, referenceDate: DateTime(2026, 2, 28)), isTrue);
-      expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31, referenceDate: DateTime(2026, 4, 29)), isFalse);
-      expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31, referenceDate: DateTime(2026, 4, 30)), isTrue);
+      final sub31Apr = sub31.copyWith(nextDueDate: DateTime(2026, 4, 30));
+      expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31Apr, referenceDate: DateTime(2026, 4, 29)), isFalse);
+      expect(SubscriptionAutoDeductRunner.isDueForAutoDeduct(sub31Apr, referenceDate: DateTime(2026, 4, 30)), isTrue);
     });
 
     test('isDueForAutoDeduct handles yearly billing cycle without multi-month double charges', () {
@@ -191,6 +196,7 @@ void main() {
         cost: 1200000,
         billingCycle: 'yearly',
         dueDay: 10,
+        nextDueDate: DateTime(2027, 1, 10),
         autoDeduct: true,
         status: 'active',
         isInstallment: false,
@@ -217,6 +223,7 @@ void main() {
         cost: 25000,
         billingCycle: 'weekly',
         dueDay: 1,
+        nextDueDate: DateTime(2026, 10, 8),
         autoDeduct: true,
         status: 'active',
         isInstallment: false,
@@ -251,6 +258,7 @@ void main() {
           cost: const drift.Value(100000.0),
           billingCycle: const drift.Value('monthly'),
           dueDay: const drift.Value(10),
+          nextDueDate: drift.Value(DateTime(2026, 10, 10)),
           autoDeduct: const drift.Value(true),
           status: const drift.Value('active'),
           isInstallment: const drift.Value(true),
@@ -287,6 +295,7 @@ void main() {
           cost: const drift.Value(50000.0),
           billingCycle: const drift.Value('monthly'),
           dueDay: const drift.Value(10),
+          nextDueDate: drift.Value(DateTime(2026, 10, 10)),
           autoDeduct: const drift.Value(true),
           status: const drift.Value('cancelled'),
           isDeleted: const drift.Value(true),

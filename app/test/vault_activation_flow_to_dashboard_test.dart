@@ -46,6 +46,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Verify Language selection screen, then continue to Welcome
+    expect(find.byKey(const Key('onb_lang_continue_btn')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('onb_lang_continue_btn')));
+    await tester.pumpAndSettle();
+
     // Verify Welcome screen is visible, then start new
     expect(find.byKey(const Key('welcome_start_new_btn')), findsOneWidget);
     await tester.tap(find.byKey(const Key('welcome_start_new_btn')));

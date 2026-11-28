@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../domain/services/safe_to_spend_service.dart';
 import '../../../domain/services/financial_health_service.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../financial_health_modal.dart';
 import 'profile_card_painters.dart';
@@ -62,6 +63,7 @@ class ProfileActiveCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -99,8 +101,8 @@ class ProfileActiveCardBody extends StatelessWidget {
                     children: [
                       const CustomPaint(size: Size(15, 14), painter: FinancialShieldPainter()),
                       const SizedBox(height: 2),
-                      Text('Aman', style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textWhite)),
-                      Text('Harian', style: GoogleFonts.plusJakartaSans(fontSize: 9, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
+                      Text(l10n.profileSafe, style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textWhite)),
+                      Text(l10n.profileDaily, style: GoogleFonts.plusJakartaSans(fontSize: 9, fontWeight: FontWeight.w500, color: AppColors.textMuted)),
                     ],
                   ),
                 ],
@@ -127,7 +129,7 @@ class ProfileActiveCardBody extends StatelessWidget {
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        'SKOR',
+                        l10n.profileScore,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
@@ -161,9 +163,9 @@ class ProfileActiveCardBody extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildStat(Icons.account_balance_wallet_outlined, '$wallets', 'Rekening'),
-            _buildStat(Icons.swap_horiz_rounded, '$txs', 'Transaksi'),
-            _buildStat(Icons.event_repeat_rounded, '$subs', 'Tagihan Rutin'),
+            _buildStat(Icons.account_balance_wallet_outlined, '$wallets', l10n.profileAccounts),
+            _buildStat(Icons.swap_horiz_rounded, '$txs', l10n.profileTransactions),
+            _buildStat(Icons.event_repeat_rounded, '$subs', l10n.profileRecurringBills),
           ],
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/smart_input/smart_input_bridge.dart';
 import '../../core/smart_input/smart_transaction_parser.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
@@ -89,13 +90,14 @@ class TransactionTypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Row(
       children: [
-        _buildPill('Pengeluaran', 'expense', AppColors.neoCoral),
+        _buildPill(l10n.txTypeExpense, 'expense', AppColors.neoCoral),
         const SizedBox(width: 8),
-        _buildPill('Pemasukan', 'income', AppColors.neoMint),
+        _buildPill(l10n.txTypeIncome, 'income', AppColors.neoMint),
         const SizedBox(width: 8),
-        _buildPill('Transfer', 'transfer', AppColors.neoCyan),
+        _buildPill(l10n.txTypeTransfer, 'transfer', AppColors.neoCyan),
       ],
     );
   }
@@ -132,6 +134,7 @@ class TransactionActionFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Row(
       children: [
         Expanded(
@@ -145,7 +148,7 @@ class TransactionActionFooter extends StatelessWidget {
               ),
               onPressed: onCancel,
               child: Text(
-                'Batal',
+                l10n.txCancel,
                 style: AppTypography.listTitle.copyWith(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
@@ -158,7 +161,7 @@ class TransactionActionFooter extends StatelessWidget {
         Expanded(
           flex: 2,
           child: PrimaryActionButton(
-            text: 'Simpan Transaksi',
+            text: l10n.txSave,
             onPressed: onSave,
           ),
         ),

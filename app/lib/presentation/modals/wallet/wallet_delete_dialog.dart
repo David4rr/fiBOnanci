@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/common_widgets.dart';
 
@@ -16,8 +17,8 @@ class WalletDeleteDialog {
     Navigator.pop(modalContext);
     AppSnackBar.showError(
       parentContext,
-      'Rekening Dihapus',
-      message: 'Rekening "${wallet.name}" berhasil dihapus.',
+      AppL10n.of(parentContext).walletDeletedTitle,
+      message: AppL10n.of(parentContext).walletDeletedMsg(wallet.name),
       tag: 'HAPUS',
     );
   }

@@ -1,3 +1,4 @@
+import 'insight_compact_corpus_en.dart';
 import 'insight_models.dart';
 
 class InsightCompactCorpus {
@@ -79,19 +80,24 @@ class InsightCompactCorpus {
     required DayContext dayContext,
     required DateTime date,
     required int streak,
+    String localeCode = 'id',
   }) {
-    List<String> pool;
+    final isEn = localeCode == 'en';
+    final phrases = isEn ? InsightCompactCorpusEn.compactPhrases : _compactPhrases;
+    final phaseZero = isEn ? InsightCompactCorpusEn.phaseSpecificZeroSpend : _phaseSpecificZeroSpendCompact;
+    final weekendZero = isEn ? InsightCompactCorpusEn.weekendZeroSpend : _weekendZeroSpend;
 
+    List<String> pool;
     if (velocity == SpendVelocity.zeroSpend) {
       if (dayContext == DayContext.weekend && (date.day + streak) % 2 == 0) {
-        pool = _weekendZeroSpend;
-      } else if (_phaseSpecificZeroSpendCompact.containsKey(phase)) {
-        pool = _phaseSpecificZeroSpendCompact[phase]!;
+        pool = weekendZero;
+      } else if (phaseZero.containsKey(phase)) {
+        pool = phaseZero[phase]!;
       } else {
-        pool = _compactPhrases[SpendVelocity.zeroSpend]!;
+        pool = phrases[SpendVelocity.zeroSpend]!;
       }
     } else {
-      pool = _compactPhrases[velocity] ?? _compactPhrases[SpendVelocity.zeroSpend]!;
+      pool = phrases[velocity] ?? phrases[SpendVelocity.zeroSpend]!;
     }
 
     final int hash = (date.year * 372 + date.month * 31 + date.day * 7 + streak * 13).abs();

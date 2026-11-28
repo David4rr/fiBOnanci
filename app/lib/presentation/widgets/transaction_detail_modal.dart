@@ -4,6 +4,8 @@ import '../../core/formatters/app_currency.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/category_localizer.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'transaction_detail_components.dart';
@@ -133,8 +135,8 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
             if (!widget.isInline) ...[
               const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
               ModalHeader(
-                title: 'Edit Transaksi',
-                subtitle: 'Ubah kategori, rekening, atau nominal',
+                title: AppL10n.of(context).txEditTitle,
+                subtitle: AppL10n.of(context).txEditSubtitle,
                 onClose: widget.onClose ?? () => Navigator.pop(context),
               ),
             ],
@@ -151,35 +153,35 @@ class _TransactionDetailModalState extends State<TransactionDetailModal> {
             const SizedBox(height: 16),
             CurrencyAmountField(controller: _amountController),
             const SizedBox(height: 14),
-            Text('REKENING PENYIMPANAN', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
+            Text(AppL10n.of(context).txStorageAccount, style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 6),
             TransactionDetailComponents.buildWalletDropdown(wallets: wallets, selectedId: _walletId, onChanged: (v) => setState(() => _walletId = v!)),
             if (_type == 'transfer' && !_isPocketTx) ...[
               const SizedBox(height: 12),
-              Text('Rekening Tujuan', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
+              Text(AppL10n.of(context).txDestAccount, style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
               const SizedBox(height: 6),
               TransactionDetailComponents.buildWalletDropdown(wallets: destWallets, selectedId: _destinationWalletId, onChanged: (v) => setState(() => _destinationWalletId = v)),
             ] else if (_type != 'transfer') ...[
               const SizedBox(height: 12),
-              Text('Kategori', style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
+              Text(AppL10n.of(context).txCategoryLabel, style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted)),
               const SizedBox(height: 6),
               TransactionDropdownContainer(
                 child: DropdownButton<String>(
                   value: _categoryId.isNotEmpty ? _categoryId : null,
                   isExpanded: true,
                   dropdownColor: AppColors.canvasCardSurface,
-                  items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: AppTypography.listTitle))).toList(),
+                  items: matchingCats.map((c) => DropdownMenuItem(value: c.id, child: Text(CategoryLocalizer.entry(context, c), style: AppTypography.listTitle))).toList(),
                   onChanged: (v) => setState(() => _categoryId = v!),
                 ),
               ),
             ],
             const SizedBox(height: 12),
-            AppTextField(controller: _notesController, hintText: 'Catatan (Opsional)'),
+            AppTextField(controller: _notesController, hintText: AppL10n.of(context).hintNotesOptional),
             const SizedBox(height: 24),
             TransactionDetailComponents.buildActionButtons(context: context, onSave: () => _saveChanges(context), onCancel: widget.onClose),
             const SizedBox(height: 14),
             SlideToDeleteButton(
-              label: 'Hapus Transaksi',
+              label: AppL10n.of(context).txDeleteLabel,
               onSlideComplete: () => TransactionDetailComponents.executeDelete(context, widget.transaction.id, onDeleted: widget.onDeleted),
             ),
           ],

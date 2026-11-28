@@ -2,6 +2,7 @@ export 'profile_modal.dart';
 
 import 'package:flutter/material.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../domain/services/daily_pacing_nudge_service.dart';
 import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
@@ -51,8 +52,8 @@ class DailyPaceModal {
             children: [
               const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
               ModalHeader(
-                title: 'Alokasi Harian (Daily Pace)',
-                subtitle: 'Batas belanja harian & ritme anggaran',
+                title: AppL10n.of(ctx).dailyPaceTitle,
+                subtitle: AppL10n.of(ctx).dailyPaceSubtitle,
                 onClose: () => Navigator.pop(ctx),
               ),
               Container(
@@ -92,6 +93,7 @@ class DailyPaceModal {
                           todayExpense: todayExpense,
                           referenceDate: referenceDate,
                           streak: streak,
+                          localeCode: AppL10n.of(ctx).localeName,
                         ),
                         style: AppTypography.listSubtitle.copyWith(
                           color: AppColors.textWhite,
@@ -108,19 +110,19 @@ class DailyPaceModal {
                 decoration: BoxDecoration(color: AppColors.canvasInputSearch, borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   children: [
-                    buildCalcRow('Sisa Hari Bulan Ini', '${metrics.daysRemainingInMonth} Hari', AppColors.textWhite),
+                    buildCalcRow(AppL10n.of(ctx).dailyPaceRemainingDays, AppL10n.of(ctx).dailyPaceDaysCount(metrics.daysRemainingInMonth), AppColors.textWhite),
                     Divider(color: AppColors.canvasBorder),
-                    buildCalcRow('Batas Aman Belanja / Hari', currencyFormatter.format(metrics.safeToSpendDaily), AppColors.neoCyan, isBold: true),
+                    buildCalcRow(AppL10n.of(ctx).dailyPaceSafeLimit, currencyFormatter.format(metrics.safeToSpendDaily), AppColors.neoCyan, isBold: true),
                     Divider(color: AppColors.canvasBorder),
                     buildCalcRow(
-                      'Pengeluaran Hari Ini',
+                      AppL10n.of(ctx).dailyPaceTodayExpense,
                       currencyFormatter.format(todayExpense),
                       hasNoExpense ? AppColors.textMuted : (isUnderBudget ? AppColors.textIncome : AppColors.neoCoral),
                     ),
                     if (todayExpense > 0) ...[
                       const SizedBox(height: 4),
                       buildCalcRow(
-                        isUnderBudget ? 'Sisa Kuota Hari Ini' : 'Melebihi Kuota',
+                        isUnderBudget ? AppL10n.of(ctx).dailyPaceRemainingQuota : AppL10n.of(ctx).dailyPaceOverQuota,
                         currencyFormatter.format(remaining.abs()),
                         isUnderBudget ? AppColors.textIncome : AppColors.neoCoral,
                         isBold: true,
@@ -131,7 +133,7 @@ class DailyPaceModal {
               ),
               const SizedBox(height: 12),
               Text(
-                'Menjaga belanja rata-rata harian Anda di bawah angka ini akan menjamin keuangan tetap surplus hingga akhir bulan.',
+                AppL10n.of(ctx).dailyPaceFooter,
                 style: AppTypography.listSubtitle,
               ),
               const SizedBox(height: 16),

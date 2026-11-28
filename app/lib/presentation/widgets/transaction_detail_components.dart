@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -63,6 +64,7 @@ class TransactionDetailComponents {
     required VoidCallback onSave,
     VoidCallback? onCancel,
   }) {
+    final l10n = AppL10n.of(context);
     return Row(
       children: [
         Expanded(
@@ -72,7 +74,7 @@ class TransactionDetailComponents {
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
               onPressed: onCancel ?? () => Navigator.pop(context),
-              child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+              child: Text(l10n.txCancel, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
             ),
           ),
         ),
@@ -84,7 +86,7 @@ class TransactionDetailComponents {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.neoChartreuse, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
               onPressed: onSave,
-              child: Text('Simpan Perubahan', style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800)),
+              child: Text(l10n.txSaveChanges, style: AppTypography.listTitle.copyWith(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800)),
             ),
           ),
         ),
@@ -92,6 +94,7 @@ class TransactionDetailComponents {
     );
   }
   static void executeDelete(BuildContext context, String transactionId, {VoidCallback? onDeleted}) {
+    final l10n = AppL10n.of(context);
     context.read<FinanceBloc>().add(DeleteTransactionEvent(transactionId));
     if (onDeleted != null) {
       onDeleted();
@@ -100,18 +103,19 @@ class TransactionDetailComponents {
     }
     AppSnackBar.showError(
       context,
-      'Transaksi Dihapus',
-      message: 'Transaksi dihapus & saldo dompet dikembalikan semula!',
-      tag: 'HAPUS',
+      l10n.txDeletedSnackTitle,
+      message: l10n.txDeletedSnackMsg,
+      tag: l10n.txDeleteConfirm.toUpperCase(),
     );
   }
 
   static void showDeleteDialog(BuildContext context, String transactionId, {VoidCallback? onDeleted}) {
+    final l10n = AppL10n.of(context);
     AppConfirmationDialog.show(
       context,
-      title: 'Hapus Transaksi?',
-      content: 'Transaksi ini akan dihapus permanen dan saldo dompet akan dikembalikan.',
-      confirmText: 'Hapus',
+      title: l10n.txDeleteDialogTitle,
+      content: l10n.txDeleteDialogContent,
+      confirmText: l10n.txDeleteConfirm,
       confirmColor: AppColors.neoCoral,
       onConfirm: () => executeDelete(context, transactionId, onDeleted: onDeleted),
     );

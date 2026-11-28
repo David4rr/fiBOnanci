@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
@@ -22,7 +23,7 @@ class InboxHeaderRibbon extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      'Kotak Masuk Notifikasi',
+                      AppL10n.of(context).inboxTitle,
                       style: AppTypography.modalTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

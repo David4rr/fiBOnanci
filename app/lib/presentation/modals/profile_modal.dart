@@ -5,8 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
+import '../screens/onboarding/onboarding_submit.dart';
 import 'health/financial_health_tab.dart';
 import 'profile/profile_edit_tab.dart';
 import 'profile/profile_general_data_card.dart';
@@ -106,22 +109,23 @@ class _ProfileModalState extends State<ProfileModal> {
     }
   }
 
-  String get _headerTitle => switch (_currentTab) {
-    1 => _editingProfile != null ? 'Edit Profil' : 'Tambah Profil Baru',
-    2 => 'Audit Kesehatan Finansial',
-    3 => 'Laporan Keuangan',
-    4 => _settingsRoute?.title ?? 'Pengaturan',
-    _ => 'Profil Pengguna',
+  String _headerTitle(AppLocalizations l10n) => switch (_currentTab) {
+    1 => _editingProfile != null ? l10n.profileEditTitle : l10n.profileAddTitle,
+    2 => l10n.financialHealthTitle,
+    3 => l10n.financialReportTitle,
+    4 => _settingsRoute?.localizedTitle(l10n) ?? l10n.settingsTitle,
+    _ => l10n.profileTitle,
   };
-  String get _headerSubtitle => switch (_currentTab) {
-    1 => _editingProfile != null ? 'Perbarui informasi dan identitas profil' : 'Tambah akun profil baru di perangkat',
-    2 => 'Berdasarkan rasio arus kas, aset, & tagihan riil',
-    3 => 'Analisis arus kas, kategori, & distribusi rekening',
-    4 => _settingsRoute?.subtitle ?? 'Preferensi finansial, kategori, otomasi, & data lokal',
-    _ => 'Ringkasan identitas & performa finansial',
+  String _headerSubtitle(AppLocalizations l10n) => switch (_currentTab) {
+    1 => _editingProfile != null ? l10n.profileEditSub : l10n.profileAddSub,
+    2 => l10n.financialHealthSubtitle,
+    3 => l10n.financialReportSubtitle,
+    4 => _settingsRoute?.localizedSubtitle(l10n) ?? l10n.settingsSubtitle,
+    _ => l10n.profileSubtitle,
   };
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return BlocBuilder<FinanceBloc, FinanceState>(
       builder: (context, state) {
         final profile = state.profile;
@@ -149,7 +153,7 @@ class _ProfileModalState extends State<ProfileModal> {
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                           child: ModalHeader(
-                            title: _headerTitle, subtitle: _headerSubtitle, padding: EdgeInsets.zero,
+                            title: _headerTitle(l10n), subtitle: _headerSubtitle(l10n), padding: EdgeInsets.zero,
                             closeIcon: _currentTab == 0 ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_left_rounded,
                             onClose: _handleBack,
                           ),
@@ -165,7 +169,7 @@ class _ProfileModalState extends State<ProfileModal> {
                           children: [
                               ProfileCardCarousel(
                                 profiles: profiles, currentProfileId: profile.id, walletCount: state.wallets.length, txCount: state.transactions.length,
-                                onEditProfile: () => _goToTab(1, profile), onNewProfile: () => _goToTab(1),
+                                onEditProfile: () => _goToTab(1, profile), onNewProfile: () => OnboardingSubmit.openNewProfile(context),
                                 onHealthDetails: () => _goToTab(2), onFinancialReport: () => _goToTab(3), onSettings: () => _goToTab(4),
                               ),
                               const SizedBox(height: 16),

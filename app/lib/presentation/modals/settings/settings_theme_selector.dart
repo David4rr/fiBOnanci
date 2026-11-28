@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import 'profile_settings_tab.dart';
@@ -16,10 +18,10 @@ class SettingsThemeSelector extends StatelessWidget {
         ThemeMode.dark => Icons.dark_mode_rounded,
       };
 
-  String _labelForMode(ThemeMode mode) => switch (mode) {
-        ThemeMode.system => 'Sistem',
-        ThemeMode.light => 'Terang',
-        ThemeMode.dark => 'Gelap',
+  String _labelForMode(ThemeMode mode, AppLocalizations l10n) => switch (mode) {
+        ThemeMode.system => l10n.settingsThemeSystem,
+        ThemeMode.light => l10n.settingsThemeLight,
+        ThemeMode.dark => l10n.settingsThemeDark,
       };
 
   ThemeMode _nextMode(ThemeMode current) => switch (current) {
@@ -41,8 +43,9 @@ class SettingsThemeSelector extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeModeNotifier,
       builder: (context, currentMode, _) {
+        final l10n = AppL10n.of(context);
         final icon = _iconForMode(currentMode);
-        final label = _labelForMode(currentMode);
+        final label = _labelForMode(currentMode, l10n);
         final next = _nextMode(currentMode);
 
         return GestureDetector(
@@ -57,7 +60,7 @@ class SettingsThemeSelector extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Tema Tampilan', style: SettingsStyle.title),
+                  child: Text(l10n.settingsThemeLabel, style: SettingsStyle.title),
                 ),
                 Text(
                   label,

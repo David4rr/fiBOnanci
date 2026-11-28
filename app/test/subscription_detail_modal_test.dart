@@ -39,6 +39,7 @@ void main() {
         title: 'Netflix 4K Ultra',
         cost: 186000.0,
         dueDay: 20,
+        nextDueDate: DateTime(DateTime.now().year, DateTime.now().month, 20),
         walletId: walletId,
         categoryId: catId,
         autoDeduct: true,
@@ -53,6 +54,7 @@ void main() {
           title: const drift.Value('iPhone 16 Pro Max Cicilan'),
           cost: const drift.Value(1950000.0),
           dueDay: const drift.Value(10),
+          nextDueDate: drift.Value(DateTime(now.year, now.month, 10)),
           walletId: drift.Value(walletId),
           categoryId: drift.Value(catId),
           autoDeduct: const drift.Value(false),
@@ -98,7 +100,7 @@ void main() {
       expect(find.text('Detail Tagihan'), findsOneWidget);
       expect(find.text('Siklus Tagihan'), findsOneWidget);
       expect(find.text('Bulanan'), findsOneWidget);
-      expect(find.text('Setiap tanggal 20'), findsOneWidget);
+      expect(find.textContaining('Setiap tanggal 20'), findsOneWidget);
       expect(find.text('Auto-Deduct Aktif'), findsOneWidget);
       expect(find.text('Tandai Sudah Lunas Bulan Ini'), findsOneWidget);
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/storage/profile_preferences_storage.dart';
 import '../../../core/update/app_update_downloader.dart';
@@ -82,17 +83,18 @@ class _SettingsAboutAppSubPageState extends State<SettingsAboutAppSubPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
       children: [
         const AboutHeroCard(),
         const SizedBox(height: 24),
-        SettingsStyle.sectionHeader('STATUS & PEMBARUAN APLIKASI'),
+        SettingsStyle.sectionHeader(l10n.aboutSectionUpdates),
         const SizedBox(height: 10),
         _buildUpdateSection(),
         const SizedBox(height: 24),
-        SettingsStyle.sectionHeader('TENTANG & ARSITEKTUR APLIKASI'),
+        SettingsStyle.sectionHeader(l10n.aboutSectionSpecs),
         const SizedBox(height: 10),
         const AboutSpecsSection(),
       ],
@@ -100,6 +102,7 @@ class _SettingsAboutAppSubPageState extends State<SettingsAboutAppSubPage> {
   }
 
   Widget _buildUpdateSection() {
+    final l10n = AppL10n.of(context);
     final hasUpdate = _updateInfo != null && _updateInfo!.hasUpdate;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -113,19 +116,25 @@ class _SettingsAboutAppSubPageState extends State<SettingsAboutAppSubPage> {
         children: [
           SettingsStyle.switchRow(
             switchKey: const Key('settings_auto_update_switch'),
-            title: 'Pembaruan Otomatis',
+            title: l10n.aboutAutoUpdate,
             value: _autoCheck,
             onChanged: (v) {
               setState(() => _autoCheck = v);
               ProfilePreferencesStorage.setAutoUpdateCheck(v);
             },
           ),
+          const SizedBox(height: 4),
+          Row(children: [
+            Icon(Icons.public_rounded, size: 13, color: AppColors.textMuted),
+            const SizedBox(width: 5),
+            Flexible(child: Text(l10n.onlineRequiredBadge, style: SettingsStyle.sub.copyWith(fontSize: 11.5))),
+          ]),
           Divider(color: AppColors.dividerSubtle, height: 24),
           if (_isChecking)
             Row(children: [
               const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.neoChartreuse)),
               const SizedBox(width: 12),
-              Text('Menghubungkan ke GitHub Releases...', style: SettingsStyle.sub),
+              Text(l10n.aboutConnectingGithub, style: SettingsStyle.sub),
             ])
           else if (hasUpdate) ...[
             if (_downloadId != null)
@@ -139,29 +148,34 @@ class _SettingsAboutAppSubPageState extends State<SettingsAboutAppSubPage> {
               Row(children: [
                 const Icon(Icons.system_update_rounded, color: AppColors.neoChartreuse, size: 20),
                 const SizedBox(width: 8),
-                Expanded(child: Text('Versi v${_updateInfo!.latestVersion} Siap Diunduh!', style: SettingsStyle.title.copyWith(color: AppColors.textAccent))),
+                Expanded(child: Text(l10n.aboutVersionReady(_updateInfo!.latestVersion), style: SettingsStyle.title.copyWith(color: AppColors.textAccent))),
               ]),
               const SizedBox(height: 12),
               PrimaryActionButton(
                 key: const Key('about_download_update_button'),
-                text: 'Unduh & Pasang Pembaruan',
+                text: l10n.aboutDownloadInstallBtn,
                 icon: Icons.download_rounded,
                 onPressed: () => _startDownload(_updateInfo!),
               ),
             ],
             const SizedBox(height: 16),
-            Text('Catatan Rilis:', style: SettingsStyle.title),
+            Text(l10n.aboutReleaseNotesTitle, style: SettingsStyle.title),
             const SizedBox(height: 8),
             UserFriendlyChangelogView(releaseNotes: _updateInfo!.releaseNotes),
           ] else ...[
             Row(children: [
-              Icon(_hasChecked ? Icons.check_circle_rounded : Icons.info_outline_rounded,
-                  color: _hasChecked ? AppColors.neoMint : AppColors.textMuted, size: 18),
+              Icon(
+                !_hasChecked ? Icons.info_outline_rounded : (_updateInfo == null ? Icons.wifi_off_rounded : Icons.check_circle_rounded),
+                color: !_hasChecked ? AppColors.textMuted : (_updateInfo == null ? AppColors.neoCoral : AppColors.neoMint),
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _hasChecked ? 'Aplikasi Sudah Versi Terbaru (v${AppUpdateService.currentVersion})' : 'Belum diperiksa ke repositori rilis',
-                  style: SettingsStyle.title.copyWith(color: _hasChecked ? AppColors.textIncome : AppColors.textPrimary),
+                  !_hasChecked ? l10n.aboutNotChecked : (_updateInfo == null ? l10n.aboutCheckOfflineError : l10n.aboutUpToDate(AppUpdateService.currentVersion)),
+                  style: SettingsStyle.title.copyWith(
+                    color: !_hasChecked ? AppColors.textPrimary : (_updateInfo == null ? AppColors.textMuted : AppColors.textIncome),
+                  ),
                 ),
               ),
             ]),
@@ -173,7 +187,7 @@ class _SettingsAboutAppSubPageState extends State<SettingsAboutAppSubPage> {
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Icon(Icons.refresh_rounded, size: 16, color: AppColors.neoChartreuse),
                 const SizedBox(width: 6),
-                Text('Periksa Pembaruan Sekarang', style: SettingsStyle.accent),
+                Text(l10n.aboutCheckNowBtn, style: SettingsStyle.accent),
               ]),
             ),
           ],

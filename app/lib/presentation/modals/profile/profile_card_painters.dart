@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 class ProfileWaveChartPainter extends CustomPainter {
   final List<double> scores;
@@ -137,15 +138,16 @@ class ProfileFinancialTimelinePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final code = AppCurrency.codeOf(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(color: AppColors.neoChartreuse, borderRadius: BorderRadius.circular(22)),
       child: Row(
         children: [
-          _buildCol('SALDO RIIL', AppCurrency.formatCompact(realBalance, code), _buildTrackSegment(4, true, 0)),
-          _buildCol('TAGIHAN', AppCurrency.formatCompact(pendingBills, code), _buildTrackSegment(2, true, 2)),
-          _buildCol('SISA AMAN', AppCurrency.formatCompact(safeToSpend, code), _buildTrackSegment(0, true, 4)),
+          _buildCol(l10n.profileCardRealBalance, AppCurrency.formatCompact(realBalance, code), _buildTrackSegment(4, true, 0)),
+          _buildCol(l10n.profileCardBills, AppCurrency.formatCompact(pendingBills, code), _buildTrackSegment(2, true, 2)),
+          _buildCol(l10n.profileCardSafe, AppCurrency.formatCompact(safeToSpend, code), _buildTrackSegment(0, true, 4)),
         ],
       ),
     );

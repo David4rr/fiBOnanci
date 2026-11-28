@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../widgets/common/common_widgets.dart';
 
@@ -12,7 +13,7 @@ void executeDeletePocket(BuildContext context, PocketEntry pocket) {
   Navigator.of(context).pop();
   AppSnackBar.showError(
     context,
-    'Kantong Dihapus',
+    AppL10n.of(context).pocketDeletedTitle,
     message: hasBalance
         ? 'Kantong "${pocket.name}" dihapus & saldo dikembalikan ke rekening.'
         : 'Kantong "${pocket.name}" berhasil dihapus.',

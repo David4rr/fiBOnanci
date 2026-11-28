@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../bloc/finance/finance_bloc.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/common/app_snack_bar.dart';
 import 'onboarding_bottom_bar.dart';
 import 'onboarding_import_modal.dart';
+import 'onboarding_language_step.dart';
 import 'onboarding_step_celebration.dart';
 import 'onboarding_step_income.dart';
 import 'onboarding_step_name.dart';
@@ -13,14 +18,17 @@ import 'onboarding_welcome_choice.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;
-  const OnboardingScreen({super.key, required this.onComplete});
+  final bool isNewProfile;
+  const OnboardingScreen({super.key, required this.onComplete, this.isNewProfile = false});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
+enum _OnboardingStage { language, welcome, steps }
+
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  bool _isWelcome = true;
+  late _OnboardingStage _stage = widget.isNewProfile ? _OnboardingStage.steps : _OnboardingStage.language;
   int _currentStep = 0;
   final _fullNameCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
@@ -41,15 +49,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
-    _fullNameCtrl.removeListener(_onFullNameChanged);
-    _usernameCtrl.removeListener(_onUsernameChanged);
-    _walletNameCtrl.removeListener(_onFieldChanged);
-    _fullNameCtrl.dispose();
-    _usernameCtrl.dispose();
-    _occupationCtrl.dispose();
-    _incomeCtrl.dispose();
-    _walletNameCtrl.dispose();
-    _balanceCtrl.dispose();
+    for (final c in [_fullNameCtrl, _usernameCtrl, _occupationCtrl, _incomeCtrl, _walletNameCtrl, _balanceCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -73,7 +75,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _next() {
     if (_currentStep == 0 && _fullNameCtrl.text.trim().isEmpty) return;
-    if (_currentStep == 1 && _usernameCtrl.text.trim().isEmpty) return;
+    if (_currentStep == 1) {
+      final uname = _usernameCtrl.text.trim().replaceAll('@', '').toLowerCase();
+      if (uname.isEmpty) return;
+      if (widget.isNewProfile &&
+          context.read<FinanceBloc>().state.profiles.any((p) => !p.isDeleted && p.username.toLowerCase() == uname)) {
+        final l10n = AppL10n.of(context);
+        AppSnackBar.showError(context, l10n.onbUsernameTakenTitle, message: l10n.onbUsernameTakenMsg);
+        return;
+      }
+    }
     if (_currentStep == 3 && _walletNameCtrl.text.trim().isEmpty) return;
 
     if (_currentStep < 4) {
@@ -91,69 +102,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _back() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
+    } else if (widget.isNewProfile) {
+      Navigator.of(context).pop();
     } else {
-      setState(() => _isWelcome = true);
+      setState(() => _stage = _OnboardingStage.welcome);
     }
   }
 
-  Future<void> _finish() async {
-    await OnboardingSubmit.execute(
-      context: context,
-      fullName: _fullNameCtrl.text,
-      username: _usernameCtrl.text,
-      occupation: _occupationCtrl.text,
-      incomeText: _incomeCtrl.text,
-      walletName: _walletNameCtrl.text,
-      walletType: _walletType,
-      balanceText: _balanceCtrl.text,
-      onComplete: widget.onComplete,
-    );
-  }
+  Future<void> _finish() => OnboardingSubmit.execute(
+        context: context, fullName: _fullNameCtrl.text, username: _usernameCtrl.text,
+        occupation: _occupationCtrl.text, incomeText: _incomeCtrl.text,
+        walletName: _walletNameCtrl.text, walletType: _walletType,
+        balanceText: _balanceCtrl.text, onComplete: widget.onComplete, isNewProfile: widget.isNewProfile,
+      );
 
-  Widget _buildStep() {
-    switch (_currentStep) {
-      case 0:
-        return OnboardingStepName(controller: _fullNameCtrl, onNext: _next);
-      case 1:
-        return OnboardingStepUsername(
-          firstName: _fullNameCtrl.text.trim().split(' ').first,
-          usernameController: _usernameCtrl,
-          occupationController: _occupationCtrl,
-          onNext: _next,
-        );
-      case 2:
-        return OnboardingStepIncome(incomeController: _incomeCtrl, onNext: _next);
-      case 3:
-        return OnboardingStepWallet(
-          walletNameController: _walletNameCtrl,
-          walletType: _walletType,
-          onWalletTypeChanged: (t) => setState(() => _walletType = t),
-          balanceController: _balanceCtrl,
-          onNext: _next,
-        );
-      default:
-        return OnboardingStepCelebration(
-          fullName: _fullNameCtrl.text,
-          username: _usernameCtrl.text,
-          walletName: _walletNameCtrl.text,
-          walletType: _walletType,
-          balanceText: _balanceCtrl.text,
-        );
-    }
-  }
+  Widget _buildStep() => switch (_currentStep) {
+        0 => OnboardingStepName(controller: _fullNameCtrl, onNext: _next),
+        1 => OnboardingStepUsername(
+            firstName: _fullNameCtrl.text.trim().split(' ').first,
+            usernameController: _usernameCtrl,
+            occupationController: _occupationCtrl,
+            onNext: _next,
+          ),
+        2 => OnboardingStepIncome(incomeController: _incomeCtrl, onNext: _next),
+        3 => OnboardingStepWallet(
+            walletNameController: _walletNameCtrl,
+            walletType: _walletType,
+            onWalletTypeChanged: (t) => setState(() => _walletType = t),
+            balanceController: _balanceCtrl,
+            onNext: _next,
+          ),
+        _ => OnboardingStepCelebration(
+            fullName: _fullNameCtrl.text,
+            username: _usernameCtrl.text,
+            walletName: _walletNameCtrl.text,
+            walletType: _walletType,
+            balanceText: _balanceCtrl.text,
+          ),
+      };
 
   @override
   Widget build(BuildContext context) {
-    if (_isWelcome) {
+    if (_stage != _OnboardingStage.steps) {
       return Scaffold(
         backgroundColor: AppColors.canvasBg,
         body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: OnboardingWelcomeChoice(
-              onStartNew: () => setState(() => _isWelcome = false),
-              onImportBackup: () => OnboardingImportModal.show(context, onImportSuccess: widget.onComplete),
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: _stage == _OnboardingStage.language
+                  ? OnboardingLanguageStep(onContinue: () => setState(() => _stage = _OnboardingStage.welcome))
+                  : OnboardingWelcomeChoice(
+                      onBack: () => setState(() => _stage = _OnboardingStage.language),
+                      onStartNew: () => setState(() => _stage = _OnboardingStage.steps),
+                      onImportBackup: () => OnboardingImportModal.show(context, onImportSuccess: widget.onComplete),
+                    ),
             ),
           ),
         ),
@@ -173,22 +177,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             OnboardingTopBar(currentStep: _currentStep, onBack: _back),
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
-                  child: KeyedSubtree(key: ValueKey(_currentStep), child: _buildStep()),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                    child: KeyedSubtree(key: ValueKey(_currentStep), child: _buildStep()),
+                  ),
                 ),
               ),
             ),
-            OnboardingBottomBar(
-              currentStep: _currentStep,
-              canContinue: canContinue,
-              onNext: _next,
-              onSkip: _skipIncome,
-            ),
+            OnboardingBottomBar(currentStep: _currentStep, canContinue: canContinue, onNext: _next, onSkip: _skipIncome),
           ],
         ),
       ),

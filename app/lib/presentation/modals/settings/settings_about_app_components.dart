@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/native_bridge/notification_bridge.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/update/app_update_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../kofi_webview_modal.dart';
 import 'settings_style.dart';
 
 class AboutHeroCard extends StatelessWidget {
@@ -82,38 +83,47 @@ class AboutSpecsSection extends StatelessWidget {
   const AboutSpecsSection({super.key});
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.canvasCardSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.canvasBorder, width: 1.0),
-            ),
-            child: Text(
-              'fiBOnanci beroperasi 100% offline di perangkat Anda tanpa ketergantungan cloud. Privasi mutlak dengan nol tracking analitik pihak ketiga dan performa instan (<10 ms).',
-              style: SettingsStyle.sub.copyWith(height: 1.45),
-            ),
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.canvasCardSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.canvasBorder, width: 1.0),
           ),
-          const SizedBox(height: 8),
-          SettingsStyle.menuRow(title: 'Lisensi Perangkat Lunak', valueText: 'MIT Open Source', onTap: () {}),
-          SettingsStyle.menuRow(title: 'Penyimpanan Database', valueText: 'SQLite 3 (SQLCipher)', onTap: () {}),
-          SettingsStyle.menuRow(title: 'Parser Notifikasi Bank', valueText: 'Deterministic Regex', onTap: () {}),
-          SettingsStyle.menuRow(
-            key: const Key('about_github_repo_row'),
-            title: 'Repositori GitHub',
-            valueText: 'David4rr/fiBOnanci',
-            valueColor: AppColors.textAccent,
-            onTap: () => NotificationBridge.openUrl('https://github.com/David4rr/fiBOnanci'),
+          child: Text(
+            l10n.aboutPrivacyDesc,
+            style: SettingsStyle.sub.copyWith(height: 1.45),
           ),
-          SettingsStyle.menuRow(
-            key: const Key('about_releases_row'),
-            title: 'Catatan Rilis Lengkap',
-            valueText: 'Buka di Browser',
-            valueColor: AppColors.textAccent,
-            onTap: () => NotificationBridge.openUrl('https://github.com/David4rr/fiBOnanci/releases'),
-          ),
-        ],
-      );
+        ),
+        const SizedBox(height: 8),
+        SettingsStyle.menuRow(title: l10n.aboutLicenseTitle, valueText: 'MIT Open Source'),
+        SettingsStyle.menuRow(title: l10n.aboutStorageTitle, valueText: 'SQLite 3 (SQLCipher)'),
+        SettingsStyle.menuRow(title: l10n.aboutParserTitle, valueText: 'Deterministic Regex'),
+        SettingsStyle.menuRow(
+          key: const Key('about_github_repo_row'),
+          title: l10n.aboutGithubTitle,
+          valueText: 'David4rr/fiBOnanci',
+          valueColor: AppColors.textAccent,
+          onTap: () => KofiWebViewModal.showUrl(context, url: 'https://github.com/David4rr/fiBOnanci'),
+        ),
+        SettingsStyle.menuRow(
+          key: const Key('about_releases_row'),
+          title: l10n.aboutReleasesTitle,
+          valueText: l10n.aboutOpenBrowser,
+          valueColor: AppColors.textAccent,
+          onTap: () => KofiWebViewModal.showUrl(context, url: 'https://github.com/David4rr/fiBOnanci/releases'),
+        ),
+        const SizedBox(height: 12),
+        KofiSupportButton(
+          key: const Key('about_kofi_row'),
+          label: l10n.kofiPromptSupportBtn,
+          onTap: () => KofiWebViewModal.show(context),
+        ),
+      ],
+    );
+  }
 }

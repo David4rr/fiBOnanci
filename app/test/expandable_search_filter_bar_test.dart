@@ -126,11 +126,11 @@ void main() {
     );
 
     // Active chip is rendered
-    expect(find.text('Tipe: EXPENSE'), findsOneWidget);
+    expect(find.text('Tipe: PENGELUARAN'), findsOneWidget);
 
     // Tap clear on active filter chip
     await tester.tap(find.descendant(
-      of: find.ancestor(of: find.text('Tipe: EXPENSE'), matching: find.byType(Container)).first,
+      of: find.ancestor(of: find.text('Tipe: PENGELUARAN'), matching: find.byType(Container)).first,
       matching: find.byIcon(Icons.close),
     ));
     await tester.pumpAndSettle();

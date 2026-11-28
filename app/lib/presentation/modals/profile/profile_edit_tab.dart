@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -76,14 +77,14 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
         currency: prev.currency, monthlyIncomeTarget: prev.monthlyIncomeTarget,
       ));
-      AppSnackBar.showSuccess(context, 'Profil Diperbarui', message: 'Profil "$username" berhasil diperbarui!');
+      AppSnackBar.showSuccess(context, AppL10n.of(context).profileUpdatedTitle, message: AppL10n.of(context).profileUpdatedMsg(username));
     } else {
       bloc.add(AddProfileEvent(
         username: username, fullName: fullName, email: email, phone: phone,
         avatarPath: _selectedAvatar, occupation: occupation, bio: bio,
         setActive: true,
       ));
-      AppSnackBar.showSuccess(context, 'Profil Dibuat', message: 'Profil "$username" berhasil dibuat!');
+      AppSnackBar.showSuccess(context, AppL10n.of(context).profileCreatedTitle, message: AppL10n.of(context).profileCreatedMsg(username));
     }
     widget.onSaved();
   }
@@ -135,7 +136,7 @@ class _ProfileEditTabState extends State<ProfileEditTab> {
               ),
               onPressed: _onSave,
               child: Text(
-                isEditing ? 'Simpan Perubahan' : 'Buat Profil Baru',
+                isEditing ? AppL10n.of(context).inboxEditSaveBtn : AppL10n.of(context).profileCreateBtn,
                 style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
               ),
             ),

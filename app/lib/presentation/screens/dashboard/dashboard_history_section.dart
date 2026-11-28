@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../modals/all_transactions_modal.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -43,6 +44,7 @@ class _DashboardHistorySectionState extends State<DashboardHistorySection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final hasTxs = widget.filteredTransactions.isNotEmpty;
     final cardListHeight = _computeDeckHeight(widget.filteredTransactions.length, _expandedTxId != null);
 
@@ -58,8 +60,8 @@ class _DashboardHistorySectionState extends State<DashboardHistorySection> {
               Expanded(
                 child: Text(
                   widget.searchQuery.isNotEmpty
-                      ? 'Hasil Pencarian (${widget.filteredTransactions.length})'
-                      : 'Riwayat Transaksi',
+                      ? l10n.dashboardSearchResults(widget.filteredTransactions.length)
+                      : l10n.dashboardHistoryTitle,
                   style: AppTypography.sectionTitle,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -71,7 +73,7 @@ class _DashboardHistorySectionState extends State<DashboardHistorySection> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Text(
-                    'Lihat Semua',
+                    l10n.dashboardViewAll,
                     style: AppTypography.cardMetricLabel.copyWith(
                       color: AppColors.textAccent,
                       fontSize: 12,
@@ -99,7 +101,7 @@ class _DashboardHistorySectionState extends State<DashboardHistorySection> {
                       children: [
                         Icon(widget.isFiltering ? Icons.search_off_rounded : Icons.receipt_long_outlined, size: 42, color: AppColors.textSubtle),
                         const SizedBox(height: 10),
-                        Text(widget.isFiltering ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi hari ini', style: AppTypography.listSubtitle),
+                        Text(widget.isFiltering ? l10n.dashboardNoMatchingTx : l10n.dashboardNoTxToday, style: AppTypography.listSubtitle),
                       ],
                     ),
                   )

@@ -305,17 +305,17 @@ void main() {
     await tester.tap(find.text('Terapkan Filter'));
     await tester.pumpAndSettle();
 
-    // Verify active filter chip 'Tipe: EXPENSE' appears below search bar (consistent with Dashboard)
-    expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: EXPENSE')), findsOneWidget);
+    // Verify active filter chip 'Tipe: PENGELUARAN' appears below search bar (consistent with Dashboard)
+    expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: PENGELUARAN')), findsOneWidget);
 
     // Tap close icon on active filter chip -> clears filter
     final chipContainer = find.ancestor(
-      of: find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: EXPENSE')),
+      of: find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: PENGELUARAN')),
       matching: find.byType(Container),
     ).first;
     await tester.tap(find.descendant(of: chipContainer, matching: find.byIcon(Icons.close)));
     await tester.pumpAndSettle();
-    expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: EXPENSE')), findsNothing);
+    expect(find.descendant(of: find.byType(AllTransactionsModal), matching: find.text('Tipe: PENGELUARAN')), findsNothing);
     await db.close();
   });
 

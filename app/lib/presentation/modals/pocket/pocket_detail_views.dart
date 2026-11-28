@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/bento_folder_card.dart';
 import '../../widgets/pocket_card_theme.dart';
@@ -17,11 +19,11 @@ IconData getPocketIcon(String type) => switch (type) {
   _ => Icons.flag_outlined,
 };
 
-String getPocketTypeLabel(String type) => switch (type) {
-  'savings' => 'Simpanan',
-  'retirement' => 'Masa Tua',
-  'emergency' => 'Dana Darurat',
-  _ => 'Target / Impian',
+String getPocketTypeLabel(String type, AppLocalizations l10n) => switch (type) {
+  'savings' => l10n.pocketTypeSavings,
+  'retirement' => l10n.pocketTypeRetirement,
+  'emergency' => l10n.pocketTypeEmergency,
+  _ => l10n.pocketTypeGoal,
 };
 
 class PocketDetailHeader extends StatelessWidget {
@@ -81,7 +83,7 @@ class PocketDetailHeader extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          hasTarget ? 'Target: ${currencyFormatter.format(target)}' : 'Total Terkumpul di Kantong',
+          hasTarget ? 'Target: ${currencyFormatter.format(target)}' : AppL10n.of(context).pocketTotalSaved,
           style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w600, color: config.tertiaryTextColor),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

@@ -1,3 +1,5 @@
+import '../l10n/locale_notifier.dart';
+
 class ScheduledBillReminder {
   final int id;
   final String subscriptionId;
@@ -103,13 +105,11 @@ class SubscriptionNotificationCalculator {
     required String subscriptionId,
     required String title,
     required double cost,
-    required int dueDay,
-    String billingCycle = 'monthly',
+    required DateTime nextDueDate,
     bool isInstallment = false,
     int? totalCycles,
     int paidCycles = 0,
     DateTime? deadlineDate,
-    DateTime? lastPaidDate,
     DateTime? referenceDate,
   }) {
     final now = referenceDate ?? DateTime.now();
@@ -121,13 +121,7 @@ class SubscriptionNotificationCalculator {
       return const [];
     }
 
-    final nextDueDate = computeNextDueDate(
-      dueDay: dueDay,
-      billingCycle: billingCycle,
-      lastPaidDate: lastPaidDate,
-      referenceDate: now,
-    );
-
+    final l10n = AppL10n.current;
     final formattedCost = formatRupiah(cost);
     final reminders = <ScheduledBillReminder>[];
 
@@ -137,8 +131,8 @@ class SubscriptionNotificationCalculator {
         id: getH3Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h3Time,
-        title: 'Tagihan $title (H-3)',
-        body: '$formattedCost jatuh tempo 3 hari lagi (Tgl ${nextDueDate.day}).',
+        title: l10n.notifBillH3Title(title),
+        body: l10n.notifBillH3Body(formattedCost, nextDueDate.day),
         payload: subscriptionId,
         daysBefore: 3,
       ));
@@ -150,8 +144,8 @@ class SubscriptionNotificationCalculator {
         id: getH1Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h1Time,
-        title: 'Tagihan $title Besok',
-        body: '$formattedCost jatuh tempo besok. Pastikan saldo cukup.',
+        title: l10n.notifBillH1Title(title),
+        body: l10n.notifBillH1Body(formattedCost),
         payload: subscriptionId,
         daysBefore: 1,
       ));
@@ -163,8 +157,8 @@ class SubscriptionNotificationCalculator {
         id: getH0Id(subscriptionId),
         subscriptionId: subscriptionId,
         scheduledTime: h0Time,
-        title: 'Tagihan $title Hari Ini',
-        body: '$formattedCost jatuh tempo hari ini. Buka untuk tandai lunas.',
+        title: l10n.notifBillH0Title(title),
+        body: l10n.notifBillH0Body(formattedCost),
         payload: subscriptionId,
         daysBefore: 0,
       ));

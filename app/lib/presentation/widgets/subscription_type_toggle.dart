@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 
 /// Segmented toggle between routine subscription and installment / planned bill.
@@ -28,7 +29,7 @@ class SubscriptionTypeToggle extends StatelessWidget {
         children: [
           Expanded(
             child: _buildTypePill(
-              'Langganan Rutin',
+              AppL10n.of(context).subTypeRoutine,
               Icons.all_inclusive_rounded,
               !isInstallment,
               () => onToggleInstallment(false),
@@ -37,7 +38,7 @@ class SubscriptionTypeToggle extends StatelessWidget {
           const SizedBox(width: 4),
           Expanded(
             child: _buildTypePill(
-              'Cicilan / Rencana',
+              AppL10n.of(context).subTypeInstallment,
               Icons.timelapse_rounded,
               isInstallment,
               () => onToggleInstallment(true),

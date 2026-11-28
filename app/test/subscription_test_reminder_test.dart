@@ -78,6 +78,7 @@ void main() {
       title: 'Netflix Premium',
       cost: 186000,
       dueDay: 15,
+      nextDueDate: DateTime(2026, 11, 15),
       billingCycle: 'monthly',
       status: 'active',
       isInstallment: false,

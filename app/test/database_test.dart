@@ -187,6 +187,7 @@ void main() {
       title: 'Spotify Family',
       cost: 100000.0,
       dueDay: 15,
+      nextDueDate: DateTime(2026, 11, 15),
       walletId: bca.id,
       categoryId: '11111111-1111-4111-8111-111111111111',
     );

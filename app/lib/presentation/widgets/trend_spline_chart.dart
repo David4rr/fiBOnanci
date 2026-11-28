@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'painters/spline_chart_painter.dart';
@@ -84,9 +85,9 @@ class _TrendSplineChartState extends State<TrendSplineChart> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildLegendDot(AppColors.textIncome, 'Masuk'),
+                  _buildLegendDot(AppColors.textIncome, AppL10n.of(context).chartLegendIn),
                   const SizedBox(width: 10),
-                  _buildLegendDot(AppColors.neoCoral, 'Keluar'),
+                  _buildLegendDot(AppColors.neoCoral, AppL10n.of(context).chartLegendOut),
                 ],
               )
             else if (widget.subtitle != null)

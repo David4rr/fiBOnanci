@@ -6,11 +6,13 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/native_bridge/notification_bridge.dart';
 import '../../core/notifications/local_notification_service.dart';
+import '../../core/storage/kofi_prompt_storage.dart';
 import '../../core/storage/profile_preferences_storage.dart';
 import '../../core/update/app_update_service.dart';
 import '../../domain/services/subscription_auto_deduct_runner.dart';
 import '../../data/database/app_database.dart';
 import '../modals/app_update_modal.dart';
+import '../modals/kofi_support_modal.dart';
 import '../modals/notification_permission_modal.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common/common_widgets.dart';
@@ -49,12 +51,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
 
   void _showAutoLoggedSnackBar(String msg) {
     if (!mounted) return;
-    AppSnackBar.showSuccess(
-      context,
-      'Notifikasi Otomatis Tercatat!',
-      message: msg,
-      tag: 'OTO-LOG',
-    );
+    AppSnackBar.showSuccess(context, 'Notifikasi Otomatis Tercatat!', message: msg, tag: 'OTO-LOG');
   }
 
   @override
@@ -75,21 +72,28 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     if (_hasCheckedPermissions || _isOnboarding) return;
     if (Platform.environment.containsKey('FLUTTER_TEST')) return;
     _hasCheckedPermissions = true;
+    await KofiPromptStorage.recordAppOpen();
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted || _isOnboarding) return;
+    var showedBlockingModal = false;
     await LocalNotificationService.instance.requestPermissions();
-    if (Platform.isAndroid) {
-      final granted = await NotificationBridge.isPermissionGranted();
-      if (!granted && mounted) await NotificationPermissionModal.show(context);
+    if (Platform.isAndroid && !await NotificationBridge.isPermissionGranted() && mounted) {
+      showedBlockingModal = true;
+      await NotificationPermissionModal.show(context);
     }
     if (!mounted) return;
     if (ProfilePreferencesStorage.getAutoUpdateCheck()) {
       try {
         final update = await AppUpdateService.checkForUpdate();
         if (update != null && update.hasUpdate && mounted) {
+          showedBlockingModal = true;
           await AppUpdateModal.show(context, update);
         }
       } catch (_) {}
+    }
+    if (!showedBlockingModal && mounted && KofiPromptStorage.shouldShowPrompt()) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted && !_isOnboarding) await KofiSupportModal.show(context);
     }
   }
 

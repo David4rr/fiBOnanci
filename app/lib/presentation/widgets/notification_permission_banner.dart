@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../modals/notification_permission_modal.dart';
 import '../theme/app_colors.dart';
 
@@ -55,12 +56,12 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Akses Notifikasi Belum Aktif',
+                        AppL10n.of(context).notifBannerTitle,
                         style: TextStyle(color: AppColors.textWhite, fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        'Ketuk untuk aktifkan pencatatan otomatis bank',
+                        AppL10n.of(context).notifBannerSub,
                         style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                       ),
                     ],
@@ -73,7 +74,7 @@ class _NotificationPermissionBannerState extends State<NotificationPermissionBan
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Aktifkan',
+                    AppL10n.of(context).notifBannerEnable,
                     style: TextStyle(color: AppColors.textDarkPrimary, fontSize: 11, fontWeight: FontWeight.w800),
                   ),
                 ),

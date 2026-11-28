@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/formatters/app_currency.dart';
 
 import '../../bloc/finance/finance_bloc.dart';
-import '../../bloc/finance/finance_event.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
+import '../../domain/services/subscription_schedule_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
@@ -35,6 +36,8 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
   late final TextEditingController _titleController;
   late final TextEditingController _costController;
   late int _dueDay;
+  late DateTime _nextDueDate;
+  late bool _hasManualCycleOverride;
   late bool _autoDeduct;
   late bool _isInstallment;
   late int _totalCycles;
@@ -48,15 +51,24 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
       _titleController = TextEditingController(text: sub.title);
       _costController = TextEditingController(text: AppCurrency.formatInputOf(context, sub.cost));
       _dueDay = sub.dueDay;
+      _nextDueDate = SubscriptionScheduleService.dateOnly(sub.nextDueDate);
+      _hasManualCycleOverride = true;
       _autoDeduct = sub.autoDeduct;
       _isInstallment = sub.isInstallment;
       _totalCycles = sub.totalCycles ?? 3;
       _selectedWalletId = sub.walletId;
       _selectedCategoryId = sub.categoryId;
     } else {
+      final now = DateTime.now();
       _titleController = TextEditingController();
       _costController = TextEditingController();
       _dueDay = 15;
+      _nextDueDate = SubscriptionScheduleService.resolveFirstDueDate(
+        dueDay: _dueDay,
+        monthOffset: SubscriptionScheduleService.defaultMonthOffset(dueDay: _dueDay, referenceDate: now),
+        referenceDate: now,
+      );
+      _hasManualCycleOverride = false;
       _autoDeduct = false;
       _isInstallment = false;
       _totalCycles = 3;
@@ -82,36 +94,19 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
     final title = _titleController.text.trim();
     final cost = AppCurrency.parseInputOf(context, _costController.text);
     if (title.isEmpty || cost <= 0 || _selectedWalletId == null || _selectedCategoryId == null) return;
-
-    final bloc = context.read<FinanceBloc>();
-    final deadline = _isInstallment ? SubscriptionInstallmentSelector.calculateDeadlineDate(dueDay: _dueDay, totalCycles: _totalCycles) : null;
-    if (widget.subscription != null) {
-      bloc.add(UpdateSubscriptionEvent(
-        subscriptionId: widget.subscription!.id,
-        title: title,
-        cost: cost,
-        dueDay: _dueDay,
-        walletId: _selectedWalletId!,
-        categoryId: _selectedCategoryId!,
-        autoDeduct: _autoDeduct,
-        isInstallment: _isInstallment,
-        totalCycles: _isInstallment ? _totalCycles : null,
-        paidCycles: widget.subscription!.paidCycles,
-        deadlineDate: deadline,
-      ));
-    } else {
-      bloc.add(AddSubscriptionEvent(
-        title: title,
-        cost: cost,
-        dueDay: _dueDay,
-        walletId: _selectedWalletId!,
-        categoryId: _selectedCategoryId!,
-        autoDeduct: _autoDeduct,
-        isInstallment: _isInstallment,
-        totalCycles: _isInstallment ? _totalCycles : null,
-        deadlineDate: deadline,
-      ));
-    }
+    dispatchSaveSubscription(
+      context,
+      existing: widget.subscription,
+      title: title,
+      cost: cost,
+      dueDay: _dueDay,
+      nextDueDate: _nextDueDate,
+      walletId: _selectedWalletId!,
+      categoryId: _selectedCategoryId!,
+      autoDeduct: _autoDeduct,
+      isInstallment: _isInstallment,
+      totalCycles: _totalCycles,
+    );
     Navigator.pop(context);
   }
 
@@ -133,11 +128,11 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
             const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
             ModalHeader(
               title: isEditing
-                  ? (_isInstallment ? 'Edit Cicilan' : 'Edit Tagihan Rutin')
-                  : (_isInstallment ? 'Tambah Cicilan Baru' : 'Tambah Tagihan Baru'),
+                  ? (_isInstallment ? AppL10n.of(context).subModalEditInstallment : AppL10n.of(context).subModalEditBill)
+                  : (_isInstallment ? AppL10n.of(context).subModalAddInstallment : AppL10n.of(context).subModalAddBill),
               subtitle: _isInstallment
-                  ? 'Rencana cicilan tenor & jatuh tempo'
-                  : 'Langganan, tagihan rutin, atau tagihan berkala',
+                  ? AppL10n.of(context).subModalSubInstallment
+                  : AppL10n.of(context).subModalSubBill,
               titleStyle: AppTypography.modalTitle,
               subtitleStyle: AppTypography.modalSubtitle,
               onClose: () => Navigator.pop(context),
@@ -145,7 +140,7 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _titleController,
-              hintText: 'cth: Netflix, Spotify, Listrik PLN, Kosan',
+              hintText: AppL10n.of(context).hintSubscriptionTitle,
             ),
             const SizedBox(height: 12),
             CurrencyAmountField(
@@ -157,30 +152,42 @@ class _AddSubscriptionModalState extends State<AddSubscriptionModal> {
               isInstallment: _isInstallment,
               totalCycles: _totalCycles,
               dueDay: _dueDay,
+              firstDueDate: _nextDueDate,
+              paidCycles: widget.subscription?.paidCycles ?? 0,
               onToggleInstallment: (v) => setState(() => _isInstallment = v),
               onCyclesChanged: (c) => setState(() => _totalCycles = c),
             ),
             const SizedBox(height: 12),
-            SubscriptionDueDaySlider(dueDay: _dueDay, onDayChanged: (d) => setState(() => _dueDay = d)),
-            const SizedBox(height: 8),
+            SubscriptionDueSchedulePicker(
+              dueDay: _dueDay,
+              nextDueDate: _nextDueDate,
+              onDayChanged: (d) => setState(() {
+                _dueDay = d;
+                _nextDueDate = SubscriptionScheduleService.applyDayChange(
+                  currentNextDueDate: _nextDueDate,
+                  newDueDay: d,
+                  preserveMonth: _hasManualCycleOverride,
+                  referenceDate: DateTime.now(),
+                );
+              }),
+              onNextDueDateChanged: (dt) => setState(() {
+                _hasManualCycleOverride = true;
+                _dueDay = dt.day;
+                _nextDueDate = dt;
+              }),
+            ),
+            const SizedBox(height: 12),
             SubscriptionWalletDropdown(wallets: wallets, selectedWalletId: safeWalletId, onWalletChanged: (v) => setState(() => _selectedWalletId = v)),
             const SizedBox(height: 12),
             SubscriptionAutoDeductSwitch(autoDeduct: _autoDeduct, onToggle: (val) => setState(() => _autoDeduct = val)),
             const SizedBox(height: 20),
             PrimaryActionButton(
-              text: isEditing ? 'Simpan Perubahan' : 'Simpan Tagihan',
+              text: isEditing ? AppL10n.of(context).subModalSaveChanges : AppL10n.of(context).subModalSaveBill,
               onPressed: () => _saveSubscription(context),
             ),
             if (isEditing) ...[
               const SizedBox(height: 12),
-              Center(
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(foregroundColor: AppColors.neoCoral),
-                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                  label: Text('Hapus Langganan Ini', style: AppTypography.listTitle.copyWith(color: AppColors.neoCoral, fontSize: 13, fontWeight: FontWeight.w700)),
-                  onPressed: () => showSubscriptionDeleteDialog(context, widget.subscription!.id),
-                ),
-              ),
+              SubscriptionDeleteButton(subscriptionId: widget.subscription!.id),
             ],
           ],
         ),

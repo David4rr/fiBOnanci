@@ -55,10 +55,12 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<UpdateProfileEvent>(handleUpdateProfile);
     on<DeleteProfileEvent>(handleDeleteProfile);
     on<SetActiveProfileEvent>(handleSetActiveProfile);
+    on<OnboardNewProfileEvent>(handleOnboardNewProfile);
     on<SetSafeToSpendWalletsEvent>(handleSetSafeToSpendWallets);
     on<SetBudgetCycleDayEvent>(handleSetBudgetCycleDay);
     on<ToggleBalanceVisibilityEvent>(handleToggleBalanceVisibility);
     on<AddCategoryEvent>(handleAddCategory);
+    on<UpdateCategoryEvent>(handleUpdateCategory);
     on<DeleteCategoryEvent>(handleDeleteCategory);
     on<ClearProfileTransactionsEvent>(handleClearProfileTransactions);
     on<SetExchangeRateEvent>(handleSetExchangeRate);
@@ -158,6 +160,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         budgetCycleDay: cycleDay,
         safeToSpendWalletIds: stsWallets,
         clearSafeToSpendWallets: stsWallets == null,
+        isBalanceHidden: ProfilePreferencesStorage.getIsBalanceHidden(),
         metrics: metrics,
       ));
     } catch (e) {

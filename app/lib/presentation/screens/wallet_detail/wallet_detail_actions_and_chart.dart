@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/database/app_database.dart';
 import '../../../domain/services/cashflow_analytics_service.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../modals/edit_balance_modal.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/transaction_modal.dart';
@@ -26,6 +27,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final hasActivity = wallet.balance > 0 ||
         transactions.any((t) => t.walletId == wallet.id || t.destinationWalletId == wallet.id);
     return Column(
@@ -50,7 +52,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
                         children: [
                           Icon(Icons.tune_rounded, size: 15, color: AppColors.textWhite),
                           const SizedBox(width: 8),
-                          Text('Ubah Saldo', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
+                          Text(l10n.walletActionEditBalance, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
                         ],
                       ),
                     ),
@@ -78,7 +80,7 @@ class WalletDetailActionsAndChart extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Catat Transaksi', style: GoogleFonts.plusJakartaSans(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
+                              Text(l10n.walletActionLogTx, style: GoogleFonts.plusJakartaSans(color: AppColors.textDarkPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
                               const SizedBox(width: 8),
                               Container(
                                 width: 22,

@@ -4,10 +4,12 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'bloc/finance/finance_bloc.dart';
 import 'bloc/finance/finance_event.dart';
+import 'core/l10n/locale_notifier.dart';
 import 'core/notifications/in_app_notification_storage.dart';
 import 'core/storage/profile_preferences_storage.dart';
 import 'data/database/app_database.dart';
 import 'data/repositories/finance_repository.dart';
+import 'l10n/app_localizations.dart';
 import 'presentation/screens/main_shell.dart';
 import 'presentation/theme/app_colors.dart';
 import 'presentation/theme/app_theme.dart';
@@ -17,6 +19,7 @@ import 'presentation/widgets/common/common_widgets.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
+  await initializeDateFormatting('en_US', null);
   await ProfilePreferencesStorage.load();
   await InAppNotificationStorage.init();
 
@@ -46,25 +49,31 @@ class FiBOnanciApp extends StatelessWidget {
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: themeModeNotifier,
         builder: (context, themeMode, _) {
-          return MaterialApp(
-            title: 'fiBOnanci',
-            debugShowCheckedModeBanner: false,
-            themeMode: themeMode,
-            themeAnimationDuration: Duration.zero,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            builder: (context, child) {
-              if (child == null) return const SizedBox.shrink();
-              final platformBrightness = MediaQuery.platformBrightnessOf(context);
-              final effectiveBrightness = themeMode == ThemeMode.system
-                  ? platformBrightness
-                  : (themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
-              AppColors.updateBrightness(effectiveBrightness);
-              return ThemeCircleReveal(
-                child: IPhoneViewportContainer(child: child),
-              );
-            },
-            home: FibonanciSplashGate(child: MainShell(db: database)),
+          return ValueListenableBuilder<Locale>(
+            valueListenable: localeNotifier,
+            builder: (context, locale, _) => MaterialApp(
+              title: 'fiBOnanci',
+              debugShowCheckedModeBanner: false,
+              locale: locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              themeMode: themeMode,
+              themeAnimationDuration: Duration.zero,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              builder: (context, child) {
+                if (child == null) return const SizedBox.shrink();
+                final platformBrightness = MediaQuery.platformBrightnessOf(context);
+                final effectiveBrightness = themeMode == ThemeMode.system
+                    ? platformBrightness
+                    : (themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light);
+                AppColors.updateBrightness(effectiveBrightness);
+                return ThemeCircleReveal(
+                  child: IPhoneViewportContainer(child: child),
+                );
+              },
+              home: FibonanciSplashGate(child: MainShell(db: database)),
+            ),
           );
         },
       ),

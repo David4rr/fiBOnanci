@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/formatters/rupiah_input_formatter.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -26,12 +27,13 @@ class WalletFormInputs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppTextField(
           controller: nameController,
-          hintText: 'Nama Rekening (cth: BCA, Kas Tunai, Jago)',
+          hintText: l10n.hintWalletName,
         ),
         const SizedBox(height: 12),
         TextField(
@@ -43,7 +45,7 @@ class WalletFormInputs extends StatelessWidget {
           ],
           style: AppTypography.listTitle,
           decoration: InputDecoration(
-            hintText: 'Saldo Awal (${symbol.trim()})',
+            hintText: l10n.hintInitialBalance(symbol.trim()),
             prefixText: symbol,
             filled: true,
             fillColor: AppColors.canvasInputSearch,
@@ -56,7 +58,7 @@ class WalletFormInputs extends StatelessWidget {
         const SizedBox(height: 12),
         AppTextField(
           controller: accountNumberController,
-          hintText: 'Nomor Rekening (Opsional, cth: 5410982341)',
+          hintText: l10n.hintAccountNumber,
         ),
         const SizedBox(height: 12),
         WalletTypeSelector(

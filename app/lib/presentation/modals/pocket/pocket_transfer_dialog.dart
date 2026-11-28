@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -35,10 +36,10 @@ class PocketTransferDialog {
                 children: [
                   const ModalGrabHandle(padding: EdgeInsets.only(bottom: 12)),
                   ModalHeader(
-                    title: isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening',
+                    title: isDeposit ? AppL10n.of(sheetCtx).pocketDepositTitle : AppL10n.of(sheetCtx).pocketWithdrawTitle,
                     subtitle: isDeposit
-                        ? 'Pilih rekening asal untuk memindahkan dana ke ${pocket.name}.'
-                        : 'Pilih rekening tujuan penarikan dari ${pocket.name}.',
+                        ? AppL10n.of(sheetCtx).pocketDepositSub(pocket.name)
+                        : AppL10n.of(sheetCtx).pocketWithdrawSub(pocket.name),
                     onClose: () => Navigator.of(sheetCtx).pop(),
                   ),
                   const SizedBox(height: 16),

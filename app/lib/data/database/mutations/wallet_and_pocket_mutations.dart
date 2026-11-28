@@ -77,14 +77,17 @@ extension WalletAndPocketMutations on AppDatabase {
       final newPaidCycles = sub.paidCycles + 1;
       final isComplete = isInstallment && sub.totalCycles != null && newPaidCycles >= sub.totalCycles!;
       final newStatus = isComplete ? 'completed' : sub.status;
+      final advancedDueDate = SubscriptionScheduleService.advanceNextDueDate(
+        currentNextDueDate: sub.nextDueDate,
+        dueDay: sub.dueDay,
+        billingCycle: sub.billingCycle,
+      );
 
       await (update(subscriptions)..where((t) => t.id.equals(subscriptionId))).write(
         SubscriptionsCompanion(
-          lastPaidDate: Value(now),
-          paidCycles: Value(newPaidCycles),
-          status: Value(newStatus),
-          updatedAt: Value(now),
-          isSynced: const Value(false),
+          lastPaidDate: Value(now), nextDueDate: Value(advancedDueDate),
+          paidCycles: Value(newPaidCycles), status: Value(newStatus),
+          updatedAt: Value(now), isSynced: const Value(false),
         ),
       );
 

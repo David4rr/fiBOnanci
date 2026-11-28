@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class InboxWalletChip extends StatelessWidget {
@@ -53,7 +54,7 @@ class InboxWalletChip extends StatelessWidget {
             ],
             Flexible(
               child: Text(
-                walletName ?? 'Pilih Dompet',
+                walletName ?? AppL10n.of(context).inboxPickWallet,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(

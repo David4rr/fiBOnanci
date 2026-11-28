@@ -1,3 +1,4 @@
+import 'insight_corpus_en.dart';
 import 'insight_models.dart';
 
 class InsightCorpus {
@@ -70,13 +71,17 @@ class InsightCorpus {
     required DayContext dayContext,
     required DateTime date,
     required int streak,
+    String localeCode = 'id',
   }) {
-    List<String> pool;
+    final isEn = localeCode == 'en';
+    final phaseMap = isEn ? kEnPhaseZeroSpend : _phaseSpecificZeroSpend;
+    final generalMap = isEn ? kEnInsightPhrases : _generalPhrases;
 
-    if (velocity == SpendVelocity.zeroSpend && _phaseSpecificZeroSpend.containsKey(phase)) {
-      pool = _phaseSpecificZeroSpend[phase]!;
+    List<String> pool;
+    if (velocity == SpendVelocity.zeroSpend && phaseMap.containsKey(phase)) {
+      pool = phaseMap[phase]!;
     } else {
-      pool = _generalPhrases[velocity] ?? _generalPhrases[SpendVelocity.zeroSpend]!;
+      pool = generalMap[velocity] ?? generalMap[SpendVelocity.zeroSpend]!;
     }
 
     final int hash = (date.year * 372 + date.month * 31 + date.day * 7 + streak * 13).abs();

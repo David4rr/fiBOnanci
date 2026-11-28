@@ -5,6 +5,7 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_event.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/formatters/app_currency.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/common/common_widgets.dart';
@@ -48,19 +49,19 @@ class AddPocketModal {
                       children: [
                         const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
                         ModalHeader(
-                          title: 'Buat Kantong Alokasi Baru',
-                          subtitle: 'Pisahkan dana tabungan agar tidak terpakai saat belanja harian.',
+                          title: AppL10n.of(context).addPocketTitle,
+                          subtitle: AppL10n.of(context).addPocketSubtitle,
                           onClose: () => Navigator.pop(modalContext),
                         ),
                         const SizedBox(height: 16),
-                        Text('TIPE KANTONG', style: AppTypography.listSubtitle),
+                        Text(AppL10n.of(context).addPocketTypeHeader, style: AppTypography.listSubtitle),
                         const SizedBox(height: 8),
                         PocketTypeSelector(selectedType: selectedType, onSelectType: (id) => setModalState(() => selectedType = id)),
                         const SizedBox(height: 16),
                         PocketTypeSelector.buildTextField(
                           controller: nameController,
-                          label: 'Nama Kantong',
-                          hintText: 'Nama Kantong (cth: Tabungan Pensiun, Liburan)',
+                          label: AppL10n.of(context).addPocketNameLabel,
+                          hintText: AppL10n.of(context).hintPocketName,
                           errorText: nameError,
                           onChanged: (_) {
                             if (nameError != null) setModalState(() => nameError = null);
@@ -69,14 +70,14 @@ class AddPocketModal {
                         const SizedBox(height: 12),
                         CurrencyAmountField(
                           controller: targetController,
-                          labelText: 'Target Tabungan (Opsional)',
+                          labelText: AppL10n.of(context).addPocketTargetLabel,
                           hintText: '0',
                           prefixColor: AppColors.neoChartreuse,
                         ),
                         const SizedBox(height: 12),
                         CurrencyAmountField(
                           controller: initialController,
-                          labelText: 'Setoran Awal (Opsional)',
+                          labelText: AppL10n.of(context).addPocketInitialLabel,
                           hintText: '0',
                           errorText: initialError,
                           prefixColor: AppColors.neoMint,
@@ -86,7 +87,7 @@ class AddPocketModal {
                         ),
                         if (activeWallets.isNotEmpty) ...[
                           const SizedBox(height: 12),
-                          Text('Ambil Dari Rekening (Jika ada setoran awal)', style: AppTypography.listSubtitle),
+                          Text(AppL10n.of(context).addPocketSourceAccount, style: AppTypography.listSubtitle),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -115,7 +116,7 @@ class AddPocketModal {
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.canvasBorder), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: Text('Batal', style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                                  child: Text(AppL10n.of(ctx).catCancelBtn, style: AppTypography.listTitle.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                                 ),
                               ),
                             ),
@@ -129,7 +130,7 @@ class AddPocketModal {
                                   onPressed: () {
                                     final name = nameController.text.trim();
                                     if (name.isEmpty) {
-                                      setModalState(() => nameError = 'Nama kantong wajib diisi');
+                                      setModalState(() => nameError = AppL10n.of(ctx).pocketNameRequired);
                                       return;
                                     }
                                     final target = AppCurrency.parseInputOf(context, targetController.text);
@@ -137,7 +138,7 @@ class AddPocketModal {
                                     if (initial > 0 && selectedWalletId != null && activeWallets.isNotEmpty) {
                                       final wallet = activeWallets.firstWhere((w) => w.id == selectedWalletId, orElse: () => activeWallets.first);
                                       if (initial > wallet.balance) {
-                                        setModalState(() => initialError = 'Saldo tidak cukup (Maks ${currencyFormatter.format(wallet.balance)})');
+                                        setModalState(() => initialError = AppL10n.of(ctx).pocketInsufficientBalance(currencyFormatter.format(wallet.balance)));
                                         return;
                                       }
                                     }
@@ -149,7 +150,7 @@ class AddPocketModal {
                                     ));
                                     Navigator.pop(ctx);
                                   },
-                                  child: Text('Buat Kantong Sekarang', style: GoogleFonts.plusJakartaSans(color: AppColors.canvasBg, fontWeight: FontWeight.w800, fontSize: 15)),
+                                  child: Text(AppL10n.of(ctx).pocketCreateNow, style: GoogleFonts.plusJakartaSans(color: AppColors.canvasBg, fontWeight: FontWeight.w800, fontSize: 15)),
                                 ),
                               ),
                             ),

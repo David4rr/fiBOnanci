@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/notifications/in_app_notification_storage.dart';
 import '../../theme/app_colors.dart';
 
@@ -17,11 +18,12 @@ class InboxReminderCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  String _formatTimestamp(DateTime dt) {
+  String _formatTimestamp(BuildContext context, DateTime dt) {
+    final l10n = AppL10n.of(context);
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Baru saja';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
+    if (diff.inMinutes < 1) return l10n.inboxJustNow;
+    if (diff.inMinutes < 60) return l10n.inboxMinutesAgo(diff.inMinutes);
     if (now.year == dt.year && now.month == dt.month && now.day == dt.day) {
       return DateFormat('HH:mm').format(dt);
     }
@@ -71,7 +73,7 @@ class InboxReminderCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Hapus',
+                  AppL10n.of(context).txDeleteConfirm,
                   style: GoogleFonts.plusJakartaSans(
                     color: AppColors.neoCoral,
                     fontWeight: FontWeight.w700,
@@ -147,7 +149,7 @@ class InboxReminderCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              _formatTimestamp(item.timestamp),
+                              _formatTimestamp(context, item.timestamp),
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.textMuted,
                                 fontSize: 11,

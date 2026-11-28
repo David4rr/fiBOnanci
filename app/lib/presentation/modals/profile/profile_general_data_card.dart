@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/formatters/app_currency.dart';
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class ProfileGeneralDataCard extends StatelessWidget {
@@ -58,6 +59,7 @@ class ProfileGeneralDataCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final hasIncome = profile.monthlyIncomeTarget != null && profile.monthlyIncomeTarget! > 0;
     final hasPhone = profile.phone?.isNotEmpty == true;
     final hasOcc = profile.occupation?.isNotEmpty == true;
@@ -67,7 +69,7 @@ class ProfileGeneralDataCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'DATA UMUM & DETAIL AKUN',
+          l10n.profileDataHeader,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
@@ -76,17 +78,17 @@ class ProfileGeneralDataCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        buildDataRow(label: 'Profesi / Pekerjaan', value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
-        buildDataRow(label: 'No. Handphone', value: hasPhone ? profile.phone! : '—', isMuted: !hasPhone),
-        if (hasBio) buildDataRow(label: 'Bio / Catatan', value: profile.bio!),
-        buildDataRow(label: 'Mata Uang Utama', value: '${profile.currency} (${profile.currency == 'IDR' ? 'Rupiah' : profile.currency})'),
+        buildDataRow(label: l10n.profileOccupation, value: hasOcc ? profile.occupation! : '—', isMuted: !hasOcc),
+        buildDataRow(label: l10n.profilePhone, value: hasPhone ? profile.phone! : '—', isMuted: !hasPhone),
+        if (hasBio) buildDataRow(label: l10n.profileBio, value: profile.bio!),
+        buildDataRow(label: l10n.profilePrimaryCurrency, value: '${profile.currency} (${profile.currency == 'IDR' ? 'Rupiah' : profile.currency})'),
         buildDataRow(
-          label: 'Target Pemasukan',
+          label: l10n.profileIncomeTarget,
           value: hasIncome ? AppCurrency.forCode(profile.currency).format(profile.monthlyIncomeTarget) : '—',
           isMuted: !hasIncome,
         ),
-        buildDataRow(label: 'Rekening Terhubung', value: '$walletCount Akun'),
-        buildDataRow(label: 'Total Transaksi', value: '$txCount Tercatat'),
+        buildDataRow(label: l10n.profileConnectedWallets, value: l10n.profileConnectedWalletsVal(walletCount)),
+        buildDataRow(label: l10n.profileTotalTx, value: l10n.profileTotalTxVal(txCount)),
       ],
     );
   }

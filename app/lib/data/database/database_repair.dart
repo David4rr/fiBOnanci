@@ -102,7 +102,18 @@ extension DatabaseRepair on AppDatabase {
       }
       for (final item in (data['subscriptions'] as List? ?? const [])) {
         if (item is Map<String, dynamic>) {
-          await into(subscriptions).insertOnConflictUpdate(SubscriptionEntry.fromJson(item));
+          final m = Map<String, dynamic>.from(item);
+          if (!m.containsKey('nextDueDate') || m['nextDueDate'] == null) {
+            final serializer = driftRuntimeOptions.defaultSerializer;
+            final migrated = SubscriptionScheduleService.migrateLegacyNextDueDate(
+              dueDay: serializer.fromJson<int>(m['dueDay']),
+              billingCycle: serializer.fromJson<String>(m['billingCycle']),
+              createdAt: serializer.fromJson<DateTime>(m['createdAt']),
+              lastPaidDate: serializer.fromJson<DateTime?>(m['lastPaidDate']),
+            );
+            m['nextDueDate'] = serializer.toJson<DateTime>(migrated);
+          }
+          await into(subscriptions).insertOnConflictUpdate(SubscriptionEntry.fromJson(m));
         }
       }
       for (final item in (data['transactions'] as List? ?? const [])) {
@@ -111,5 +122,34 @@ extension DatabaseRepair on AppDatabase {
         }
       }
     });
+  }
+
+  Future<void> migrateSubscriptionsToV7(Migrator m) async {
+    final subCols = await customSelect("PRAGMA table_info(subscriptions)").get();
+    if (!subCols.any((c) => c.data['name'] == 'next_due_date')) {
+      await customStatement('ALTER TABLE subscriptions ADD COLUMN next_due_date INTEGER');
+    }
+    final rows = await customSelect(
+      "SELECT id, due_day, billing_cycle, last_paid_date, created_at FROM subscriptions WHERE next_due_date IS NULL",
+    ).get();
+    for (final row in rows) {
+      final id = row.data['id'] as String;
+      final dueDay = row.data['due_day'] as int;
+      final billingCycle = row.data['billing_cycle'] as String;
+      final createdAt = typeMapping.read(DriftSqlType.dateTime, row.data['created_at'])!;
+      final lastPaidDate = typeMapping.read(DriftSqlType.dateTime, row.data['last_paid_date']);
+      final nextDue = SubscriptionScheduleService.migrateLegacyNextDueDate(
+        dueDay: dueDay,
+        billingCycle: billingCycle,
+        createdAt: createdAt,
+        lastPaidDate: lastPaidDate,
+      );
+      await customUpdate(
+        "UPDATE subscriptions SET next_due_date = ? WHERE id = ?",
+        variables: [Variable.withDateTime(nextDue), Variable.withString(id)],
+        updates: {subscriptions},
+      );
+    }
+    await m.alterTable(TableMigration(subscriptions));
   }
 }

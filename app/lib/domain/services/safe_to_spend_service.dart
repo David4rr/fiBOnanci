@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../presentation/theme/app_colors.dart';
+import 'subscription_schedule_service.dart';
 
 enum FinancialHealthStatus {
   comfortable, // >= 30% buffer (NeoChartreuse)
@@ -13,6 +14,7 @@ class SafeToSpendMetrics {
   final double totalRealBalance; // Grand total assets across all active wallets
   final double operationalBalance; // Total balance across selected operational wallets
   final double pendingBills;
+  final int pendingBillsCount;
   final double safeToSpendMonthly;
   final double safeToSpendDaily;
   final int daysRemainingInMonth;
@@ -25,6 +27,7 @@ class SafeToSpendMetrics {
     required this.totalRealBalance,
     double? operationalBalance,
     required this.pendingBills,
+    this.pendingBillsCount = 0,
     required this.safeToSpendMonthly,
     required this.safeToSpendDaily,
     required this.daysRemainingInMonth,
@@ -54,6 +57,7 @@ class SafeToSpendMetrics {
           totalRealBalance == other.totalRealBalance &&
           operationalBalance == other.operationalBalance &&
           pendingBills == other.pendingBills &&
+          pendingBillsCount == other.pendingBillsCount &&
           safeToSpendMonthly == other.safeToSpendMonthly &&
           safeToSpendDaily == other.safeToSpendDaily &&
           daysRemainingInMonth == other.daysRemainingInMonth &&
@@ -67,6 +71,7 @@ class SafeToSpendMetrics {
         totalRealBalance,
         operationalBalance,
         pendingBills,
+        pendingBillsCount,
         safeToSpendMonthly,
         safeToSpendDaily,
         daysRemainingInMonth,
@@ -106,24 +111,17 @@ class SafeToSpendService {
       }
     }
 
-    // 2. Calculate Pending Bills for the current month
-    // A subscription is pending if active, not deleted, and due this month but not yet paid.
-    // If specific wallets are selected, only bills assigned to those wallets are deducted.
+    // 2. Calculate Pending Bills for the active budget cycle using explicit nextDueDate
     double pendingBills = 0.0;
-    final currentMonthStart = DateTime(now.year, now.month, 1);
+    int pendingBillsCount = 0;
 
     for (final sub in subscriptions) {
-      if (sub.isDeleted || sub.status != 'active') continue;
-      if (sub.isInstallment && sub.totalCycles != null && sub.paidCycles >= sub.totalCycles!) continue;
-      if (sub.isInstallment && sub.deadlineDate != null && now.isAfter(sub.deadlineDate!)) continue;
-
-      final lastPaid = sub.lastPaidDate;
-      final isPaidThisCycle = lastPaid != null && lastPaid.isAfter(currentMonthStart);
-
-      if (!isPaidThisCycle) {
-        if (isAll || targetWalletIds.contains(sub.walletId)) {
-          pendingBills += sub.cost;
-        }
+      if (!SubscriptionScheduleService.isPendingInCycle(sub, referenceDate: now, cycleDay: cycleDay)) {
+        continue;
+      }
+      if (isAll || targetWalletIds.contains(sub.walletId)) {
+        pendingBills += sub.cost;
+        pendingBillsCount++;
       }
     }
     // 3. Compute Monthly Safe-to-Spend
@@ -165,6 +163,7 @@ class SafeToSpendService {
       totalRealBalance: grandTotalBalance,
       operationalBalance: operationalBalance,
       pendingBills: pendingBills,
+      pendingBillsCount: pendingBillsCount,
       safeToSpendMonthly: safeToSpendMonthly,
       safeToSpendDaily: safeToSpendDaily,
       daysRemainingInMonth: daysRemaining,

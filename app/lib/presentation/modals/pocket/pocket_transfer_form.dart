@@ -6,6 +6,7 @@ import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_event.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -66,7 +67,7 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (activeWallets.isNotEmpty) ...[
-              Text(widget.isDeposit ? 'Rekening Sumber' : 'Rekening Tujuan', style: AppTypography.listSubtitle),
+              Text(widget.isDeposit ? AppL10n.of(context).pocketSourceAccount : AppL10n.of(context).pocketDestAccount, style: AppTypography.listSubtitle),
               const SizedBox(height: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -92,14 +93,14 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(color: AppColors.neoCoral.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
-                child: Text('Belum ada rekening aktif untuk transaksi.', style: GoogleFonts.plusJakartaSans(color: AppColors.neoCoral, fontSize: 12)),
+                child: Text(AppL10n.of(context).pocketNoActiveAccounts, style: GoogleFonts.plusJakartaSans(color: AppColors.neoCoral, fontSize: 12)),
               ),
               const SizedBox(height: 16),
             ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(widget.isDeposit ? 'Nominal Setoran' : 'Nominal Penarikan', style: AppTypography.listSubtitle),
+                Text(widget.isDeposit ? AppL10n.of(context).pocketDepositAmount : AppL10n.of(context).pocketWithdrawAmount, style: AppTypography.listSubtitle),
                 if (!widget.isDeposit)
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -110,7 +111,7 @@ class _PocketTransferFormState extends State<PocketTransferForm> {
                           }
                         : null,
                     child: Text(
-                      'Tarik Semua (${_currencyFormatter.format(pocket.currentAmount)})',
+                      AppL10n.of(context).pocketWithdrawAll(_currencyFormatter.format(pocket.currentAmount)),
                       style: GoogleFonts.plusJakartaSans(
                         color: pocket.currentAmount > 0 ? actionColor : AppColors.textMuted,
                         fontSize: 11.5,

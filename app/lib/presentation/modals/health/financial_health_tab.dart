@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../domain/services/financial_health_service.dart';
 import '../../theme/app_colors.dart';
+import 'financial_health_l10n.dart';
 import 'financial_health_pillar_card.dart';
 import 'financial_health_score_card.dart';
 
@@ -20,15 +22,17 @@ class FinancialHealthTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final r = FinancialHealthL10n.localize(context, report);
     return ListView(
       controller: scrollController,
       physics: const BouncingScrollPhysics(),
       padding: padding ?? const EdgeInsets.fromLTRB(24, 12, 24, 40),
       children: [
-        FinancialHealthScoreCard(report: report),
+        FinancialHealthScoreCard(report: r),
         const SizedBox(height: 28),
         Text(
-          '4 Pilar Rasio Keuangan',
+          l10n.healthFourPillars,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -37,13 +41,13 @@ class FinancialHealthTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        FinancialHealthPillarCard(metric: report.emergencyRunway),
-        FinancialHealthPillarCard(metric: report.fixedCommitment),
-        FinancialHealthPillarCard(metric: report.savingsMargin),
-        FinancialHealthPillarCard(metric: report.spendPacing),
+        FinancialHealthPillarCard(metric: r.emergencyRunway),
+        FinancialHealthPillarCard(metric: r.fixedCommitment),
+        FinancialHealthPillarCard(metric: r.savingsMargin),
+        FinancialHealthPillarCard(metric: r.spendPacing),
         const SizedBox(height: 24),
         FinancialHealthRecommendationsSection(
-          recommendations: report.recommendations,
+          recommendations: r.recommendations,
         ),
       ],
     );

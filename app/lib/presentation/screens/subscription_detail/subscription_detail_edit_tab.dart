@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/finance/finance_bloc.dart';
-import '../../../bloc/finance/finance_event.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
+import '../../../domain/services/subscription_schedule_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/subscription_installment_selector.dart';
@@ -31,6 +32,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
   late final TextEditingController _titleController;
   late final TextEditingController _costController;
   late int _dueDay;
+  late DateTime _nextDueDate;
   late bool _autoDeduct;
   late bool _isInstallment;
   late int _totalCycles;
@@ -46,6 +48,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
       text: AppCurrency.formatInputOf(context, sub.cost),
     );
     _dueDay = sub.dueDay;
+    _nextDueDate = SubscriptionScheduleService.dateOnly(sub.nextDueDate);
     _autoDeduct = sub.autoDeduct;
     _isInstallment = sub.isInstallment;
     _totalCycles = sub.totalCycles ?? 3;
@@ -66,29 +69,19 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
     if (title.isEmpty || cost <= 0 || _selectedWalletId == null || _selectedCategoryId == null) {
       return;
     }
-
-    final bloc = context.read<FinanceBloc>();
-    final deadline = _isInstallment
-        ? SubscriptionInstallmentSelector.calculateDeadlineDate(
-            dueDay: _dueDay,
-            totalCycles: _totalCycles,
-          )
-        : null;
-
-    bloc.add(UpdateSubscriptionEvent(
-      subscriptionId: widget.subscription.id,
+    dispatchSaveSubscription(
+      context,
+      existing: widget.subscription,
       title: title,
       cost: cost,
       dueDay: _dueDay,
+      nextDueDate: _nextDueDate,
       walletId: _selectedWalletId!,
       categoryId: _selectedCategoryId!,
       autoDeduct: _autoDeduct,
       isInstallment: _isInstallment,
-      totalCycles: _isInstallment ? _totalCycles : null,
-      paidCycles: widget.subscription.paidCycles,
-      deadlineDate: deadline,
-    ));
-
+      totalCycles: _totalCycles,
+    );
     if (widget.onSaved != null) {
       widget.onSaved!();
     } else {
@@ -112,7 +105,7 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
         children: [
           AppTextField(
             controller: _titleController,
-            hintText: 'cth: Netflix, Spotify, Listrik PLN, Kosan',
+            hintText: AppL10n.of(context).subsHintExample,
           ),
           const SizedBox(height: 12),
           CurrencyAmountField(
@@ -124,13 +117,28 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
             isInstallment: _isInstallment,
             totalCycles: _totalCycles,
             dueDay: _dueDay,
+            firstDueDate: _nextDueDate,
+            paidCycles: widget.subscription.paidCycles,
             onToggleInstallment: (v) => setState(() => _isInstallment = v),
             onCyclesChanged: (c) => setState(() => _totalCycles = c),
           ),
           const SizedBox(height: 12),
-          SubscriptionDueDaySlider(
+          SubscriptionDueSchedulePicker(
             dueDay: _dueDay,
-            onDayChanged: (d) => setState(() => _dueDay = d),
+            nextDueDate: _nextDueDate,
+            onDayChanged: (d) => setState(() {
+              _dueDay = d;
+              _nextDueDate = SubscriptionScheduleService.applyDayChange(
+                currentNextDueDate: _nextDueDate,
+                newDueDay: d,
+                preserveMonth: true,
+                referenceDate: DateTime.now(),
+              );
+            }),
+            onNextDueDateChanged: (dt) => setState(() {
+              _dueDay = dt.day;
+              _nextDueDate = dt;
+            }),
           ),
           const SizedBox(height: 8),
           SubscriptionWalletDropdown(
@@ -145,12 +153,12 @@ class _SubscriptionDetailEditTabState extends State<SubscriptionDetailEditTab> {
           ),
           const SizedBox(height: 20),
           PrimaryActionButton(
-            text: 'Simpan Perubahan',
+            text: AppL10n.of(context).inboxEditSaveBtn,
             onPressed: () => _saveSubscription(context),
           ),
           const SizedBox(height: 14),
           SlideToDeleteButton(
-            label: _isInstallment ? 'Hapus Cicilan Ini' : 'Hapus Langganan Ini',
+            label: _isInstallment ? AppL10n.of(context).subsDeleteInstallment : AppL10n.of(context).subsDeleteSub,
             onSlideComplete: () => executeDeleteSubscription(context, widget.subscription.id),
           ),
         ],

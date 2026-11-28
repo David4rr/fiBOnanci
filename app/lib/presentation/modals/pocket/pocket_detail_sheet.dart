@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/finance/finance_bloc.dart';
 import '../../../bloc/finance/finance_state.dart';
 import '../../../core/formatters/app_currency.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -57,26 +58,28 @@ class _PocketDetailSheetState extends State<PocketDetailSheet> {
     SmoothPageView.animateTo(_pageController, 0);
   }
   String _getTitle(PocketEntry latestPocket) {
-    if (_currentTab == 1) return _isDeposit ? 'Isi Dana ke Kantong' : 'Tarik Dana ke Rekening';
-    if (_currentTab == 2) return 'Edit Transaksi';
+    final l10n = AppL10n.of(context);
+    if (_currentTab == 1) return _isDeposit ? l10n.pocketDepositSheetTitle : l10n.pocketWithdrawSheetTitle;
+    if (_currentTab == 2) return l10n.txEditTitle;
     return latestPocket.name;
   }
 
   String _getSubtitle(PocketEntry latestPocket) {
+    final l10n = AppL10n.of(context);
     if (_currentTab == 1) {
       return _isDeposit
-          ? 'Pilih rekening asal untuk memindahkan dana ke ${latestPocket.name}.'
-          : 'Pilih rekening tujuan penarikan dari ${latestPocket.name}.';
+          ? l10n.pocketDepositSheetSub(latestPocket.name)
+          : l10n.pocketWithdrawSheetSub(latestPocket.name);
     }
     if (_currentTab == 2) {
       final notes = _selectedTransaction?.notes?.trim();
-      return notes != null && notes.isNotEmpty ? notes : 'Ubah rincian mutasi transaksi';
+      return notes != null && notes.isNotEmpty ? notes : l10n.txEditSubDefault;
     }
     final target = latestPocket.targetAmount;
     if (target != null && target > 0) {
-      return '${getPocketTypeLabel(latestPocket.type)} • Target: ${AppCurrency.read(context).format(target)}';
+      return '${getPocketTypeLabel(latestPocket.type, l10n)} • Target: ${AppCurrency.read(context).format(target)}';
     }
-    return getPocketTypeLabel(latestPocket.type);
+    return getPocketTypeLabel(latestPocket.type, l10n);
   }
   IconData get _closeIcon => (_currentTab == 0 || (widget.initialTab == 1 && _currentTab == 1))
       ? Icons.keyboard_arrow_down_rounded

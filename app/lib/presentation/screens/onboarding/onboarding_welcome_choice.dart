@@ -1,14 +1,22 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
+
+bool get _isFlutterTest => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
 class OnboardingWelcomeChoice extends StatelessWidget {
   final VoidCallback onStartNew;
   final VoidCallback onImportBackup;
+  final VoidCallback? onBack;
 
   const OnboardingWelcomeChoice({
     super.key,
     required this.onStartNew,
     required this.onImportBackup,
+    this.onBack,
   });
 
   @override
@@ -16,20 +24,31 @@ class OnboardingWelcomeChoice extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 16),
-        Container(
-          width: 76,
-          height: 76,
-          decoration: BoxDecoration(
-            color: AppColors.neoChartreuse.withValues(alpha: 0.12),
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.neoChartreuse.withValues(alpha: 0.35), width: 1.5),
+        if (onBack != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.textWhite, size: 22),
+              onPressed: onBack,
+            ),
           ),
-          child: const Center(
-            child: Icon(Icons.account_balance_wallet_rounded, color: AppColors.neoChartreuse, size: 38),
+        SizedBox(
+          height: 156,
+          width: 200,
+          child: Lottie.asset(
+            'assets/lottie/onb_welcome.json',
+            height: 156,
+            animate: !_isFlutterTest,
+            repeat: true,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => const Icon(
+              Icons.account_balance_wallet_rounded,
+              color: AppColors.neoChartreuse,
+              size: 56,
+            ),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
@@ -51,7 +70,7 @@ class OnboardingWelcomeChoice extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Kelola keuangan pribadi dengan kecerdasan Safe-to-Spend & privasi 100% on-device.',
+            AppL10n.of(context).onbWelcomeTagline,
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.4),
           ),
@@ -65,8 +84,8 @@ class OnboardingWelcomeChoice extends StatelessWidget {
           iconColor: AppColors.textDarkPrimary,
           borderColor: AppColors.neoChartreuse.withValues(alpha: 0.5),
           bgColor: AppColors.neoChartreuse.withValues(alpha: 0.12),
-          title: 'Buat Akun Baru',
-          subtitle: 'Pengguna baru: Mulai dari awal dalam 1 menit',
+          title: AppL10n.of(context).onbCreateAccountTitle,
+          subtitle: AppL10n.of(context).onbCreateAccountSub,
           trailing: const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.neoChartreuse, size: 14),
         ),
         const SizedBox(height: 12),
@@ -78,8 +97,8 @@ class OnboardingWelcomeChoice extends StatelessWidget {
           iconColor: AppColors.neoMint,
           borderColor: AppColors.canvasBorder,
           bgColor: AppColors.canvasCardSurface,
-          title: 'Pulihkan dari Cadangan',
-          subtitle: 'Sudah pernah pakai? Pulihkan berkas .json Anda',
+          title: AppL10n.of(context).onbRestoreTitle,
+          subtitle: AppL10n.of(context).onbRestoreSub,
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(

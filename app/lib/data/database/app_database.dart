@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 import '../../core/notification_parser/bank_presets.dart';
+import '../../domain/services/subscription_schedule_service.dart';
 import 'seed/default_categories.dart';
 import 'seed/default_wallets.dart';
 import 'tables/tables.dart';
@@ -32,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +60,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(subscriptions, subscriptions.profileId);
         await m.addColumn(pockets, pockets.profileId);
         await m.addColumn(notificationRules, notificationRules.profileId);
+      }
+      if (from < 7) {
+        await migrateSubscriptionsToV7(m);
       }
     },
     beforeOpen: (details) async {
@@ -108,6 +112,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(subscriptions, subscriptions.profileId);
         await m.addColumn(pockets, pockets.profileId);
         await m.addColumn(notificationRules, notificationRules.profileId);
+      }
+      final v7SubCols = await customSelect("PRAGMA table_info(subscriptions)").get();
+      if (!v7SubCols.any((c) => c.data['name'] == 'next_due_date')) {
+        await migrateSubscriptionsToV7(createMigrator());
       }
       await repairAndMigrateProfiles();
     },

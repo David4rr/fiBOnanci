@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common/app_text_field.dart';
 import 'onboarding_header.dart';
@@ -19,20 +20,21 @@ class OnboardingStepUsername extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final displayFirst = firstName.trim().isEmpty ? 'kawan' : firstName.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         OnboardingHeader(
-          icon: Icons.alternate_email_rounded,
-          question: 'Senang kenal, $displayFirst.',
-          helper: 'Pilih username untuk profilmu. Pekerjaan boleh dikosongkan.',
+          lottieAsset: 'assets/lottie/onb_username.json',
+          question: l10n.onbUsernameQuestion(displayFirst),
+          helper: l10n.onbUsernameHelper,
           iconColor: AppColors.neoMint,
         ),
         AppTextField(
           controller: usernameController,
-          hintText: 'nama_pengguna',
+          hintText: l10n.onbUsernameHint,
           prefixIcon: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             child: Text(
@@ -58,14 +60,14 @@ class OnboardingStepUsername extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
-            'Huruf kecil a–z, angka 0–9, dan garis bawah _',
+            l10n.onbUsernameRule,
             style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
           ),
         ),
         const SizedBox(height: 18),
         AppTextField(
           controller: occupationController,
-          hintText: 'Pekerjaan (misalnya: Mahasiswa atau Desainer)',
+          hintText: l10n.onbOccupationHint,
           prefixIcon: const Icon(Icons.work_outline_rounded),
           textCapitalization: TextCapitalization.sentences,
         ),

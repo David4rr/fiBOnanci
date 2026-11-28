@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/overlapping_deck.dart';
@@ -44,7 +45,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
               children: [
                 if (isFiltering)
                   Text(
-                    searchQuery.isNotEmpty ? 'Hasil Pencarian: ${filtered.length} Transaksi' : 'Hasil Filter: ${filtered.length} Transaksi',
+                    searchQuery.isNotEmpty ? AppL10n.of(context).historySearchCount(filtered.length) : AppL10n.of(context).historyFilterCount(filtered.length),
                     style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textAccent),
                   )
                 else if (sortedDays.isNotEmpty) ...[
@@ -58,7 +59,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '//  ${currentDayTxs.length} TRANSAKSI',
+                    AppL10n.of(context).historyDayTxCount(currentDayTxs.length),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -89,7 +90,7 @@ class ExpenseHistoryDeckView extends StatelessWidget {
                           children: [
                             Icon(Icons.receipt_long_outlined, size: 48, color: AppColors.textSubtle),
                             const SizedBox(height: 12),
-                            Text('Tidak Ada Transaksi di Tanggal Ini', style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
+                            Text(AppL10n.of(context).historyEmptyDate, style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textWhite)),
                           ],
                         ),
                       ),

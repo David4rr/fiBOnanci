@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/database/app_database.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
@@ -21,6 +22,7 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final now = DateTime.now();
     final isPaidThisMonth = subscription.lastPaidDate != null &&
         subscription.lastPaidDate!.year == now.year &&
@@ -46,23 +48,23 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildRow('Rekening Pembayaran', wallet.name, Icons.account_balance_wallet_outlined),
+          _buildRow(l10n.subSpecPaymentAccount, wallet.name, Icons.account_balance_wallet_outlined),
           Divider(color: AppColors.canvasBorder, height: 20),
-          _buildRow('Saldo Rekening Saat Ini', currencyFormatter.format(wallet.balance), Icons.account_balance_outlined),
+          _buildRow(l10n.subSpecCurrentBalance, currencyFormatter.format(wallet.balance), Icons.account_balance_outlined),
           Divider(color: AppColors.canvasBorder, height: 20),
-          _buildRow('Metode Pembayaran', subscription.autoDeduct ? 'Auto-Deduct Aktif' : 'Manual Transfer / QRIS', Icons.sync_rounded),
+          _buildRow(l10n.subSpecPaymentMethod, subscription.autoDeduct ? l10n.subSpecAutoDeduct : 'Manual Transfer / QRIS', Icons.sync_rounded),
           Divider(color: AppColors.canvasBorder, height: 20),
           _buildRow(
-            'Status Periode Ini',
-            isCompleted ? 'Cicilan Selesai' : (isPaidThisMonth ? 'Sudah Lunas' : 'Belum Dibayar'),
+            l10n.subSpecPeriodStatus,
+            isCompleted ? l10n.subSpecInstallmentDone : (isPaidThisMonth ? l10n.subSpecStatusPaid : l10n.subSpecStatusUnpaid),
             (isPaidThisMonth || isCompleted) ? Icons.verified_rounded : Icons.pending_actions_rounded,
             valueColor: (isPaidThisMonth || isCompleted) ? AppColors.neoMint : AppColors.neoCoral,
           ),
           if (isInstallment) ...[
             Divider(color: AppColors.canvasBorder, height: 20),
             _buildRow(
-              'Rencana Cicilan',
-              '$paidCycles dari $totalCycles bulan lunas',
+              l10n.subSpecInstallmentPlan,
+              l10n.subSpecInstallmentProgress(paidCycles, totalCycles),
               Icons.timelapse_rounded,
               valueColor: isCompleted ? AppColors.neoMint : AppColors.neoCoral,
             ),
@@ -70,17 +72,23 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
             _buildProgressBar(paidCycles: paidCycles, totalCycles: totalCycles),
             if (!isCompleted) ...[
               Divider(color: AppColors.canvasBorder, height: 20),
-              _buildRow('Sisa Tagihan Pokok', currencyFormatter.format(remainingCost), Icons.payments_outlined, valueColor: AppColors.neoCoral),
+              _buildRow(l10n.subSpecRemainingPrincipal, currencyFormatter.format(remainingCost), Icons.payments_outlined, valueColor: AppColors.neoCoral),
             ],
             if (subscription.deadlineDate != null) ...[
               Divider(color: AppColors.canvasBorder, height: 20),
-              _buildRow('Tenggat Selesai', DateFormat('MMMM yyyy', 'id_ID').format(subscription.deadlineDate!), Icons.event_available_rounded),
+              _buildRow(l10n.subSpecCompletionDate, DateFormat('MMMM yyyy', l10n.localeName).format(subscription.deadlineDate!), Icons.event_available_rounded),
             ],
+            Divider(color: AppColors.canvasBorder, height: 20),
+            _buildRow(l10n.subSpecDueDate, DateFormat('d MMM yyyy', l10n.localeName).format(subscription.nextDueDate), Icons.calendar_today_rounded),
           ] else ...[
             Divider(color: AppColors.canvasBorder, height: 20),
-            _buildRow('Siklus Tagihan', subscription.billingCycle == 'monthly' ? 'Bulanan' : 'Tahunan', Icons.repeat_rounded),
+            _buildRow(l10n.subSpecBillingCycle, subscription.billingCycle == 'monthly' ? l10n.subSpecCycleMonthly : l10n.subSpecCycleYearly, Icons.repeat_rounded),
             Divider(color: AppColors.canvasBorder, height: 20),
-            _buildRow('Jatuh Tempo', 'Setiap tanggal ${subscription.dueDay}', Icons.calendar_today_rounded),
+            _buildRow(
+              l10n.subSpecDueDate,
+              '${DateFormat('d MMM yyyy', l10n.localeName).format(subscription.nextDueDate)} (${l10n.subSpecDueEveryDay(subscription.dueDay)})',
+              Icons.calendar_today_rounded,
+            ),
           ],
         ],
       ),
@@ -107,7 +115,9 @@ class SubscriptionDetailSpecsCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Progress Pembayaran', style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
+            Builder(
+              builder: (context) => Text(AppL10n.of(context).subSpecPaymentProgress, style: AppTypography.listSubtitle.copyWith(fontSize: 11)),
+            ),
             Text('${(progress * 100).toInt()}%', style: AppTypography.listTitle.copyWith(fontSize: 11, fontWeight: FontWeight.w700)),
           ],
         ),

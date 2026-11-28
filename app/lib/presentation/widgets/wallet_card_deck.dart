@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../../data/database/app_database.dart';
 import 'wallet_card.dart';
 import 'common/common_widgets.dart';
@@ -86,11 +87,12 @@ class _WalletCardDeckState extends State<WalletCardDeck> {
     final fmt = widget.fmt;
 
     if (wallets.isEmpty) {
-      return const CardlessEmptyView(
+      final l10n = AppL10n.of(context);
+      return CardlessEmptyView(
         icon: Icons.account_balance_wallet_outlined,
-        title: 'Belum Ada Rekening',
-        description: 'Belum ada rekening atau dompet digital yang terhubung.',
-        hint: 'Ketuk tombol + di bawah untuk menambahkan',
+        title: l10n.walletDeckEmptyTitle,
+        description: l10n.walletDeckEmptyDesc,
+        hint: l10n.walletDeckEmptyHint,
       );
     }
 

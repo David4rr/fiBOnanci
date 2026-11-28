@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../../domain/services/cashflow_calendar_service.dart';
 import '../../../domain/services/multi_vector_insight_engine.dart';
@@ -28,8 +29,9 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final d = summary.date;
-    final dateLabel = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(d);
+    final dateLabel = DateFormat('EEEE, d MMMM yyyy', l10n.localeName).format(d);
     final hasTxs = summary.transactions.isNotEmpty;
     final isNoSpend = summary.isNoSpendDay;
     final isHemat = summary.isHematDay && !isNoSpend;
@@ -39,6 +41,7 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
       dayExpense: summary.totalExpense,
       date: d,
       isDeficit: summary.status == DayActivityStatus.overPace,
+      localeCode: l10n.localeName,
     );
 
     return Padding(
@@ -60,21 +63,21 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
                 ),
               ),
               if (isNoSpend)
-                _buildBadge(label: 'No-Spend Day', icon: Icons.star_rounded, color: AppColors.textAccent)
+                _buildBadge(label: l10n.calNoSpendDay, icon: Icons.star_rounded, color: AppColors.textAccent)
               else if (isHemat)
-                _buildBadge(label: 'Hemat (Aman)', icon: Icons.local_fire_department_rounded, color: AppColors.textAccent)
+                _buildBadge(label: l10n.calHematSafe, icon: Icons.local_fire_department_rounded, color: AppColors.textAccent)
               else if (summary.status == DayActivityStatus.overPace)
-                _buildBadge(label: 'Melebihi Alokasi', icon: Icons.error_outline_rounded, color: AppColors.neoCoral),
+                _buildBadge(label: l10n.calOverPace, icon: Icons.error_outline_rounded, color: AppColors.neoCoral),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildMetricCol(label: 'Pemasukan', amount: summary.totalIncome, color: AppColors.textIncome, prefix: '+')),
+              Expanded(child: _buildMetricCol(label: l10n.calIncome, amount: summary.totalIncome, color: AppColors.textIncome, prefix: '+')),
               Container(width: 1, height: 26, color: AppColors.canvasBorder.withValues(alpha: 0.35)),
-              Expanded(child: _buildMetricCol(label: 'Pengeluaran', amount: summary.totalExpense, color: summary.totalExpense > 0 ? AppColors.neoCoral : AppColors.textSubtle, prefix: summary.totalExpense > 0 ? '-' : '')),
+              Expanded(child: _buildMetricCol(label: l10n.calExpense, amount: summary.totalExpense, color: summary.totalExpense > 0 ? AppColors.neoCoral : AppColors.textSubtle, prefix: summary.totalExpense > 0 ? '-' : '')),
               Container(width: 1, height: 26, color: AppColors.canvasBorder.withValues(alpha: 0.35)),
-              Expanded(child: _buildMetricCol(label: 'Alokasi Harian', amount: summary.dailySafePace, color: AppColors.textAccent, prefix: '')),
+              Expanded(child: _buildMetricCol(label: l10n.calDailyAllocation, amount: summary.dailySafePace, color: AppColors.textAccent, prefix: '')),
             ],
           ),
           Padding(
@@ -87,7 +90,7 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
           if (hasTxs) ...[
             const SizedBox(height: 12),
             Text(
-              'Transaksi Tanggal Ini (${summary.transactions.length})',
+              l10n.calTxOnDate(summary.transactions.length),
               style: AppTypography.cardMetricLabel.copyWith(color: AppColors.textSubtle, fontSize: 11),
             ),
             const SizedBox(height: 8),
@@ -110,7 +113,7 @@ class ActivityCalendarDetailPeek extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 4),
               child: Center(
                 child: Text(
-                  'Tidak ada aktivitas transaksi tercatat',
+                  l10n.calNoTxRecorded,
                   style: TextStyle(color: AppColors.textSubtle, fontSize: 11),
                 ),
               ),

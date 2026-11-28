@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -72,8 +73,8 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                       children: [
                         Text(
                           isEditing
-                              ? (customTitle ?? 'Edit Transaksi')
-                              : (isCalendarView ? 'Aktivitas\nKeuangan' : 'Riwayat\nTransaksi'),
+                              ? (customTitle ?? AppL10n.of(context).txEditTitle)
+                              : (isCalendarView ? AppL10n.of(context).historyTitleCalendar : AppL10n.of(context).historyTitleDefault),
                           style: AppTypography.modalTitle,
                           maxLines: isEditing ? 1 : 2,
                           overflow: TextOverflow.ellipsis,
@@ -81,10 +82,10 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           isEditing
-                              ? (customSubtitle ?? 'Ubah rincian mutasi transaksi')
+                              ? (customSubtitle ?? AppL10n.of(context).txEditSubDefault)
                               : (isCalendarView
-                                  ? 'Kalender Aktivitas & Arus Kas'
-                                  : 'Total Terfilter: ${currencyFormatter.format(totalFiltered)}'),
+                                  ? AppL10n.of(context).historySubCalendar
+                                  : AppL10n.of(context).historySubFiltered(currencyFormatter.format(totalFiltered))),
                           style: AppTypography.modalSubtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -100,7 +101,7 @@ class ExpenseHistoryAppBar extends StatelessWidget {
                       IconButton(
                         key: const Key('expense_history_toggle_calendar_button'),
                         onPressed: onToggleView,
-                        tooltip: isCalendarView ? 'Tampilan Kartu' : 'Kalender Aktivitas',
+                        tooltip: isCalendarView ? AppL10n.of(context).historyTooltipCard : AppL10n.of(context).historyTooltipCalendar,
                         icon: Icon(
                           isCalendarView ? Icons.view_agenda_outlined : Icons.calendar_month_outlined,
                           color: isCalendarView ? AppColors.textAccent : AppColors.textWhite,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/category_localizer.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'common/common_widgets.dart';
@@ -14,15 +16,16 @@ class TransactionModalHeaderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
         ModalHeader(
-          title: 'Catat Transaksi',
+          title: l10n.txModalTitle,
           subtitle: type == 'expense'
-              ? 'Pengeluaran kas atau mutasi keluar'
-              : (type == 'income' ? 'Pemasukan gaji atau dana masuk' : 'Transfer antar rekening & profil'),
+              ? l10n.txModalSubExpense
+              : (type == 'income' ? l10n.txModalSubIncome : l10n.txModalSubTransfer),
           titleStyle: AppTypography.modalTitle,
           subtitleStyle: AppTypography.modalSubtitle,
           onClose: onClose,
@@ -48,7 +51,7 @@ class TransactionCategoryDropdown extends StatelessWidget {
         value: selectedCategoryId,
         isExpanded: true,
         dropdownColor: AppColors.canvasCardSurface,
-        hint: Text('Pilih Kategori', style: AppTypography.listSubtitle),
+        hint: Text(AppL10n.of(context).txSelectCategory, style: AppTypography.listSubtitle),
         items: categories
             .map((c) => DropdownMenuItem(
                   value: c.id,
@@ -56,7 +59,7 @@ class TransactionCategoryDropdown extends StatelessWidget {
                     children: [
                       const Icon(Icons.category_outlined, size: 18, color: AppColors.neoCyan),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(c.name, style: AppTypography.listTitle, overflow: TextOverflow.ellipsis)),
+                      Expanded(child: Text(CategoryLocalizer.entry(context, c), style: AppTypography.listTitle, overflow: TextOverflow.ellipsis)),
                     ],
                   ),
                 ))
@@ -125,7 +128,7 @@ class TransactionFormInputs extends StatelessWidget {
             value: selectedWalletId,
             isExpanded: true,
             dropdownColor: AppColors.canvasCardSurface,
-            hint: Text(type == 'transfer' ? 'Pilih Rekening Asal' : 'Pilih Rekening', style: AppTypography.listSubtitle),
+            hint: Text(type == 'transfer' ? AppL10n.of(context).txSelectSourceAccount : AppL10n.of(context).txSelectAccount, style: AppTypography.listSubtitle),
             items: wallets
                 .map((w) => DropdownMenuItem(
                       value: w.id,
@@ -156,7 +159,7 @@ class TransactionFormInputs extends StatelessWidget {
             selectedCategoryId: selectedCategoryId, categories: matchingCats, onChanged: onCategoryChanged,
           ),
         const SizedBox(height: 12),
-        AppTextField(controller: notesController, hintText: 'Catatan (Opsional)'),
+        AppTextField(controller: notesController, hintText: AppL10n.of(context).hintNotesOptional),
         const SizedBox(height: 24),
         TransactionActionFooter(onCancel: onCancel, onSave: onSave),
       ],

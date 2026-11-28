@@ -90,9 +90,9 @@ class LocalNotificationService {
     }
 
     final reminders = SubscriptionNotificationCalculator.calculateReminders(
-      subscriptionId: sub.id, title: sub.title, cost: sub.cost, dueDay: sub.dueDay,
-      billingCycle: sub.billingCycle, isInstallment: sub.isInstallment, totalCycles: sub.totalCycles,
-      paidCycles: sub.paidCycles, deadlineDate: sub.deadlineDate, lastPaidDate: sub.lastPaidDate, referenceDate: referenceDate,
+      subscriptionId: sub.id, title: sub.title, cost: sub.cost, nextDueDate: sub.nextDueDate,
+      isInstallment: sub.isInstallment, totalCycles: sub.totalCycles,
+      paidCycles: sub.paidCycles, deadlineDate: sub.deadlineDate, referenceDate: referenceDate,
     );
 
     await cancelSubscriptionReminders(sub.id);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/finance/finance_bloc.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../core/native_bridge/notification_bridge.dart';
 import '../../../core/notifications/in_app_notification_storage.dart';
 import '../../../data/database/app_database.dart';
@@ -58,14 +59,14 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
   void _confirmItem(Map<String, dynamic> item) {
     NotificationBridge.confirmNotification(item);
     setState(() => _pending.remove(item));
-    _showSnack('Transaksi terkonfirmasi benar', AppColors.neoMint);
+    _showSnack(AppL10n.of(context).inboxSnackConfirmed, AppColors.neoMint);
   }
 
   void _rejectItem(Map<String, dynamic> item) async {
     final db = _resolveDb();
     if (db != null) await NotificationBridge.rejectNotification(item, db);
     setState(() => _pending.remove(item));
-    _showSnack('Transaksi dibatalkan & saldo dipulihkan', AppColors.neoCoral);
+    if (mounted) _showSnack(AppL10n.of(context).inboxSnackRejected, AppColors.neoCoral);
   }
 
   void _reassignWallet(Map<String, dynamic> item) async {
@@ -127,7 +128,7 @@ class _PendingInboxSheetState extends State<PendingInboxSheet> {
       _isEditing = false;
     });
     NotificationInbox.updatePending(item);
-    _showSnack('Transaksi berhasil disesuaikan', AppColors.neoMint);
+    if (mounted) _showSnack(AppL10n.of(context).inboxSnackEdited, AppColors.neoMint);
   }
 
   @override

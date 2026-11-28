@@ -4,6 +4,7 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../domain/services/cashflow_analytics_service.dart';
+import '../../core/l10n/locale_notifier.dart';
 import '../modals/add_pocket_modal.dart';
 import '../modals/add_wallet_modal.dart';
 import '../theme/app_colors.dart';
@@ -90,9 +91,9 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Rekening & Dompet', style: AppTypography.heroGreeting.copyWith(fontSize: 26)),
+                        Text(AppL10n.of(context).walletScreenTitle, style: AppTypography.heroGreeting.copyWith(fontSize: 26)),
                         const SizedBox(height: 4),
-                        Text('${wallets.length} rekening terhubung', style: AppTypography.listSubtitle),
+                        Text(AppL10n.of(context).walletConnectedSubtitle(wallets.length), style: AppTypography.listSubtitle),
                       ],
                     ),
                   ),

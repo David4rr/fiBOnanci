@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/l10n/locale_notifier.dart';
 import '../theme/app_colors.dart';
 
 /// Tactile obsidian input row for custom installment tenor (months) with steppers.
@@ -37,7 +38,7 @@ class SubscriptionCustomTenorRow extends StatelessWidget {
           const Icon(Icons.tune_rounded, size: 16, color: AppColors.neoCoral),
           const SizedBox(width: 8),
           Text(
-            'Durasi Tenor',
+            AppL10n.of(context).subTenorDurationLabel,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -74,7 +75,7 @@ class SubscriptionCustomTenorRow extends StatelessWidget {
           _buildStepperButton(Icons.add_rounded, () => _step(1)),
           const SizedBox(width: 6),
           Text(
-            'Bln',
+            AppL10n.of(context).subTenorMonthsShort,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w700,

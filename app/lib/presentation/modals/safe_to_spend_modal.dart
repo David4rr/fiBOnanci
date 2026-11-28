@@ -4,6 +4,8 @@ import '../../bloc/finance/finance_bloc.dart';
 import '../../bloc/finance/finance_state.dart';
 import '../../core/formatters/app_currency.dart';
 import '../../data/database/app_database.dart';
+import '../../core/l10n/locale_notifier.dart';
+import '../../domain/services/safe_to_spend_service.dart';
 import '../widgets/common/common_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -18,9 +20,15 @@ class SafeToSpendModal {
       builder: (ctx) {
         return BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
+            final l10n = AppL10n.of(context);
             final metrics = state.metrics;
             final isAll = state.safeToSpendWalletIds == null || state.safeToSpendWalletIds!.isEmpty;
             final currencyFormatter = AppCurrency.forCode(state.profile.currency);
+            final statusText = switch (metrics.healthStatus) {
+              FinancialHealthStatus.comfortable => l10n.healthStatusComfortable,
+              FinancialHealthStatus.caution => l10n.healthStatusCaution,
+              FinancialHealthStatus.deficit => l10n.healthStatusDeficit,
+            };
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -30,7 +38,7 @@ class SafeToSpendModal {
                   const ModalGrabHandle(padding: EdgeInsets.only(bottom: 14)),
                   ModalHeader(
                     title: 'Smart Safe-to-Spend',
-                    subtitle: 'Status: ${metrics.statusLabel}',
+                    subtitle: l10n.stsStatusPrefix(statusText),
                     subtitleStyle: TextStyle(color: metrics.statusColor, fontWeight: FontWeight.bold, fontSize: 12),
                     onClose: () => Navigator.pop(context),
                   ),
@@ -41,8 +49,9 @@ class SafeToSpendModal {
                     child: Column(
                       children: [
                         _buildCalcRow(
-                          isAll ? 'Total Saldo Riil' : 'Saldo Rekening Terpilih',
-                          '+${currencyFormatter.format(metrics.operationalBalance)}',
+                          isAll ? l10n.stsTotalRealBalance : l10n.stsSelectedBalance,
+                          metrics.operationalBalance,
+                          (v) => '+${currencyFormatter.format(v)}',
                           AppColors.neoChartreuse,
                         ),
                         if (!isAll) ...[
@@ -50,12 +59,11 @@ class SafeToSpendModal {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Total Aset (${wallets.length} Akun)',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-                              ),
-                              Text(
-                                currencyFormatter.format(metrics.totalRealBalance),
+                              Text(l10n.stsTotalAssetsCount(wallets.length), style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                              AnimatedCountingText(
+                                value: metrics.totalRealBalance,
+                                formatter: currencyFormatter.format,
+                                respectPrivacyMask: false,
                                 style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                               ),
                             ],
@@ -63,22 +71,23 @@ class SafeToSpendModal {
                         ],
                         Divider(color: AppColors.canvasBorder),
                         _buildCalcRow(
-                          isAll ? 'Sisa Tagihan Bulan Ini' : 'Tagihan Terkait Terpilih',
-                          '-${currencyFormatter.format(metrics.pendingBills)}',
+                          isAll ? l10n.stsPendingBills : l10n.stsSelectedBills,
+                          metrics.pendingBills,
+                          (v) => '-${currencyFormatter.format(v)}',
                           AppColors.neoCoral,
                         ),
                         Divider(color: AppColors.canvasBorder, height: 16),
-                        _buildCalcRow('Sisa Aman Bulan Ini', currencyFormatter.format(metrics.safeToSpendMonthly), metrics.statusColor, isBold: true),
+                        _buildCalcRow(l10n.stsMonthlySafe, metrics.safeToSpendMonthly, currencyFormatter.format, metrics.statusColor, isBold: true),
                         const SizedBox(height: 8),
-                        _buildCalcRow('Alokasi Harian (${metrics.daysRemainingInMonth} hr)', '${currencyFormatter.format(metrics.safeToSpendDaily)} / hr', AppColors.neoCyan),
+                        _buildCalcRow(l10n.stsDailyAllowance(metrics.daysRemainingInMonth), metrics.safeToSpendDaily, (v) => '${currencyFormatter.format(v)} ${l10n.stsPerDaySuffix}', AppColors.neoCyan),
                       ],
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
                     isAll
-                        ? 'Dihitung dari seluruh rekening Anda. Uang ini aman dibelanjakan tanpa khawatir tagihan bulanan gagal bayar.'
-                        : 'Dihitung hanya dari rekening operasional (${metrics.selectedWalletsCount} rekening). Tagihan dan saldo rekening tabungan lain tidak dicampur.',
+                        ? l10n.stsAllWalletsDesc
+                        : l10n.stsSelectedWalletsDesc(metrics.selectedWalletsCount),
                     style: AppTypography.listSubtitle,
                   ),
                   const SizedBox(height: 12),
@@ -88,7 +97,7 @@ class SafeToSpendModal {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Pilihan rekening operasional dapat diatur di Pengaturan > Siklus Anggaran & Safe-to-Spend.',
+                          l10n.stsSettingsHint,
                           style: AppTypography.listSubtitle.copyWith(color: AppColors.textMuted, fontSize: 11),
                         ),
                       ),
@@ -104,7 +113,7 @@ class SafeToSpendModal {
     );
   }
 
-  static Widget _buildCalcRow(String label, String val, Color color, {bool isBold = false}) {
+  static Widget _buildCalcRow(String label, double value, String Function(double) formatter, Color color, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -118,7 +127,12 @@ class SafeToSpendModal {
             ),
           ),
           const SizedBox(width: 8),
-          Text(val, style: TextStyle(color: color, fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontFeatures: const [FontFeature.tabularFigures()])),
+          AnimatedCountingText(
+            value: value,
+            formatter: formatter,
+            respectPrivacyMask: false,
+            style: TextStyle(color: color, fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.w600),
+          ),
         ],
       ),
     );

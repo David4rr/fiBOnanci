@@ -7,7 +7,7 @@ mixin DriftProfileRepository on DriftRepoBase {
 
   Future<ProfileEntry?> getActiveProfile() => db.getActiveProfile();
 
-  Future<void> addProfile({
+  Future<String> addProfile({
     required String username,
     required String fullName,
     String? email,
@@ -60,6 +60,7 @@ mixin DriftProfileRepository on DriftRepoBase {
         isDeleted: const drift.Value(false),
       ),
     );
+    return profileId;
   }
 
   Future<void> updateProfile({
@@ -114,6 +115,19 @@ mixin DriftProfileRepository on DriftRepoBase {
       db.createCategory(
         name: name,
         type: type,
+        iconName: iconName,
+        colorHex: colorHex,
+      );
+
+  Future<void> updateCategory({
+    required String categoryId,
+    required String name,
+    required String iconName,
+    required String colorHex,
+  }) =>
+      db.updateCategory(
+        categoryId: categoryId,
+        name: name,
         iconName: iconName,
         colorHex: colorHex,
       );

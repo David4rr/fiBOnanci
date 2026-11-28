@@ -69,6 +69,7 @@ void main() {
         cost: 1000000,
         billingCycle: 'monthly',
         dueDay: 20,
+        nextDueDate: DateTime(2026, 9, 20),
         autoDeduct: false,
         status: 'active',
         lastPaidDate: null,
@@ -90,6 +91,7 @@ void main() {
         cost: 2000000,
         billingCycle: 'monthly',
         dueDay: 10,
+        nextDueDate: DateTime(2026, 9, 10),
         autoDeduct: false,
         status: 'completed',
         lastPaidDate: DateTime(2026, 8, 10),
@@ -131,6 +133,7 @@ void main() {
           cost: const drift.Value(500000),
           billingCycle: const drift.Value('monthly'),
           dueDay: const drift.Value(15),
+          nextDueDate: drift.Value(DateTime(2026, 9, 15)),
           autoDeduct: const drift.Value(false),
           status: const drift.Value('active'),
           isInstallment: const drift.Value(true),
@@ -213,6 +216,7 @@ void main() {
           cost: 186000,
           billingCycle: 'monthly',
           dueDay: 15,
+          nextDueDate: DateTime(now.year, now.month, 15),
           autoDeduct: true,
           status: 'active',
           lastPaidDate: null,
@@ -231,6 +235,7 @@ void main() {
           cost: 55000,
           billingCycle: 'monthly',
           dueDay: 20,
+          nextDueDate: DateTime(now.year, now.month, 20),
           autoDeduct: false,
           status: 'active',
           lastPaidDate: null,
@@ -268,7 +273,7 @@ void main() {
       // In progress
       final activeBadge = SubscriptionCardBadges.buildStatusBadge(
         false,
-        15,
+        DateTime(DateTime.now().year, DateTime.now().month, 15),
         config,
         isInstallment: true,
         totalCycles: 3,
@@ -279,7 +284,7 @@ void main() {
       // Completed
       final completedBadge = SubscriptionCardBadges.buildStatusBadge(
         true,
-        15,
+        DateTime(DateTime.now().year, DateTime.now().month, 15),
         config,
         isInstallment: true,
         totalCycles: 3,
@@ -317,6 +322,7 @@ void main() {
                   isInstallment: isInstallment,
                   totalCycles: totalCycles,
                   dueDay: 15,
+                  firstDueDate: DateTime(2026, 9, 15),
                   onToggleInstallment: (v) => setState(() => isInstallment = v),
                   onCyclesChanged: (c) => setState(() => totalCycles = c),
                 );

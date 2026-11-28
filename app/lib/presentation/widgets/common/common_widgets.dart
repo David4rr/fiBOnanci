@@ -1,3 +1,4 @@
+export 'animated_counting_text.dart';
 export 'cardless_empty_view.dart';
 export 'app_choice_chip.dart';
 export 'app_confirmation_dialog.dart';
@@ -10,6 +11,7 @@ export 'expandable_search_filter_bar.dart';
 export 'expandable_search_resting_bar.dart';
 export 'filter_choice.dart';
 export 'iphone_viewport_container.dart';
+export 'kofi_support_button.dart';
 export 'modal_grab_handle.dart';
 export 'modal_header.dart';
 export 'modal_sheet_scaffold.dart';

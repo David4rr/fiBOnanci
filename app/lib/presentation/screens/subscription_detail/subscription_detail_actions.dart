@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/subscription_modal.dart';
@@ -22,6 +23,7 @@ class SubscriptionDetailActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final isInstallment = subscription.isInstallment;
 
     return Padding(
@@ -44,7 +46,7 @@ class SubscriptionDetailActions extends StatelessWidget {
               ),
               icon: Icon(Icons.edit_outlined, size: 18, color: AppColors.textWhite),
               label: Text(
-                isInstallment ? 'Edit Cicilan' : 'Edit Tagihan',
+                isInstallment ? l10n.subEditInstallmentBtn : l10n.subEditBillBtn,
                 style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
               ),
               onPressed: () {
@@ -59,7 +61,7 @@ class SubscriptionDetailActions extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SlideToDeleteButton(
-            label: 'Hapus',
+            label: l10n.subDeleteBtn,
             onSlideComplete: () => _handleDelete(context),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/l10n/locale_notifier.dart';
 import '../../theme/app_colors.dart';
 
 class SpringSwipeableCard extends StatefulWidget {
@@ -94,7 +95,8 @@ class _SpringSwipeableCardState extends State<SpringSwipeableCard> with SingleTi
     final color = isRight ? AppColors.neoMint : AppColors.neoCoral;
     final bg = isRight ? const Color(0xFF10231C) : const Color(0xFF261317);
     final icon = isRight ? Icons.check_rounded : Icons.delete_outline_rounded;
-    final text = isRight ? 'Benar' : 'Salah';
+    final l10n = AppL10n.of(context);
+    final text = isRight ? l10n.swipeConfirmCorrect : l10n.swipeRejectWrong;
 
     final badge = Container(
       width: 36,

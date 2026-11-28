@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/locale_notifier.dart';
 import '../../../data/database/app_database.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -38,8 +39,22 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
     required this.onApply,
   });
 
+  String _choiceLabel(FilterChoice choice, BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return switch (choice.value) {
+      'all' => choice.label == 'Semua Status' ? l10n.filterAllStatus : l10n.filterAll,
+      'expense' => l10n.txTypeExpense,
+      'income' => l10n.txTypeIncome,
+      'transfer' => l10n.txTypeTransfer,
+      'unpaid' => l10n.filterUnpaid,
+      'paid' => l10n.filterPaid,
+      _ => choice.label,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -50,7 +65,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                headerTitle,
+                headerTitle == 'Filter Transaksi' ? l10n.filterTxTitle : headerTitle,
                 style: AppTypography.listTitle.copyWith(fontSize: 13.5, fontWeight: FontWeight.w700),
               ),
               if (hasPendingChange)
@@ -70,7 +85,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            primaryFilterTitle,
+            primaryFilterTitle == 'TIPE TRANSAKSI' ? l10n.filterTxTypeHeader : primaryFilterTitle,
             style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 10),
           ),
           const SizedBox(height: 8),
@@ -80,7 +95,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
             children: [
               for (final choice in primaryFilterChoices)
                 AppChoiceChip(
-                  label: choice.label,
+                  label: _choiceLabel(choice, context),
                   selected: tempType == choice.value,
                   onTap: () => onSelectType(choice.value),
                   borderRadius: 10,
@@ -90,7 +105,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
           if (showWalletFilter && wallets.isNotEmpty) ...[
             const SizedBox(height: 14),
             Text(
-              'REKENING',
+              l10n.walletDetailTitle.toUpperCase(),
               style: AppTypography.badgeLabel.copyWith(color: AppColors.textMuted, fontSize: 10),
             ),
             const SizedBox(height: 8),
@@ -99,7 +114,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
               runSpacing: 8,
               children: [
                 AppChoiceChip(
-                  label: 'Semua Rekening',
+                  label: l10n.filterAllAccounts,
                   selected: tempWalletId == null,
                   onTap: () => onSelectWallet(null),
                   borderRadius: 10,
@@ -116,7 +131,7 @@ class ExpandableSearchFilterPanel extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           PrimaryActionButton(
-            text: 'Terapkan Filter',
+            text: l10n.filterApply,
             height: 40,
             borderRadius: 10,
             onPressed: onApply,
